@@ -23,6 +23,14 @@ jobs:
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/output" backend-test python /checks/export_openapi.py /output/openapi.json
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/app/generated" frontend-test npm run generate:api
           git diff --exit-code -- frontend/generated
+      - name: Check source-derived editor fixture drift
+        run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/prototype:/output" backend-test python /checks/export_editor_fixture.py /output/document.json
+          git diff --exit-code -- frontend/prototype/document.json
+      - name: Check editor dependency notices
+        run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/public:/app/public" frontend-test node scripts/editor-notices.mjs
+          git diff --exit-code -- frontend/public/editor-notices.txt
       - name: Validate runtime Compose configurations
         run: |
           docker compose -f compose.yaml -f compose.dev.yaml config --quiet
@@ -43,7 +51,7 @@ jobs:
         run: |
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
       - name: Verify clean development, reload and persistence
-        run: scripts/verify-development.sh
+        run: FILLABLE_BROWSER_REPORTS="$PWD/reports/editor" scripts/verify-development.sh
       - name: Backend tests and coverage
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
       - name: Frontend tests and build

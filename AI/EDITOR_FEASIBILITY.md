@@ -1,6 +1,6 @@
 # Free editor feasibility
 
-Status: research notes for E00, checked 2026-09-06. The user requires free solutions and permits a project-owned implementation. No runtime evaluation, editor selection, or compatibility proof has been completed.
+Status: E00.2 comparison merged; E00.3 implements and verifies a free custom synchronization prototype. Final editor adoption, export/reopen and compatibility proof remain E00.4–E00.5. The user permits a project-owned implementation.
 
 ## Selection boundary
 
@@ -106,3 +106,53 @@ Keep Microsoft Word verification distinct from LibreOffice or self-reopening.
 No owner-level licensing choice or product narrowing is needed for this prototype;
 if its evidence shows one is unavoidable, record that concrete gap and continue
 independent account/storage tasks while seeking the smallest decision.
+
+## E00.3 implementation and scope
+
+The prototype is a reusable `frontend/src/editor/DocumentEditor.tsx` with
+ProseMirror schema/transaction modules and a Python `DocxPackage` importer under
+`backend/app/documents`. The development-only `/prototype.html` harness loads a
+model generated directly from the immutable DOCX fixture. Its answer key is never
+an importer input; CI regenerates the model and rejects drift. Vite's production
+entry does not include the harness or fixture. No unauthenticated document API or
+retained-file write was introduced.
+
+The importer retains original bytes and every package part, bounds archive/expanded
+size and entries, rejects DTD/entity input, and maps paragraphs/runs/tables/native
+plain-text controls. Existing native control IDs are part-scoped and remain stable
+when surrounding XML nodes are inserted; other source anchors are revision-local.
+Duplicate control IDs fail; absent/blank tags do not link unrelated controls. Complex
+or unknown structures remain explicit locked nodes rather than editable text copies.
+Original identities/styles survive model-to-DOM-to-model parsing, including spaces.
+This is editable source mapping, not a claim of complete DOCX format validation (E03)
+or export/reopen support (E00.4).
+
+Field selection-to-creation, shared-key sidebar updates, direct control typing and
+focus navigation use one editor transaction state. Direct native typing required an
+explicit field input handler: otherwise Chrome could remove an inline control when
+replacing all its text. Ambiguous linked values stay visible for review. Locale
+updates change labels/attributes without reconstructing the editor or undo history.
+Local field identifiers use `crypto.getRandomValues`, which works at the agreed HTTP
+origin; they do not depend on HTTPS-only `randomUUID` availability.
+
+Locked npm versions: model 1.25.4, state 1.4.4, view 1.41.7, commands 1.7.1,
+history 1.5.0, keymap 1.2.3, transform 1.12.1, orderedmap 2.1.1, rope-sequence 1.3.4,
+and w3c-keyname 2.2.8. All ten installed package licenses were inspected as MIT;
+`frontend/public/editor-notices.txt` retains their full notices in static assets.
+The required notice-regeneration check detects changes. Python's defusedxml 0.7.1
+is hash-locked and its installed distribution retains its license. These obligations
+do not change Fillable's undecided project license.
+
+E00.3 browser proof covers the real Ukrainian corpus: both native client-name
+occurrences update from the sidebar and from native typing; focus reaches the field;
+a selection across the email token's styled runs becomes a new field; switching to
+English preserves that draft and editor instance; undo/redo still works. Unit tests
+also cover ambiguous linked changes, invalid/cross-field selections, empty values,
+DOM source/whitespace preservation and importer failure boundaries.
+
+The browser currently presents a structural editing canvas with basic emphasis,
+alignment and tables, not Word pagination. Headers/footers are separate editable
+parts, and complex PAGE instructions are locked. No claim is made yet about exported
+formatting, structural additions, deletion/reopen or full input-composition behavior.
+E00.4 and E00.5 must establish the save/reopen/visual support matrix; E05 completes
+production workspace behavior. D008 is still provisional.

@@ -1,0 +1,2357 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "section",
+      "attrs": {
+        "part": "word/document.xml"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:2",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "АНКЕТА КЛІЄНТА",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:12",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:21",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Кому: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:26",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ІМʼЯ_РЕЦЕНЗЕНТА}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:33",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:39",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Від кого: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:44",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "attrs": {
+                "id": "word/document.xml:control:1001",
+                "key": "ПІБ_КЛІЄНТА",
+                "label": "ПІБ клієнта"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[Введіть ПІБ клієнта]",
+                  "marks": [
+                    {
+                      "type": "source",
+                      "attrs": {
+                        "id": "word/document.xml:59",
+                        "bold": false,
+                        "italic": false,
+                        "underline": false
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:65",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Дата: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:70",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "[[ДАТА_АНКЕТИ]]",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:77",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:83",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Щодо: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:90",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ТЕМА_ЗВЕРНЕННЯ}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:97",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:103",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Відомості про звернення",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:114",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:125",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Заповніть контактні дані та вказівки перед поверненням анкети. ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:132",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "За потреби відредагуйте опис звернення. Контактні дані можна заповнити окремо.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:138",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:144",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Клієнт ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:151",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ПІБ_КЛІЄНТА}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:157",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " звертається щодо питання «",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:163",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ТЕМА_ЗВЕРНЕННЯ}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:169",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "».",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:175",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "attrs": {
+            "id": "word/document.xml:181",
+            "colspan": 1
+          },
+          "content": [
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:200",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:204",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:209",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Контактні дані",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:212",
+                                "bold": true,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:219",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:224",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Значення",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:227",
+                                "bold": true,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:234",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:237",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:241",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Організація",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:244",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:250",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:254",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "field",
+                          "attrs": {
+                            "id": "word/document.xml:control:1002",
+                            "key": "ОРГАНІЗАЦІЯ",
+                            "label": "Організація"
+                          },
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "Майстерня «Їжак і Ґудзик»",
+                              "marks": [
+                                {
+                                  "type": "source",
+                                  "attrs": {
+                                    "id": "word/document.xml:264",
+                                    "bold": false,
+                                    "italic": false,
+                                    "underline": false
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:270",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:273",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:277",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Електронна пошта",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:280",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:286",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:290",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "{{ЕЛЕК",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:293",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": "ТРОННА_",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:299",
+                                "bold": true,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "text": "ПОШТА}}",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:306",
+                                "bold": false,
+                                "italic": true,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:313",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:316",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:320",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Телефон",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:323",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:329",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:333",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "                ",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:336",
+                                "bold": false,
+                                "italic": false,
+                                "underline": true
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:343",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:346",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:350",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Поштова адреса",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:353",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:359",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:363",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "field",
+                          "attrs": {
+                            "id": "word/document.xml:control:1003",
+                            "key": "ПОШТОВА_АДРЕСА",
+                            "label": "Поштова адреса"
+                          },
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "[Введіть поштову адресу]",
+                              "marks": [
+                                {
+                                  "type": "source",
+                                  "attrs": {
+                                    "id": "word/document.xml:374",
+                                    "bold": false,
+                                    "italic": false,
+                                    "underline": false
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:380",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:383",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:387",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Місце зустрічі",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:390",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:396",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:400",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:409",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:412",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:416",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Номер клієнта",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:419",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:425",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:429",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "________________",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:432",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:438",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "У попередній нотатці Марія Ґалаган згадується як приклад. Це ім’я в описі не пов’язане з полями анкети та може редагуватися окремо.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:445",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:451",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Документи та строки",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:463",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:474",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Номер справи: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:481",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{НОМЕР_СПРАВИ}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:488",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:494",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Наведений нижче опис уже є у файлі. Оновіть його, якщо обсяг запиту зміниться.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:501",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:507",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "field",
+              "attrs": {
+                "id": "word/document.xml:control:1004",
+                "key": "ОПИС_ЗАПИТУ",
+                "label": "Опис запиту"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00.",
+                  "marks": [
+                    {
+                      "type": "source",
+                      "attrs": {
+                        "id": "word/document.xml:521",
+                        "bold": false,
+                        "italic": false,
+                        "underline": false
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "attrs": {
+            "id": "word/document.xml:527",
+            "colspan": 1
+          },
+          "content": [
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:547",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:551",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:556",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "№",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:559",
+                                "bold": true,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:566",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:571",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Документ або подія",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:574",
+                                "bold": true,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:581",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:586",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Номер або дата",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:589",
+                                "bold": true,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:596",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:599",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:603",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "1",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:606",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:612",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:616",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Основний договір",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:619",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:625",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:629",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "{{AGREEMENT_REF}}",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:632",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:638",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:641",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:645",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "2",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:648",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:654",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:658",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Установча зустріч",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:661",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:667",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:671",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "[[ДАТА_ПОДІЇ]]",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:674",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:680",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:683",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:687",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "3",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:690",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:696",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:700",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Додаткові нотатки [див. додаток]",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:703",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:709",
+                    "colspan": 1
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:713",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableRow",
+              "attrs": {
+                "id": "word/document.xml:716",
+                "colspan": 1
+              },
+              "content": [
+                {
+                  "type": "tableCell",
+                  "attrs": {
+                    "id": "word/document.xml:719",
+                    "colspan": 3
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "word/document.xml:724",
+                        "align": "left",
+                        "numbered": false
+                      },
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Додаткові нотатки не потребують номера. Збережіть цей об’єднаний рядок таблиці.",
+                          "marks": [
+                            {
+                              "type": "source",
+                              "attrs": {
+                                "id": "word/document.xml:727",
+                                "bold": false,
+                                "italic": false,
+                                "underline": false
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:733",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Наступні кроки",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:745",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:756",
+            "align": "both",
+            "numbered": true
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Перегляньте договір ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:789",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{AGREEMENT_REF}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:795",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " та збережіть зв’язок його номера з таблицею вище.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:801",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:807",
+            "align": "both",
+            "numbered": true
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Погодьте розклад із клієнтом (ПІБ: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:840",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ПІБ_КЛІЄНТА}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:846",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ").",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:852",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:858",
+            "align": "both",
+            "numbered": true
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Надішліть заповнену анкету на адресу ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:891",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ЕЛЕКТРОННА_ПОШТА}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:897",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ".",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:903",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:909",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Підтвердження та опрацювання",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:921",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:932",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Підтвердження клієнта: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:939",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "field",
+              "attrs": {
+                "id": "word/document.xml:control:1005",
+                "key": "ПІБ_КЛІЄНТА",
+                "label": "ПІБ клієнта"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[Введіть ПІБ клієнта]",
+                  "marks": [
+                    {
+                      "type": "source",
+                      "attrs": {
+                        "id": "word/document.xml:954",
+                        "bold": false,
+                        "italic": false,
+                        "underline": false
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:960",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Бажана дата завершення: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:967",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "____ / ____ / ______",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:974",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:980",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Представник",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:991",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1002",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "ПІБ: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1007",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "[[ПІБ_ПРЕДСТАВНИКА]]",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1014",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1020",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Посада: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1025",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{ПОСАДА_ПРЕДСТАВНИКА}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1032",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1038",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Погоджувач",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1049",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1060",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "ПІБ: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1065",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "[[ПІБ_ПОГОДЖУВАЧА]]",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1072",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1078",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Ініціали: ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1083",
+                    "bold": true,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ".................",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1090",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1096",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Примітки до опрацювання",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1107",
+                    "bold": true,
+                    "italic": false,
+                    "underline": true
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1118",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Зберігайте імена та адреси без транслітерації. Зразки «Ґґ Єє Іі Її», «пам’ятка», «звʼязок», «об'єкт» та «München · Café · São Paulo» є звичайним текстом, як і позначення архів_2026 та case_A_17.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1125",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1131",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Рядок «{{НЕ_ЗАПОВНЮВАТИ}}» є прикладом позначення, а не запитом даних. Збережіть його, якщо користувач не редагує це речення безпосередньо.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1137",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1143",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Проміжок нижче відокремлює примітки від вказівки щодо повернення.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1150",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1156",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": " ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1161",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/document.xml:1167",
+            "align": "both",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Поверніть усі сторінки разом. Номер сторінки є полем Word і має оновлюватися після редагування документа.",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/document.xml:1174",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "attrs": {
+        "part": "word/footer1.xml"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/footer1.xml:1",
+            "align": "right",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "lockedInline",
+              "attrs": {
+                "id": "word/footer1.xml:30",
+                "label": "PAGE"
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/footer1.xml:48",
+            "align": "left",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Повернути на адресу ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/footer1.xml:77",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "[[ЕЛЕКТРОННА_ПОШТА]]",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/footer1.xml:83",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "attrs": {
+        "part": "word/header1.xml"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/header1.xml:1",
+            "align": "center",
+            "numbered": false
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Анкета клієнта   |   Справа ",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/header1.xml:9",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "{{НОМЕР_СПРАВИ}}",
+              "marks": [
+                {
+                  "type": "source",
+                  "attrs": {
+                    "id": "word/header1.xml:15",
+                    "bold": false,
+                    "italic": false,
+                    "underline": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "word/header1.xml:21",
+            "align": "right",
+            "numbered": false
+          },
+          "content": []
+        }
+      ]
+    }
+  ]
+}

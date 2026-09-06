@@ -12,5 +12,18 @@
   "errors.not_found": "Not found.",
   "errors.method_not_allowed": "This action is unavailable.",
   "errors.invalid_request": "Check the entered information.",
-  "errors.internal_error": "Something went wrong. Try again."
+  "errors.internal_error": "Something went wrong. Try again.",
+  "editor.document": "Editable document",
+  "editor.fieldLabel": "New field label",
+  "editor.createField": "Create field from selection",
+  "editor.undo": "Undo",
+  "editor.redo": "Redo",
+  "editor.invalidSelection": "Select ordinary text within one paragraph and enter a field label.",
+  "editor.unsupported": "Yellow regions are preserved but cannot be edited. Supported document content remains editable.",
+  "editor.fields": "Document fields",
+  "editor.fieldValue": "Field value: {{label}}",
+  "editor.focus": "Go to field: {{label}}",
+  "editor.inconsistent": "Linked occurrences have different values. Review them before editing.",
+  "language.uk": "Українська",
+  "language.en": "English"
 }

@@ -3,6 +3,8 @@
 set -eu
 verification_root=$(mktemp -d "${TMPDIR:-/tmp}/fillable-verify.XXXXXX")
 verification_project="fillable-verify-$$"
+verification_reports="${FILLABLE_BROWSER_REPORTS:-$verification_root/browser-results}"
+mkdir -p "$verification_reports"
 git checkout-index --all --prefix="$verification_root/"
 cd "$verification_root"
 cp .env.example .env
@@ -20,7 +22,7 @@ trap cleanup EXIT
 
 dev up --build --wait --wait-timeout 120
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml build browser
-docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp --workdir /tmp -v "$verification_root/frontend/src:/workspace/frontend" -v "$verification_root/backend/app:/workspace/backend" browser /app/node_modules/.bin/playwright test --config /app/playwright.dev.config.ts
+docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp --workdir /tmp -v "$verification_reports:/tmp/fillable-dev-results" -v "$verification_root/frontend/src:/workspace/frontend" -v "$verification_root/backend/app:/workspace/backend" browser /app/node_modules/.bin/playwright test --config /app/playwright.dev.config.ts
 
 dev exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c "CREATE TABLE development_probe (value text); INSERT INTO development_probe VALUES ('retained');"
 dev exec -T redis redis-cli SET development_probe retained

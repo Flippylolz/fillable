@@ -85,7 +85,7 @@ The user permits only solutions with no required license/subscription fees for M
 
 The previous paid SuperDoc/ONLYOFFICE Developer proposal is superseded. E00 evaluates demonstrably free end-to-end options, including import/export and the actual sidebar APIs, then a project-owned implementation using open components if needed. Do not infer that an open-source editor makes every associated DOCX component free or unrestricted. Record version-specific terms and required runtime services before adoption.
 
-Full editing, synchronized fields, and downloadable DOCX remain required. A custom implementation needs a tested support matrix and preservation of untouched document parts; a preview-only viewer or lossy text-to-DOCX conversion does not meet D001. See [Editor feasibility](EDITOR_FEASIBILITY.md) for research and proof requirements. No editor has been selected or implemented.
+Full editing, synchronized fields, and downloadable DOCX remain required. A custom implementation needs a tested support matrix and preservation of untouched document parts; a preview-only viewer or lossy text-to-DOCX conversion does not meet D001. See [Editor feasibility](EDITOR_FEASIBILITY.md) for research and proof requirements. E00.3 implements a synchronization prototype; no production editor has been adopted.
 
 E00.2 (2026-09-06) compared current official license/API/localization and deployment
 evidence. The next prototype uses MIT ProseMirror with a project-owned Python OOXML
