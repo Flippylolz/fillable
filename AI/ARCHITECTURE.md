@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Docker/API/i18n foundation implemented; domain and editor sections remain target design. See the execution ledger for task-level evidence.
+Status: Docker/API/i18n foundation and the editor round-trip proof are implemented. E00.5 selects the project-owned ProseMirror/Python adapter; domain features remain target design. See the execution ledger for task-level evidence.
 
 ## Components
 
@@ -36,7 +36,7 @@ compose.prod.yaml       Production overrides
 .env.example            Documented, non-secret configuration template
 ```
 
-`AI/`, root discovery/configuration files, and the initial synthetic `fixtures/docx/v1/` baseline exist at this stage. Application and infrastructure code are not implemented. Future implementation should use these paths unless a documented practical reason requires adjustment.
+The repository now contains the Docker foundation, application/test scaffold, source-package editor adapter and immutable synthetic corpus at these paths. Domain implementation should extend them; the ledger distinguishes proof code from production features.
 
 ## Data model boundaries
 
