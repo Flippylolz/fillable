@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { api, apiErrorMessage } from "../api";
@@ -14,6 +14,7 @@ export function Authentication({
     accept: (session: Session) => void;
     busy: boolean;
     setBusy: (busy: boolean) => void;
+    setLeaveGuard: (guard: () => boolean) => void;
   }) => ReactNode;
 }) {
   const { t } = useTranslation();
@@ -24,6 +25,8 @@ export function Authentication({
   const [attempt, setAttempt] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const leaveGuard = useRef<() => boolean>(() => true);
+  const setLeaveGuard = useCallback((guard: () => boolean) => { leaveGuard.current = guard; }, []);
   function accept(value: Session) {
     setSession(value);
     if (value.user) void setLanguage(value.user.ui_language);
@@ -55,6 +58,7 @@ export function Authentication({
   async function submit(event?: FormEvent) {
     event?.preventDefault();
     if (!session || busy || childBusy) return;
+    if (session.user && !leaveGuard.current()) return;
     setBusy(true);
     setError("");
     try {
@@ -101,7 +105,7 @@ export function Authentication({
             {t("auth.logout")}
           </button>
           </div>
-          {children(session, { accept, busy, setBusy: setChildBusy })}
+          {children(session, { accept, busy, setBusy: setChildBusy, setLeaveGuard })}
         </>
       )}
       {session && !session.user && (

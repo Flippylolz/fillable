@@ -118,5 +118,14 @@
   "library.deleteWarning": "The original and all saved versions will be permanently deleted. This cannot be undone. Storage is released after cleanup finishes.",
   "library.cancelDeletion": "Cancel",
   "library.confirmDeletion": "Delete permanently",
-  "library.deletionPending": "Cleanup is pending. Remaining files still use storage. Retry cleanup."
+  "library.deletionPending": "Cleanup is pending. Remaining files still use storage. Retry cleanup.",
+  "library.open": "Open",
+  "workspace.title": "Document workspace",
+  "workspace.template": "Editing a template",
+  "workspace.document": "Individual document",
+  "workspace.retry": "Retry opening",
+  "workspace.loading": "Opening saved document…",
+  "workspace.saved": "Saved revision opened.",
+  "workspace.unsaved": "You have unsaved changes. DOCX downloads contain only the saved revision.",
+  "workspace.discard": "Discard unsaved changes and continue?"
 }

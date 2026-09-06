@@ -37,6 +37,14 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   expect(keys[0]).toBe(keys[1]);
   await expect(page.getByLabel("Файл DOCX", { exact: true })).toHaveValue("");
   await page.screenshot({ path: testInfo.outputPath("library-uk.png"), fullPage: true });
+  await page.getByRole("article", { name: templateTitle }).getByRole("link", { name: "Відкрити", exact: true }).click();
+  await expect(page).toHaveURL(/\/editor\/[0-9a-f-]+$/);
+  await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
+  const draft = `Незбережений Їжак ${testInfo.project.name}`;
+  await page.getByRole("textbox", { name: /^Значення поля:/ }).first().fill(draft);
+  await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toContainText(draft);
+  await page.screenshot({ path: testInfo.outputPath("workspace-uk.png"), fullPage: true });
+  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
 
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles(file);
   await page.getByLabel("Назва документа", { exact: true }).fill(documentTitle);
@@ -45,6 +53,14 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("combobox", { name: "Мова інтерфейсу" }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову" }).click();
   await expect(page.getByText("Your language preference has been saved.", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Document workspace", exact: true }).click();
+  const editor = page.getByRole("textbox", { name: "Editable document", exact: true });
+  await expect(editor).toContainText(draft);
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(editor).not.toContainText(draft);
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  await expect(editor).toContainText(draft);
+  await page.screenshot({ path: testInfo.outputPath("workspace-en.png"), fullPage: true });
   await page.getByRole("link", { name: "Document library", exact: true }).click();
   await expect(page.getByLabel("Document title", { exact: true })).toHaveValue(documentTitle);
   await expect(page.getByRole("combobox", { name: "Save as", exact: true })).toHaveValue("document");
@@ -53,6 +69,14 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   const documentDownload = page.waitForEvent("download");
   await page.getByRole("article", { name: documentTitle }).getByRole("button", { name: "Download saved DOCX" }).click();
   expect(await readFile((await (await documentDownload).path())!)).toEqual(bytes);
+  page.once("dialog", dialog => dialog.dismiss());
+  await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: "Open", exact: true }).click();
+  await expect(page).toHaveURL(/\/documents$/);
+  page.once("dialog", dialog => dialog.accept());
+  await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: "Open", exact: true }).click();
+  await expect(page.getByRole("heading", { name: documentTitle, exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: documentTitle, exact: true }).getByText("Individual document", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Document library", exact: true }).click();
   expect(keys[2]).not.toBe(keys[1]);
   await expect(page.getByRole("tab", { name: "Documents", exact: true })).toHaveAttribute("aria-selected", "true");
   await page.screenshot({ path: testInfo.outputPath("library-en.png"), fullPage: true });

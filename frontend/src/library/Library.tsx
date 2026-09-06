@@ -10,9 +10,10 @@ import { DeleteResource } from "./DeleteResource";
 // getRandomValues also works on the explicitly supported HTTP origin.
 function newKey() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), value => value.toString(16).padStart(2, "0")).join(""); }
 
-export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved }: {
+export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen }: {
   csrfToken: string; disabled: boolean; onBusy: (value: boolean) => void;
   onDirty: (value: boolean) => void; onSaved: () => void;
+  onOpen?: (identity: string) => void;
 }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Kind>("template");
@@ -119,7 +120,11 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved }: {
         <h3>{item.title}</h3><p className="library-filename">{item.original_filename}</p>
         {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><p>{t("library.notStarted")}</p></>}
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>
-        {!item.deletion_pending && <DownloadSaved item={item} disabled={blocked} />}
+        {!item.deletion_pending && <><a className="library-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          if (blocked || onOpen) event.preventDefault();
+          if (!blocked) onOpen?.(item.id);
+        }}>{t("library.open")}</a><DownloadSaved item={item} disabled={blocked} /></>}
         <DeleteResource item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
       </article>)}</div>
       {data.next && <button type="button" disabled={data.more || blocked} onClick={() => void data.loadMore()}>{t(data.more ? "library.loading" : "library.more")}</button>}

@@ -15,6 +15,7 @@ from app.accounts.service import SessionState
 from app.documents import deletion, service
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.schema import (
+    ContentInfo,
     DeletionResult,
     ResourceInfo,
     ResourceList,
@@ -196,3 +197,25 @@ def download(identity: UUID, user: UserInfo = Depends(current_user)) -> Response
         raise AppError(503, "storage_unavailable") from None
     finally:
         DOWNLOAD_SLOTS.release()
+
+
+@router.get("/{identity}/content", response_model=ContentInfo)
+def content(
+    identity: UUID, response: Response, user: UserInfo = Depends(current_user)
+) -> ContentInfo:
+    if not DOWNLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(409, "operation_in_progress")
+    try:
+        result = service.content(user.id, identity)
+    except StorageError as error:
+        if error.code == "not_found":
+            raise AppError(404, "not_found") from None
+        if error.code == "operation_in_progress":
+            raise AppError(409, "operation_in_progress") from None
+        raise AppError(503, "storage_unavailable") from None
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    finally:
+        DOWNLOAD_SLOTS.release()
+    response.headers["Cache-Control"] = "no-store"
+    return result

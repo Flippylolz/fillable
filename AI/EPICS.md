@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3, E03.1b and E03.4a merged; E03.4b deletion in progress |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3, E03.1b and E03.4a/b merged; E03.4c workspace in progress |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -836,3 +836,26 @@ production browser checks, including native modal initial focus, Escape cancella
 and focus return, both-kind deletion, quota and reload checks. Parsed model cleanup
 is included in this final checkout. The earlier inspected confirmation layout is
 unchanged. Next: individual protected PR and actual merge, then E03.4c. No deployment.
+
+2026-09-06: E03.4b confirmed done through [PR #30](https://github.com/Flippylolz/fillable/pull/30)
+at `b058da2f1f2bcbb4ed37f6c7d0d7801464c7d0f6`; Actions 34045437043 passed both
+required checks for head `de72ec8320b2dca8d76e07ff66fdfa483ce5f593`.
+Main synchronized; E03.4c is underway on `task/e03-4c-workspace-entry`.
+The authenticated content endpoint returns one verified saved model/revision; library
+open links mount the existing editor with draft-preserving profile/language navigation,
+back/forward and logout discard guards. See [Workspace](WORKSPACE.md). E06 save/history
+remain explicit outstanding work; current local edits never claim persistence.
+Local checks pass 148 backend and 65 frontend tests; frontend async field tests were
+fixed to await editor initialization. An initial browser locator matched a hidden
+upload option; the scoped workspace locator is in the final fresh-index run.
+
+E03.4c final local gates passed: 148 backend tests, 1943/1953 lines (99.49%) and
+561/572 branches (98.08%); 65 frontend tests, 560/566 lines (98.94%) and 484/518
+branches (93.44%). Lint, typing, catalogs/build, raw full-source checks and both real
+negative-source probes passed. Final fresh index `/private/tmp/fillable-verify.jPFeMA`
+passed 3 development and 14 production browser checks, including persisted workspace
+opening, linked edits, account language/draft preservation, undo/redo and cancel/confirm
+on another resource. Desktop English and mobile Ukrainian workspace layouts were
+inspected. Failed initial proof `/private/tmp/fillable-verify.61AMZK` and all volumes
+remain preserved. Next: protected E03.4c PR, actual merge, then E03.5 durable processing.
+Safe persisted edits, leases/history and autosave remain E06. Deployment stays last.

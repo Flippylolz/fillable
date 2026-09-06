@@ -39,6 +39,7 @@ export function App() {
     <Authentication>{(session, actions) => session.user && <SessionPages
       session={session} accept={actions.accept}
       setAuthBusy={actions.setBusy} authBusy={actions.busy}
+      setLeaveGuard={actions.setLeaveGuard}
     />}</Authentication>
     {status === 'error' && <button onClick={() => setAttempt(value => value + 1)}>{t('health.retry')}</button>}
   </main>;
