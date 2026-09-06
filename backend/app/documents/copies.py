@@ -11,7 +11,7 @@ from app.documents.schema import resources, versions
 from app.documents.service import detail, saved_row
 from app.errors import AppError
 from app.infrastructure import database
-from app.jobs.service import intent
+from app.jobs.service import copy_intent
 from app.storage.configuration import configured
 
 
@@ -78,7 +78,13 @@ def create(state, identity, payload, key):
                 unsupported_count=snapshot["unsupported_count"],
             )
         )
-        intent(connection, owner, {"id": target, "current_version_id": version})
+        copy_intent(
+            connection,
+            owner,
+            payload.source_version_id,
+            {"id": target, "current_version_id": version},
+            snapshot["document_model"],
+        )
 
     result = store.store(
         owner, "copy:" + key, fingerprint, "document", chunks(), finalize=finalize

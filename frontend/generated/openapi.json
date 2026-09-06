@@ -1,6 +1,65 @@
 {
   "components": {
     "schemas": {
+      "Candidate": {
+        "additionalProperties": false,
+        "properties": {
+          "context": {
+            "maxLength": 1024,
+            "title": "Context",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 512,
+            "title": "Label",
+            "type": "string"
+          },
+          "occurrence_id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Occurrence Id",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "native_control",
+              "placeholder",
+              "blank_line",
+              "blank_cell",
+              "manual"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "source_key": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Key"
+          }
+        },
+        "required": [
+          "id",
+          "occurrence_id",
+          "label",
+          "reason",
+          "context"
+        ],
+        "title": "Candidate",
+        "type": "object"
+      },
       "ContentInfo": {
         "properties": {
           "document": {
@@ -17,6 +76,42 @@
           "document"
         ],
         "title": "ContentInfo",
+        "type": "object"
+      },
+      "ControlAnchor": {
+        "additionalProperties": false,
+        "properties": {
+          "control_id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Control Id",
+            "type": "string"
+          },
+          "kind": {
+            "const": "control",
+            "title": "Kind",
+            "type": "string"
+          },
+          "paragraph_id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Paragraph Id",
+            "type": "string"
+          },
+          "part": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Part",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "part",
+          "paragraph_id",
+          "control_id"
+        ],
+        "title": "ControlAnchor",
         "type": "object"
       },
       "CopyRequest": {
@@ -121,6 +216,97 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "FieldSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "maxItems": 2000,
+            "title": "Candidates",
+            "type": "array"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewDecision"
+            },
+            "maxItems": 2000,
+            "title": "Decisions",
+            "type": "array"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/TextField"
+            },
+            "maxItems": 2000,
+            "title": "Fields",
+            "type": "array"
+          },
+          "occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/Occurrence"
+            },
+            "maxItems": 2000,
+            "title": "Occurrences",
+            "type": "array"
+          },
+          "schema_version": {
+            "default": 1,
+            "maximum": 1.0,
+            "minimum": 1.0,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "source_version_id": {
+            "format": "uuid",
+            "title": "Source Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_version_id"
+        ],
+        "title": "FieldSnapshot",
+        "type": "object"
+      },
+      "FieldsResult": {
+        "properties": {
+          "snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_version_id": {
+            "format": "uuid",
+            "title": "Source Version Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "not_started",
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "stale"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_version_id",
+          "status"
+        ],
+        "title": "FieldsResult",
+        "type": "object"
+      },
       "Health": {
         "properties": {
           "status": {
@@ -189,6 +375,47 @@
           "display_name"
         ],
         "title": "NameInput",
+        "type": "object"
+      },
+      "Occurrence": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "discriminator": {
+              "mapping": {
+                "control": "#/components/schemas/ControlAnchor",
+                "span": "#/components/schemas/SpanAnchor"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ControlAnchor"
+              },
+              {
+                "$ref": "#/components/schemas/SpanAnchor"
+              }
+            ],
+            "title": "Anchor"
+          },
+          "id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 65536,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "anchor",
+          "value"
+        ],
+        "title": "Occurrence",
         "type": "object"
       },
       "PasswordInput": {
@@ -446,6 +673,44 @@
         "title": "ResourceList",
         "type": "object"
       },
+      "ReviewDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Candidate Id",
+            "type": "string"
+          },
+          "field_id": {
+            "anyOf": [
+              {
+                "maxLength": 1024,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Id"
+          },
+          "status": {
+            "enum": [
+              "accepted",
+              "dismissed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "status"
+        ],
+        "title": "ReviewDecision",
+        "type": "object"
+      },
       "SessionInfo": {
         "properties": {
           "csrf_token": {
@@ -468,6 +733,89 @@
           "csrf_token"
         ],
         "title": "SessionInfo",
+        "type": "object"
+      },
+      "SpanAnchor": {
+        "additionalProperties": false,
+        "properties": {
+          "end": {
+            "maximum": 52428800.0,
+            "minimum": 0.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "span",
+            "title": "Kind",
+            "type": "string"
+          },
+          "paragraph_id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Paragraph Id",
+            "type": "string"
+          },
+          "part": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Part",
+            "type": "string"
+          },
+          "start": {
+            "maximum": 52428800.0,
+            "minimum": 0.0,
+            "title": "Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "part",
+          "paragraph_id",
+          "start",
+          "end"
+        ],
+        "title": "SpanAnchor",
+        "type": "object"
+      },
+      "TextField": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 512,
+            "title": "Label",
+            "type": "string"
+          },
+          "occurrence_ids": {
+            "items": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 2000,
+            "minItems": 1,
+            "title": "Occurrence Ids",
+            "type": "array"
+          },
+          "type": {
+            "const": "text",
+            "default": "text",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "occurrence_ids"
+        ],
+        "title": "TextField",
         "type": "object"
       },
       "UserInfo": {
@@ -2168,6 +2516,166 @@
           }
         },
         "summary": "Download"
+      }
+    },
+    "/api/documents/{identity}/fields": {
+      "get": {
+        "operationId": "fields_api_documents__identity__fields_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "identity",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Identity",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FieldsResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Method Not Allowed"
+          },
+          "408": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Request Timeout"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Fields"
       }
     },
     "/api/documents/{identity}/processing": {

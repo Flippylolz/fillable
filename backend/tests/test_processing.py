@@ -101,6 +101,10 @@ def test_durable_intent_real_json_queue_owned_status_and_no_file_allocation():
         assert connection.execute(
             select(accounts.c.used_bytes).where(accounts.c.user_id == owner.id)
         ).scalar_one() == len(DATA)
+    with pytest.raises(RuntimeError, match="Field results exist"):
+        command.downgrade(Config("alembic.ini"), "0006_processing_jobs")
+    with database().begin() as connection:
+        connection.execute(update(jobs).values(field_snapshot=None))
     with pytest.raises(RuntimeError, match="Processing jobs exist"):
         command.downgrade(Config("alembic.ini"), "0005_documents")
 
@@ -219,11 +223,12 @@ def test_revision_change_and_deletion_fence_claim_and_late_results():
 def test_concurrent_delivery_runs_one_attempt_and_inactive_owner_cancels(monkeypatch):
     owner, _, _, _, job = start()
     entered, release = Event(), Event()
+    original = worker.inspect_file
 
     def inspect(*args):
         entered.set()
         assert release.wait(5)
-        return {"supported_controls": 1}
+        return original(*args)
 
     monkeypatch.setattr(worker, "inspect_file", inspect)
     with ThreadPoolExecutor(max_workers=2) as pool:

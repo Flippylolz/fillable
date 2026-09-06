@@ -149,6 +149,9 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page.getByRole("heading", { name: copyTitle, exact: true })).toBeVisible();
   const copyId = page.url().split("/").pop();
   expect(copyKeys[0]).toBe(copyKeys[1]);
+  const copyFields = await (await page.request.get(`/api/documents/${copyId}/fields`)).json();
+  expect(copyFields.status).toBe("succeeded");
+  expect(copyFields.snapshot.candidates).toHaveLength(23);
   const afterCopy = await (await page.request.get("/api/storage/usage")).json();
   expect(afterCopy.used_bytes).toBe(beforeCopy.used_bytes + bytes.length);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
@@ -160,6 +163,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(templateCard).toHaveCount(0);
   const independentDownload = await page.request.get(`/api/documents/${copyId}/download`);
   expect(independentDownload.ok()).toBeTruthy(); expect(await independentDownload.body()).toEqual(bytes);
+  expect(await (await page.request.get(`/api/documents/${copyId}/fields`)).json()).toEqual(copyFields);
   await page.getByRole("tab", { name: "Документи", exact: true }).click();
   const copyCard = page.getByRole("article", { name: copyTitle });
   await copyCard.getByRole("link", { name: "Відкрити", exact: true }).click();

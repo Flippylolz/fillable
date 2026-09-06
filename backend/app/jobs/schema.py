@@ -19,6 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.documents.schema import resources
+from app.fields.schema import FieldSnapshot
 
 jobs = Table(
     "processing_jobs",
@@ -34,6 +35,7 @@ jobs = Table(
     Column("dispatched_at", DateTime(timezone=True)),
     Column("failure_code", String(32)),
     Column("summary", JSONB),
+    Column("field_snapshot", JSONB(none_as_null=True)),
     Column(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
@@ -75,3 +77,9 @@ class ProcessingInfo(BaseModel):
     updated_at: datetime
     failure_code: Literal["processing_failed"] | None = None
     summary: dict[str, int] | None = None
+
+
+class FieldsResult(BaseModel):
+    source_version_id: UUID
+    status: Literal["not_started", "queued", "running", "succeeded", "failed", "stale"]
+    snapshot: FieldSnapshot | None = None

@@ -10,6 +10,8 @@ from app.accounts.schema import users
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.schema import resources, versions
 from app.documents.validation import validate_upload
+from app.fields.discovery import extract
+from app.fields.schema import FieldSnapshot
 from app.infrastructure import database
 from app.jobs.schema import jobs
 from app.storage.configuration import configured
@@ -77,10 +79,15 @@ def claim(identity, attempt):
                 updated_at=now(),
             )
         )
-    return job["owner_id"], file_id, document["original_filename"]
+    return (
+        job["owner_id"],
+        file_id,
+        document["original_filename"],
+        job["source_version_id"],
+    )
 
 
-def inspect_file(owner, file_id, filename):
+def inspect_file(owner, file_id, filename, source_version_id):
     with configured().read(owner, file_id) as stream:
         data = stream.read(ARCHIVE_BYTES + 1)
     if len(data) > ARCHIVE_BYTES:
@@ -97,7 +104,9 @@ def inspect_file(owner, file_id, filename):
         result["supported_controls"] += node["type"] == "field"
         result["paragraphs"] += node["type"] == "paragraph"
         nodes.extend(node.get("content", []))
-    return result
+    snapshot = extract(package.model, source_version_id)
+    result["field_candidates"] = len(snapshot.candidates)
+    return {"summary": result, "field_snapshot": snapshot.model_dump(mode="json")}
 
 
 def finish(identity, attempt, summary):
@@ -111,7 +120,15 @@ def finish(identity, attempt, summary):
         if stale(document, job):
             values.update(status="stale")
         elif summary is not None:
-            values.update(status="succeeded", summary=summary, failure_code=None)
+            snapshot = FieldSnapshot.model_validate(summary["field_snapshot"])
+            if snapshot.source_version_id != job["source_version_id"]:
+                raise ValueError("stale_field_snapshot")
+            values.update(
+                status="succeeded",
+                summary=summary["summary"],
+                field_snapshot=snapshot.model_dump(mode="json"),
+                failure_code=None,
+            )
         elif attempt < job["retry_until"]:
             values.update(status="queued", attempt=attempt + 1, dispatched_at=None)
         else:

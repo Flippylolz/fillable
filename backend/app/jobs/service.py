@@ -1,12 +1,14 @@
 from uuid import uuid4
 
-from sqlalchemy import func, insert, select, update
+from sqlalchemy import and_, func, insert, select, update
 
 from app.accounts.profile import active_user
 from app.documents.schema import resources
 from app.errors import AppError
+from app.fields.schema import FieldSnapshot
+from app.fields.validation import validate_snapshot
 from app.infrastructure import database
-from app.jobs.schema import ProcessingInfo, jobs
+from app.jobs.schema import FieldsResult, ProcessingInfo, jobs
 from app.storage.service import now
 
 
@@ -64,7 +66,11 @@ def intent(connection, owner, document):
         .mappings()
         .one_or_none()
     )
-    if row and row["status"] != "failed":
+    if (
+        row
+        and row["status"] != "failed"
+        and not (row["status"] == "succeeded" and row["field_snapshot"] is None)
+    ):
         return ProcessingInfo.model_validate(dict(row))
     count = connection.execute(
         select(func.count())
@@ -85,6 +91,7 @@ def intent(connection, owner, document):
                 dispatched_at=None,
                 failure_code=None,
                 summary=None,
+                field_snapshot=None,
                 updated_at=now(),
             )
         )
@@ -112,3 +119,78 @@ def submit(state, identity):
         owner = active_user(connection, state)
         document = resource(connection, owner["id"], identity, lock=True)
         return intent(connection, owner["id"], document)
+
+
+def fields(owner, identity):
+    with database().connect() as connection:
+        row = (
+            connection.execute(
+                select(
+                    resources.c.current_version_id, jobs.c.status, jobs.c.field_snapshot
+                )
+                .select_from(resources)
+                .outerjoin(
+                    jobs,
+                    and_(
+                        jobs.c.document_id == resources.c.id,
+                        jobs.c.source_version_id == resources.c.current_version_id,
+                    ),
+                )
+                .where(
+                    resources.c.id == identity,
+                    resources.c.owner_id == owner,
+                    resources.c.state == "active",
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+    if row is None:
+        raise AppError(404, "not_found")
+    status = row["status"] or "not_started"
+    snapshot = None
+    if status == "succeeded":
+        if row["field_snapshot"] is None:
+            status = "not_started"
+        else:
+            snapshot = FieldSnapshot.model_validate(row["field_snapshot"])
+            if snapshot.source_version_id != row["current_version_id"]:
+                raise ValueError("stale_field_snapshot")
+    return FieldsResult.model_validate(
+        {
+            "source_version_id": row["current_version_id"],
+            "status": status,
+            "snapshot": snapshot,
+        }
+    )
+
+
+def copy_intent(connection, owner, source_version, target, model):
+    source = (
+        connection.execute(
+            select(jobs).where(
+                jobs.c.owner_id == owner,
+                jobs.c.source_version_id == source_version,
+                jobs.c.status == "succeeded",
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if source is None or source["field_snapshot"] is None:
+        return intent(connection, owner, target)
+    snapshot = validate_snapshot(source["field_snapshot"], source_version, model)
+    cloned = snapshot.model_copy(
+        update={"source_version_id": target["current_version_id"]}
+    )
+    connection.execute(
+        insert(jobs).values(
+            id=uuid4(),
+            document_id=target["id"],
+            owner_id=owner,
+            source_version_id=target["current_version_id"],
+            status="succeeded",
+            summary=source["summary"],
+            field_snapshot=cloned.model_dump(mode="json"),
+        )
+    )

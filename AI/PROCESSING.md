@@ -4,7 +4,8 @@ E03.5a supplies processing intent, status, dispatch and execution. E03.5b connec
 initial upload intent and the library polling controls. The first processor inspects
 supported controls, paragraph counts and unsupported-feature counts in verified saved
 DOCX bytes. It does not claim field completion or implement E04's placeholder/blank
-candidate discovery, and it does not modify the saved model or create a retained file.
+candidate discovery, and it does not modify the saved model or create a retained file. E04.2b extends
+inspection with durable validated native/explicit-token proposals; see [Field discovery](FIELD_DISCOVERY.md).
 
 ## Durable state and APIs
 
@@ -35,8 +36,9 @@ A PostgreSQL claim lasts 45 seconds. Claim/finalization lock resource then job, 
 active ownership/resource state and the source revision, and reject obsolete attempts.
 Finalization rejects an expired lease. Stale/deleted/inactive-owner work cannot publish
 results. The shared storage reader verifies actual bytes/digest, then upload validation
-applies compressed/expanded/XML/deadline limits. Only integer inspection counts are
-retained in the job; original bytes, editor models and quota usage stay unchanged.
+applies compressed/expanded/XML/deadline limits. Integer counts and the E04.2b validated proposal snapshot are retained in the owned
+job; original bytes, editor models and quota usage stay unchanged. Proposal text is
+cleared on resource deletion, independently of any copied result.
 
 Processing exceptions become `processing_failed` without passing their text to RQ.
 Normal failures and expired running leases consume bounded attempts. Dispatch also

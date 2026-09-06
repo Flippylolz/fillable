@@ -56,7 +56,7 @@ def copy_template(
         }
         status, code = failures.get(error.code, (503, "storage_unavailable"))
         raise AppError(status, code) from None
-    except SQLAlchemyError:
+    except (SQLAlchemyError, ValueError):
         raise AppError(503, "storage_unavailable") from None
     finally:
         UPLOAD_SLOTS.release()

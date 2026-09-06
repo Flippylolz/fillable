@@ -50,3 +50,40 @@ not a universal precision claim; E04.4 reports detector-specific accuracy and mi
 Additional tests cover split runs, an astral Unicode character, combining marks,
 Ukrainian/apostrophe/mixed-script keys, negative syntax, protected content, repeated
 and anonymous identities, bounded context/candidate/value sizes and input immutability.
+
+## E04.2b durable results and API
+
+Migration `0007_field_results` adds a nullable JSON result to the existing owned
+source-version job. Downgrade refuses to drop non-null results. Existing documents
+and files are unchanged; a legacy completed inspection without proposals can be
+explicitly submitted for discovery with a fresh bounded attempt budget. The migration
+does not enqueue all historical documents or discard failures.
+
+The worker extracts/validates the snapshot from the verified saved DOCX, then publishes
+integer summary and proposal JSON together under current-resource, source-version,
+attempt and live-lease fences. The RQ payload still contains only opaque identifiers;
+proposal content is never returned through RQ logs or the compact status polling API.
+`GET /api/documents/{id}/fields` returns owned current-revision status and an optional
+typed snapshot in one coherent resource/job read, with no-store responses. It exposes
+results only for completed discovery; legacy completed count-only inspection reports
+`not_started` here. Unknown ownership is 404, and invalid stored revision metadata
+fails safely. Workspace review consumes this endpoint in E04.5; no auto-acceptance of
+placeholder text is introduced.
+
+A template copy clones a valid completed snapshot into a new completed job, with its
+own owner/document/job/version identifiers and rebased snapshot source-version UUID.
+It copies the JSON independently and does not enqueue redundant processing or consume
+queued-job admission. If the source has no completed result, the copy uses ordinary
+processing intent. This all commits with the new quota-checked file/version. Invalid
+source result metadata aborts and cleans up the attempted copy. Deletion clears all
+proposal JSON for the deleted resource in the same tombstone transaction that clears
+its saved editor models; a copy's separate result remains available. Retention must
+respect or explicitly remove the job's existing source-version FK in E06.
+
+Real PostgreSQL/worker tests cover owned/current results, source UUID validation,
+atomic publication, expired/mismatched attempts, legacy migration/retry behavior,
+independent completed-result cloning without dispatch, source deletion cleanup and
+copy survival, and safe malformed-metadata failures without quota leakage. The real
+Docker verifier checks the 23-proposal/five-native-decision corpus result before and
+after service recreation. Desktop/mobile copy flows verify cloned results and their
+survival after source deletion, alongside unchanged saved bytes.
