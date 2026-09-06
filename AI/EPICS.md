@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.2 validation, then E03.3 persistence and E03.1 UI |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.2 merged; E03.3 persistence verification, then E03.1 UI |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -722,3 +722,29 @@ size, preserving thresholds/exclusions. Frontend source is unchanged from E02.7'
 verified 329/333 lines and 230/244 branches; required CI reruns it. No upload endpoint
 or persisted resource is claimed yet. Next: E03.2 protected task PR, exact-head
 auto-merge and actual merge verification, then E03.3 persistence. No deployment.
+
+2026-09-06: E03.2 confirmed done through [PR #25](https://github.com/Flippylolz/fillable/pull/25)
+at `98fd65320f0fcfa598a56851a40f62315eeac4fa`; Actions 34039344581 passed both
+checks for exact head `9531e9f3f11d62ac8dcf18c2b0619b706c2332c9`. Final evidence is
+in the PR body. Main synchronized; E03.3 is underway on
+`task/e03-3-document-persistence`. Resource/version schema, quota-atomic upload,
+owner list/detail APIs, bounded metadata/body admission and bilingual error mapping
+are implemented. Initial checks pass 140 backend and 46 frontend tests; final title
+validation, generated contract and Docker API persistence/gateway proof are being
+checked. The gateway now streams API requests and supports the bounded upload size;
+names/titles travel in a bounded base64 UTF-8 JSON header, not request URLs. No upload
+UI, download/delete action or processing job is claimed by this task. Next: finish
+checks/docs and individual protected PR; verify merge before E03.1 library UI.
+
+E03.3 final local verification passed: 140 backend tests, 1827/1834 lines (99.62%)
+and 533/542 branches (98.34%); 46 frontend tests, 340/344 lines (98.84%) and 241/255
+branches (94.51%). Lint, typing, catalog validation, build, raw full-source gates and
+both real negative coverage probes passed. The corrected fresh-index Docker proof
+at `/private/tmp/fillable-verify.Im943q` passed three development and twelve
+production browser checks. It verified API upload/committed retry, rejection of
+malformed input above 1 MiB through the gateway, original/model ownership and exact
+bytes after recreation from API and worker, plus existing quota/maintenance checks.
+The worker QA invocation explicitly receives the public origin; normal worker config
+is unchanged. Earlier incomplete proof copy `/private/tmp/fillable-verify.B7XtaQ`
+and all isolated volumes remain preserved. Uploads have no library UI yet; E03.1
+is next after protected PR/CI and verified merge. Deployment remains last.

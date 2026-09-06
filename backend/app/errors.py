@@ -9,6 +9,17 @@ from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
 ErrorCode = Literal[
+    "invalid_document",
+    "unsupported_document",
+    "document_limit",
+    "quota_exceeded",
+    "file_too_large",
+    "storage_unavailable",
+    "operation_conflict",
+    "operation_in_progress",
+    "operation_aborted",
+    "upload_busy",
+    "upload_timeout",
     "current_password_invalid",
     "authentication_required",
     "invalid_credentials",

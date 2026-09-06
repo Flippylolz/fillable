@@ -131,6 +131,7 @@ files = Table(
     ),
     Column("ready_at", DateTime(timezone=True)),
     Column("deleted_at", DateTime(timezone=True)),
+    UniqueConstraint("id", "owner_id", name="stored_file_owner"),
     ForeignKeyConstraint(
         ["reservation_id", "id", "owner_id"],
         [

@@ -1,5 +1,11 @@
 # Local storage and per-user quotas
 
+E03.3's [document persistence](DOCUMENT_PERSISTENCE.md) uses the storage finalization
+transaction for owned resource/version metadata. An upload's original and initial
+revision share one immutable file charged once. Subsequent versions and template
+copies must allocate their own retained files; this does not authorize cross-document
+sharing or mutation of the original.
+
 Status: proposed detailed design implementing accepted decisions D003 and D004.
 
 ## Configuration and accounting

@@ -6,4 +6,4 @@ RUN pip install --no-cache-dir --require-hashes -r requirements.lock && useradd 
 COPY --chown=app:app backend/ ./
 COPY --chown=app:app scripts/ /checks/
 USER app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]

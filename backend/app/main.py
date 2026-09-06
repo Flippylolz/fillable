@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from app.accounts.profile import router as profile_router
 from app.accounts.routes import router as authentication_router
+from app.documents.routes import router as document_router
 from app.errors import AppError, ErrorEnvelope, register_errors
 from app.infrastructure import dependencies_ready
 from app.storage.routes import router as storage_router
@@ -16,13 +17,14 @@ app = FastAPI(
     redoc_url=None,
     responses={
         status: {"model": ErrorEnvelope}
-        for status in (400, 401, 403, 404, 405, 409, 422, 429, 500, 503)
+        for status in (400, 401, 403, 404, 405, 408, 409, 413, 415, 422, 429, 500, 503)
     },
 )
 register_errors(app)
 app.include_router(authentication_router)
 app.include_router(profile_router)
 app.include_router(storage_router)
+app.include_router(document_router)
 
 
 class Health(BaseModel):
