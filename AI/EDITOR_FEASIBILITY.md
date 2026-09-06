@@ -200,9 +200,9 @@ these restrictions visibly and handle save errors without losing drafts. Microso
 Word itself has not been used for validation; LibreOffice rendering and embedded
 editor reopening are separate evidence.
 
-Independent visual QA uses the pinned QA-only `infra/docx-proof.Dockerfile`
-(LibreOffice Writer 7.4.7 Debian update 14, Poppler 22.12.0 Debian update 3,
-Liberation fonts 1.07.4), never the application image. Run
+Independent visual QA uses the pinned QA-only `infra/docx-proof.Dockerfile`, never
+the application image. The original E00.4 evidence used LibreOffice Writer 7.4.7
+Debian update 14, Poppler 22.12.0 Debian update 3 and Liberation fonts 1.07.4. Run
 `scripts/verify-docx-render.sh <browser-results-directory>` after the fresh-index
 harness. The three original/unchanged-export pages match pixel-for-pixel at the
 same rendering size, and unchanged DOCX bytes match exactly. The edited fixture
@@ -211,6 +211,19 @@ and the intended title paragraph and client-name edits render correctly. All six
 original/edited pages were visually inspected for clipping, layout and Unicode.
 The browser's downloaded files, reopened screenshot, PDF pages and extracted text
 are retained as CI QA artifacts. D008's adoption decision remains E00.5.
+
+E05.3 updates QA to LibreOffice 25.2.3 Debian update 6, Poppler 25.03.0 Debian
+update 4, Liberation 2.1.5 and Noto Color Emoji 2.051 Debian update 1, on a pinned
+Python/Trixie image. The old renderer overlapped multiline plain-text control values;
+changing boolean spelling or splitting runs did not resolve it. The source-preserving
+export was retained unchanged. LibreOffice documents content-control `MultiLine`
+support [from 24.2](https://api.libreoffice.org/docs/idl/ref/servicecom_1_1sun_1_1star_1_1text_1_1ContentControl.html).
+The newer renderer displays the same exported bytes correctly. Required QA now also
+checks the five-page long/multiline browser export: exact repeated Ukrainian/astral
+text counts and separate rendered lines for both repeated native controls. All five multiline
+pages and all six original/edited pages were inspected. Source justification and
+explicit page breaks remain intact; extra content naturally changes pagination.
+Microsoft Word validation remains distinct and has not been performed.
 
 ## E00.5 adoption and support matrix
 

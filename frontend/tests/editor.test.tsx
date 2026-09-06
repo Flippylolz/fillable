@@ -7,6 +7,8 @@ import { editorSchema, fields } from "../src/editor/model";
 import {
   createField,
   fieldTextInput,
+  fieldBeforeInput,
+  fieldPaste,
   focusField,
   linkedChanges,
   updateField,
@@ -214,10 +216,7 @@ test("renders corpus controls, keeps the same editor and draft across locale cha
   );
   const editor = screen.getByRole("textbox", { name: "Редагований документ" });
   expect(container.querySelectorAll(".document-field")).toHaveLength(5);
-  const inputs = screen
-    .getAllByRole("textbox")
-    .filter((el) => el.tagName === "INPUT");
-  const input = inputs[1];
+  const input = screen.getAllByRole("textbox", { name: "Значення поля: ПІБ клієнта" })[0];
   fireEvent.change(input, { target: { value: "Ґанна Їжак" } });
   expect(container.querySelector(".document-field")).toHaveTextContent(
     "Ґанна Їжак",
@@ -246,4 +245,31 @@ test("renders corpus controls, keeps the same editor and draft across locale cha
   expect(input).toHaveValue("Ґанна Їжак");
   unmount();
   expect(container.children).toHaveLength(0);
+});
+
+
+test("multiline native input and paste preserve selected control identity and leave ordinary document input alone", () => {
+  let current = state();
+  const editor = { get state() { return current; }, dispatch: (tr: typeof current.tr) => { current = current.apply(linkedChanges(current, tr)); } };
+  const input = (inputType: string, data: string | null, isComposing = false) => new InputEvent("beforeinput", { inputType, data, isComposing, cancelable: true });
+  const clipboard = (value?: string) => ({ clipboardData: value === undefined ? null : { getData: () => value } }) as unknown as ClipboardEvent;
+  expect(fieldBeforeInput(editor, input("insertText", "outside\nfield"))).toBe(false);
+  expect(fieldPaste(editor, clipboard("outside"))).toBe(false);
+  current = current.apply(focusField(current, "a")!);
+  expect(fieldBeforeInput(editor, input("insertText", "composition\n", true))).toBe(false);
+  expect(fieldBeforeInput(editor, input("insertText", "ordinary"))).toBe(false);
+  expect(fieldBeforeInput(editor, input("deleteContentBackward", null))).toBe(false);
+  expect(fieldPaste(editor, clipboard())).toBe(false);
+  expect(fieldPaste(editor, clipboard(""))).toBe(false);
+  const event = input("insertText", "Ґанна\nЇжак\t🙂");
+  expect(fieldBeforeInput(editor, event)).toBe(true); expect(event.defaultPrevented).toBe(true);
+  expect(fields(current.doc).map(field => [field.id, field.value])).toEqual([["a", "Ґанна\nЇжак\t🙂"], ["b", "Ґанна\nЇжак\t🙂"]]);
+  current = current.apply(focusField(current, "a")!);
+  expect(fieldBeforeInput(editor, input("insertReplacementText", "Єва\nІлля"))).toBe(true);
+  expect(fieldBeforeInput(editor, input("insertLineBreak", null))).toBe(true);
+  expect(fieldBeforeInput(editor, input("insertParagraph", null))).toBe(true);
+  expect(fields(current.doc)[0].value).toBe("Єва\nІлля\n\n");
+  current = current.apply(focusField(current, "a")!);
+  expect(fieldPaste(editor, clipboard("Ірина\nҐанна"))).toBe(true);
+  expect(fields(current.doc).map(field => field.value)).toEqual(["Ірина\nҐанна", "Ірина\nҐанна"]);
 });

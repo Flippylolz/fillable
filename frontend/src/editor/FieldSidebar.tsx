@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
+import { useId } from "react";
 import type { FieldSummary } from "./adapter";
+import { FIELD_VALUE_LIMIT } from "./fieldValues";
 import "./sidebar.css";
 
 export function FieldSidebar({ fields, active, update, focus, remove }: {
@@ -9,6 +11,7 @@ export function FieldSidebar({ fields, active, update, focus, remove }: {
 }) {
   const { t, i18n } = useTranslation();
   const numbers = new Intl.NumberFormat(i18n.resolvedLanguage);
+  const errorPrefix = useId();
   const index = fields.findIndex(field => field.id === active);
   return <section className="field-sidebar" aria-label={t("editor.values")}>
     <h3>{t("editor.values")}</h3>
@@ -23,8 +26,10 @@ export function FieldSidebar({ fields, active, update, focus, remove }: {
         aria-label={t("editor.occurrence", { number: numbers.format(number + 1), label: field.label })}>
         <p className="field-type">{t("review.text")}</p>
         {active === field.id && <p className="field-active">{t("editor.activeField")}</p>}
-        <label>{field.label}<input aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
+        <label>{field.label}<textarea rows={3} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
+          aria-invalid={field.issue ? true : undefined} aria-describedby={field.issue ? `${errorPrefix}-${number}` : undefined}
           onChange={event => update(field.key, event.target.value)} /></label>
+        {field.issue && <p role="alert" id={`${errorPrefix}-${number}`} className="field-conflict">{t(`editor.value.${field.issue}`, { limit: numbers.format(FIELD_VALUE_LIMIT) })}</p>}
         <div className="field-actions">
           <button type="button" onClick={() => focus(field.id)}>{t("editor.focus", { label: field.label })}</button>
           <button type="button" onClick={() => remove(field.id)}>{t("editor.remove", { label: field.label })}</button>

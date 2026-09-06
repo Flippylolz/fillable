@@ -10,12 +10,14 @@ import "./editor.css";
 export function DocumentEditor({
   initialDocument,
   onDocumentChange,
+  onFieldValidityChange,
   discoverySnapshot,
   sourceVersion,
   onReopen,
 }: {
   initialDocument: object;
   onDocumentChange?: (document: object) => void;
+  onFieldValidityChange?: (valid: boolean) => void;
   discoverySnapshot?: components["schemas"]["FieldSnapshot"] | null;
   sourceVersion?: string;
   onReopen?: () => void;
@@ -26,7 +28,9 @@ export function DocumentEditor({
   const initial = useRef(initialDocument);
   const change = useRef(onDocumentChange);
   change.current = onDocumentChange;
-  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false });
+  const validity = useRef(onFieldValidityChange);
+  validity.current = onFieldValidityChange;
+  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true });
   const { fields: occurrences, active, review, unsupported } = presentation;
   const [label, setLabel] = useState("");
   const [invalid, setInvalid] = useState(false);
@@ -34,7 +38,7 @@ export function DocumentEditor({
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
       onChange: snapshot => change.current?.(snapshot.document),
-      onUpdate: setPresentation,
+      onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); },
     });
     view.current = editor;
     return () => { editor.destroy(); view.current = null; };

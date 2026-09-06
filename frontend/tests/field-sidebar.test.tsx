@@ -39,7 +39,7 @@ test("occurrence navigation distinguishes repeated controls, preserves locale/se
 
 test("unselected navigation has explicit endpoints, conflict values remain visible and an empty sidebar explains field creation", async () => {
   const focus = vi.fn(), update = vi.fn(), remove = vi.fn();
-  const fields = [{ id: "one", key: "shared", label: "ПІБ", value: "Ірина" }, { id: "two", key: "shared", label: "ПІБ", value: "Єва" }];
+  const fields = [{ id: "one", key: "shared", label: "ПІБ", value: "Ірина", issue: null }, { id: "two", key: "shared", label: "ПІБ", value: "Єва", issue: null }];
   const ui = (empty = false) => <I18nextProvider i18n={i18n}><FieldSidebar fields={empty ? [] : fields} active="" focus={focus} update={update} remove={remove} /></I18nextProvider>;
   const view = render(ui());
   expect(screen.getAllByText("Linked occurrences have different values. Review them before editing.")).toHaveLength(2);

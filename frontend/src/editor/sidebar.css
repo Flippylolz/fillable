@@ -5,7 +5,8 @@
 .field-value-card { margin-top: 0.8rem; border: 1px solid #e3e7ed; border-radius: 0.7rem; padding: 0.6rem; }
 .field-value-card[data-active="true"] { border-color: #1a73e8; }
 .field-value-card label { font-size: 0.9rem; }
-.field-value-card input { border: 1px solid #dadce0; border-radius: 0.4rem; padding: 0.45rem; font: inherit; }
+.field-value-card textarea { box-sizing: border-box; width: 100%; margin: 0.5rem 0; border: 1px solid #dadce0; border-radius: 0.4rem; padding: 0.45rem; font: inherit; resize: vertical; min-height: 4.5rem; max-height: 16rem; }
+.field-value-card textarea[aria-invalid="true"] { border-color: #b3261e; }
 .field-type, .field-active { margin: 0 0 0.4rem; font-size: 0.8rem; }
 .field-type { color: #5f6368; }
 .field-active { color: #174ea6; font-weight: 600; }

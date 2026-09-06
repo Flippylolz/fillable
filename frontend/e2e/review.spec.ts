@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 
 test("owned worker suggestions support draft review, grouping, undo and locale changes", async ({ page }, testInfo) => {
   const bytes = await readFile("/fixtures/upload.docx");
+  const meetingValue = "Кімната 204\nПоверх 2\tҐанок 🙂";
   const title = `Перевірка полів — ${testInfo.project.name}`;
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -45,14 +46,17 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   const empty = page.getByRole("article", { name: "Пропозиція поля: Місце зустрічі", exact: true });
   await empty.getByRole("button", { name: "Прийняти", exact: true }).click();
   const meeting = page.getByRole("textbox", { name: "Значення поля: Місце зустрічі", exact: true });
-  await expect(meeting).toHaveValue(""); await meeting.fill("Кімната 204");
+  await expect(meeting).toHaveValue(""); await meeting.fill(meetingValue);
   await page.getByRole("button", { name: "Скасувати", exact: true }).click();
   await expect(meeting).toHaveValue("");
   await page.getByRole("button", { name: "Скасувати", exact: true }).click();
   await expect(meeting).toHaveCount(0);
   await page.getByRole("button", { name: "Повторити", exact: true }).click();
   await page.getByRole("button", { name: "Повторити", exact: true }).click();
-  await expect(meeting).toHaveValue("Кімната 204");
+  await expect(meeting).toHaveValue(meetingValue);
+  await page.getByText("Перевірка полів", { exact: true }).click();
+  await page.getByRole("article", { name: /Розташування поля \d+: Місце зустрічі/ }).screenshot({ path: testInfo.outputPath("meeting-field-uk.png") });
+  await page.getByText("Перевірка полів", { exact: true }).click();
   await page.getByRole("combobox", { name: "Показати", exact: true }).selectOption("accepted");
   const native = page.getByRole("article", { name: "Пропозиція поля: ПІБ клієнта", exact: true }).first();
   const original = await page.getByRole("textbox", { name: "Значення поля: ПІБ клієнта", exact: true }).first().inputValue();
@@ -75,12 +79,13 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   await expect(page.getByText("Your language preference has been saved.", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   await expect(page.getByRole("article", { name: "Field suggestion: Контактна особа", exact: true }).getByLabel("Field label", { exact: true })).toHaveValue("Незастосована назва");
-  await expect(page.getByRole("textbox", { name: "Field value: Місце зустрічі", exact: true })).toHaveValue("Кімната 204");
+  await expect(page.getByRole("textbox", { name: "Field value: Місце зустрічі", exact: true })).toHaveValue(meetingValue);
   await page.getByRole("complementary", { name: "Document fields", exact: true }).screenshot({ path: testInfo.outputPath("review-en.png") });
   await page.getByText("Review fields", { exact: true }).click();
   await page.getByRole("button", { name: "Go to field: Контактна особа", exact: true }).click();
   await expect(page.getByText("Location 1 of 7", { exact: true })).toBeVisible();
   await page.getByRole("complementary", { name: "Document fields", exact: true }).screenshot({ path: testInfo.outputPath("field-values-en.png") });
+  await page.getByRole("article", { name: /Field location \d+: Місце зустрічі/ }).screenshot({ path: testInfo.outputPath("meeting-field-en.png") });
   const after = await (await page.request.get("/api/storage/usage")).json();
   expect(after.used_bytes).toBe(usage.used_bytes); expect(after.reserved_bytes).toBe(usage.reserved_bytes);
   expect(await (await page.request.get(`/api/documents/${identity}/download`)).body()).toEqual(bytes);
