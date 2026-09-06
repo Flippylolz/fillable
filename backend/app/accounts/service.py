@@ -19,6 +19,7 @@ from sqlalchemy.exc import IntegrityError
 from app.accounts.schema import AccountInput, UserInfo, login_attempts, sessions, users
 from app.errors import AppError
 from app.infrastructure import database
+from app.storage.schema import accounts as storage_accounts
 
 PASSWORDS = PasswordHasher()
 PASSWORD_SLOTS = BoundedSemaphore(2)
@@ -66,6 +67,7 @@ def provision(account: AccountInput, password: str) -> UserInfo:
                     active=True,
                 )
             )
+            connection.execute(insert(storage_accounts).values(user_id=values["id"]))
     except IntegrityError as error:
         raise AppError(409, "account_exists") from error
     return UserInfo.model_validate(values)

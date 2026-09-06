@@ -106,3 +106,46 @@ Use real PostgreSQL and a bounded test storage directory, with deterministic fau
 - Quota reduction below usage preserves files and blocks new allocations.
 - Temporary capacity and disk-headroom failure, without lost originals or false save success.
 - Storage usage remains correct across container restarts and reconciliation.
+
+## E02.2 schema contract
+
+The initial inherited default is 1 GiB (1,073,741,824 bytes), stored once in the
+singleton `storage_settings` row. This is an allocation limit, not a promise of
+physical disk capacity; E02.4 checks disk headroom. Operator changes are E02.5.
+Amounts are exact integer bytes from 0 through 9,007,199,254,740,991, within both
+PostgreSQL integer storage and JavaScript's exact integer range. Unlimited values,
+negative amounts, booleans and fractional configuration values are invalid.
+
+`storage_accounts` has one owner-bound row, nullable override, used and reserved
+counters. Existing users are backfilled with inherited zero-usage accounts because
+no retained user-file writes existed before this migration. Future provisioning
+creates user/account rows in one transaction. Counters are not constrained to the
+current limit: quota reduction must preserve charged/reserved bytes and report
+an over-limit state. `calculate_usage` distinguishes null inheritance, zero override,
+exact capacity and over-limit availability without changing stored counters.
+
+`storage_reservations` records owner, opaque operation/file IDs, owner-scoped
+idempotency key, request fingerprint, purpose, allocated/written/expected bytes,
+lease token/deadline and timestamps. Allowed states are `reserved`, `writing`,
+`staged`, `committed`, `cleanup_pending`, `aborted`. Purpose identifies the retained
+original/template/document/version/export/preview; copies/restores use the same
+applicable purpose and reservation path. The unique owner/key contract prevents a
+retry creating another allocation; the service must reject conflicting request
+fingerprints/purposes. Written bytes cannot exceed allocated bytes.
+
+`stored_files` has a unique reservation, exact size/digest and `staged`, `ready`,
+`pending_delete` or `deleted` state. A composite foreign key binds the result ID and
+owner to its reservation, preventing cross-owner result links. Ready/deleted states
+require their timestamps; digests are lowercase SHA-256. Opaque IDs determine
+server paths later; physical paths and original filenames are not quota keys.
+Rows remain as idempotency/recovery records after physical deletion. Restrictive
+foreign keys prevent owner/reservation deletion from silently losing file metadata.
+
+The migration can roll back only before reservations/files, charged bytes or custom
+quota settings exist. Otherwise it refuses to drop storage metadata; release
+recovery must preserve data. These schema constraints are not yet the write service:
+E02.3 enforces lock ordering, streaming reservation, state transitions and atomic
+file/record finalization; E02.4 adds deletion, liveness-aware cleanup and disk checks.
+No retained file is written by E02.2 and no quota enforcement is claimed from models
+alone. Required PostgreSQL tests cover invalid values, identity/owner constraints,
+backfill, repeated upgrades, over-limit preservation and guarded rollback.
