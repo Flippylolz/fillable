@@ -15,6 +15,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled }: {
 }) {
   const { t } = useTranslation();
   const [name, setName] = useState(user.display_name);
+  const [language, setLanguageChoice] = useState(user.ui_language);
   const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -45,7 +46,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled }: {
     return () => controller.abort();
   }, [user.id, attempt]);
 
-  async function submit(kind: "name" | "password", event: FormEvent) {
+  async function submit(kind: "name" | "password" | "language", event: FormEvent) {
     event.preventDefault();
     if (busy || disabled) return;
     setError(""); setNotice("");
@@ -59,16 +60,25 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled }: {
       const options = { headers: { "X-CSRF-Token": csrfToken }, signal: controller.signal };
       const result = kind === "name"
         ? await api.PATCH("/api/profile", { ...options, body: { display_name: name } })
-        : await api.POST("/api/profile/password", { ...options, body: { current_password: current, new_password: password } });
+        : kind === "language"
+          ? await api.PATCH("/api/profile/language", { ...options, body: { ui_language: language } })
+          : await api.POST("/api/profile/password", { ...options, body: { current_password: current, new_password: password } });
       if (controller.signal.aborted) return;
       if (result.data?.user) {
         onSession(result.data);
         if (kind === "name") setName(result.data.user.display_name);
-        else { setCurrent(""); setPassword(""); setConfirmation(""); }
-        setNotice(kind === "name" ? "profile.nameSaved" : "profile.passwordSaved");
-      } else setError(result.error?.error.code ?? "internal_error");
+        else if (kind === "password") { setCurrent(""); setPassword(""); setConfirmation(""); }
+        setLanguageChoice(result.data.user.ui_language);
+        setNotice(kind === "name" ? "profile.nameSaved" : kind === "language" ? "profile.languageSaved" : "profile.passwordSaved");
+      } else {
+        if (kind === "language") setLanguageChoice(user.ui_language);
+        setError(result.error?.error.code ?? "internal_error");
+      }
     } catch {
-      if (!controller.signal.aborted) setError("internal_error");
+      if (!controller.signal.aborted) {
+        if (kind === "language") setLanguageChoice(user.ui_language);
+        setError("internal_error");
+      }
     } finally {
       if (!controller.signal.aborted) { setBusy(false); onBusy(false); }
     }
@@ -95,6 +105,14 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled }: {
       <label>{t("profile.newPassword")}<input type="password" value={password} onChange={event => setPassword(event.target.value)} required minLength={12} maxLength={1024} disabled={busy || disabled} autoComplete="new-password" /></label>
       <label>{t("profile.confirmPassword")}<input type="password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required minLength={12} maxLength={1024} disabled={busy || disabled} autoComplete="new-password" /></label>
       <button disabled={busy || disabled} type="submit">{t("profile.changePassword")}</button>
+    </form>
+    <form className="profile-card" aria-labelledby="profile-language" onSubmit={event => void submit("language", event)}>
+      <h3 id="profile-language">{t("profile.language")}</h3>
+      <label>{t("profile.language")}<select value={language} onChange={event => setLanguageChoice(event.target.value === "en" ? "en" : "uk")} disabled={busy || disabled}>
+        <option value="uk">{t("profile.languageUk")}</option>
+        <option value="en">{t("profile.languageEn")}</option>
+      </select></label>
+      <button type="submit" disabled={busy || disabled}>{t("profile.saveLanguage")}</button>
     </form>
     <section className="profile-card profile-storage" aria-labelledby="profile-storage">
       <h3 id="profile-storage">{t("profile.storage")}</h3>

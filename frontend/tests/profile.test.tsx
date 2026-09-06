@@ -135,3 +135,46 @@ test("profile and authentication serialize saves with logout", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Вийти" }));
   expect(await screen.findByRole("button", { name: "Увійти" })).toBeEnabled();
 });
+
+test("language applies only after success, preserves drafts, and resets failed choices", async () => {
+  let finish!: (response: Response) => void;
+  const fetcher = vi.fn().mockResolvedValueOnce(Response.json(session))
+    .mockResolvedValueOnce(Response.json(usage))
+    .mockResolvedValueOnce(failure("forbidden"))
+    .mockRejectedValueOnce(new Error("offline"))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+  vi.stubGlobal("fetch", fetcher);
+  render(<I18nextProvider i18n={i18n}><Authentication>{(value, actions) => value.user && <Profile
+    user={value.user} csrfToken={value.csrf_token} onSession={actions.accept} onBusy={actions.setBusy} disabled={actions.busy}
+  />}</Authentication></I18nextProvider>);
+  await screen.findByText("8 байтів");
+  fireEvent.change(screen.getByLabelText("Ім’я для відображення"), { target: { value: "Чернетка Ґанни" } });
+  passwords();
+  const selector = screen.getByRole("combobox", { name: "Мова інтерфейсу" });
+  for (const message of ["Дія недоступна", "Сталася помилка"]) {
+    fireEvent.change(selector, { target: { value: "en" } });
+    fireEvent.click(screen.getByRole("button", { name: "Зберегти мову" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
+    expect(selector).toHaveValue("uk");
+    expect(i18n.language).toBe("uk");
+  }
+  fireEvent.change(selector, { target: { value: "en" } });
+  fireEvent.click(screen.getByRole("button", { name: "Зберегти мову" }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(5));
+  expect(selector).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Вийти" })).toBeDisabled();
+  expect(i18n.language).toBe("uk");
+  await act(async () => finish(Response.json({ ...session, user: { ...user, ui_language: "en" } })));
+  expect(await screen.findByText("Your language preference has been saved.")).toBeVisible();
+  expect(screen.getByRole("combobox", { name: "Interface language" })).toBe(selector);
+  expect(selector).toHaveValue("en");
+  expect(screen.getByLabelText("Display name")).toHaveValue("Чернетка Ґанни");
+  expect(screen.getByLabelText("Current password")).toHaveValue("Old-password-їжак");
+  expect(screen.getByLabelText("New password")).toHaveValue("New-password-їжак");
+  expect(screen.getByLabelText("Confirm new password")).toHaveValue("New-password-їжак");
+  const request = fetcher.mock.calls[4][0] as Request;
+  expect(request.headers.get("X-CSRF-Token")).toBe("csrf");
+  expect(await request.json()).toEqual({ ui_language: "en" });
+  fireEvent.change(selector, { target: { value: "uk" } });
+  expect(i18n.language).toBe("en");
+});

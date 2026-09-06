@@ -1,6 +1,7 @@
 """Owner-only profile edits with current-credential verification and session fencing."""
 
 from datetime import timedelta
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -36,6 +37,11 @@ class PasswordInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     current_password: str = Field(min_length=1, max_length=1024)
     new_password: str = Field(min_length=12, max_length=1024)
+
+
+class LanguageInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ui_language: Literal["uk", "en"]
 
 
 def active_user(connection, state):
@@ -74,18 +80,16 @@ def active_user(connection, state):
 
 
 def rename(state, payload):
+    return update_preference(state, payload.model_dump())
+
+
+def update_preference(state, values):
     with database().begin() as connection:
         user = active_user(connection, state)
         connection.execute(
-            update(users)
-            .where(users.c.id == user["id"])
-            .values(
-                display_name=payload.display_name,
-            )
+            update(users).where(users.c.id == user["id"]).values(**values)
         )
-        updated = UserInfo.model_validate(
-            {**dict(user), "display_name": payload.display_name}
-        )
+        updated = UserInfo.model_validate({**dict(user), **values})
         return service.SessionState(state.token, updated, state.expires_at)
 
 
@@ -144,3 +148,12 @@ def update_password(
     state: service.SessionState = Depends(mutation_session),
 ) -> SessionInfo:
     return session_response(change_password(state, payload), response)
+
+
+@router.patch("/language", response_model=SessionInfo)
+def update_language(
+    payload: LanguageInput,
+    response: Response,
+    state: service.SessionState = Depends(mutation_session),
+) -> SessionInfo:
+    return session_response(update_preference(state, payload.model_dump()), response)
