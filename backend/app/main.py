@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from app.accounts.routes import router as authentication_router
 from app.errors import AppError, ErrorEnvelope, register_errors
 from app.infrastructure import dependencies_ready
 
@@ -12,10 +13,12 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
     responses={
-        status: {"model": ErrorEnvelope} for status in (400, 404, 405, 422, 500, 503)
+        status: {"model": ErrorEnvelope}
+        for status in (400, 401, 403, 404, 405, 409, 422, 429, 500, 503)
     },
 )
 register_errors(app)
+app.include_router(authentication_router)
 
 
 class Health(BaseModel):

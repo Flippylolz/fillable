@@ -217,3 +217,33 @@ This builds a separate pinned LibreOffice/Poppler QA image and checks original
 identity, three-page rendering, unchanged-page pixels and Ukrainian text. Inspect
 the generated original/edited PNGs when changing transformations. Reports contain
 only synthetic fixture data; no application storage paths or user uploads are used.
+
+## Local accounts and sessions (E02.1)
+
+Normal migrations/startup create no user or default password. Provision a local
+account through the running API container with a private interactive password:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.accounts.cli provision --email you@example.test --display-name "Your name" --role admin
+```
+
+Use `--language en` to provision English; Ukrainian is the default. Reset a
+credential with the `reset-password --email you@example.test` action; reset revokes
+all existing authenticated sessions. For noninteractive operation, use
+`--password-stdin` with input from a private source. Never put passwords in command
+arguments, tracked configuration or logs. The operator commands reuse account
+validation and hashing, with no public signup or administrator screen.
+
+Set `FILLABLE_PUBLIC_ORIGIN` to the exact browser origin. The local development
+example is `http://127.0.0.1:8180`; alternate hostnames/ports are deliberately distinct.
+For the local production smoke port, start with
+`FILLABLE_PUBLIC_ORIGIN=http://127.0.0.1:8181` in the Compose environment. The browser
+verifier instead uses its private `http://gateway:8080` origin. HTTP sessions use
+HttpOnly/SameSite=Strict, host-only `fillable_session_v1`, Secure=false, CSRF tokens
+and exact-origin validation including port; HTTPS configuration sets Secure=true.
+The deployment HTTP choice and port-sharing limitation remain D019.
+
+The fresh-checkout and CI browser harnesses explicitly provision the synthetic
+`browser@example.test` fixture using `fixtures/auth/browser-password.txt`, only in
+their isolated project databases. This fixture is never created by normal startup
+or deployment. The normal operator path has no fallback/default credentials.

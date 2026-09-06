@@ -6,6 +6,7 @@ services:
       dockerfile: infra/backend.Dockerfile
     init: true
     environment:
+      FILLABLE_PUBLIC_ORIGIN: ${FILLABLE_PUBLIC_ORIGIN:?Set FILLABLE_PUBLIC_ORIGIN in .env}
       STORAGE_ROOT: /data/documents
       DATABASE_URL: postgresql+psycopg://fillable:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/fillable
       REDIS_URL: redis://redis:6379/0

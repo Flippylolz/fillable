@@ -9,6 +9,11 @@ from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
 ErrorCode = Literal[
+    "authentication_required",
+    "invalid_credentials",
+    "forbidden",
+    "rate_limited",
+    "account_exists",
     "dependencies_unavailable",
     "not_found",
     "method_not_allowed",
@@ -39,7 +44,9 @@ class AppError(Exception):
 
 def error_response(status: int, detail: ErrorDetail) -> JSONResponse:
     return JSONResponse(
-        status_code=status, content=ErrorEnvelope(error=detail).model_dump()
+        status_code=status,
+        content=ErrorEnvelope(error=detail).model_dump(),
+        headers={"Cache-Control": "no-store"},
     )
 
 

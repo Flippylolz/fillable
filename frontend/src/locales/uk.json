@@ -29,5 +29,19 @@
   "editor.export": "Експортувати DOCX",
   "editor.reopen": "Відкрити експортований DOCX",
   "editor.failed": "Не вдалося обробити документ. Зміни збережено в редакторі.",
-  "editor.remove": "Прибрати поле: {{label}}"
+  "editor.remove": "Прибрати поле: {{label}}",
+  "errors.authentication_required": "Увійдіть, щоб продовжити.",
+  "errors.invalid_credentials": "Неправильна електронна пошта або пароль.",
+  "errors.forbidden": "Дія недоступна. Оновіть сторінку й спробуйте ще раз.",
+  "errors.rate_limited": "Забагато спроб входу. Спробуйте пізніше.",
+  "errors.account_exists": "Обліковий запис уже існує.",
+  "auth.account": "Обліковий запис",
+  "auth.loading": "Завантаження облікового запису…",
+  "auth.unavailable": "Не вдалося завантажити обліковий запис.",
+  "auth.retry": "Повторити завантаження",
+  "auth.login": "Увійти",
+  "auth.email": "Електронна пошта",
+  "auth.password": "Пароль",
+  "auth.logout": "Вийти",
+  "auth.signedIn": "Ви увійшли як {{name}}."
 }

@@ -10,11 +10,11 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 - Product direction, application stack, local storage, and Docker-based development agreed.
 - MVP contains four pages: login, library with templates/results, simple profile, and document workspace with settings, field sidebar, and version-history UI.
 - UI localization is required in MVP: Ukrainian by default, English as secondary, all application copy in i18n catalogs, and a saved language switcher in the profile. See [Localization](I18N.md); changing UI language preserves original document content.
-- MVP includes a fixed, translucent, noninteractive [Git version badge](VERSION_BADGE.md) showing the deployed commit's first seven characters or `development`. The supplied design is recorded; implementation awaits E01.8.
+- MVP includes a fixed, translucent, noninteractive [Git version badge](VERSION_BADGE.md) showing the deployed commit's first seven characters or `development`. The supplied design is implemented and browser-verified in E01.8.
 - CI must block below 90% coverage. Deployment is final epic E08 through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`, using a new port and shared nginx while preserving existing services.
-- Planning and a Ukrainian synthetic DOCX baseline are available. E01.1 introduces the React/FastAPI shell and Docker coverage checks; see the execution ledger for PR status. Persistent services, migrations, and product pages remain pending.
+- E00/E01 are verified and merged: Docker foundation, persistent services, migrations, blocking CI and the editor round-trip proof. E02.1 implements local accounts and login/logout; see the execution ledger for delivery state. Storage, library, profile and production workspace work remain on the roadmap.
 - Documents are primarily Ukrainian. [Test corpus](TEST_CORPUS.md) provides an initial generated fixture and expected outcomes while real examples are unavailable.
-- The editor must use free components; a project-owned implementation is an allowed fallback. Selection and DOCX fidelity remain E00 work.
+- D008 selects the proven free ProseMirror/Python source-package adapter. Its tested support matrix and explicit limitations are recorded in Editor feasibility. Production workspace/save integration remains later work.
 - AI is outside MVP. Detection uses rules, existing controls, review, and manual fields. A possible Groq/free-allowance feature is deferred.
 - Local and production environments only; no backups. Persistent data and version-history UI remain required.
 - Production URL: `http://<DEPLOY_HOST>:<PORT>`, served through shared nginx on a new public port; the numeric port is pending inspection. Supplied connection values are retained in ignored `AI/DEPLOYMENT.local.md` and are not published in this repository.
@@ -29,6 +29,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 | [Product](PRODUCT.md) | Four MVP pages, templates/results, version history, and success criteria |
 | [Decisions](DECISIONS.md) | Accepted choices, proposed defaults, and open decisions |
 | [Architecture](ARCHITECTURE.md) | Components, data ownership, editing, and processing |
+| [Authentication](AUTHENTICATION.md) | Local accounts, sessions, CSRF/origin protection, private provisioning and verification |
 | [Localization](I18N.md) | Ukrainian/English catalogs, saved profile language, formatting, and acceptance checks |
 | [Version badge](VERSION_BADGE.md) | Supplied desktop/mobile styling, build commit metadata, fallback, and click-through behavior |
 | [Editor feasibility](EDITOR_FEASIBILITY.md) | Free-component research, custom-editor fallback, and required DOCX proof |

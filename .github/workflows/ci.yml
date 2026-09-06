@@ -5,6 +5,8 @@ on:
     branches: [main]
 permissions:
   contents: read
+env:
+  FILLABLE_PUBLIC_ORIGIN: http://gateway:8080
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -40,6 +42,7 @@ jobs:
           export VITE_APP_COMMIT_SHA="$(git rev-parse HEAD)"
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml up --build --wait --wait-timeout 120
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T gateway nginx -t -c /etc/nginx/fillable.conf
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
           curl --fail http://127.0.0.1:8181/api/health
           curl --fail http://127.0.0.1:8181/ | grep '/assets/'
       - name: Browser smoke tests

@@ -1,0 +1,32 @@
+.authentication {
+  margin-block: 1.5rem;
+}
+.authentication form {
+  display: grid;
+  gap: 1rem;
+  max-width: 24rem;
+}
+.authentication label {
+  display: grid;
+  gap: 0.35rem;
+}
+.authentication input,
+.authentication button {
+  font: inherit;
+  padding: 0.55rem 0.7rem;
+}
+.authentication input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+.authentication button {
+  cursor: pointer;
+}
+.authentication button:disabled {
+  cursor: wait;
+}
+.authentication [role="alert"] {
+  max-width: 32rem;
+  color: #a22020;
+}

@@ -18,9 +18,9 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
-| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1–E00.4 merged; E00.5 adoption decision ready for PR |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | ready |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1 accounts and sessions |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -524,3 +524,29 @@ E00.4's measured results remain the preceding implementation evidence. Next:
 validate linked docs, deliver this individual PR through required CI/auto-merge,
 verify its merge and mark E00 complete, then implement E02.1 accounts/sessions.
 Production editor/save integration and all live-server work remain later tasks.
+
+2026-09-06: E00.5 confirmed `done` through [PR #17](https://github.com/Flippylolz/fillable/pull/17)
+at `4103f9bab8d7cd9aee9663de88ecb33e18721f2d`; Actions 34027356979 passed both
+required checks at head `629d5807dda40d0b179c37de219fc05faf2005da`. Merge evidence
+was recorded in its PR body. E00 is complete through its five individual task PRs.
+Main synchronized and E02.1 began on `task/e02-1-accounts-sessions`. Account/session
+schema, migration, operator commands and auth endpoints are being implemented;
+real PostgreSQL tests, UI, generated API and final coverage/CI remain outstanding.
+No account default credentials, public signup, quota bypass or server changes.
+Next: complete authentication tests and login UI, verify Docker/browser/coverage,
+then deliver E02.1 alone through protected PR/auto-merge before continuing E02.2.
+
+E02.1 final local proof: 35 backend tests passed, 742/747 lines (99.33%) and
+221/228 branches (96.93%); 39 frontend tests passed, 266/270 lines (98.52%) and
+156/165 branches (94.55%). Raw source-inclusive gates, lint/type/catalog/build
+checks and real uncovered-source rejection probes passed. PostgreSQL tests cover
+constraints, concurrent attempt accounting, rotation, idle/absolute expiry,
+role/inactive-user checks, CSRF/origin rejection, credential reset, private operator
+commands and real password rehashing. No default user is created by migration/startup.
+The final fresh-index Docker run passed three development checks and eight
+production browser checks, including desktop/mobile login, locale restoration,
+logout and cookie behavior. Source-restore test writes are now atomic; production
+QA reports use writable mounted output paths. Login screenshots were inspected.
+The CI job pins its private browser origin across dependency recreation. Next:
+individual E02.1 PR, reverify strict required checks, enable auto-merge and verify
+completion before E02.2 quota models. Deployment and server services remain untouched.
