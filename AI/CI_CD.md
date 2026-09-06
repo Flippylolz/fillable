@@ -113,3 +113,20 @@ E01.5 expands the initial copy checker beyond JSX text/accessibility literals,
 adds full lint/browser checks and localization negative fixtures; the present
 catalog checker already checks logical keys, nonempty strings, interpolation,
 and locale plural categories. No product pages or profile persistence exist yet.
+
+## E01.3 migration and worker measurement
+
+All authored Alembic Python files live under `backend/app/migrations` and are
+included in the application source gate. Tests execute online upgrade, repeat
+upgrade, baseline downgrade/re-upgrade, and offline SQL generation. The initial
+migration establishes Alembic's version table only; domain tables arrive in E02.
+The Mako scaffold is configuration tooling, not an excluded application migration.
+The RQ config module is also measured; real Redis tests enqueue a JSON-serialized
+synthetic job and run the same RQ CLI/config as production in burst mode. No
+application job code is hidden in an uninstrumented subprocess; future authored
+jobs must contribute worker execution coverage when necessary.
+
+Always use `-p fillable-checks` for the disposable test stack, independently of
+`.env`'s runtime `COMPOSE_PROJECT_NAME`. Production-image CI uses `-p fillable-ci`.
+Neither namespace contains production user data. Tests use temporary PostgreSQL
+storage; runtime PostgreSQL/Redis use named persistent volumes.
