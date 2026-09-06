@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { FieldOccurrence } from "./model";
+import type { FieldSummary, ReviewAction } from "./adapter";
 import type { ReviewItem, ReviewState } from "./review";
 import "./review.css";
 
-export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 type Options = { label: string; key: string; type: string };
 type Group = { key: string; label: string };
 function ReviewCard({ item, groups, act }: { item: ReviewItem; groups: Group[];
@@ -38,7 +37,7 @@ function ReviewCard({ item, groups, act }: { item: ReviewItem; groups: Group[];
   </article>;
 }
 
-export function ReviewPanel({ review, occurrences, act }: { review: ReviewState; occurrences: FieldOccurrence[];
+export function ReviewPanel({ review, occurrences, act }: { review: ReviewState; occurrences: FieldSummary[];
   act: (id: string, action: ReviewAction, options: Options) => boolean }) {
   const { t, i18n } = useTranslation();
   const numbers = new Intl.NumberFormat(i18n.resolvedLanguage);
