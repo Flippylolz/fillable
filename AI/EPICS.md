@@ -18,7 +18,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
-| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1–E00.2 merged; E00.3 synchronization prototype verified locally |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1–E00.3 merged; E00.4 round-trip proof verified locally |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | ready |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
@@ -483,3 +483,31 @@ persistent recreation and six production browser tests; earlier artifact-mount a
 test-option typing failures were corrected. Next: task PR, required CI/auto-merge,
 then E00.4 export/reopen and surrounding-edit proof. D008 remains provisional; E02
 is independently ready and deployment remains untouched.
+
+2026-09-06: E00.3 confirmed `done` through [PR #15](https://github.com/Flippylolz/fillable/pull/15)
+at `01ad6089a78a5d3a42a5afe39c42409861cbef98`; Actions 34025494756 passed both
+required jobs at head `5f8c1be17f2b7db15aec83365d2b321d50bc305f`. Merge recorded
+in its PR body. E00.4 is `in_progress` on `task/e00-4-docx-roundtrip`, based on that
+merge. Adds in-memory validated source-package export, lxml 6.1.3 namespace
+preservation, newline/tab handling, source-derived paragraph identities, and
+opt-in synthetic export/reopen routes isolated from the production app. The first
+fresh-index Docker run passed three development browser tests (including actual
+DOCX download/reopen), reload/persistence and six production browser tests.
+Nineteen targeted backend tests passed; full final application coverage and
+independent LibreOffice visual inspection are pending. No PR is open yet. Next:
+finish visual/security/coverage verification, document support limits, open this
+individual task PR, verify strict required checks, enable auto-merge and follow
+through the actual merge. No server access or retained user-file writes occurred.
+
+E00.4 final local verification: 26 backend tests passed with 465/469 lines (99.15%)
+and 168/174 branches (96.55%); 34 frontend tests passed with 221/224 lines (98.66%)
+and 120/129 branches (93.02%). Both raw gates include all eligible application
+source. Lint, typing, localization, build and gate-boundary checks passed. The
+fresh-index Docker proof passed three development browser checks and six production
+checks, with persistence preserved. Actual browser-created fields also export and
+reopen with their values/keys intact. Independent LibreOffice/Poppler verification
+passed exact no-edit ZIP/page identity, three edited pages, unchanged page-two pixels
+and Ukrainian text. Original and edited pages were fully inspected; Microsoft Word
+has not been used. Required CI now includes the reproducible QA-only rendering check.
+Strict `ci-required` protection and administrator enforcement were reverified.
+E00.4 is ready for its individual PR; E00.5 follows only after verified merge.

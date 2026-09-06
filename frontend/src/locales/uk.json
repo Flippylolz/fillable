@@ -25,5 +25,9 @@
   "editor.focus": "Перейти до поля: {{label}}",
   "editor.inconsistent": "Пов’язані входження мають різні значення. Перевірте їх перед зміною.",
   "language.uk": "Українська",
-  "language.en": "English"
+  "language.en": "English",
+  "editor.export": "Експортувати DOCX",
+  "editor.reopen": "Відкрити експортований DOCX",
+  "editor.failed": "Не вдалося обробити документ. Зміни збережено в редакторі.",
+  "editor.remove": "Прибрати поле: {{label}}"
 }

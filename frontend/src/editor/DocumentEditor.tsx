@@ -12,6 +12,8 @@ import {
   focusField,
   linkedChanges,
   newFieldId,
+  paragraphIdentities,
+  removeField,
   updateField,
 } from "./transactions";
 import "prosemirror-view/style/prosemirror.css";
@@ -19,13 +21,17 @@ import "./editor.css";
 
 export function DocumentEditor({
   initialDocument,
+  onDocumentChange,
 }: {
   initialDocument: object;
+  onDocumentChange?: (document: object) => void;
 }) {
   const { t } = useTranslation();
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const initial = useRef(initialDocument);
+  const change = useRef(onDocumentChange);
+  change.current = onDocumentChange;
   const [occurrences, setOccurrences] = useState<FieldOccurrence[]>([]);
   const [active, setActive] = useState("");
   const [label, setLabel] = useState("");
@@ -45,9 +51,10 @@ export function DocumentEditor({
       handleTextInput: fieldTextInput,
       dispatchTransaction(transaction: Transaction) {
         const next = editor.state.apply(
-          linkedChanges(editor.state, transaction),
+          paragraphIdentities(linkedChanges(editor.state, transaction)),
         );
         editor.updateState(next);
+        if (transaction.docChanged) change.current?.(next.doc.toJSON());
         const nextFields = fields(next.doc);
         setOccurrences(nextFields);
         const selected = nextFields.find(
@@ -155,6 +162,15 @@ export function DocumentEditor({
               }}
             >
               {t("editor.focus", { label: field.label })}
+            </button>
+            <button
+              onClick={() => {
+                const editor = view.current!;
+                const transaction = removeField(editor.state, field.id);
+                if (transaction) editor.dispatch(transaction);
+              }}
+            >
+              {t("editor.remove", { label: field.label })}
             </button>
             {occurrences.some(
               (other) => other.key === field.key && other.value !== field.value,

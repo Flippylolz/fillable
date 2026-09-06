@@ -146,7 +146,11 @@ def test_control_ids_survive_surrounding_structure_and_rich_content_is_locked():
         DocxPackage(archive(doc("<w:p>" + control + control + "</w:p>")))
     rich = DocxPackage(
         archive(
-            doc("<w:p>" + control.replace("<w:t>value</w:t>", "<w:tab/>") + "</w:p>")
+            doc(
+                "<w:p>"
+                + control.replace("<w:t>value</w:t>", '<w:br w:type="page"/>')
+                + "</w:p>"
+            )
         )
     )
     assert not any(n["type"] == "field" for n in walk(rich.model))
@@ -168,3 +172,18 @@ def test_empty_tags_do_not_link_unrelated_controls():
     package = DocxPackage(archive(doc("<w:p>" + control + control + "</w:p>")))
     fields = [node for node in walk(package.model) if node["type"] == "field"]
     assert len({node["attrs"]["key"] for node in fields}) == 2
+
+
+def test_bound_controls_and_xml_comments_are_retained_as_locked():
+    for property_name in ("dataBinding", "lock", "temporary"):
+        package = DocxPackage(
+            archive(
+                doc(
+                    "<w:p><w:sdt><w:sdtPr><w:text/>"
+                    f"<w:{property_name}/></w:sdtPr><w:sdtContent><w:r><w:t>value</w:t></w:r>"
+                    "</w:sdtContent></w:sdt></w:p><!--retain-->"
+                )
+            )
+        )
+        assert not any(node["type"] == "field" for node in walk(package.model))
+        assert len(package.unsupported) == 2

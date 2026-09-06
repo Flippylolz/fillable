@@ -156,3 +156,58 @@ parts, and complex PAGE instructions are locked. No claim is made yet about expo
 formatting, structural additions, deletion/reopen or full input-composition behavior.
 E00.4 and E00.5 must establish the save/reopen/visual support matrix; E05 completes
 production workspace behavior. D008 is still provisional.
+
+## E00.4 round-trip proof
+
+The opt-in `compose.editor-proof.yaml` adds only the synthetic development API;
+normal development and production run `app.main` and return 404 for these routes.
+`/prototype.html` now loads the corpus through this opt-in API. All parsing,
+validation, export and reopening run in Python, entirely in bounded memory. No
+user-retained filesystem write or quota bypass is introduced. Browser downloads and
+render reports are synthetic QA artifacts. Production save APIs remain E06 work.
+
+The adapter now uses hash-locked BSD-licensed lxml 6.1.3, with entity resolution,
+DTD loading, networking, recovery and huge-tree mode disabled. DTD input is rejected.
+Its namespace-preserving serializer retains compatibility prefix declarations.
+This replaces E00.3's defusedxml dependency; installed lxml distribution notices
+remain included. No editor dependency or project license changes.
+
+Exports require the exact source digest. Known source anchors, immutable styling
+metadata, container membership and locked nodes are validated before output.
+Unchanged exports return the exact original ZIP bytes. Changed exports preserve
+untouched ZIP member bytes and metadata; unchanged XML subtrees remain intact.
+Source paragraph/run properties, table geometry, numbering, headers/footers and
+unsupported content are retained. No global replacement, HTML conversion or
+extracted-text reconstruction is used. New controls receive native numeric IDs,
+and field labels/keys retain their Unicode. New paragraph IDs are distinct both
+in the editor and OOXML. Newline/tab text is represented by Word breaks/tabs.
+
+Verified scope: direct text edits; paragraph splitting/deletion within existing
+containers; selection-created plain-text controls; linked value updates; empty
+values; removing a control while retaining its text; undo/redo; DOCX download and
+explicit editor reopening. Existing control IDs survive reopening; new field keys
+survive their conversion to native control IDs. Repeated identical text elsewhere
+is not substituted. Stale revisions, unknown anchors, altered source styling,
+invalid/nested controls, removal of locked content and section-boundary deletion
+are rejected. Bound, locked or temporary native controls are protected. Page/column
+breaks and other unsupported objects remain locked.
+
+The editor remains a structural canvas, not a Word layout engine. Table row/cell
+creation, arbitrary formatting commands, complex controls, tracked-change editing,
+IME/composition and general Word feature compatibility are not established by this
+proof. Existing complex structures are preserved or protected. E05/E06 must retain
+these restrictions visibly and handle save errors without losing drafts. Microsoft
+Word itself has not been used for validation; LibreOffice rendering and embedded
+editor reopening are separate evidence.
+
+Independent visual QA uses the pinned QA-only `infra/docx-proof.Dockerfile`
+(LibreOffice Writer 7.4.7 Debian update 14, Poppler 22.12.0 Debian update 3,
+Liberation fonts 1.07.4), never the application image. Run
+`scripts/verify-docx-render.sh <browser-results-directory>` after the fresh-index
+harness. The three original/unchanged-export pages match pixel-for-pixel at the
+same rendering size, and unchanged DOCX bytes match exactly. The edited fixture
+retains three pages; page two matches exactly, both table XML subtrees are unchanged,
+and the intended title paragraph and client-name edits render correctly. All six
+original/edited pages were visually inspected for clipping, layout and Unicode.
+The browser's downloaded files, reopened screenshot, PDF pages and extracted text
+are retained as CI QA artifacts. D008's adoption decision remains E00.5.

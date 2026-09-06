@@ -10,7 +10,7 @@ cd "$verification_root"
 cp .env.example .env
 export FILLABLE_DEV_PORT=0 FILLABLE_UPSTREAM_PORT=0
 export DOCUMENTS_HOST_PATH="$verification_root/var/storage"
-dev() { docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml "$@"; }
+dev() { docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.editor-proof.yaml "$@"; }
 prod() { docker compose -p "$verification_project" -f compose.yaml -f compose.prod.yaml "$@"; }
 cleanup() {
   dev logs --no-color > "$verification_root/runtime.log" 2>&1 || true

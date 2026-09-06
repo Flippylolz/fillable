@@ -185,7 +185,13 @@ that value. E08 will supply the selected release revision and verify live delive
 
 ## Editor corpus prototype
 
-After rebuilding the development web image, `/prototype.html` is a test harness
+Start the explicit synthetic proof override, then open `/prototype.html`:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml -f compose.editor-proof.yaml up --build --wait
+```
+
+The page is a test harness
 for the source-derived Ukrainian corpus. It is excluded from the production entry
 and makes no retained document writes. Source code remains in the reusable application
 editor modules; the synthetic JSON and harness live under `frontend/prototype`.
@@ -199,5 +205,15 @@ docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user
 The fresh-checkout verifier now runs both reload and corpus-editor browser checks.
 It retains browser screenshots/traces in its printed temporary directory's
 `browser-results/`; CI supplies an absolute `FILLABLE_BROWSER_REPORTS` directory
-inside its uploaded reports. The prototype does not implement export or account/file
-APIs; those task boundaries remain in the ledger.
+inside its uploaded reports. E00.4 adds memory-only synthetic export/reopen routes,
+which are absent from normal development and production. It adds no account or
+retained-file API. Independently render its downloaded DOCX files with:
+
+```sh
+scripts/verify-docx-render.sh /absolute/path/to/browser-results
+```
+
+This builds a separate pinned LibreOffice/Poppler QA image and checks original
+identity, three-page rendering, unchanged-page pixels and Ukrainian text. Inspect
+the generated original/edited PNGs when changing transformations. Reports contain
+only synthetic fixture data; no application storage paths or user uploads are used.
