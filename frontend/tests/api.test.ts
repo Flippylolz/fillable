@@ -15,7 +15,7 @@ test('generated client carries the typed success and error contracts', async () 
 
 test.each(['uk', 'en'])('maps all codes and unknown failures to localized copy in %s', async language => {
   await setLanguage(language);
-  for (const code of ['dependencies_unavailable', 'not_found', 'method_not_allowed', 'invalid_request', 'internal_error']) {
+  for (const code of ['authentication_required', 'invalid_credentials', 'forbidden', 'rate_limited', 'account_exists', 'dependencies_unavailable', 'not_found', 'method_not_allowed', 'invalid_request', 'internal_error']) {
     expect(apiErrorMessage(code)).toBe(i18n.t(`errors.${code}`));
   }
   expect(apiErrorMessage('private unexpected response')).toBe(i18n.t('errors.internal_error'));

@@ -11,7 +11,8 @@ test('build version remains fixed, theme independent and click-through', async (
   await expect(badge).toHaveAttribute('aria-label', `Версія застосунку ${version}`);
   const button = page.getByRole('button', { name: 'Спробувати знову' });
   await expect(button).toBeVisible();
-  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Електронна пошта', { exact: true })).toBeVisible();
+  for (let index = 0; index < 4; index++) await page.keyboard.press('Tab');
   await expect(button).toBeFocused();
   await page.keyboard.press('Tab');
   expect(await badge.evaluate(el => el.contains(document.activeElement))).toBe(false);
@@ -51,5 +52,5 @@ test('build version remains fixed, theme independent and click-through', async (
   else await page.mouse.click(rect.x + rect.width / 2, rect.y + rect.height / 2);
   await expect(page.getByRole('status')).toHaveText('З’єднання із сервером встановлено');
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({ path: `test-results/badge-${test.info().project.name}.png` });
+  await page.screenshot({ path: test.info().outputPath('badge.png') });
 });

@@ -178,3 +178,12 @@ docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps fronte
 Checkout and artifact upload use immutable upstream v7.0.1 pins and their Node 24
 runtime. No required job is optional and diagnostic collection is the only place
 where a missing container is tolerated. No deployment workflow exists before E08.
+
+E02.1 auth browser checks use the explicit private origin `http://gateway:8080`
+through the whole CI job, so dependency recreation cannot silently switch the API
+back to the local example origin. Isolated test databases receive a synthetic
+account through the real private-stdin operator CLI; normal app startup and the
+future deployment workflow must never provision that fixture. Required browser
+checks cover failed/successful login, cookie rotation, restored account locale,
+refresh, origin rejection and logout on desktop/mobile. Fresh-checkout production
+screenshots/traces and HTML reports are retained alongside editor QA artifacts.

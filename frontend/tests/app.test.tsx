@@ -3,6 +3,9 @@ import { I18nextProvider } from 'react-i18next';
 import { App } from '../src/App';
 import { i18n, setLanguage, formatDate, formatNumber } from '../src/i18n';
 
+// Connection/locale unit tests isolate auth; its real flows have separate tests and browser coverage.
+vi.mock('../src/accounts/Authentication', () => ({ Authentication: () => null }));
+
 beforeEach(async () => { await setLanguage('uk'); });
 function mount() { return render(<I18nextProvider i18n={i18n}><App /></I18nextProvider>); }
 const healthy = () => Promise.resolve({ ok: true, json: async () => ({ status: 'ok' }) });
