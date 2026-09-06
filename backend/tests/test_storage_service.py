@@ -342,6 +342,7 @@ def test_committed_cleanup_failure_and_lost_response_are_retryable(setup, monkey
     assert save(store, owner, key="committed") == result
     monkeypatch.setattr(store.fs, "clean", clean)
     assert store.recover(owner, op["id"])
+    assert store.recover(owner, op["id"])
     assert not list((root / "staging").iterdir())
     # A response exception after durable SQL commit must never abort the file.
     finish = store._finish
@@ -527,3 +528,23 @@ def test_actual_enospc_is_distinct_from_quota_failure(setup, monkeypatch):
     with pytest.raises(StorageError, match="disk_capacity"):
         save(store, owner)
     assert counters(owner) == (0, 0)
+
+
+def test_committed_cleanup_preserves_last_link_if_final_is_missing(setup, monkeypatch):
+    store, owner, _, root = setup
+    clean = store.fs.clean
+    monkeypatch.setattr(
+        store.fs, "clean", lambda *a, **kw: (_ for _ in ()).throw(OSError())
+    )
+    result = save(store, owner)
+    op = operation(owner)
+    monkeypatch.setattr(store.fs, "clean", clean)
+    final = root / "files" / str(owner) / str(result.id)
+    final.unlink()
+    for replacement in (False, True):
+        if replacement:
+            final.write_bytes(b"unrelated")
+        with pytest.raises(StorageError, match="storage_failure"):
+            store.recover(owner, op["id"])
+        assert (root / "staging" / str(op["id"])).read_bytes() == b"original"
+        assert counters(owner) == (8, 0)

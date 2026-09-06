@@ -93,6 +93,16 @@ class FileSystem:
 
     def clean(self, operation, owner, file_id, *, committed=False):
         with self.area("staging") as stage, self.area("files", owner) as final:
+            if committed:
+                try:
+                    source = os.stat(
+                        str(operation), dir_fd=stage, follow_symlinks=False
+                    )
+                except FileNotFoundError:
+                    return
+                retained = os.stat(str(file_id), dir_fd=final, follow_symlinks=False)
+                if (source.st_dev, source.st_ino) != (retained.st_dev, retained.st_ino):
+                    raise OSError("storage collision")
             if not committed:
                 try:
                     target = os.stat(str(file_id), dir_fd=final, follow_symlinks=False)

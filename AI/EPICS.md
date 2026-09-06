@@ -591,3 +591,10 @@ reports. Frontend source is unchanged; preceding verified coverage is 266/270 li
 and 156/165 branches. Required CI reruns frontend, browser and independent DOCX
 render verification. Next: open E02.3 PR, verify real strict protection, arm exact-head
 squash auto-merge and follow required checks through actual merge.
+
+E02.3 is `in_review` in [PR #20](https://github.com/Flippylolz/fillable/pull/20).
+Final recovery review added preservation of the last staging hard link when a
+committed final link is missing or replaced. The focused regression and repeated
+committed cleanup test pass; final full coverage is 1107/1112 lines (99.55%) and
+307/314 branches (97.77%) across 56 backend tests. Auto-merge was paused during this
+update and will be rearmed only for the verified updated head with required CI.
