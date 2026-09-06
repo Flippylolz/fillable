@@ -130,3 +130,40 @@ test("surrounding edits, control removal and undo survive DOCX export and reopen
     fullPage: true,
   });
 });
+
+test("undo restores conflicting native values when one already matched the shared edit", async ({ page }) => {
+  // Synthetic initial working draft; keep the retained source package unchanged.
+  await page.route("**/api/prototype", async route => {
+    const response = await route.fetch();
+    const body = await response.json();
+    type ProofNode = { type: string; attrs?: { key?: string }; content?: ProofNode[]; text?: string };
+    const stack: ProofNode[] = [body.model];
+    let seen = 0;
+    while (stack.length) {
+      const node = stack.pop()!;
+      if (node.type === "field" && node.attrs?.key === "ПІБ_КЛІЄНТА" && ++seen === 2)
+        node.content = [{ ...node.content![0], text: "Інше початкове імʼя" }];
+      stack.push(...(node.content ?? []));
+    }
+    expect(seen).toBe(2);
+    await route.fulfill({ response, json: body });
+  });
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/prototype.html");
+  const clients = page.getByRole("textbox", { name: "Значення поля: ПІБ клієнта", exact: true });
+  await expect(clients).toHaveCount(2);
+  const first = await clients.first().inputValue(), second = await clients.last().inputValue();
+  expect(first).not.toBe(second);
+  await clients.last().fill(first);
+  await expect(clients.last()).toHaveValue(first);
+  await page.getByRole("button", { name: "Скасувати", exact: true }).click();
+  await expect(clients.first()).toHaveValue(first);
+  await expect(clients.last()).toHaveValue(second);
+  await page.getByRole("button", { name: "English", exact: true }).click();
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+  const english = page.getByRole("textbox", { name: "Field value: ПІБ клієнта", exact: true });
+  await expect(english.first()).toHaveValue(first);
+  await expect(english.last()).toHaveValue(first);
+  expect(errors).toEqual([]);
+});

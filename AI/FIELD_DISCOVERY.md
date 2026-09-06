@@ -197,3 +197,7 @@ byte-identical; XML namespace serialization within a changed part may differ.
 This subtask provides the export operation required by review. Editor transactions
 and localized review UI follow in E04.5b/c; production revision saves remain E06.
 It does not itself persist a review decision or expose a new editing endpoint.
+
+Editor transaction mapping and review history are specified in
+[Working field review](FIELD_REVIEW.md). E04.5b supplies these operations; E04.5c
+connects the localized sidebar and source-result loading.

@@ -27,8 +27,8 @@ jobs:
           git diff --exit-code -- frontend/generated
       - name: Check source-derived editor fixture drift
         run: |
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/prototype:/output" backend-test python /checks/export_editor_fixture.py /output/document.json
-          git diff --exit-code -- frontend/prototype/document.json
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/prototype:/output" backend-test python /checks/export_editor_fixture.py /output/document.json /output/fields.json
+          git diff --exit-code -- frontend/prototype
       - name: Check editor dependency notices
         run: |
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/public:/app/public" frontend-test node scripts/editor-notices.mjs

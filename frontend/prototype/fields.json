@@ -1,0 +1,597 @@
+{
+  "schema_version": 1,
+  "source_version_id": "00000000-0000-0000-0000-000000000000",
+  "fields": [
+    {
+      "id": "db19ab5f798cde8cc43f65279e4f4ed4",
+      "type": "text",
+      "label": "ПІБ клієнта",
+      "occurrence_ids": [
+        "word/document.xml:control:1001",
+        "word/document.xml:control:1005"
+      ]
+    },
+    {
+      "id": "a1da1dd4300273366c91b5b8a911341b",
+      "type": "text",
+      "label": "Організація",
+      "occurrence_ids": [
+        "word/document.xml:control:1002"
+      ]
+    },
+    {
+      "id": "c85dd3b7946d67dc42c3e59ad620c0e3",
+      "type": "text",
+      "label": "Поштова адреса",
+      "occurrence_ids": [
+        "word/document.xml:control:1003"
+      ]
+    },
+    {
+      "id": "206c883d7d8b3e907cf03f7537867d81",
+      "type": "text",
+      "label": "Опис запиту",
+      "occurrence_ids": [
+        "word/document.xml:control:1004"
+      ]
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "89bbbc2e6ea5a8ac21edcdd2badc9a34",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:21",
+        "start": 6,
+        "end": 25
+      },
+      "value": "{{ІМʼЯ_РЕЦЕНЗЕНТА}}"
+    },
+    {
+      "id": "word/document.xml:control:1001",
+      "anchor": {
+        "kind": "control",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:39",
+        "control_id": "word/document.xml:control:1001"
+      },
+      "value": "[Введіть ПІБ клієнта]"
+    },
+    {
+      "id": "af22a8b3686e9e5b69b2f5b0be0e18d5",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:65",
+        "start": 6,
+        "end": 21
+      },
+      "value": "[[ДАТА_АНКЕТИ]]"
+    },
+    {
+      "id": "0a27b89d01627b2c2011418000d44218",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:83",
+        "start": 6,
+        "end": 24
+      },
+      "value": "{{ТЕМА_ЗВЕРНЕННЯ}}"
+    },
+    {
+      "id": "c7eee321923b3e03dda70a33d5ccb004",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:144",
+        "start": 7,
+        "end": 22
+      },
+      "value": "{{ПІБ_КЛІЄНТА}}"
+    },
+    {
+      "id": "facab638ad602a8441de0b9fd330765e",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:144",
+        "start": 49,
+        "end": 67
+      },
+      "value": "{{ТЕМА_ЗВЕРНЕННЯ}}"
+    },
+    {
+      "id": "word/document.xml:control:1002",
+      "anchor": {
+        "kind": "control",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:254",
+        "control_id": "word/document.xml:control:1002"
+      },
+      "value": "Майстерня «Їжак і Ґудзик»"
+    },
+    {
+      "id": "7736bdc93d69fda0c7b4d4a0119df734",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:290",
+        "start": 0,
+        "end": 20
+      },
+      "value": "{{ЕЛЕКТРОННА_ПОШТА}}"
+    },
+    {
+      "id": "word/document.xml:control:1003",
+      "anchor": {
+        "kind": "control",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:363",
+        "control_id": "word/document.xml:control:1003"
+      },
+      "value": "[Введіть поштову адресу]"
+    },
+    {
+      "id": "84b87117a0cf7a08474039ae8f889fa3",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:474",
+        "start": 14,
+        "end": 30
+      },
+      "value": "{{НОМЕР_СПРАВИ}}"
+    },
+    {
+      "id": "word/document.xml:control:1004",
+      "anchor": {
+        "kind": "control",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:507",
+        "control_id": "word/document.xml:control:1004"
+      },
+      "value": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00."
+    },
+    {
+      "id": "5ada9b1543ef578669117556cd61db43",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:629",
+        "start": 0,
+        "end": 17
+      },
+      "value": "{{AGREEMENT_REF}}"
+    },
+    {
+      "id": "5720a35b3a017446f88f3e4484e75ac6",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:671",
+        "start": 0,
+        "end": 14
+      },
+      "value": "[[ДАТА_ПОДІЇ]]"
+    },
+    {
+      "id": "c5dd34debe1d7560be9c98b98ae4dc4c",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:756",
+        "start": 20,
+        "end": 37
+      },
+      "value": "{{AGREEMENT_REF}}"
+    },
+    {
+      "id": "6963651d7e5582023a36e4087b9cc3d3",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:807",
+        "start": 35,
+        "end": 50
+      },
+      "value": "{{ПІБ_КЛІЄНТА}}"
+    },
+    {
+      "id": "38891784ac23cf5a6549e3d93644665c",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:858",
+        "start": 37,
+        "end": 57
+      },
+      "value": "{{ЕЛЕКТРОННА_ПОШТА}}"
+    },
+    {
+      "id": "word/document.xml:control:1005",
+      "anchor": {
+        "kind": "control",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:932",
+        "control_id": "word/document.xml:control:1005"
+      },
+      "value": "[Введіть ПІБ клієнта]"
+    },
+    {
+      "id": "cccb74316dd27dd22fb2c47286324214",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:1002",
+        "start": 5,
+        "end": 25
+      },
+      "value": "[[ПІБ_ПРЕДСТАВНИКА]]"
+    },
+    {
+      "id": "02de52a83b422cabd2cdcff8e9259f1a",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:1020",
+        "start": 8,
+        "end": 31
+      },
+      "value": "{{ПОСАДА_ПРЕДСТАВНИКА}}"
+    },
+    {
+      "id": "fcca4ae3a90b8af6f6be42b1bd2d52a0",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:1060",
+        "start": 5,
+        "end": 24
+      },
+      "value": "[[ПІБ_ПОГОДЖУВАЧА]]"
+    },
+    {
+      "id": "695cde5528bcc69109daf9d7b1bdbedf",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:1131",
+        "start": 7,
+        "end": 25
+      },
+      "value": "{{НЕ_ЗАПОВНЮВАТИ}}"
+    },
+    {
+      "id": "690cf321359aef767d73ecf32e048cf3",
+      "anchor": {
+        "kind": "span",
+        "part": "word/footer1.xml",
+        "paragraph_id": "word/footer1.xml:48",
+        "start": 20,
+        "end": 40
+      },
+      "value": "[[ЕЛЕКТРОННА_ПОШТА]]"
+    },
+    {
+      "id": "16d743f6037119a0e6104c21ff1d07d8",
+      "anchor": {
+        "kind": "span",
+        "part": "word/header1.xml",
+        "paragraph_id": "word/header1.xml:1",
+        "start": 28,
+        "end": 44
+      },
+      "value": "{{НОМЕР_СПРАВИ}}"
+    },
+    {
+      "id": "184fef895abf5805f8a9645216ba00a6",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:333",
+        "start": 0,
+        "end": 16
+      },
+      "value": "                "
+    },
+    {
+      "id": "2bd33e8671c3f1d4b6684575b49386e0",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:400",
+        "start": 0,
+        "end": 0
+      },
+      "value": ""
+    },
+    {
+      "id": "e27732d1aa483204ddadab0166ce8611",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:429",
+        "start": 0,
+        "end": 16
+      },
+      "value": "________________"
+    },
+    {
+      "id": "d7c932124c599619037a6b0ad70be845",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:960",
+        "start": 24,
+        "end": 44
+      },
+      "value": "____ / ____ / ______"
+    },
+    {
+      "id": "abb053c34d175ad71847cd85a0015de9",
+      "anchor": {
+        "kind": "span",
+        "part": "word/document.xml",
+        "paragraph_id": "word/document.xml:1078",
+        "start": 10,
+        "end": 27
+      },
+      "value": "................."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "candidate:89bbbc2e6ea5a8ac21edcdd2badc9a34",
+      "occurrence_id": "89bbbc2e6ea5a8ac21edcdd2badc9a34",
+      "label": "ІМʼЯ_РЕЦЕНЗЕНТА",
+      "source_key": "ІМʼЯ_РЕЦЕНЗЕНТА",
+      "reason": "placeholder",
+      "context": "Кому: {{ІМʼЯ_РЕЦЕНЗЕНТА}}"
+    },
+    {
+      "id": "candidate:word/document.xml:control:1001",
+      "occurrence_id": "word/document.xml:control:1001",
+      "label": "ПІБ клієнта",
+      "source_key": "ПІБ_КЛІЄНТА",
+      "reason": "native_control",
+      "context": "Від кого: [Введіть ПІБ клієнта]"
+    },
+    {
+      "id": "candidate:af22a8b3686e9e5b69b2f5b0be0e18d5",
+      "occurrence_id": "af22a8b3686e9e5b69b2f5b0be0e18d5",
+      "label": "ДАТА_АНКЕТИ",
+      "source_key": "ДАТА_АНКЕТИ",
+      "reason": "placeholder",
+      "context": "Дата: [[ДАТА_АНКЕТИ]]"
+    },
+    {
+      "id": "candidate:0a27b89d01627b2c2011418000d44218",
+      "occurrence_id": "0a27b89d01627b2c2011418000d44218",
+      "label": "ТЕМА_ЗВЕРНЕННЯ",
+      "source_key": "ТЕМА_ЗВЕРНЕННЯ",
+      "reason": "placeholder",
+      "context": "Щодо: {{ТЕМА_ЗВЕРНЕННЯ}}"
+    },
+    {
+      "id": "candidate:c7eee321923b3e03dda70a33d5ccb004",
+      "occurrence_id": "c7eee321923b3e03dda70a33d5ccb004",
+      "label": "ПІБ_КЛІЄНТА",
+      "source_key": "ПІБ_КЛІЄНТА",
+      "reason": "placeholder",
+      "context": "Клієнт {{ПІБ_КЛІЄНТА}} звертається щодо питання «{{ТЕМА_ЗВЕРНЕННЯ}}»."
+    },
+    {
+      "id": "candidate:facab638ad602a8441de0b9fd330765e",
+      "occurrence_id": "facab638ad602a8441de0b9fd330765e",
+      "label": "ТЕМА_ЗВЕРНЕННЯ",
+      "source_key": "ТЕМА_ЗВЕРНЕННЯ",
+      "reason": "placeholder",
+      "context": "Клієнт {{ПІБ_КЛІЄНТА}} звертається щодо питання «{{ТЕМА_ЗВЕРНЕННЯ}}»."
+    },
+    {
+      "id": "candidate:word/document.xml:control:1002",
+      "occurrence_id": "word/document.xml:control:1002",
+      "label": "Організація",
+      "source_key": "ОРГАНІЗАЦІЯ",
+      "reason": "native_control",
+      "context": "Майстерня «Їжак і Ґудзик»"
+    },
+    {
+      "id": "candidate:7736bdc93d69fda0c7b4d4a0119df734",
+      "occurrence_id": "7736bdc93d69fda0c7b4d4a0119df734",
+      "label": "ЕЛЕКТРОННА_ПОШТА",
+      "source_key": "ЕЛЕКТРОННА_ПОШТА",
+      "reason": "placeholder",
+      "context": "{{ЕЛЕКТРОННА_ПОШТА}}"
+    },
+    {
+      "id": "candidate:word/document.xml:control:1003",
+      "occurrence_id": "word/document.xml:control:1003",
+      "label": "Поштова адреса",
+      "source_key": "ПОШТОВА_АДРЕСА",
+      "reason": "native_control",
+      "context": "[Введіть поштову адресу]"
+    },
+    {
+      "id": "candidate:84b87117a0cf7a08474039ae8f889fa3",
+      "occurrence_id": "84b87117a0cf7a08474039ae8f889fa3",
+      "label": "НОМЕР_СПРАВИ",
+      "source_key": "НОМЕР_СПРАВИ",
+      "reason": "placeholder",
+      "context": "Номер справи: {{НОМЕР_СПРАВИ}}"
+    },
+    {
+      "id": "candidate:word/document.xml:control:1004",
+      "occurrence_id": "word/document.xml:control:1004",
+      "label": "Опис запиту",
+      "source_key": "ОПИС_ЗАПИТУ",
+      "reason": "native_control",
+      "context": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00."
+    },
+    {
+      "id": "candidate:5ada9b1543ef578669117556cd61db43",
+      "occurrence_id": "5ada9b1543ef578669117556cd61db43",
+      "label": "AGREEMENT_REF",
+      "source_key": "AGREEMENT_REF",
+      "reason": "placeholder",
+      "context": "{{AGREEMENT_REF}}"
+    },
+    {
+      "id": "candidate:5720a35b3a017446f88f3e4484e75ac6",
+      "occurrence_id": "5720a35b3a017446f88f3e4484e75ac6",
+      "label": "ДАТА_ПОДІЇ",
+      "source_key": "ДАТА_ПОДІЇ",
+      "reason": "placeholder",
+      "context": "[[ДАТА_ПОДІЇ]]"
+    },
+    {
+      "id": "candidate:c5dd34debe1d7560be9c98b98ae4dc4c",
+      "occurrence_id": "c5dd34debe1d7560be9c98b98ae4dc4c",
+      "label": "AGREEMENT_REF",
+      "source_key": "AGREEMENT_REF",
+      "reason": "placeholder",
+      "context": "Перегляньте договір {{AGREEMENT_REF}} та збережіть зв’язок його номера з таблицею вище."
+    },
+    {
+      "id": "candidate:6963651d7e5582023a36e4087b9cc3d3",
+      "occurrence_id": "6963651d7e5582023a36e4087b9cc3d3",
+      "label": "ПІБ_КЛІЄНТА",
+      "source_key": "ПІБ_КЛІЄНТА",
+      "reason": "placeholder",
+      "context": "Погодьте розклад із клієнтом (ПІБ: {{ПІБ_КЛІЄНТА}})."
+    },
+    {
+      "id": "candidate:38891784ac23cf5a6549e3d93644665c",
+      "occurrence_id": "38891784ac23cf5a6549e3d93644665c",
+      "label": "ЕЛЕКТРОННА_ПОШТА",
+      "source_key": "ЕЛЕКТРОННА_ПОШТА",
+      "reason": "placeholder",
+      "context": "Надішліть заповнену анкету на адресу {{ЕЛЕКТРОННА_ПОШТА}}."
+    },
+    {
+      "id": "candidate:word/document.xml:control:1005",
+      "occurrence_id": "word/document.xml:control:1005",
+      "label": "ПІБ клієнта",
+      "source_key": "ПІБ_КЛІЄНТА",
+      "reason": "native_control",
+      "context": "Підтвердження клієнта: [Введіть ПІБ клієнта]"
+    },
+    {
+      "id": "candidate:cccb74316dd27dd22fb2c47286324214",
+      "occurrence_id": "cccb74316dd27dd22fb2c47286324214",
+      "label": "ПІБ_ПРЕДСТАВНИКА",
+      "source_key": "ПІБ_ПРЕДСТАВНИКА",
+      "reason": "placeholder",
+      "context": "ПІБ: [[ПІБ_ПРЕДСТАВНИКА]]"
+    },
+    {
+      "id": "candidate:02de52a83b422cabd2cdcff8e9259f1a",
+      "occurrence_id": "02de52a83b422cabd2cdcff8e9259f1a",
+      "label": "ПОСАДА_ПРЕДСТАВНИКА",
+      "source_key": "ПОСАДА_ПРЕДСТАВНИКА",
+      "reason": "placeholder",
+      "context": "Посада: {{ПОСАДА_ПРЕДСТАВНИКА}}"
+    },
+    {
+      "id": "candidate:fcca4ae3a90b8af6f6be42b1bd2d52a0",
+      "occurrence_id": "fcca4ae3a90b8af6f6be42b1bd2d52a0",
+      "label": "ПІБ_ПОГОДЖУВАЧА",
+      "source_key": "ПІБ_ПОГОДЖУВАЧА",
+      "reason": "placeholder",
+      "context": "ПІБ: [[ПІБ_ПОГОДЖУВАЧА]]"
+    },
+    {
+      "id": "candidate:695cde5528bcc69109daf9d7b1bdbedf",
+      "occurrence_id": "695cde5528bcc69109daf9d7b1bdbedf",
+      "label": "НЕ_ЗАПОВНЮВАТИ",
+      "source_key": "НЕ_ЗАПОВНЮВАТИ",
+      "reason": "placeholder",
+      "context": "Рядок «{{НЕ_ЗАПОВНЮВАТИ}}» є прикладом позначення, а не запитом даних. Збережіть його, якщо користувач не редагує це речення безпосередньо."
+    },
+    {
+      "id": "candidate:690cf321359aef767d73ecf32e048cf3",
+      "occurrence_id": "690cf321359aef767d73ecf32e048cf3",
+      "label": "ЕЛЕКТРОННА_ПОШТА",
+      "source_key": "ЕЛЕКТРОННА_ПОШТА",
+      "reason": "placeholder",
+      "context": "Повернути на адресу [[ЕЛЕКТРОННА_ПОШТА]]"
+    },
+    {
+      "id": "candidate:16d743f6037119a0e6104c21ff1d07d8",
+      "occurrence_id": "16d743f6037119a0e6104c21ff1d07d8",
+      "label": "НОМЕР_СПРАВИ",
+      "source_key": "НОМЕР_СПРАВИ",
+      "reason": "placeholder",
+      "context": "Анкета клієнта   |   Справа {{НОМЕР_СПРАВИ}}"
+    },
+    {
+      "id": "candidate:184fef895abf5805f8a9645216ba00a6",
+      "occurrence_id": "184fef895abf5805f8a9645216ba00a6",
+      "label": "Телефон",
+      "source_key": null,
+      "reason": "blank_line",
+      "context": "Телефон\n                "
+    },
+    {
+      "id": "candidate:2bd33e8671c3f1d4b6684575b49386e0",
+      "occurrence_id": "2bd33e8671c3f1d4b6684575b49386e0",
+      "label": "Місце зустрічі",
+      "source_key": null,
+      "reason": "blank_cell",
+      "context": "Місце зустрічі\n"
+    },
+    {
+      "id": "candidate:e27732d1aa483204ddadab0166ce8611",
+      "occurrence_id": "e27732d1aa483204ddadab0166ce8611",
+      "label": "Номер клієнта",
+      "source_key": null,
+      "reason": "blank_line",
+      "context": "Номер клієнта\n________________"
+    },
+    {
+      "id": "candidate:d7c932124c599619037a6b0ad70be845",
+      "occurrence_id": "d7c932124c599619037a6b0ad70be845",
+      "label": "Бажана дата завершення",
+      "source_key": null,
+      "reason": "blank_line",
+      "context": "Бажана дата завершення\nБажана дата завершення: ____ / ____ / ______"
+    },
+    {
+      "id": "candidate:abb053c34d175ad71847cd85a0015de9",
+      "occurrence_id": "abb053c34d175ad71847cd85a0015de9",
+      "label": "Ініціали",
+      "source_key": null,
+      "reason": "blank_line",
+      "context": "Ініціали\nІніціали: ................."
+    }
+  ],
+  "decisions": [
+    {
+      "candidate_id": "candidate:word/document.xml:control:1001",
+      "status": "accepted",
+      "field_id": "db19ab5f798cde8cc43f65279e4f4ed4"
+    },
+    {
+      "candidate_id": "candidate:word/document.xml:control:1002",
+      "status": "accepted",
+      "field_id": "a1da1dd4300273366c91b5b8a911341b"
+    },
+    {
+      "candidate_id": "candidate:word/document.xml:control:1003",
+      "status": "accepted",
+      "field_id": "c85dd3b7946d67dc42c3e59ad620c0e3"
+    },
+    {
+      "candidate_id": "candidate:word/document.xml:control:1004",
+      "status": "accepted",
+      "field_id": "206c883d7d8b3e907cf03f7537867d81"
+    },
+    {
+      "candidate_id": "candidate:word/document.xml:control:1005",
+      "status": "accepted",
+      "field_id": "db19ab5f798cde8cc43f65279e4f4ed4"
+    }
+  ]
+}

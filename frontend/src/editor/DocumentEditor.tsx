@@ -18,6 +18,7 @@ import {
 } from "./transactions";
 import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
+import { reviewChanges } from "./review";
 
 export function DocumentEditor({
   initialDocument,
@@ -51,7 +52,7 @@ export function DocumentEditor({
       handleTextInput: fieldTextInput,
       dispatchTransaction(transaction: Transaction) {
         const next = editor.state.apply(
-          paragraphIdentities(linkedChanges(editor.state, transaction)),
+          reviewChanges(editor.state, paragraphIdentities(linkedChanges(editor.state, transaction))),
         );
         editor.updateState(next);
         if (transaction.docChanged) change.current?.(next.doc.toJSON());

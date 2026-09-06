@@ -1074,3 +1074,31 @@ The complete frontend rerun passed all 78 tests with unchanged raw coverage, and
 the updated real-source probe passed under a two-CPU Docker limit. No thresholds,
 source inclusion or assertions were removed. Required CI will rerun on the updated
 PR head before dependent implementation.
+
+2026-09-06: E04.5a verified merged through [PR #40](https://github.com/Flippylolz/fillable/pull/40),
+commit `0b9913604b171797b35b022d10e6f79a094793c3`; Actions 34056829570 passed both
+required checks for exact head `3c4a310c1ab1b790647ea1c808c9156bb30022d3`, including
+the frontend negative probe. Main synchronized. E04.5b starts on
+`task/e04-5b-review-transactions`: source-validated proposal mapping, atomic review
+transactions and explicit missing locations. Localized sidebar consumption follows
+in E04.5c; saved metadata/copy acceptance remains tied to E06 revision persistence.
+
+E04.5b implements source-validated Unicode proposal mapping and atomic acceptance,
+dismissal, label/group configuration and navigation. Root review metadata tracks
+missing locations through edits and shares editor undo/redo. A new regression exposed
+value propagation corrupting undo of conflicting grouped values; history transactions
+now restore their exact recorded values. The source-derived 28-proposal editor fixture
+is regenerated alongside the model in required CI. See [Working field review](FIELD_REVIEW.md).
+Full frontend/backend gates and fresh Docker/browser verification follow.
+
+E04.5b final local checks passed: 90 frontend tests, raw 721/728 lines (99.04%)
+and 708/743 branches (95.29%); 243 backend tests, 2779/2796 lines (99.39%) and
+843/862 branches (97.80%). Lint, typing, catalogs/build, source-fixture drift and
+both raw gates passed. Both real unimported-source probes rejected below-90%
+reports with tests successful. Fresh index `/private/tmp/fillable-verify.NeqDjS`
+passed 4 development and 14 production browser tests, including exact restoration
+of distinct native values through undo/redo and locale switching. Worker results,
+retained bytes/quota and recreation passed; all volumes preserved. Independent
+LibreOffice/Poppler rendering passed unchanged package/pages, three edited pages,
+unchanged page two and Ukrainian text. Strict required Actions protection remains
+intact. Next: protected E04.5b PR and verified merge, then E04.5c sidebar/result loading.

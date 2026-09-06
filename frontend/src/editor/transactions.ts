@@ -3,7 +3,7 @@ import {
   type EditorState,
   type Transaction,
 } from "prosemirror-state";
-import { closeHistory } from "prosemirror-history";
+import { closeHistory, isHistoryTransaction } from "prosemirror-history";
 import { fields } from "./model";
 import type { EditorView } from "prosemirror-view";
 
@@ -94,7 +94,7 @@ export function linkedChanges(
   state: EditorState,
   transaction: Transaction,
 ): Transaction {
-  if (!transaction.docChanged || transaction.getMeta("field-update"))
+  if (!transaction.docChanged || transaction.getMeta("field-update") || isHistoryTransaction(transaction))
     return transaction;
   const previous = new Map(
     fields(state.doc).map((field) => [field.id, field.value]),
