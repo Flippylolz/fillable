@@ -1,0 +1,265 @@
+# Implementation epics
+
+Status vocabulary: `ready`, `waiting`, `in_progress`, `in_review`, `done`. Waiting means dependencies or a recorded product decision are outstanding. A task awaiting PR merge is `in_review`; an epic remains open until all required tasks and acceptance criteria are delivered. No implementation epic is complete yet.
+
+Scope: the four pages in [Product](PRODUCT.md), including version-history UI inside the workspace. Epics describe implementation boundaries, not additional product pages. Administrator screens, a trash browser, advanced diffs, and public registration are outside MVP.
+
+Delivery rule: each individual task ID below gets its own branch and PR, with auto-merge enabled when ready and actually protected by required checks. Follow [PR workflow](PR_WORKFLOW.md); record PR URLs and merge commits rather than marking an open PR done.
+
+## Roadmap
+
+Planning task P00: consolidate the accepted MVP decisions, architecture, epics, and agent rules in one documentation PR (`task/p00-mvp-plan`). Acceptance: linked documents agree on free-only editor components, deterministic detection without AI, local/production environments without backups, HTTP on a new shared-nginx port, and the existing four-page/history/coverage/PR requirements. Validate Markdown links and consistency; no application coverage is claimed for this documentation task. A separate empty Git-history bootstrap establishes `main` before opening the PR and contains no task files.
+
+| Epic | Outcome | Dependencies | Status |
+| --- | --- | --- | --- |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | ready: research and synthetic test design |
+| E01 | Docker foundation and application skeleton | Accepted stack | ready |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
+| E03 | Upload, templates, and processed-document library | E02 | waiting |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
+| E07 | MVP acceptance and CI verification | E03–E06 | waiting |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
+
+E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
+
+Page ownership: E02 delivers login/profile; E03 delivers the library; E04–E06 deliver the document workspace. E01 and E07 support all four pages.
+
+CI and the 90% coverage blocker start in E01. **E08 is the final task**; live deployment waits for all earlier acceptance criteria and preflight of the supplied target `<DEPLOY_USER>@<DEPLOY_HOST>`. Production Docker configuration can be built and tested locally before then. [CI and deployment](CI_CD.md) and [Deployment target](DEPLOYMENT_TARGET.md) define the shared nginx, new-port, and service-isolation requirements.
+
+## E00 — Prove the editor integration
+
+Outcome: choose a free editor or prove a project-owned implementation using evidence from our required workflow and document corpus. Read [Editor feasibility](EDITOR_FEASIBILITY.md).
+
+Work:
+
+- E00.1: Build a small synthetic corpus: tables, headers/footers, numbered lists, split-run placeholders, repeated names, native controls, long values, and non-ASCII text.
+- E00.2: Compare free end-to-end options, field APIs, import/export, license obligations, Python-backend compatibility, and total deployment needs. Record evidence in D008 and the feasibility notes; paid APIs and expiring trials do not qualify.
+- E00.3: Demonstrate field creation, sidebar-to-document updates, document-to-sidebar updates, and focus navigation using a qualifying free solution. If none fits, prototype a project-owned editor/adapter using open components and source-package preservation; do not silently reduce the editing requirement.
+- E00.4: Test direct surrounding edits, deletion of controls, undo/redo, repeated occurrences, export, and reopen.
+- E00.5: Record the chosen editor, version, support matrix, limitations, and go/no-go evidence in `AI/`. Supersede D008 only after the choice is settled.
+
+Acceptance:
+
+- Both directions of synchronization and a complete DOCX save/reopen path work on the corpus.
+- Required formatting is checked visually, including in Word when available. Distinguish editor self-reopening from independent Word compatibility evidence.
+- Known unsupported features produce an explicit supported scope; do not adopt a vendor's fidelity claim as a test result.
+- Required development/production components carry no required license/subscription fees. Record exact versions and obligations; no paid solution or trial is adopted.
+- A custom implementation, if needed, preserves untouched DOCX structures and demonstrates direct edits as well as field edits. Unsupported structures are explicit; a viewer-only or lossy HTML/text conversion does not pass.
+
+## E01 — Docker foundation
+
+Outcome: a fresh checkout runs the app skeleton and checks entirely through Docker.
+
+Work:
+
+- E01.1: Scaffold React/Vite and FastAPI with the planned repository layout and pinned dependencies, including the minimum Docker test/coverage workflow needed to enforce 90% on the first application PR. Later foundation tasks expand this baseline; do not merge application code before its gate exists.
+- E01.2: Add base, development, and production Compose files; a project-owned nginx gateway; persistent volumes; source reload; and readiness checks. Production exposes a configurable private upstream for shared nginx, without binding public host ports 80/443.
+- E01.3: Add PostgreSQL, Redis, RQ worker bootstrap, and an ordered Alembic migration step.
+- E01.4: Define OpenAPI contracts and a reproducible generated TypeScript client. Document generation and check for drift.
+- E01.5: Add container commands for linting, type checking, pytest/coverage.py, Vitest coverage, and a Playwright smoke test; wire them into GitHub Actions CI with independent >=90% line/branch gates for backend and frontend.
+- E01.6: Verify startup, hot reload, restart persistence, and production asset serving. Replace planned commands in the development guide with verified commands.
+- E01.7: Verify the stable required-check aggregator, coverage-report artifacts, and negative gate checks in `Flippylolz/fillable`. Establish PR-only merging and the required CI check before the first application PR merges, then record their evidence in this task's PR; track the external settings explicitly until verified.
+
+Acceptance:
+
+- Git and Docker are sufficient on the host; no host Python, Node, PostgreSQL, or Redis setup is required.
+- Browser loads the frontend and reaches an API health/readiness endpoint through the same origin.
+- Frontend and backend changes are visible through the development workflow.
+- Containers restart without losing persistent state; ordinary shutdown does not remove data.
+- CI and local checks use reproducible dependencies and documented commands.
+- Below-90% coverage, missing reports, and failing/skipped required jobs fail CI. Exactly 90% passes without rounding up a lower value; no temporary relaxed threshold is allowed.
+- Required source coverage includes backend workers/commands and the frontend editor adapter. Gate evidence covers each codebase and metric separately.
+- Merge protection is verified on `Flippylolz/fillable` once CI is established; do not describe it as enabled from workflow YAML alone.
+- Every foundation task is represented by its own PR. Auto-merge honors the real required gates, and merged PR URLs/commits are recorded before dependent tasks are marked ready.
+
+## E02 — Login, profile, storage service, and quotas
+
+Outcome: users can sign in, manage a simple profile, and own local files whose retained writes respect their allowance.
+
+Work:
+
+- E02.1: Implement local accounts, server sessions, user/admin authorization, and the login/logout flow. Add containerized account provisioning and credential-reset commands without public default credentials.
+- E02.2: Model global quota settings, per-user overrides, storage accounts, reservations, and file lifecycle states.
+- E02.3: Implement the shared local storage service with streaming allocation, atomic reservation, idempotency, safe paths, and crash recovery.
+- E02.4: Add deletion, temporary-file cleanup, job reconciliation, and disk-capacity checks.
+- E02.5: Expose current-user usage and provide privileged containerized commands for default/override quota changes with audit records. Reuse the service layer; no administrator screen is needed.
+- E02.6: Build the profile page with account email, editable display name, current-password-verified password change, logout, and read-only storage usage/allowance.
+
+Acceptance:
+
+- All cases in [Storage quotas](STORAGE_QUOTAS.md) pass meaningful integration checks.
+- Concurrent requests cannot over-allocate user capacity or charge a retry twice.
+- Lowered limits preserve existing files and block new allocations appropriately.
+- API and worker paths share quota enforcement; user-isolation checks cover reads and writes.
+- Invalid credentials, successful login, session expiry, and logout behave correctly across protected pages.
+- Login works for the explicit HTTP origin in D019 with HttpOnly/SameSite, Secure=false, CSRF, and exact-origin checks including the port. An HTTPS configuration enables Secure. Do not assume cookies are isolated from other apps by port.
+- Profile updates persist, password changes require the current credential, and users cannot update their own quota or role.
+- Account and quota maintenance run through Docker without direct database edits or a separate administration page.
+
+## E03 — Upload, templates, and document library
+
+Outcome: one library page separates reusable templates from individual working/processed documents and provides upload, open, use-template, download, and delete actions.
+
+Work:
+
+- E03.1: Build Templates and Documents tabs, the upload flow with template/document choice, quota meter, and processing/save/error states.
+- E03.2: Validate DOCX structure and supported formats with compressed/expanded-size and parser limits.
+- E03.3: Preserve originals and persist resource kind, initial saved revision, ownership, and metadata through the storage service.
+- E03.4: Add authorized latest-saved downloads, open/edit actions, and deletion with confirmation. Keep file cleanup backend-managed; no trash browser is required.
+- E03.5: Submit processing jobs and show durable status through a polling API initially.
+- E03.6: Implement Use template as an idempotent, quota-checked copy of one saved template revision and its field schema. Open the new independent document in the workspace.
+
+Acceptance:
+
+- Valid DOCX uploads survive restart and download without modification to the original.
+- Invalid, encrypted, over-limit, and unauthorized requests fail clearly without leaked files or reservations.
+- One user cannot access another user's documents by guessing IDs or paths.
+- Quota usage updates after successful writes and confirmed deletion.
+- Templates and processed documents appear in the correct tabs. Direct uploads can create one-off documents without creating templates.
+- Use template leaves the source unchanged; subsequent edits, restoration, or deletion of the template do not alter or remove the created document.
+- Download links identify the saved file and never return partial output or imply inclusion of unsaved edits.
+
+## E04 — Field discovery and review
+
+Outcome: documents produce useful, correctable field candidates tied to their source version.
+
+Work:
+
+- E04.1: Define field, occurrence, candidate, and review schemas, starting with text.
+- E04.2: Extract existing Word controls and explicit placeholders, including text split across runs.
+- E04.3: Add rules for likely blank lines and table cells with nearby labels.
+- E04.4: Implement deterministic fixtures and labeled expected candidates. Report false positives and misses separately by detector.
+- E04.5: Add review actions within the workspace sidebar for labels, types, dismissals, and repeated-field grouping. Connect accepted locations to editor controls once E00 is resolved.
+
+The previously proposed E04.6 inference adapter is removed from MVP under D009. No local/external model, provider interface, AI credentials, or AI usage UI is a prerequisite. Possible Groq/free-allowance work is deferred beyond this roadmap.
+
+Acceptance:
+
+- Existing controls and explicit fixtures produce reproducible results.
+- Every inferred candidate has a valid location and supporting context; ambiguous results are reviewable.
+- Stale results cannot be applied to a changed document without revalidation.
+- Users can reject suggestions without mutating document content.
+- Record measured accuracy on the labeled corpus; do not invent a universal accuracy guarantee.
+- Accepted template fields are copied with the saved template revision. A derived document need not rerun detection unless the user requests it or its content invalidates the existing mapping.
+
+## E05 — Workspace, editor, settings, and synchronized sidebar
+
+Outcome: the user edits the DOCX and sidebar as one coherent workspace.
+
+Work:
+
+- E05.1: Integrate the selected editor behind a narrow adapter with load/export and field operations. Reuse one workspace for templates and individual documents, clearly labeled.
+- E05.2: Build sidebar fields with validation, navigation, active-field indication, and review states.
+- E05.3: Apply sidebar values through editor transactions and read direct document changes back into the sidebar.
+- E05.4: Allow manual field creation from a selection and handle moved/deleted controls explicitly.
+- E05.5: Handle repeated occurrences, undo/redo, keyboard navigation, focus, input composition, and event-loop prevention.
+- E05.6: Add back navigation, title, save/download/history entry points, and save status. Keep rename, zoom, and field-highlighting settings inside this page.
+
+Acceptance:
+
+- Browser tests demonstrate both directions of value synchronization and navigation.
+- Direct text editing remains available throughout the document's supported editable regions.
+- Surrounding edits do not redirect fields; missing locations and conflicting repeated values require review.
+- Undo/redo does not leave sidebar and document values inconsistent.
+- Check long text, Unicode, table fields, and the chosen editor's supported field types.
+- Workspace settings and field review fit within the page. Navigation and expired sessions do not silently discard unsaved work.
+
+## E06 — Safe saves, version-history UI, and DOCX export
+
+Outcome: users can resume work, browse and restore previous versions in the workspace, and download current or historical DOCX files.
+
+Work:
+
+- E06.1: Enforce a single active editing lease with expiry and an explicit stale-session flow.
+- E06.2: Implement revision-checked saves with a matching document/field snapshot and idempotent retries.
+- E06.3: Build a version-history panel for templates and documents with revision timestamps, current-version marker, read-only preview, historical download, and restore action.
+- E06.4: Export/download current and historical DOCX files and verify them by reopening. Route retained outputs and restored copies through quota enforcement.
+- E06.5: Implement configurable operator retention before automatic history pruning, communicate it in the history panel, and handle quota/disk/save errors recoverably.
+- E06.6: Restore the selected DOCX and matching field schema as a new current revision, preserving later retained revisions and restored-from provenance. Check the base revision and handle unsaved work explicitly.
+- E06.7: Add autosave/saved/error status and reopen behavior. Historical preview must never autosave itself into the live current document; coordinate retention with active historical reads and restores.
+
+Acceptance:
+
+- Refresh and reopen restore saved content and fields from the same revision.
+- Concurrent or stale saves cannot overwrite newer versions silently.
+- A failed save never shows success, loses the previous saved version, or hides the editable draft.
+- Versions and retained outputs consume the correct allowance, including failure/retry scenarios.
+- Corpus exports preserve tested content, metadata, and supported formatting.
+- The history panel lists retained versions of either resource type and opens/downloads the exact selected revision.
+- Restore creates a new revision with matching fields and preserves later retained versions. It does not mutate other documents derived from a restored template.
+- Unsaved-work handling, stale restore requests, quota failure, and duplicate retries cannot lose the current document or double-charge storage.
+- Advanced diffing and branching are not required to finish this epic.
+
+## E07 — MVP acceptance and CI verification
+
+Outcome: the four-page MVP passes its acceptance criteria in local/CI Docker, including the 90% coverage blocker, before any live-server deployment.
+
+Work:
+
+- E07.1: Verify login, library, profile, and workspace navigation and states, including the history panel. Check account/quota operator commands and user-facing storage meters.
+- E07.2: Add content-free job/capacity diagnostics and audit events through logs or operator commands. Do not create a diagnostics dashboard for MVP.
+- E07.3: Implement scheduled cleanup/reconciliation with bounded retries and clear failure state.
+- E07.4: Verify full-application restart, non-destructive upgrade, and crash reconciliation using synthetic data in local/CI Docker. Check matching PostgreSQL/files state and retained version history. Do not implement backups or a backup/restore drill.
+- E07.5: Verify fresh Docker installation, upgrade/migration, representative document flows, isolation, and bounded resource use in local/CI environments.
+- E07.6: Audit measured backend/frontend coverage, report inclusion, required job aggregation, and GitHub required-check configuration. Demonstrate a below-threshold result blocks the pipeline and cannot reach a deployment path.
+
+Acceptance:
+
+- An operator changes defaults and overrides through Docker commands and sees enforcement take effect in library/profile usage and actual allocations.
+- After restart and tested non-destructive upgrade/reconciliation, documents reopen with matching ownership, versions, and quota usage. This verifies persistence and crash handling, not recovery from disk/data loss.
+- The full login → upload template → detect/review → use template → edit/sidebar → save → download → reopen flow passes on the supported corpus; direct document upload also passes.
+- History preview, historical download, and restoration pass without altering later retained revisions or the source/derived document relationship.
+- Profile changes persist and the UI stays within four main pages.
+- Docker development and production instructions match tested commands.
+- Known compatibility limits and unresolved issues are recorded without overstating release readiness.
+- Backend and frontend each pass >=90% line and branch coverage, with reports and all required CI jobs passing for the release candidate. Merge-blocking repository rules are verified before this epic is done.
+- No supplied-server deployment occurs in this epic; record readiness and hand off to E08.
+
+## E08 — Final deployment through GitHub Actions
+
+Outcome: the verified MVP runs on the server supplied by the user, deployed and checked through GitHub Actions. This is the final implementation epic.
+
+Dependencies: E00–E07 complete, access and deployment configuration for the supplied target verified, and required GitHub repository/environment configuration available. The hostname/user are known; remaining preflight inputs do not block earlier epics.
+
+Work:
+
+- E08.1: Inspect `<DEPLOY_USER>@<DEPLOY_HOST>` read-only first: existing services, port allocations, capacity, Docker setup, and nginx ownership/networking. Investigate WEF as the possible configuration repository. Record baselines, select a new unused port and isolated Compose namespace, and prepare scoped paths/access without disrupting other workloads.
+- E08.2: Implement the GitHub Actions deployment workflow with serialized runs, an explicit source commit, immutable artifacts, and mandatory CI/coverage dependencies. Default proposal: manual dispatch for a protected default-branch commit.
+- E08.3: Configure only Fillable's persistent volumes, private upstream, resource limits, and schema-compatible release rollback procedure. No backups or staging environment are required. Prepare the new public HTTP listener for `http://<DEPLOY_HOST>:<PORT>` in the authoritative nginx configuration, using WEF's process if it is the owner. Preserve local document storage, quotas, and existing workloads.
+- E08.4: Run the workflow: validate capacity and persistence configuration, apply tested non-destructive migrations, update Fillable services, check private/public ports, validate effective nginx configuration, and apply the route with the owner's established process. Perform app smoke checks at the exact HTTP URL and recheck existing services/routes; do not require a backup.
+- E08.5: Verify save/download, template independence, profile, history restoration, and data persistence on the deployed application. Record release commit, artifact digests, results, and the schema-aware rollback/recovery procedure in `AI/`.
+
+Acceptance:
+
+- Deployment ran through GitHub Actions on the user-provided server after all preceding epics passed.
+- Failed tests, coverage below 90%, or missing required checks for that source revision prevent rollout, including manually dispatched runs.
+- The running application corresponds to the verified commit/artifacts; user files, database state, and quota configuration persist on the local server.
+- Health and synthetic MVP smoke checks pass; secrets and private documents are absent from repository/workflow logs.
+- Failed rollout reports failure and preserves persistent data; recovery does not assume database migrations reverse with an image change.
+- Actual deployment and operator commands, release evidence, and recovery instructions are documented. Do not mark done based only on workflow creation.
+- New nonconflicting public/private port allocations are recorded as applicable, and the app is reachable at the supplied HTTP hostname and selected public port through existing shared nginx. The nginx owner and WEF's role are verified rather than assumed; no competing ingress/TLS manager was installed. No backup destination, certificate, or new domain is a release prerequisite.
+- Existing services pass the recorded before/after checks. Proxy validation/reload and rollback preserve unrelated routes, containers, volumes, and concurrent configuration changes.
+
+## Execution record
+
+When work begins, update the relevant status and append a concise record here: date, task ID, branch, PR URL, changes, checks actually run and outcomes, coverage where applicable, remaining blockers, and next actionable task. Record the confirmed merge commit before marking a task done. Never mark an epic done while required acceptance criteria remain unverified.
+
+2026-09-06: planning documents created. No implementation checks or editor evaluation have been run.
+
+2026-09-06: refined the plan to the user's four-page MVP; added reusable template/processed-document semantics and the simple profile. The user explicitly retained version-history UI, now scoped to the workspace with read-only preview, download, and restoration as a new revision. Administrator screens and a trash browser are deferred. Application implementation remains unstarted; editor selection is still open. Next actionable implementation work remains E01 and the nonrestricted portions of E00.
+
+2026-09-06: added D013/D014 and the CI contract. Deployment is now final epic E08 through GitHub Actions, waiting for the user's server after E00–E07 pass. E01 establishes the blocking 90% coverage requirement; E07 verifies the completed MVP and CI gates before deployment. No workflow, coverage run, branch protection, or deployment has been implemented yet.
+
+2026-09-06: recorded the supplied SSH target, requirement to preserve other services, new-port allocation, and shared nginx integration in D015 and the deployment-target runbook. WEF is a possible nginx configuration owner pending inspection. Replaced the Caddy plan with project-owned nginx routing behind existing ingress. Deployment remains E08; no SSH connection, server inspection, port reservation, or server change was performed.
+
+2026-09-06: verified the user-created public GitHub repository `Flippylolz/fillable` has default branch `main` and no refs, then configured it as local `origin`. Updated D016 and the CI prerequisite notes. No commit, push, workflow, repository-protection change, or deployment was performed; application implementation remains unstarted.
+
+2026-09-06: enabled repository-level auto-merge (`allow_auto_merge: true`) through GitHub's API, preserving other merge settings. Added D017 and the one-task-per-PR workflow, including per-PR activation and merged-state verification. No task PR, commit, push, CI gate, or deployment was created in this configuration step; planning files remain local.
+
+2026-09-06: P00 incorporates the user's free-only/editor-build fallback decision, excludes all AI from MVP, records a possible later Groq/free-allowance feature, and removes backups and persistent staging from scope. D019 records the HTTP hostname/port origin and distinguishes shared-nginx public ingress from the private app upstream. Updated feasibility work, persistence/migration checks, cookie configuration, and agent rules. Representative user documents remain useful for E00 acceptance; numeric deployment ports remain unassigned. No editor proof or server access has occurred.
+
+2026-09-06: P00 history bootstrap created and pushed empty base commit `3820bff` on `main`, containing no files, after verifying that the remote had no refs. Planning delivery uses branch `task/p00-mvp-plan`. The documentation check passed for 14 Markdown files and 51 local links, whitespace, and code fences. Application tests/coverage do not exist yet; classic branch protection and rulesets were inspected and absent. No live-server action or application code is part of P00.
+
+2026-09-06: automatic approval review rejected the first P00 branch-push attempt because tracked documents contained the supplied deployment hostname/account. The branch was not published. Moved those values into ignored `AI/DEPLOYMENT.local.md` and replaced public references with placeholders before replacing the unpublished planning commit and retrying. Actual connection values remain available locally for E08.
