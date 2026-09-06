@@ -5,15 +5,15 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import type { components } from "../../generated/api";
 import { editorSchema, fields, type FieldOccurrence } from "./model";
-import { createField, fieldBeforeInput, fieldPaste, fieldTextInput, focusField, linkedChanges, manualFieldIssue, newFieldId, paragraphIdentities, removeField, updateField } from "./transactions";
+import { collapseFieldSelection, createField, fieldBeforeInput, fieldLineBreak, fieldPaste, fieldTextInput, focusField, linkedChanges, manualFieldIssue, newFieldId, paragraphIdentities, removeField, retainComposedField, updateField } from "./transactions";
 import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
 import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
 
 export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 export type ReviewOptions = { label: string; key: string; type: string };
-export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean };
-export type EditorSnapshot = { document: object; revision: number; fieldValuesValid: boolean };
+export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean };
+export type EditorSnapshot = { document: object; revision: number; fieldValuesValid: boolean; composing: boolean };
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
 export function mountEditor(host: HTMLElement, initialDocument: object, callbacks: {
@@ -22,16 +22,40 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
 }) {
   const source = editorSchema.nodeFromJSON(structuredClone(initialDocument));
   let revision = 0, unsupported = false;
+  let compositionSource: EditorState | null = null;
+  let compositionChanges: Transaction | null = null;
+  let compositionId: number | undefined;
+  let compositionTimer: ReturnType<typeof setTimeout> | undefined;
   source.descendants(node => { if (node.type.name.startsWith("locked")) unsupported = true; });
   const editor = new EditorView(host, {
     state: EditorState.create({ schema: editorSchema, doc: source,
-      plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo }), keymap(baseKeymap)],
+      plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
+        ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
     }),
     handleTextInput: fieldTextInput,
-    handleDOMEvents: { beforeinput: fieldBeforeInput },
+    handleDOMEvents: {
+      beforeinput: fieldBeforeInput,
+      compositionstart() {
+        finishComposition();
+        compositionSource = editor.state;
+        compositionChanges = editor.state.tr;
+        compositionId = undefined;
+        publish();
+        return false;
+      },
+      compositionend() {
+        // The pinned view settles composition/queued DOM mutations after 20 ms.
+        // Synchronize only after that flush, including unchanged final candidates.
+        compositionTimer = setTimeout(finishComposition, 25);
+        return false;
+      },
+    },
     handlePaste: fieldPaste,
     dispatchTransaction(transaction: Transaction) {
-      const next = editor.state.apply(reviewChanges(editor.state, paragraphIdentities(linkedChanges(editor.state, transaction))));
+      if (compositionSource && typeof transaction.getMeta("composition") === "number") compositionId = transaction.getMeta("composition");
+      const transformed = paragraphIdentities(compositionSource ? transaction : linkedChanges(editor.state, transaction));
+      if (compositionChanges) for (const step of transformed.steps) compositionChanges.step(step);
+      const next = editor.state.apply(compositionSource ? transformed : reviewChanges(editor.state, transformed));
       editor.updateState(next);
       if (transaction.docChanged && !transaction.getMeta("review-initial")) {
         revision += 1;
@@ -40,8 +64,25 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       publish();
     },
   });
+  function finishComposition() {
+    clearTimeout(compositionTimer);
+    const source = compositionSource;
+    const changes = compositionChanges;
+    compositionSource = null;
+    compositionChanges = null;
+    if (!source) return;
+    if (source.doc.eq(editor.state.doc)) { publish(); return; }
+    const transaction = linkedChanges(source, retainComposedField(source, editor.state.tr, changes!.mapping), true);
+    for (const step of transaction.steps) changes!.step(step);
+    const review = reviewState(reviewChanges(source, changes!).doc);
+    if (review !== reviewState(editor.state.doc)) transaction.setDocAttribute("review", review);
+    if (transaction.docChanged) {
+      if (compositionId !== undefined) transaction.setMeta("composition", compositionId);
+      editor.dispatch(transaction);
+    } else publish();
+  }
   function exportSnapshot(): EditorSnapshot {
-    return { document: structuredClone(editor.state.doc.toJSON()), revision,
+    return { document: structuredClone(editor.state.doc.toJSON()), revision, composing: compositionSource !== null,
       fieldValuesValid: fields(editor.state.doc).every(field => fieldValueIssue(field.value) === null) };
   }
   function publish() {
@@ -49,7 +90,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     const active = occurrences.find(field => editor.state.selection.from > field.pos && editor.state.selection.from < field.pos + field.size)?.id ?? "";
     const summaries = occurrences.map(({ id, key, label, value }) => ({ id, key, label, value, issue: fieldValueIssue(value) }));
     callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
-      active, review: structuredClone(reviewState(editor.state.doc)), unsupported });
+      active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {
     if (!transaction) return false;
@@ -64,6 +105,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       editor.setProps({ attributes: { "aria-label": label, role: "textbox", "aria-multiline": "true" } });
     },
     attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string): boolean {
+      if (compositionSource) return false;
       const current = reviewState(editor.state.doc);
       if (current) return current.sourceVersion !== null;
       try {
@@ -85,12 +127,15 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       if (!issue) dispatch(createField(editor.state, label, newFieldId()), true);
       return issue;
     },
-    updateField(key: string, value: string) { return dispatch(updateField(editor.state, key, value)); },
+    updateField(key: string, value: string) {
+      const transaction = updateField(editor.state, key, value);
+      return transaction.docChanged && dispatch(transaction);
+    },
     focusField(id: string) { return dispatch(focusField(editor.state, id), true); },
     removeField(id: string) { return dispatch(removeField(editor.state, id)); },
     undo() { const changed = undo(editor.state, editor.dispatch); editor.focus(); return changed; },
     redo() { const changed = redo(editor.state, editor.dispatch); editor.focus(); return changed; },
-    destroy() { editor.destroy(); },
+    destroy() { clearTimeout(compositionTimer); editor.destroy(); },
   };
 }
 

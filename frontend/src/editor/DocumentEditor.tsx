@@ -12,6 +12,7 @@ export function DocumentEditor({
   initialDocument,
   onDocumentChange,
   onFieldValidityChange,
+  onCompositionChange,
   discoverySnapshot,
   sourceVersion,
   onReopen,
@@ -19,6 +20,7 @@ export function DocumentEditor({
   initialDocument: object;
   onDocumentChange?: (document: object) => void;
   onFieldValidityChange?: (valid: boolean) => void;
+  onCompositionChange?: (composing: boolean) => void;
   discoverySnapshot?: components["schemas"]["FieldSnapshot"] | null;
   sourceVersion?: string;
   onReopen?: () => void;
@@ -31,7 +33,9 @@ export function DocumentEditor({
   change.current = onDocumentChange;
   const validity = useRef(onFieldValidityChange);
   validity.current = onFieldValidityChange;
-  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true });
+  const composition = useRef(onCompositionChange);
+  composition.current = onCompositionChange;
+  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false });
   const { fields: occurrences, active, review, unsupported } = presentation;
   const [label, setLabel] = useState("");
   const [creationIssue, setCreationIssue] = useState<ReturnType<EditorAdapter["createField"]>>(null);
@@ -40,7 +44,7 @@ export function DocumentEditor({
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
       onChange: snapshot => change.current?.(snapshot.document),
-      onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); },
+      onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); composition.current?.(presentation.composing); },
     });
     view.current = editor;
     return () => { editor.destroy(); view.current = null; };
