@@ -2,7 +2,7 @@ import { Schema, type Node as EditorNode } from "prosemirror-model";
 
 export const editorSchema = new Schema({
   nodes: {
-    doc: { content: "section+" },
+    doc: { content: "section+", attrs: { review: { default: null } } },
     section: {
       content: "block+",
       attrs: { part: { default: null } },
