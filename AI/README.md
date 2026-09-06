@@ -6,7 +6,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 
 ## Current state
 
-- Git repository initialized with empty base commit `3820bff`; P00 delivers the planning files through `task/p00-mvp-plan`.
+- Git repository initialized with empty base commit `3820bff`; [P00 planning PR](https://github.com/Flippylolz/fillable/pull/1) delivers the planning files through `task/p00-mvp-plan`. Its GitHub state and PR body record actual merge evidence.
 - Product direction, application stack, local storage, and Docker-based development agreed.
 - MVP contains four pages: login, library with templates/results, simple profile, and document workspace with settings, field sidebar, and version-history UI.
 - CI must block below 90% coverage. Deployment is final epic E08 through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`, using a new port and shared nginx while preserving existing services.
