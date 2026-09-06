@@ -135,3 +135,22 @@ The React shell consumes the same-origin endpoint with bounded timeout,
 unmount cancellation, and retry. Shared i18next resources default to Ukrainian;
 formatting and page language update without remounting the shell. Product pages,
 editor, persistence, account language storage, and quota services remain pending.
+
+## E01.4 API contract
+
+The API emits `{"error":{"code":...,"parameters":...}}` for application, HTTP,
+validation, and unexpected failures. Codes are enumerated; parameters are typed
+strings/integers. Raw exception messages and submitted validation input are not
+returned. Frontend presentation maps known codes to Ukrainian/English catalogs,
+with a generic localized fallback for unknown codes. This does not yet implement
+field-specific validation UX or account/storage endpoints.
+
+FastAPI's schema is deterministically exported to `frontend/generated/openapi.json`;
+MIT-licensed `openapi-typescript` generates `frontend/generated/api.d.ts` and the
+MIT-licensed `openapi-fetch` client uses it in `frontend/src/api.ts`. All versions
+are exact in the npm lockfile. Generated artifacts are type/schema declarations,
+not handwritten application code. Required CI regenerates them and rejects drift.
+
+References: [OpenAPI TypeScript generation](https://openapi-ts.dev/introduction),
+[typed fetch client](https://openapi-ts.dev/openapi-fetch/), and
+[FastAPI error handlers](https://fastapi.tiangolo.com/tutorial/handling-errors/).

@@ -364,3 +364,17 @@ worker configuration source: 64/64 lines, 6/6 branches (100%). Frontend nine tes
 Isolated production stack started in migration order; PostgreSQL and Redis synthetic
 markers survived `down` and recreation, then only those markers were removed.
 Worker was listening and public-local `/api/ready` returned ok. No live server touched.
+
+2026-09-06: E01.3 confirmed `done` via [PR #8](https://github.com/Flippylolz/fillable/pull/8)
+at `4489b01a5060ec8b396273d9c30310183d1d3fc0`; Actions 34021453232 passed required
+checks and protected auto-merge completed. Recorded the merge in its PR body,
+synchronized main, and began E01.4 on `task/e01-4-api-contract`. Adds content-free
+machine-readable errors, generated OpenAPI/TypeScript contracts, localized client
+error mapping and mandatory drift detection. Next: Docker suites and task PR.
+
+2026-09-06: E01.4 Docker verification passed: five backend tests, 98/98 lines and
+6/6 branches (100%); twelve frontend tests, 35/35 lines and 19/19 branches (100%).
+Type/build/catalog and raw source-inclusion gates passed. Both generated artifacts
+were regenerated using CI's container user/mount commands and compared byte-for-byte
+without differences. Errors omit submitted values/internal messages; typed client
+success/error requests and both-locale mappings passed. Next: task PR and Actions.

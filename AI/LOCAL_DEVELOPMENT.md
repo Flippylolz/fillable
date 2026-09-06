@@ -191,3 +191,19 @@ The test stack uses its own PostgreSQL tmpfs and Redis service. Migration tests
 exercise repeat upgrades and preserve a synthetic marker; worker tests execute a
 JSON queue round trip against real Redis. There are no retained document jobs
 or quota bypasses. Worker source changes currently require a scoped restart/rebuild.
+
+## E01.4 contract generation
+
+After API changes, regenerate and commit both artifacts through Docker:
+
+```sh
+docker compose -p fillable-checks -f compose.test.yaml build
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/output" backend-test python /checks/export_openapi.py /output/openapi.json
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/app/generated" frontend-test npm run generate:api
+```
+
+No database or running API is required for generation. Rebuild afterward so tests
+and production assets include the new generated types. CI runs these commands and
+fails on a generated diff. The only generated paths are
+`frontend/generated/openapi.json` and `frontend/generated/api.d.ts`; all authored
+client logic stays under `frontend/src` and participates in coverage.

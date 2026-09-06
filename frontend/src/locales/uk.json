@@ -4,5 +4,10 @@
   "health.loading": "Перевіряємо з’єднання…",
   "health.ok": "З’єднання із сервером встановлено",
   "health.error": "Не вдалося з’єднатися із сервером",
-  "health.retry": "Спробувати знову"
+  "health.retry": "Спробувати знову",
+  "errors.dependencies_unavailable": "Сервер тимчасово недоступний. Спробуйте пізніше.",
+  "errors.not_found": "Не знайдено.",
+  "errors.method_not_allowed": "Ця дія недоступна.",
+  "errors.invalid_request": "Перевірте введені дані.",
+  "errors.internal_error": "Сталася помилка. Спробуйте ще раз."
 }

@@ -56,7 +56,9 @@ def test_database_and_queue_failures_are_private():
         )
         response = TestClient(app).get("/api/ready")
         assert response.status_code == 503
-        assert response.json() == {"detail": {"code": "dependencies_unavailable"}}
+        assert response.json() == {
+            "error": {"code": "dependencies_unavailable", "parameters": {}}
+        }
     with patch("app.infrastructure.queue_connection") as mocked:
         mocked.return_value.__enter__.return_value.ping.side_effect = (
             RedisConnectionError("private")
