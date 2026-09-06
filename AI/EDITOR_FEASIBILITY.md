@@ -35,3 +35,74 @@ If a complete free option fails evaluation, prototype a scoped editor using open
 Preserving arbitrary Word layout is the largest engineering uncertainty. A custom editor is an allowed fallback, not an inexpensive substitute we can promise before this proof. Synthetic fixtures can start E00; representative sanitized user documents are still useful for acceptance.
 
 Reference: [Office Open XML document structure](https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document).
+
+## E00.2 comparison and prototype direction (2026-09-06)
+
+This is a source/API/license comparison, not a runtime compatibility result. No
+candidate editor engine was installed or executed for this task. Official version
+metadata and source locations below were inspected on this date; E00.3 must lock
+its actual package versions and retain their notices before running the prototype.
+
+| Candidate / inspected version | Free path and license obligations | Fields, editing and DOCX path | Python/local deployment and UI | Result for this prototype |
+| --- | --- | --- | --- | --- |
+| ProseMirror state 1.4.4, view 1.41.7, model 1.25.4 (official repository package metadata) | MIT core: retain copyright and permission notices; no subscription or required server. Audit transitive package notices when locking. | Schema nodes/attributes, selection, transaction dispatch and history support a project-owned field model. No built-in DOCX importer/exporter; Fillable must preserve/map the package. | Browser bundle only; existing Python API owns OOXML validation and export. Project-owned toolbar/sidebar strings use existing uk/en catalogs, with no vendor dialogs to translate. Locale changes can update view attributes without replacing editor state. | Preferred E00.3 prototype. MIT components fit the existing stack and undecided project license; fidelity remains the critical unproven work. |
+| ONLYOFFICE Docs Community 9.4.0; external Automation API docs | Community code is AGPLv3 with additional notice/attribution terms and separately licensed non-code material. Preserve required UI/legal notices and satisfy applicable source obligations. External Automation API requires extended Developer licensing; its trial is not the free path. | Connector documents content-control events/methods. A Community plugin could use plugin APIs, but that is a separate integration and has not proven stable sidebar synchronization/export in our corpus. | Python can implement callbacks; Document Server adds its own server/conversion stack, including Node server components, beyond the accepted frontend-only Node boundary. Official editor locale directory contains uk/en JSON. Changing language without losing editor history is unproven. | External connector route does not qualify. Do not claim all Community editing is paid. Plugin/server integration and owner-level license implications remain unresolved; not adopted. |
+| SuperDoc v2 docs, DOCX Engine terms version 2026-07-14 | AGPL editor and proprietary engine are separate. Terms allow specified dependency uses without a separate agreement subject to restrictions; that does not establish an unrestricted permissive DOCX path. | No engine or derived behavior was inspected, installed or benchmarked. Its public license distinguishes ordinary powered integrations from prohibited substitute-engine uses. | Self-hosting is documented, but exact edition/dependency and uk/en coverage for our integration are unverified. | Not adopted. Do not state the engine is invariably paid. Avoid making Fillable's custom adapter depend on engine materials or behavior; use OOXML specifications and our own synthetic package. |
+| Collabora CODE, current official CODE/FAQ and source mirror | CODE is offered free; source COPYING is MPL-2.0, with additional bundled-component notices requiring audit. Upstream's production caution is a support/stability recommendation, not proof of a license prohibition. | WOPI bridge exposes save and UNO commands. Inspected bridge does not establish a complete stable occurrence-ID/read/change/focus contract for the sidebar. Native document editing/export is available, but corpus synchronization remains unproven. | Separate native office server, WebSocket/proxy routing and Python WOPI host needed; retains the Python application backend. Ukrainian UI/core/help PO catalogs exist. In-place locale/history preservation is unproven. | Reserve candidate if custom fidelity fails. No server image adopted or purportedly tested; GitHub's latest release result was mobile, so it is not mislabeled as a pinned server release. |
+| Tiptap DOCX Conversion docs | Subscription conversion path does not qualify. MIT editor-core licensing does not cover that service/package offering. | Provides conversion separately from the free core; free core still needs a custom package adapter. | Adds conversion service/dependency requirements; no localization or corpus proof performed. | Exclude the documented subscription conversion path. Direct ProseMirror avoids an extra wrapper for the proposed custom work. |
+| docx-preview 0.4.0 (official repository metadata) | Apache-2.0; retain license/notices, audit JSZip dependency if used. | DOCX-to-HTML rendering, without the required editable transaction/export path. HTML cannot become canonical DOCX. | Browser preview compatible with Python; application controls can be localized. | Optional preview building block only, not an editor choice. Not installed. |
+
+Evidence links:
+
+- ProseMirror [transaction/model guide](https://prosemirror.net/docs/guide/),
+  [selection/view API](https://prosemirror.net/docs//ref/),
+  [state metadata](https://github.com/ProseMirror/prosemirror-state/blob/master/package.json),
+  [view metadata](https://github.com/ProseMirror/prosemirror-view/blob/master/package.json),
+  [model metadata](https://github.com/ProseMirror/prosemirror-model/blob/master/package.json),
+  and [MIT license](https://github.com/ProseMirror/prosemirror-state/blob/master/LICENSE).
+  Package metadata names `code.haverbeke.berlin` as the source repository; GitHub
+  metadata was inspected as the available official mirror.
+- ONLYOFFICE [9.4.0 release](https://github.com/ONLYOFFICE/DocumentServer/releases/tag/v9.4.0),
+  [license and additional terms](https://github.com/ONLYOFFICE/DocumentServer/blob/master/LICENSE),
+  [Automation licensing](https://www.onlyoffice.com/automation-api),
+  [connector events/methods](https://api.onlyoffice.com/docs/docs-api/usage-api/automation-api/connector-class/),
+  [server sources](https://github.com/ONLYOFFICE/server), and
+  [editor locales](https://github.com/ONLYOFFICE/web-apps/tree/master/apps/documenteditor/main/locale).
+- SuperDoc [public engine terms](https://docs.superdoc.dev/resources/docx-engine-license/).
+  These are licensing evidence only and are not a design specification for the
+  project-owned adapter.
+- Collabora [CODE](https://www.collaboraonline.com/code/),
+  [FAQ](https://www.collaboraonline.com/faqs/),
+  [current source location](https://github.com/CollaboraOnline/online),
+  [license](https://github.com/CollaboraOnline/online.mirror/blob/main/COPYING),
+  [WOPI message bridge](https://github.com/CollaboraOnline/online.mirror/blob/main/browser/src/map/handler/Map.WOPI.js),
+  and [locale resources](https://github.com/CollaboraOnline/online.mirror/tree/main/browser/po).
+  Active development moved to Collabora Gerrit; `online.mirror` is read-only.
+- Tiptap [conversion overview](https://tiptap.dev/docs/conversion/getting-started/overview)
+  and docx-preview [package metadata](https://github.com/VolodymyrBaydalka/docxjs/blob/master/package.json).
+
+### E00.3–E00.5 proof contract
+
+Proceed with the permitted custom prototype because no evaluated ready-made route
+has established the whole required integration within the accepted stack/license
+boundary. This is not a claim that no free Word editor exists. Do not supersede
+D008 or mark E00 done until runtime evidence passes.
+
+Use original OOXML parts as canonical source, with stable paragraph/run/control
+identities mapped to a typed editable model. Transactions must support direct
+surrounding edits and editable field content. Sidebar values derive from that same
+state, including linked occurrences, selection, deletion and undo/redo. Export
+applies validated changes to mapped package nodes and retains untouched package
+parts; rebuilding from extracted text or rendered HTML is disallowed.
+
+E00.3 proves field creation, both synchronization directions, navigation and locale
+switching against the synthetic Ukrainian corpus. E00.4 proves surrounding edits,
+control deletion, repeated occurrences, undo/redo, original preservation, export
+and independent reopen. Include split runs, tables, headers/footers, numbering,
+Unicode and long values. Unsupported structures must be explicit and unchanged;
+reject edits that cannot be safely mapped. E00.5 records exact locked packages,
+notices, browser and structural results, visual comparisons and any real limitations.
+Keep Microsoft Word verification distinct from LibreOffice or self-reopening.
+No owner-level licensing choice or product narrowing is needed for this prototype;
+if its evidence shows one is unavoidable, record that concrete gap and continue
+independent account/storage tasks while seeking the smallest decision.

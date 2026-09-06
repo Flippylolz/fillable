@@ -1,6 +1,6 @@
 # Implementation epics
 
-Status vocabulary: `ready`, `waiting`, `in_progress`, `in_review`, `done`. Waiting means dependencies or a recorded product decision are outstanding. A task awaiting PR merge is `in_review`; an epic remains open until all required tasks and acceptance criteria are delivered. No implementation epic is complete yet.
+Status vocabulary: `ready`, `waiting`, `in_progress`, `in_review`, `done`. Waiting means dependencies or a recorded product decision are outstanding. A task awaiting PR merge is `in_review`; an epic remains open until all required tasks and acceptance criteria are delivered.
 
 Scope: the four pages in [Product](PRODUCT.md), including version-history UI inside the workspace. Ukrainian/English UI localization and the saved profile language switcher are MVP requirements under [Localization](I18N.md). Every user-facing task supplies both translations. Epics describe implementation boundaries, not additional product pages. Administrator screens, a trash browser, advanced diffs, and public registration are outside MVP.
 
@@ -18,9 +18,9 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
-| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
-| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1–E01.7 merged; E01.8 badge verification underway |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 merged; E00.2 comparison underway; runtime proof pending |
+| E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | ready |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -448,3 +448,18 @@ is unchanged at 99/99 lines and 6/6 branches; required CI reruns its suite. Cont
 for this isolated task were stopped, volumes preserved. Next: PR, CI and confirmed
 merge, then E00.2 free-editor comparison. All four pages and live release verification
 remain their later tasks; no deployment or server access occurred.
+
+2026-09-06: E01.8 confirmed `done` through [PR #13](https://github.com/Flippylolz/fillable/pull/13)
+at `1cd0bc9628a24aaac628f12d10ef9468ffe62e4d`; Actions 34023470277 passed both
+required jobs, including supplied/fallback static badge browser checks and coverage
+failure probes. Merge evidence is in its PR body. E01 acceptance is complete through
+eight separate protected task PRs; product-page badge integration remains E07.
+Synchronized main and began E00.2 on `task/e00-2-free-editor-comparison`.
+Official licensing/API/version/localization sources were inspected for ProseMirror,
+ONLYOFFICE, SuperDoc, Collabora, Tiptap conversion and docx-preview. The comparison
+records no installed editor or runtime fidelity claim. Provisional E00.3 direction:
+MIT ProseMirror with a package-preserving Python adapter, subject to corpus proof.
+D008 and the project license remain unsettled; no paid API, trial or engine adopted.
+This documentation task changes no application source and claims no new application
+coverage run. Next: validate documentation, PR and required CI/merge, then E00.3;
+E02 is independently ready. Deployment/server inspection remains deferred to E08.
