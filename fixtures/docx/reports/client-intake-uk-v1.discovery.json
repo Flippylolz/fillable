@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "fixture_id": "client-intake-uk-v1",
+  "sha256": "1baf22bdc155380ae71deddaedaa50bd3ab8038763c73fdbfbfba98f51ce1173",
+  "detectors": {
+    "blank_cell": {
+      "expected": 1,
+      "predicted": 1,
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "missed_ids": [],
+      "extra_candidate_ids": []
+    },
+    "blank_line": {
+      "expected": 4,
+      "predicted": 4,
+      "true_positives": 4,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "missed_ids": [],
+      "extra_candidate_ids": []
+    },
+    "native_control": {
+      "expected": 5,
+      "predicted": 5,
+      "true_positives": 5,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "missed_ids": [],
+      "extra_candidate_ids": []
+    },
+    "placeholder": {
+      "expected": 17,
+      "predicted": 18,
+      "true_positives": 17,
+      "false_positives": 1,
+      "false_negatives": 0,
+      "precision": 0.944444,
+      "recall": 1.0,
+      "missed_ids": [],
+      "extra_candidate_ids": [
+        "candidate:695cde5528bcc69109daf9d7b1bdbedf"
+      ]
+    }
+  },
+  "negative_cases": [
+    {
+      "id": "N01",
+      "review_proposals_allowed": false,
+      "candidate_ids": [],
+      "accepted_candidate_ids": []
+    },
+    {
+      "id": "N02",
+      "review_proposals_allowed": false,
+      "candidate_ids": [],
+      "accepted_candidate_ids": []
+    },
+    {
+      "id": "N03",
+      "review_proposals_allowed": false,
+      "candidate_ids": [],
+      "accepted_candidate_ids": []
+    },
+    {
+      "id": "N04",
+      "review_proposals_allowed": false,
+      "candidate_ids": [],
+      "accepted_candidate_ids": []
+    },
+    {
+      "id": "N05",
+      "review_proposals_allowed": true,
+      "candidate_ids": [
+        "candidate:695cde5528bcc69109daf9d7b1bdbedf"
+      ],
+      "accepted_candidate_ids": []
+    },
+    {
+      "id": "N06",
+      "review_proposals_allowed": false,
+      "candidate_ids": [],
+      "accepted_candidate_ids": []
+    }
+  ],
+  "incorrect_confirmed_candidate_ids": [],
+  "inferred_confirmed_candidate_ids": []
+}

@@ -120,3 +120,55 @@ spacing paragraph produce no blanks. Regression tests cover generalized positive
 negative cases, Unicode offsets, split formatting, protected/overlapping locations,
 empty-cell boundaries and the combined budget. Detector-specific precision/misses
 are reported in E04.4; this observation is not a universal accuracy guarantee.
+
+## Measured corpus accuracy (E04.4)
+
+The offline evaluator in `app.fields.evaluation` compares source-revision proposals
+with the unchanged, SHA-verified v1 answer key. The committed
+[report](../fixtures/docx/reports/client-intake-uk-v1.discovery.json) is reproduced
+and compared exactly by the required backend test suite. Production discovery
+never reads the answer key or report.
+
+| Detector | Labeled occurrences | Proposals | Correct | Extra proposals | Misses | Precision | Recall |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Native controls | 5 | 5 | 5 | 0 | 0 | 100% | 100% |
+| Explicit placeholders | 17 | 18 | 17 | 1 | 0 | 94.44% | 100% |
+| Blank lines | 4 | 4 | 4 | 0 | 0 | 100% | 100% |
+| Empty form cells | 1 | 1 | 1 | 0 | 0 | 100% | 100% |
+
+The extra placeholder is N05's quoted literal: an allowed **unaccepted** review
+proposal. It is still counted as a proposal false positive against the 27 labeled
+positive locations. Incorrect confirmed fields: **0**. Inferred proposals confirmed
+automatically: **0**; only the five controls already present in the source are
+accepted. Every negative case records its candidate IDs and accepted IDs separately.
+These measurements concern one synthetic Ukrainian fixture, not general document
+accuracy. Generalized Unicode, formatting, protected-region and blank-rule tests
+supplement this corpus but are not folded into its precision/recall denominator.
+
+Precision is TP/(TP+FP); recall is TP/(TP+FN), rounded to six decimals in JSON.
+An empty denominator is null, not a fabricated perfect score. Misses retain answer-key
+occurrence IDs; extras retain revision-local candidate IDs. Matching includes the
+specific detector and exact source location, so a wrong classification records both
+a miss and an extra. Reports contain counts, fixture hashes and IDs, not source text.
+
+The evaluator resolves exactly one source XML element per fixture XPath and checks
+the expected raw `w:t` slice before interpreting offsets. It maps raw Unicode code
+points through the parser's source-run identities to model code points: tabs and line
+breaks count only in the model, protected inline regions occupy one model position,
+and protected interiors cannot become expected editable spans. Native controls match
+the exact source element. Equal text elsewhere cannot substitute for a missing anchor.
+The answer key is trusted offline test input; this is not an upload endpoint.
+
+Reproduce the report on stdout in Docker after building the backend test image:
+
+```sh
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test \
+  python -m app.fields.evaluation \
+  /fixtures/docx/v1/client-intake-uk-v1.docx \
+  /fixtures/docx/v1/client-intake-uk-v1.expected.json
+```
+
+Review any report change together with detector behavior; do not rewrite the v1
+answer key to accommodate mistakes. Tests deliberately remove and misclassify results,
+accept a literal, alter hashes/text/locators, and exercise Unicode/tab/line-break and
+locked-region projection to verify that the report detects these failures.
