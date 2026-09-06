@@ -8,7 +8,7 @@ Ordinary documents are in scope, including documents without predefined template
 
 MVP discovery is deterministic: existing Word controls, explicit placeholders, and rule-based blank detection, plus manual field creation. AI is outside MVP. The editor must use free components, with a project-owned implementation allowed if needed; this does not remove direct document editing or version history from scope.
 
-Documents are primarily Ukrainian. Detection must handle Ukrainian labels, Cyrillic placeholder names and native tags, including text split across Word runs. Editing/export must preserve Ukrainian letters, apostrophes, and mixed-language content without transliteration. UI language remains a separate implementation decision. Use the synthetic baseline in [Test corpus](TEST_CORPUS.md) until representative user files are available.
+Documents are primarily Ukrainian. Detection must handle Ukrainian labels, Cyrillic placeholder names and native tags, including text split across Word runs. Editing/export must preserve Ukrainian letters, apostrophes, and mixed-language content without transliteration. The UI defaults to Ukrainian and also supports English under the [Localization contract](I18N.md). Use the synthetic baseline in [Test corpus](TEST_CORPUS.md) until representative user files are available.
 
 ## Four MVP pages
 
@@ -18,7 +18,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 | --- | --- | --- |
 | Login | `/login` | Authenticate and enter the document library |
 | Document library | `/documents` | Upload DOCX files, manage templates and processed documents, and download files |
-| Profile | `/profile` | Basic account information and storage usage |
+| Profile | `/profile` | Basic account information, UI language, and storage usage |
 | Document workspace | `/editor/:id` | Render and edit a template or document with settings, field sidebar, and version history |
 
 ### 1. Login
@@ -43,6 +43,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 
 - Show account email and allow changing the display name.
 - Allow password change after verifying the current password, and provide logout.
+- Include a language switcher: **Українська** (`uk`, default) and **English** (`en`). Save the account preference, apply it across the app without losing active state, and restore it after refresh or a new login. A failed save leaves the previous language selected and shows a recoverable localized error.
 - Show used storage, allowance, and remaining space. Users cannot change their own quota.
 - Keep quota administration, account provisioning, and password-reset support in operator commands for MVP; no administrator dashboard is required.
 
@@ -70,6 +71,8 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 
 ## Requirements across all pages
 
+- Keep all application labels/messages in Ukrainian and English i18n catalogs, including errors, tooltips, accessibility text, editor controls, sidebar/settings, and history states. Every UI feature supplies both translations; translation completeness is a required CI check.
+- UI language changes do not translate document content, filenames/titles, extracted/custom field labels, or field values, and do not create document revisions. Format interface dates/numbers/storage values for the selected locale while preserving canonical data.
 - Start with text fields; add checkbox, date, and choice fields only where the selected editor has verified support.
 - Inferred fields are correctable. Repeated occurrences share a logical field only when their relationship is explicit or user-confirmed.
 - Saved files and their field metadata describe the same revision and preserve supported formatting.
@@ -99,6 +102,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Filling a new document leaves its source template unchanged; subsequent template edits/restoration/deletion leave that document usable.
 - History preview/download selects the requested retained revision. Restore creates a new revision with matching fields, preserves later retained history, and enforces quotas.
 - Profile edits persist, password changes work, and usage matches the quota service.
+- Ukrainian is the initial UI language. The four pages and history/settings/sidebar flows work in both languages; the profile choice persists across sessions without altering document content or losing unsaved work. Missing translations fail the planned CI gate.
 - Field locations survive supported surrounding edits, and sidebar updates do not lose input or loop.
 - Concurrent allocations cannot bypass quotas, and users cannot access each other's files or historical versions.
 - A fresh checkout runs and tests through Docker without host Python or Node installations.

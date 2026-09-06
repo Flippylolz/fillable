@@ -40,7 +40,7 @@ compose.prod.yaml       Production overrides
 
 ## Data model boundaries
 
-- `User`: identity, display name, credential hash, role, status, nullable quota override.
+- `User`: identity, display name, credential hash, role, status, nullable quota override, validated `ui_language` (`uk` or `en`, default `uk`).
 - `Session`: server-side authenticated session and expiry.
 - `Document`: owner, kind (`template` or `document`), title, current version, lifecycle state, editing lease, optional source-template provenance.
 - `DocumentVersion`: immutable revision, file reference, matching field-schema snapshot, parent revision, creation time, optional restored-from revision.
@@ -52,6 +52,12 @@ compose.prod.yaml       Production overrides
 - `Job`: owner, operation, source revision, status, retry state, and result reference.
 
 The database is the authority for permissions and committed versions. A version must not claim a field snapshot from a different DOCX revision. Original uploads are retained unchanged.
+
+## UI localization
+
+The React application owns Ukrainian and English message catalogs and a shared translation/formatting entry point under [Localization](I18N.md). New accounts and unconfigured browsers default to Ukrainian. The profile updates the authenticated user's `ui_language`; the saved account value is authoritative after login and refresh. Apply successful changes without reloading the page or recreating editor state, and keep document language/content independent of the interface locale.
+
+The API returns stable error/status codes and typed parameters, including field-validation errors, rather than presentation strings for direct display. The frontend translates application messages and uses locale-aware interface formatting. Extracted/custom field labels, titles, filenames, and document values remain original data. Localize exposed embedded-editor UI through verified hooks or project-owned controls; E00 must include this in its selection evidence. Localization introduces no translation service or external AI dependency.
 
 ## Template instantiation
 

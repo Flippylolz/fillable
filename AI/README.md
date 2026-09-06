@@ -9,6 +9,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 - Git repository initialized with empty base commit `3820bff`; [P00 planning PR](https://github.com/Flippylolz/fillable/pull/1) delivers the planning files through `task/p00-mvp-plan`. Its GitHub state and PR body record actual merge evidence.
 - Product direction, application stack, local storage, and Docker-based development agreed.
 - MVP contains four pages: login, library with templates/results, simple profile, and document workspace with settings, field sidebar, and version-history UI.
+- UI localization is required in MVP: Ukrainian by default, English as secondary, all application copy in i18n catalogs, and a saved language switcher in the profile. See [Localization](I18N.md); changing UI language preserves original document content.
 - CI must block below 90% coverage. Deployment is final epic E08 through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`, using a new port and shared nginx while preserving existing services.
 - Planning and a Ukrainian synthetic DOCX baseline are available; no application, migrations, Compose configuration, or executable application test suite exists yet.
 - Documents are primarily Ukrainian. [Test corpus](TEST_CORPUS.md) provides an initial generated fixture and expected outcomes while real examples are unavailable.
@@ -27,6 +28,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 | [Product](PRODUCT.md) | Four MVP pages, templates/results, version history, and success criteria |
 | [Decisions](DECISIONS.md) | Accepted choices, proposed defaults, and open decisions |
 | [Architecture](ARCHITECTURE.md) | Components, data ownership, editing, and processing |
+| [Localization](I18N.md) | Ukrainian/English catalogs, saved profile language, formatting, and acceptance checks |
 | [Editor feasibility](EDITOR_FEASIBILITY.md) | Free-component research, custom-editor fallback, and required DOCX proof |
 | [Test corpus](TEST_CORPUS.md) | Ukrainian synthetic DOCX, answer key, verification evidence, and future sample updates |
 | [Local development](LOCAL_DEVELOPMENT.md) | Docker development and server deployment requirements |

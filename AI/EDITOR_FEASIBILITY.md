@@ -6,6 +6,8 @@ Status: research notes for E00, checked 2026-09-06. The user requires free solut
 
 The full path must work without required fees in both development and production: DOCX import, direct editing, field creation/focus, two-way sidebar updates, undo/redo, and DOCX export. A free trial or a free viewer with a paid editing/export API does not qualify. Hosting stays local, backend application logic stays Python, and AI is outside MVP.
 
+D021 also requires Ukrainian and English UI. Verify localization hooks for every exposed editor toolbar, menu, dialog, tooltip, and accessible label, including whether missing Ukrainian strings can be supplied through the free integration or project-owned controls. Record any gap in the support matrix; an English-only embedded UI does not satisfy the [Localization contract](I18N.md). UI locale changes must preserve the current document and editor state.
+
 ## Research inputs
 
 | Option | Evidence and implication |

@@ -43,12 +43,14 @@ Planned workflow: `.github/workflows/ci.yml`. Tests and coverage use the same co
 
 1. Run on pull requests and pushes to `main`; add merge-queue events if a merge queue is enabled later.
 2. Check out the exact source revision and install/build from pinned dependencies and images.
-3. Validate Compose, lint/type-check application code, validate migrations/contracts, run backend and frontend tests with coverage, and run the required Playwright flows against the Docker stack.
+3. Validate Compose, lint/type-check application code, validate migrations/contracts and Ukrainian/English catalogs, run backend and frontend tests with coverage, and run the required Playwright flows against the Docker stack.
 4. Produce separate backend/frontend coverage reports and test summaries as Actions artifacts for diagnosis, including on failed runs where reports exist.
 5. Evaluate the coverage gates and produce a stable required check, proposed name `ci-required`, that succeeds only when every required job succeeded. Its aggregation must explicitly fail on missing, skipped, or cancelled prerequisites; a green summary must never mask a failed test job.
 6. During E01, once the workflow exists and its check name is established, configure branch rules in `Flippylolz/fillable` to require PRs and `ci-required` for merges to `main`, with up-to-date checks or a verified merge-queue equivalent. Establish this before the first application PR merges. Workflow YAML alone does not enable merge protection. Record the actual configured check name and evidence; the repository already exists.
 
 Keep required workflow scheduling reliable: do not skip the whole required check with path filters. Keep deployment credentials unavailable to untrusted pull-request jobs. Test reports must use synthetic fixtures and must not expose production documents or secrets.
+
+Localization is required under D021 and [Localization](I18N.md). E01 includes catalog validation and checks against hardcoded application copy in required CI: logical message-key parity, nonempty translations, interpolation-parameter parity, and valid language-specific plurals. Keep any nontranslatable literals explicitly documented and narrowly allowed; user data is not catalog copy. Missing English translations fail even if runtime Ukrainian fallback displays text. As pages arrive, required browser coverage includes both languages, profile preference persistence/failure, and preservation of drafts and document content when switching. These checks supplement the independent 90% coverage gates; they are not implemented at this planning stage.
 
 Arm auto-merge on each ready task PR only after verifying these actual gates. Failing, skipped, cancelled, or missing required jobs must prevent auto-merge. Never use an administrator override, lower thresholds, or make checks optional to complete a task. Ordinary task merges must not trigger deployment ahead of E08.
 
