@@ -102,3 +102,25 @@ values, not full DOCX/model validity or server authorization. The opt-in round-t
 disables export until invalid values are corrected. E06 must consume this state for save
 UX and independently validate every server-side save; current production saved-download
 bytes and storage usage remain unchanged by draft editing.
+
+## Native input and history
+
+E05.5 makes identical sidebar updates idempotent: they do not dispatch, advance the local
+revision, or add undo entries. Native Enter/Shift-Enter inside one field insert line breaks;
+arrow keys collapse a selected field in editor state before subsequent deletion. Ordinary
+caret navigation and input outside fields retain ProseMirror's behavior.
+
+Active IME composition belongs to the native editor. Linked occurrences and root review
+metadata update after composition settles, because rewriting them during candidate input
+can redraw the DOM and interrupt the native range. The adapter retains all composition
+steps for exact review mapping and preserves the native composition history identity.
+A fast commit that unwraps the selected control can restore only its mapped, editable text
+range with the original immutable control identity. Protected or incompatible ranges are
+not substituted. This does not use matching text elsewhere in the document.
+
+Snapshots/presentation expose `composing`; consumers must wait for it to clear before saving
+or exporting. The opt-in proof disables export while composition is pending. The pinned
+ProseMirror view flushes queued composition mutations after 20 ms; the adapter commits
+linked/review changes afterward and cancels its pending callback on destruction. Browser
+verification uses Chromium's native IME protocol, including cancellation and an unchanged
+final candidate. This is not a claim of testing every physical keyboard/OS input method.

@@ -17,6 +17,7 @@ export function RoundtripProof() {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [fieldValuesValid, setFieldValuesValid] = useState(true);
+  const [composing, setComposing] = useState(false);
   const draft = useRef<object>({});
   useEffect(() => {
     const controller = new AbortController();
@@ -74,7 +75,7 @@ export function RoundtripProof() {
   }
   return (
     <>
-      <button disabled={!snapshot || busy || !fieldValuesValid} onClick={() => void process(false)}>
+      <button disabled={!snapshot || busy || !fieldValuesValid || composing} onClick={() => void process(false)}>
         {t("editor.export")}
       </button>
       <button disabled={!saved || busy} onClick={() => void process(true)}>
@@ -86,6 +87,7 @@ export function RoundtripProof() {
           key={generation}
           initialDocument={snapshot.model}
           onFieldValidityChange={setFieldValuesValid}
+          onCompositionChange={setComposing}
           onDocumentChange={(value) => {
             draft.current = value;
           }}

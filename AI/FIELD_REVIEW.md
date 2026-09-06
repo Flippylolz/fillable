@@ -114,3 +114,9 @@ outside existing fields or protected content. At 2,000 live controls or review r
 creation reports the document limit. Invalid requests preserve selection and source text
 and display a localized error. Manual records use the existing accepted filter and
 missing-location feedback; they are not separate server-side writes.
+
+E05.5 defers review root-attribute changes during native composition to avoid redrawing
+its active DOM. On commit it maps the accumulated composition steps once, alongside linked
+value propagation and any strictly mapped control restoration. The same native history
+identity keeps content and metadata undoable together. Pending composition is exposed to
+future save integration; an intermediate candidate must not be persisted as a completed edit.

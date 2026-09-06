@@ -23,7 +23,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.4 merged; E04.5 review integration |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.3 merged; E05.4 in verification; E05.5–E05.6 pending |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.4 merged; E05.5 in verification; E05.6 pending |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
@@ -1262,3 +1262,31 @@ checks, real worker processing and persistent byte/quota invariants. Independent
 LibreOffice/Poppler regression checks passed. No frontend appearance, DOCX format,
 server service or persistent volume was changed. Next: individual protected PR,
 verified merge, then synchronize the unfinished E05.5 editor branch.
+
+2026-09-07: E02.3a verified merged through [PR #47](https://github.com/Flippylolz/fillable/pull/47),
+commit `572c3cc1399c3f989e2d0d504001ff9d6fdc47ce`; Actions 34066439392 passed both
+required checks for exact head `52711fe98561465947572f1391b98551a2f12c46`. The
+E05.5 branch synchronized with this correction, preserving its editor changes.
+E05.5 continues on `task/e05-5-editor-input`: native keyboard/composition/repeated-field
+history checks and idempotent sidebar updates that cannot create feedback loops.
+
+E05.5 native Chromium tests exposed duplicated IME candidates, root-review redraws,
+fast commits unwrapping a control, and stale keyboard selections. The adapter now lets
+the native editor own composition, accumulates its exact steps, then synchronizes linked
+values/review using the native history identity after settlement. It restores an unwrapped
+control only at its mapped editable text range, retaining identity/source formatting.
+Enter/Shift-Enter and selection-collapse commands are scoped to fields; identical sidebar
+updates do not dispatch. Snapshots expose pending composition and the proof waits before
+exporting. Discovery cannot attach during composition. See [Workspace](WORKSPACE.md).
+
+Final local verification passed: 118 frontend tests, raw 907/912 lines (99.45%) and
+950/988 branches (96.15%); 244 backend tests, 2778/2796 lines (99.36%) and 843/862
+branches (97.80%). Lint, typing, catalogs/build, raw gates and both actual unimported-
+source probes passed. Final fresh index `/private/tmp/fillable-verify.5WVKWT` passed
+7 development and 16 production browser checks, actual keyboard/IME/cancellation/undo/
+reopen, worker processing and persistent byte/quota checks. Independent LibreOffice/
+Poppler passed the standard three/five-page regressions and rendered both native-input
+exports with both expected Ukrainian values; the fast-commit first page was inspected.
+This verifies Chromium's native IME protocol, not every physical OS input method or
+Microsoft Word. All volumes preserved. Next: protected E05.5 PR/verified merge, then
+E05.6 workspace controls and the remaining E06 persistence integration.

@@ -81,3 +81,29 @@ test("adapter creates a selected manual field and exports the same source model 
   expect(editor.exportSnapshot().document).toEqual(saved.document);
   restored.destroy(); editor.destroy(); host.remove();
 });
+
+test("identical sidebar echoes terminate without revisions or history and meaningful changes undo together", () => {
+  const host = document.createElement("div"); document.body.append(host);
+  const changed = vi.fn();
+  let editor: ReturnType<typeof mountEditor> | undefined;
+  let presentation: EditorPresentation;
+  const updated = vi.fn((value: EditorPresentation) => {
+    presentation = value;
+    if (editor) for (const field of value.fields) expect(editor.updateField(field.key, field.value)).toBe(false);
+  });
+  editor = mountEditor(host, corpus, { onChange: changed, onUpdate: updated });
+  const first = presentation!.fields[0], initial = editor.exportSnapshot();
+  expect(editor.updateField(first.key, first.value)).toBe(false);
+  expect(editor.updateField("missing", "ignored")).toBe(false);
+  expect(editor.exportSnapshot()).toEqual(initial);
+  expect(updated).toHaveBeenCalledTimes(1);
+  expect(editor.updateField(first.key, "Ґанна Їжак")).toBe(true);
+  expect(changed).toHaveBeenCalledTimes(1); expect(updated).toHaveBeenCalledTimes(2);
+  expect(presentation!.fields.filter(field => field.key === first.key).map(field => field.value)).toEqual(["Ґанна Їжак", "Ґанна Їжак"]);
+  expect(editor.undo()).toBe(true);
+  expect(editor.exportSnapshot().document).toEqual(initial.document);
+  expect(editor.undo()).toBe(false);
+  expect(editor.redo()).toBe(true);
+  expect(editor.exportSnapshot().revision).toBe(3);
+  editor.destroy(); host.remove();
+});
