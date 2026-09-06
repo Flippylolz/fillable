@@ -1,6 +1,6 @@
 # Architecture
 
-Status: target design; not implemented.
+Status: Docker/API/i18n foundation implemented; domain and editor sections remain target design. See the execution ledger for task-level evidence.
 
 ## Components
 
