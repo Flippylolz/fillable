@@ -1,11 +1,21 @@
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 
+from app.errors import AppError, ErrorEnvelope, register_errors
 from app.infrastructure import dependencies_ready
 
-app = FastAPI(title="Fillable", docs_url=None, redoc_url=None)
+app = FastAPI(
+    title="Fillable",
+    version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
+    responses={
+        status: {"model": ErrorEnvelope} for status in (400, 404, 405, 422, 500, 503)
+    },
+)
+register_errors(app)
 
 
 class Health(BaseModel):
@@ -21,5 +31,5 @@ def health() -> Health:
 @app.get("/api/ready", response_model=Health)
 def ready() -> Health:
     if not dependencies_ready():
-        raise HTTPException(503, detail={"code": "dependencies_unavailable"})
+        raise AppError(503, "dependencies_unavailable")
     return Health(status="ok")

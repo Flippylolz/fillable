@@ -4,5 +4,10 @@
   "health.loading": "Checking connection…",
   "health.ok": "Connected to the server",
   "health.error": "Could not connect to the server",
-  "health.retry": "Try again"
+  "health.retry": "Try again",
+  "errors.dependencies_unavailable": "The server is temporarily unavailable. Try again later.",
+  "errors.not_found": "Not found.",
+  "errors.method_not_allowed": "This action is unavailable.",
+  "errors.invalid_request": "Check the entered information.",
+  "errors.internal_error": "Something went wrong. Try again."
 }

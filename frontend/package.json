@@ -7,10 +7,12 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run --coverage",
-    "check:i18n": "node scripts/check-i18n.mjs"
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "generate:api": "openapi-typescript generated/openapi.json -o generated/api.d.ts"
   },
   "dependencies": {
     "i18next": "26.4.2",
+    "openapi-fetch": "0.17.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-i18next": "17.0.13"
@@ -23,6 +25,7 @@
     "@vitejs/plugin-react": "6.1.1",
     "@vitest/coverage-v8": "5.0.0",
     "jsdom": "29.1.1",
+    "openapi-typescript": "7.13.0",
     "typescript": "5.9.3",
     "vite": "8.2.2",
     "vitest": "5.0.0"

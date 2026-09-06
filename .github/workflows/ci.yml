@@ -18,6 +18,11 @@ jobs:
         run: cp .env.example .env
       - name: Build check images
         run: docker compose -p fillable-checks -f compose.test.yaml build
+      - name: Check generated API drift
+        run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/output" backend-test python /checks/export_openapi.py /output/openapi.json
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/app/generated" frontend-test npm run generate:api
+          git diff --exit-code -- frontend/generated
       - name: Validate runtime Compose configurations
         run: |
           docker compose -f compose.yaml -f compose.dev.yaml config --quiet
