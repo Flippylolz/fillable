@@ -69,3 +69,8 @@ a { color: #1967d2; }
 .library-delete dialog p { font-size: 0.95rem; margin-block: 1rem; }
 .dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.7rem; }
 .dialog-actions .confirm-delete { background: #b3261e; color: #fff; border-color: #b3261e; }
+.library-copy { margin: 0.5rem 0; }
+.library-copy form { display: grid; gap: 0.6rem; }
+.library-copy label { font-size: 0.85rem; }
+.library-copy input { display: block; width: 100%; box-sizing: border-box; margin-top: 0.3rem; padding: 0.55rem; border: 1px solid #bdc1c6; border-radius: 0.3rem; }
+.library-copy button { font-size: 0.8rem; justify-self: start; }

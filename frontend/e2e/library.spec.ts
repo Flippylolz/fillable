@@ -126,9 +126,48 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
   await page.getByRole("tab", { name: "Шаблони", exact: true }).click();
 
+  const copyTitle = `Незалежний документ — ${testInfo.project.name}`;
+  let lostCopy = true;
+  const copyKeys: string[] = [];
+  await page.route("**/api/documents/*/copies", async route => {
+    copyKeys.push(route.request().headers()["idempotency-key"]);
+    if (lostCopy) {
+      lostCopy = false;
+      const committed = await route.fetch(); expect(committed.status()).toBe(201);
+      await route.abort(); return;
+    }
+    await route.continue();
+  });
+  const beforeCopy = await (await page.request.get("/api/storage/usage")).json();
+  await templateCard.getByRole("button", { name: "Використати шаблон", exact: true }).click();
+  await templateCard.getByRole("textbox", { name: "Назва нового документа", exact: true }).fill(copyTitle);
+  await templateCard.getByRole("button", { name: "Створити та відкрити документ", exact: true }).click();
+  await expect(templateCard.getByRole("alert")).toBeVisible();
+  await expect(templateCard.getByRole("textbox")).toHaveValue(copyTitle);
+  await page.screenshot({ path: testInfo.outputPath("template-copy-retry-uk.png"), fullPage: true });
+  await templateCard.getByRole("button", { name: "Створити та відкрити документ", exact: true }).click();
+  await expect(page.getByRole("heading", { name: copyTitle, exact: true })).toBeVisible();
+  const copyId = page.url().split("/").pop();
+  expect(copyKeys[0]).toBe(copyKeys[1]);
+  const afterCopy = await (await page.request.get("/api/storage/usage")).json();
+  expect(afterCopy.used_bytes).toBe(beforeCopy.used_bytes + bytes.length);
+  await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("template-copy-workspace-uk.png"), fullPage: true });
+  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  await page.getByRole("tab", { name: "Шаблони", exact: true }).click();
   await templateCard.getByRole("button", { name: "Видалити", exact: true }).click();
   await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
   await expect(templateCard).toHaveCount(0);
+  const independentDownload = await page.request.get(`/api/documents/${copyId}/download`);
+  expect(independentDownload.ok()).toBeTruthy(); expect(await independentDownload.body()).toEqual(bytes);
+  await page.getByRole("tab", { name: "Документи", exact: true }).click();
+  const copyCard = page.getByRole("article", { name: copyTitle });
+  await copyCard.getByRole("link", { name: "Відкрити", exact: true }).click();
+  await expect(page.getByRole("heading", { name: copyTitle, exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  await copyCard.getByRole("button", { name: "Видалити", exact: true }).click();
+  await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
+  await expect(copyCard).toHaveCount(0);
   await page.getByRole("button", { name: "Вийти", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
 });

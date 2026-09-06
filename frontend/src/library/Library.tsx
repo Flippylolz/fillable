@@ -7,9 +7,8 @@ import "./library.css";
 import { DownloadSaved } from "./DownloadSaved";
 import { ProcessingStatus } from "./ProcessingStatus";
 import { DeleteResource } from "./DeleteResource";
-
-// getRandomValues also works on the explicitly supported HTTP origin.
-function newKey() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), value => value.toString(16).padStart(2, "0")).join(""); }
+import { UseTemplate } from "./UseTemplate";
+import { newKey } from "./operationKey";
 
 export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen }: {
   csrfToken: string; disabled: boolean; onBusy: (value: boolean) => void;
@@ -126,6 +125,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen 
           if (blocked || onOpen) event.preventDefault();
           if (!blocked) onOpen?.(item.id);
         }}>{t("library.open")}</a><DownloadSaved item={item} disabled={blocked} /></>}
+        {!item.deletion_pending && item.kind === "template" && <UseTemplate key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onCreated={created => { setTab("document"); setRevision(value => value + 1); onSaved(); onOpen?.(created.id); }} />}
         <DeleteResource item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
       </article>)}</div>
       {data.next && <button type="button" disabled={data.more || blocked} onClick={() => void data.loadMore()}>{t(data.more ? "library.loading" : "library.more")}</button>}
