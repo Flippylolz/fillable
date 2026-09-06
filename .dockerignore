@@ -1,0 +1,11 @@
+.git
+.env
+AI/DEPLOYMENT.local.md
+**/node_modules
+**/coverage
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.coverage
+**/dist
+var

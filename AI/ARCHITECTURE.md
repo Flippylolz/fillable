@@ -126,3 +126,12 @@ Jobs carry identifiers and revision references rather than document bytes or cre
 - GitHub Actions is the CI and deployment orchestrator. CI coverage gates start in E01; E08 deploys the verified images to the user's server only after the earlier epics pass. See [CI and deployment](CI_CD.md).
 - The supplied target hosts other services. Use new unused ports, isolated Compose resources, and the existing shared nginx without taking over its existing listeners or TLS. [Deployment target](DEPLOYMENT_TARGET.md) governs preflight, WEF discovery, validation, graceful reload, and checks for existing-service regressions.
 - The configured HTTP origin requires a Fillable-specific HttpOnly/SameSite session cookie without Secure, plus CSRF and exact-origin checks including the port. HTTP traffic is unencrypted and cookies are not scoped by port; D019 records this limitation. Enable Secure for a future explicitly configured HTTPS origin.
+
+## E01.1 implementation checkpoint
+
+`backend/app/main.py` provides a typed process-health response at `/api/health`.
+This is not dependency readiness; PostgreSQL/Redis readiness arrives with E01.3.
+The React shell consumes the same-origin endpoint with bounded timeout,
+unmount cancellation, and retry. Shared i18next resources default to Ukrainian;
+formatting and page language update without remounting the shell. Product pages,
+editor, persistence, account language storage, and quota services remain pending.

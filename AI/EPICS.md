@@ -19,7 +19,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
-| E01 | Docker foundation and application skeleton | Accepted stack | ready |
+| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1 scaffold and merge gate |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
@@ -303,3 +303,22 @@ When work begins, update the relevant status and append a concise record here: d
 2026-09-06: P03 prepares `AI/AUTONOMOUS_AGENT_PROMPT.md` on `task/p03-autonomous-agent-prompt` for the user's next implementation agent. It directs continuous task delivery with one PR per task, actual CI/coverage enforcement before code merges, bounded escalation only for unavoidable user input, preservation of all accepted constraints, deployment last, and evidence-based resumption/completion. Creating the prompt does not launch an agent, scheduler, or implementation work. Validation and PR evidence follow before delivery.
 
 2026-09-06: P03 submitted as [PR #5](https://github.com/Flippylolz/fillable/pull/5), status at submission `in_review`. Validation passed for 18 public Markdown files, 90 local links, balanced fences, and Git whitespace. Reviewed prompt consistency against the roadmap, agent rules, PR workflow, and accepted product/deployment constraints. Public docs exclude the local deployment identity; synthetic fixtures are unchanged. No application tests, coverage, agent launch, or implementation is claimed. Record the confirmed merge in this PR's body first and carry it into the next task's ledger update. A user-started implementation agent should inspect current state and begin/resume the next ready task, initially E01.1 if still outstanding.
+
+2026-09-06: P03 verified merged through [PR #5](https://github.com/Flippylolz/fillable/pull/5)
+at `7ae211784066b034ef9f5f2cb5f577edeb65e5a2`. Clean checkout and remote inspected;
+no open PRs or unfinished code existed. E01.1 started on `task/e01-1-app-foundation`
+from that origin/main commit. Scaffold includes typed FastAPI health, localized
+React/Vite shell, exact dependency locks and digest-pinned non-root Docker check
+images, coverage gates and initial catalog checks. Required strict `ci-required`
+GitHub protection is enabled, including administrators, before any code merge.
+E01.1 remains `in_progress` pending local verification and its task PR. Deployment
+and all existing server services are untouched. Next: finish tests, submit E01.1,
+verify CI/auto-merge and then begin E01.2 from the merged main revision.
+
+2026-09-06: E01.1 local Docker verification passed: backend health contract and
+Ruff, 9/9 executable lines (100%), no executable branches (0/0, not applicable);
+frontend TypeScript/production build, catalog checks, nine behavior tests,
+27/27 lines and 14/14 branches (both 100%). Raw coverage source inclusion passed.
+Coverage negative tests reject 89.99%, invalid counts, missing/invalid reports,
+and unreported source; exactly 90% passes. Browser, migrations, persistence, and
+editor checks are not claimed by this scaffold task. Next: PR and Actions verification.

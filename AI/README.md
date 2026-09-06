@@ -12,14 +12,14 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 - UI localization is required in MVP: Ukrainian by default, English as secondary, all application copy in i18n catalogs, and a saved language switcher in the profile. See [Localization](I18N.md); changing UI language preserves original document content.
 - MVP includes a fixed, translucent, noninteractive [Git version badge](VERSION_BADGE.md) showing the deployed commit's first seven characters or `development`. The supplied design is recorded; implementation awaits E01.8.
 - CI must block below 90% coverage. Deployment is final epic E08 through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`, using a new port and shared nginx while preserving existing services.
-- Planning and a Ukrainian synthetic DOCX baseline are available; no application, migrations, Compose configuration, or executable application test suite exists yet.
+- Planning and a Ukrainian synthetic DOCX baseline are available. E01.1 introduces the React/FastAPI shell and Docker coverage checks; see the execution ledger for PR status. Persistent services, migrations, and product pages remain pending.
 - Documents are primarily Ukrainian. [Test corpus](TEST_CORPUS.md) provides an initial generated fixture and expected outcomes while real examples are unavailable.
 - The editor must use free components; a project-owned implementation is an allowed fallback. Selection and DOCX fidelity remain E00 work.
 - AI is outside MVP. Detection uses rules, existing controls, review, and manual fields. A possible Groq/free-allowance feature is deferred.
 - Local and production environments only; no backups. Persistent data and version-history UI remain required.
 - Production URL: `http://<DEPLOY_HOST>:<PORT>`, served through shared nginx on a new public port; the numeric port is pending inspection. Supplied connection values are retained in ignored `AI/DEPLOYMENT.local.md` and are not published in this repository.
 - GitHub repository: [Flippylolz/fillable](https://github.com/Flippylolz/fillable), created by the user; local `origin` points to it. The public repository was empty before the documented P00 history bootstrap on 2026-09-06.
-- Application CI is not implemented. Classic branch protection and rulesets were checked on 2026-09-06 and were absent; E01 must establish required coverage checks before any application PR merges. No deployment or server inspection has occurred.
+- E01.1 implements application coverage CI. Actual `main` protection now requires up-to-date `ci-required` from GitHub Actions, including administrators, before the first application merge. No deployment or server inspection has occurred.
 - Every task must use its own branch and PR. GitHub auto-merge is enabled at repository level; agents enable it separately for each ready PR after verifying the required merge gates.
 
 ## Documentation map
