@@ -151,7 +151,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   expect(copyKeys[0]).toBe(copyKeys[1]);
   const copyFields = await (await page.request.get(`/api/documents/${copyId}/fields`)).json();
   expect(copyFields.status).toBe("succeeded");
-  expect(copyFields.snapshot.candidates).toHaveLength(23);
+  expect(copyFields.snapshot.candidates).toHaveLength(28);
   const afterCopy = await (await page.request.get("/api/storage/usage")).json();
   expect(afterCopy.used_bytes).toBe(beforeCopy.used_bytes + bytes.length);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();

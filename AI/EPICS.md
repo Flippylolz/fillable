@@ -22,7 +22,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1/E04.2a merged; E04.2b durable results |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1/E04.2 merged; E04.3 blank rules |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
@@ -990,3 +990,22 @@ results through the real dispatcher/forked worker before and after recreation,
 results surviving source deletion and unchanged saved bytes/quota. All isolated
 volumes preserved. No review UI is claimed; E04.5 consumes the new owned result API.
 Next: protected E04.2b PR and verified merge, then E04.3 conservative blank rules.
+
+2026-09-06: E04.2b verified merged through [PR #37](https://github.com/Flippylolz/fillable/pull/37),
+commit `6135ad60934842d0cee4538e3bf9fa3d054cd2d4`; Actions 34053025320 passed both
+required checks for exact head `60dd3adf01f8bc1f4b7d0f577b09403322a2fe86`.
+Main synchronized. E04.3 starts on `task/e04-3-blank-discovery`: conservative labeled
+blank proposals, combined with explicit discovery, never automatically accepted.
+
+E04.3 local verification passed: 218 backend tests, raw 2641/2658 lines (99.36%)
+and 781/800 branches (97.63%); 78 frontend tests, 613/620 lines (98.87%) and
+547/582 branches (93.99%). Both real unimported-source negative probes passed.
+The first frontend run had two editor-readiness failures during concurrent Docker
+verification; the complete isolated rerun passed without source changes. Fresh
+index `/private/tmp/fillable-verify.FV8Fr6` passed 3 development and 14 production
+browser tests and verified 28 durable proposals through the real worker before
+and after recreation. All five labeled corpus blanks have exact expected anchors;
+ordinary prose, protected controls, ambiguous empty cells and budget limits are
+covered. No blank is auto-accepted. Existing volumes preserved. Required protection
+remains strict Actions `ci-required`, including administrators. Next: protected
+E04.3 PR and verified merge, then E04.4 per-detector accuracy evaluation.

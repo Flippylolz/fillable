@@ -38,7 +38,7 @@ with httpx.Client(base_url=origin, headers={"Origin": origin}, timeout=30) as cl
     assert fields.json()["status"] == "succeeded"
     snapshot = fields.json()["snapshot"]
     assert snapshot["source_version_id"] == saved["current_version_id"]
-    assert len(snapshot["candidates"]) == 23
+    assert len(snapshot["candidates"]) == 28
     assert len(snapshot["decisions"]) == 5
     assert client.post(endpoint).json()["id"] == identity
     download = client.get(f"/api/documents/{saved['id']}/download")
