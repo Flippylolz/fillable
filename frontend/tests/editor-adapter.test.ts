@@ -53,6 +53,12 @@ test("adapter owns its input, exported snapshots and presentation without leakin
   expect(editor.focusField("missing")).toBe(false);
   expect(editor.removeField("missing")).toBe(false);
   expect(changed).toHaveBeenCalledTimes(calls);
+  editor.updateField(key, "\ufffe");
+  expect(editor.exportSnapshot().fieldValuesValid).toBe(false);
+  expect(presentation!.fieldValuesValid).toBe(false);
+  expect(presentation!.fields[0].issue).toBe("invalid_text");
+  editor.undo();
+  expect(editor.exportSnapshot().fieldValuesValid).toBe(true);
   editor.destroy(); expect(host.children).toHaveLength(0); host.remove();
 });
 

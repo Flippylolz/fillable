@@ -220,7 +220,11 @@ scripts/verify-docx-render.sh /absolute/path/to/browser-results
 
 This builds a separate pinned LibreOffice/Poppler QA image and checks original
 identity, three-page rendering, unchanged-page pixels and Ukrainian text. Inspect
-the generated original/edited PNGs when changing transformations. Reports contain
+the generated original/edited PNGs when changing transformations. E05.3 adds the
+five-page `multiline.docx` browser export, repeated Ukrainian/astral text counts and
+non-overlapping multiline control checks. The pinned QA image uses LibreOffice 25.2
+and Noto Color Emoji; older 7.4 rendering did not handle multiline controls correctly.
+Reports contain
 only synthetic fixture data; no application storage paths or user uploads are used.
 
 ## Local accounts and sessions (E02.1)

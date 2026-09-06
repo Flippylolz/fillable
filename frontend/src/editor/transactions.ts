@@ -20,6 +20,24 @@ export function fieldTextInput(
   return true;
 }
 
+// Native multiline insertion can replace the control's DOM wrapper before DOM parsing.
+// Apply it while the verified editor selection is still inside the same field.
+export function fieldBeforeInput(editor: Pick<EditorView, "state" | "dispatch">, event: Event): boolean {
+  const input = event as InputEvent;
+  if (input.isComposing) return false;
+  const value = input.inputType === "insertParagraph" || input.inputType === "insertLineBreak" ? "\n"
+    : input.inputType === "insertText" || input.inputType === "insertReplacementText" ? input.data : null;
+  if (value === null || !/[\n\r\t]/.test(value)) return false;
+  if (!fieldTextInput(editor, editor.state.selection.from, editor.state.selection.to, value)) return false;
+  event.preventDefault();
+  return true;
+}
+
+export function fieldPaste(editor: Pick<EditorView, "state" | "dispatch">, event: ClipboardEvent): boolean {
+  const value = event.clipboardData?.getData("text/plain");
+  return !!value && fieldTextInput(editor, editor.state.selection.from, editor.state.selection.to, value);
+}
+
 // getRandomValues is available at the accepted HTTP origin as well as HTTPS.
 export function newFieldId(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>

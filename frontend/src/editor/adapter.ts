@@ -5,14 +5,15 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import type { components } from "../../generated/api";
 import { editorSchema, fields, type FieldOccurrence } from "./model";
-import { createField, fieldTextInput, focusField, linkedChanges, newFieldId, paragraphIdentities, removeField, updateField } from "./transactions";
+import { createField, fieldBeforeInput, fieldPaste, fieldTextInput, focusField, linkedChanges, newFieldId, paragraphIdentities, removeField, updateField } from "./transactions";
 import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
+import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
 
-export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value">;
+export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 export type ReviewOptions = { label: string; key: string; type: string };
-export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean };
-export type EditorSnapshot = { document: object; revision: number };
+export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean };
+export type EditorSnapshot = { document: object; revision: number; fieldValuesValid: boolean };
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
 export function mountEditor(host: HTMLElement, initialDocument: object, callbacks: {
@@ -27,6 +28,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo }), keymap(baseKeymap)],
     }),
     handleTextInput: fieldTextInput,
+    handleDOMEvents: { beforeinput: fieldBeforeInput },
+    handlePaste: fieldPaste,
     dispatchTransaction(transaction: Transaction) {
       const next = editor.state.apply(reviewChanges(editor.state, paragraphIdentities(linkedChanges(editor.state, transaction))));
       editor.updateState(next);
@@ -38,12 +41,14 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     },
   });
   function exportSnapshot(): EditorSnapshot {
-    return { document: structuredClone(editor.state.doc.toJSON()), revision };
+    return { document: structuredClone(editor.state.doc.toJSON()), revision,
+      fieldValuesValid: fields(editor.state.doc).every(field => fieldValueIssue(field.value) === null) };
   }
   function publish() {
     const occurrences = fields(editor.state.doc);
     const active = occurrences.find(field => editor.state.selection.from > field.pos && editor.state.selection.from < field.pos + field.size)?.id ?? "";
-    callbacks.onUpdate({ fields: occurrences.map(({ id, key, label, value }) => ({ id, key, label, value })),
+    const summaries = occurrences.map(({ id, key, label, value }) => ({ id, key, label, value, issue: fieldValueIssue(value) }));
+    callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
       active, review: structuredClone(reviewState(editor.state.doc)), unsupported });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {

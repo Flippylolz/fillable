@@ -188,5 +188,7 @@
   "editor.previousField": "Previous field",
   "editor.nextField": "Next field",
   "editor.occurrence": "Field location {{number}}: {{label}}",
-  "editor.activeField": "Selected location"
+  "editor.activeField": "Selected location",
+  "editor.value.too_long": "This value exceeds {{limit}} characters. It remains in your draft; shorten it before exporting or saving.",
+  "editor.value.invalid_text": "This value contains characters that DOCX cannot store. It remains in your draft; remove them before exporting or saving."
 }

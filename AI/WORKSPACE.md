@@ -75,3 +75,29 @@ review panel, whose invalid inputs now reference their localized error descripti
 Acceptance/dismissal/missing states and undo remain the same editor-owned review metadata.
 E05.3 completes long/multiline value synchronization; E05.4 completes manual-field and
 missing-control behavior. Those remaining acceptance checks are not claimed by navigation.
+
+## Field values and recoverable validation
+
+E05.3 uses resizable multiline textareas for sidebar values. Newlines, tabs, long text,
+Ukrainian characters and supplementary Unicode use the same editor transactions as
+ordinary text. Direct editor changes refresh these controls; there is no independent
+sidebar value store. Linked changes and their undo/redo retain the existing identities
+and source formatting. The Python exporter already emits line breaks/tabs with multiline
+control properties; the browser now exercises that path through actual export/reopen.
+Native multiline insertion can replace a control's DOM wrapper before ProseMirror parses
+the mutation. A scoped `beforeinput` handler applies multiline text while the selection
+still refers to that control; a plain-text paste handler follows the same path. Input outside a single field and `beforeinput` during active composition remain with
+the ordinary editor handlers.
+
+Field values follow the versioned metadata limit of 65,536 Unicode code points and XML
+1.0 text validity. Empty text, tab, LF, CR and valid supplementary characters are allowed;
+forbidden XML characters and lone surrogates are flagged. Invalid input remains in the
+working document and linked sidebar controls with a localized, associated error. Users
+can correct or undo it; no truncation, replacement or silent discard occurs. Language
+changes preserve the draft and its validation state.
+
+Adapter snapshots and presentation expose `fieldValuesValid`. This only describes field
+values, not full DOCX/model validity or server authorization. The opt-in round-trip proof
+disables export until invalid values are corrected. E06 must consume this state for save
+UX and independently validate every server-side save; current production saved-download
+bytes and storage usage remain unchanged by draft editing.

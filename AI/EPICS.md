@@ -23,7 +23,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.4 merged; E04.5 review integration |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1/E05.2 merged; E05.3 in verification; E05.4–E05.6 pending |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
@@ -1176,3 +1176,38 @@ sidebar screenshots were inspected on desktop and mobile. Independent LibreOffic
 checks passed no-edit byte/pixel identity, three edited pages, unchanged page two and
 Ukrainian text. Microsoft Word was not used; all volumes preserved. Next: protected
 E05.2 PR/verified merge, then E05.3 value synchronization and long/multiline input.
+
+2026-09-07: E05.2 verified merged through [PR #44](https://github.com/Flippylolz/fillable/pull/44),
+commit `72656eddb9e6d67dfe2238acffd3ef7b35f164c7`; Actions 34062557010 passed both
+required checks for exact head `7d61d46a74780fd806a8cc41d7290d003b1473cb`.
+Main synchronized. E05.3 starts on `task/e05-3-field-values`: multiline/long Unicode
+value synchronization, retained invalid drafts with feedback, and actual export/reopen
+coverage. Production saved writes still belong to E06.
+
+E05.3 implements multiline textareas and field-value validation without a second value
+store. Invalid values remain in the editable draft with associated localized errors and
+can be corrected or undone. Adapter snapshots expose field-value validity; the opt-in
+proof blocks invalid exports. The first native browser check exposed multiline insertion
+replacing the control DOM before parsing. Scoped beforeinput/paste handlers now retain
+control identity and linked values through editor transactions. Full native rerun passed.
+
+The old QA renderer overlapped multiline native values despite exact DOCX reopening.
+Boolean/run variants did not fix it; no exporter workaround was retained. Official
+LibreOffice documentation places multiline-control support at 24.2. QA now pins Writer
+25.2.3, Poppler 25.03, Liberation 2.1.5 and Noto Color Emoji 2.051 on the verified Trixie
+image. The same exported bytes render correctly. Required rendering now checks five
+multiline pages, exact repeated Ukrainian/astral text and separate rendered lines for
+both native occurrences, alongside the original three-page identity regressions.
+See [Editor feasibility](EDITOR_FEASIBILITY.md); the application image is unaffected.
+
+Final local checks passed: 109 frontend tests, raw 834/839 lines (99.40%) and 871/902
+branches (96.56%); 243 backend tests, 2779/2796 lines (99.39%) and 843/862 branches
+(97.80%). Lint, typing, catalogs/build, raw gates and both real unimported-source probes
+passed. Fresh index `/private/tmp/fillable-verify.1olOLr` passed 5 development and 16
+production browser checks, actual export/reopen, worker processing, byte/quota invariants
+and persistent recreation. UK/EN multiline controls were inspected on desktop/mobile.
+The updated independent renderer passed all checks against those browser outputs; all
+five multiline and all six original/edited pages were inspected. Source justification,
+explicit breaks and the resulting pagination remain intact. Microsoft Word was not used.
+All volumes preserved. Next: protected E05.3 PR/verified merge, then E05.4 manual/missing
+field integration; E06 still owns production retained saves and revision history.
