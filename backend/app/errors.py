@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
 ErrorCode = Literal[
+    "current_password_invalid",
     "authentication_required",
     "invalid_credentials",
     "forbidden",

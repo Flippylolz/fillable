@@ -279,3 +279,10 @@ in [Storage quotas](STORAGE_QUOTAS.md#e025-usage-and-operator-allocation-command
 These commands share database locks with retained allocations; lowering a limit
 preserves existing bytes. Ordinary web users receive only their authenticated
 `GET /api/storage/usage` response. No quota administration HTTP route is exposed.
+
+E02.6 adds a separate synthetic `profile@example.test` account to the explicit CI
+and fresh-index browser setup. Desktop/mobile checks persist a Unicode display name,
+reject an incorrect current password, rotate credentials, revoke a second browser
+session, and restore the fixture through the UI. Normal startup provisions neither
+browser fixture. Profile screenshots are retained under the verifier's printed
+`browser-results/production/run` directory.

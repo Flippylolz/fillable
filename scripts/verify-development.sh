@@ -24,6 +24,7 @@ trap cleanup EXIT
 dev up --build --wait --wait-timeout 120
 # Explicit synthetic fixture only; normal startup never provisions an account.
 dev exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
+dev exec -T api python -m app.accounts.cli provision --email profile@example.test --display-name "Тест профілю" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python /checks/verify_storage_persistence.py write
 dev exec -T worker python /checks/verify_storage_persistence.py read
 dev exec -T worker python -m app.storage.quota_cli default --bytes 1048576

@@ -36,7 +36,22 @@ checks include the port. Cookies themselves are not port-isolated. This preserve
 D019, rather than silently changing the requested public origin. The four-page UI
 restores the saved account language on session load/login; successful logout clears
 the password field. Failed requests retain inputs/authenticated state as appropriate.
-Profile editing and language preference updates remain E02.6/E02.7.
+E02.6 adds profile editing; language preference updates remain E02.7.
+
+The profile shows read-only email and authenticated storage usage, and permits a
+trimmed nonblank display name up to 120 characters. `PATCH /api/profile` accepts
+only `display_name`. `POST /api/profile/password` requires the current password and
+a new 12–1024-character password; five failed verifications per 15-minute window
+are allowed per account. Successful changes revoke every existing session and issue
+a fresh current cookie/CSRF pair. Invalid current credentials preserve sessions.
+Both mutations recheck active account/session state under transaction locks and
+reject extra fields, including role, quota and language. Credential operations
+acquire attempt buckets before user rows to avoid reset/login lock inversion.
+
+Profile and logout requests are serialized in the UI. Failed saves preserve drafts;
+successful password changes clear credential inputs. Usage failures have an explicit
+retry and never display fabricated zero counters. The responsive profile is currently
+the signed-in content of the foundation shell; E03 supplies library navigation.
 
 Validation must include real PostgreSQL migrations/constraints, concurrent attempt
 accounting, session rotation/expiry/revocation, inactive users, role separation,

@@ -5,16 +5,21 @@ import { api, apiErrorMessage } from "../api";
 import { setLanguage } from "../i18n";
 import "./authentication.css";
 
-type Session = components["schemas"]["SessionInfo"];
+export type Session = components["schemas"]["SessionInfo"];
 
 export function Authentication({
   children,
 }: {
-  children: (session: Session) => ReactNode;
+  children: (session: Session, actions: {
+    accept: (session: Session) => void;
+    busy: boolean;
+    setBusy: (busy: boolean) => void;
+  }) => ReactNode;
 }) {
   const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
   const [busy, setBusy] = useState(true);
+  const [childBusy, setChildBusy] = useState(false);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [email, setEmail] = useState("");
@@ -46,7 +51,7 @@ export function Authentication({
 
   async function submit(event?: FormEvent) {
     event?.preventDefault();
-    if (!session || busy) return;
+    if (!session || busy || childBusy) return;
     setBusy(true);
     setError("");
     try {
@@ -89,10 +94,10 @@ export function Authentication({
       {session?.user && (
         <>
           <p>{t("auth.signedIn", { name: session.user.display_name })}</p>
-          <button disabled={busy} onClick={() => void submit()}>
+          <button disabled={busy || childBusy} onClick={() => void submit()}>
             {t("auth.logout")}
           </button>
-          {children(session)}
+          {children(session, { accept, busy, setBusy: setChildBusy })}
         </>
       )}
       {session && !session.user && (

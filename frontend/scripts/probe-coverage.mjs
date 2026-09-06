@@ -5,8 +5,13 @@ import { spawnSync } from 'node:child_process';
 assert.equal(process.cwd(), '/app');
 const probe = 'src/coverage_probe.ts';
 assert.equal(fs.existsSync(probe), false);
+// Scale the deliberately uncovered source with the application so growth cannot
+// make this negative test pass the line gate while only failing the branch gate.
+const sourceLines = fs.readdirSync('src', { recursive: true })
+  .filter(path => /\.(ts|tsx)$/.test(path))
+  .reduce((total, path) => total + fs.readFileSync(`src/${path}`, 'utf8').split('\n').length, 0);
 try {
-  fs.writeFileSync(probe, 'export function untested(value: number) {\n' + Array.from({ length: 30 }, (_, i) => `  if (value === ${i}) return ${i};\n`).join('') + '  return -1;\n}\n');
+  fs.writeFileSync(probe, 'export function untested(value: number) {\n' + Array.from({ length: Math.max(30, sourceLines) }, (_, i) => `  if (value === ${i}) return ${i};\n`).join('') + '  return -1;\n}\n');
   const run = spawnSync('npm', ['test', '--', '--reporter=json', '--outputFile=/tmp/probe-results.json'], { encoding: 'utf8' });
   assert.equal(run.status, 1, run.stdout + run.stderr);
   const results = JSON.parse(fs.readFileSync('/tmp/probe-results.json'));
