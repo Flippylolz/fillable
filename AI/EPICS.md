@@ -1152,3 +1152,27 @@ checks, worker discovery, retained byte/quota invariants and persistent recreati
 Independent LibreOffice/Poppler checks passed no-edit byte/pixel identity, three edited
 pages, unchanged page two and Ukrainian text. Microsoft Word was not used; all volumes
 preserved. Next: protected E05.1 PR/verified merge, then E05.2 sidebar validation/navigation.
+
+2026-09-06: E05.1 verified merged through [PR #43](https://github.com/Flippylolz/fillable/pull/43),
+commit `35ad66cc43583c6adb3f640b51c55001d06fa99b`; Actions 34061805890 passed both
+required checks for exact head `b55c617ae973dc8b95d310e51969c8b21eb18afa`.
+Main synchronized. E05.2 starts on `task/e05-2-sidebar-navigation`: accessible occurrence
+navigation, explicit active-field status and retained review validation/conflict feedback.
+Long/multiline value synchronization continues in E05.3; manual/missing controls in E05.4.
+
+E05.2 adds occurrence-specific sidebar cards, previous/next navigation with explicit
+boundaries, localized selected-position status and visible/accessible active markers.
+Repeated values remain separately inspectable with conflict feedback. Empty-state guidance
+and review error associations are localized; navigation and locale changes do not dirty
+content. See [Workspace](WORKSPACE.md).
+
+Local verification passed: 105 frontend tests, raw 810/815 lines (99.39%) and 834/865
+branches (96.42%); 243 backend tests, 2779/2796 lines (99.39%) and 843/862 branches
+(97.80%). Lint, typing, catalogs/build, independent raw gates and both real unimported-
+source negative probes passed. Fresh index `/private/tmp/fillable-verify.K48uup` passed
+4 development and 16 production browser checks, including real occurrence navigation
+without dirtying the source, plus worker/persistence/byte/quota checks. Ukrainian/English
+sidebar screenshots were inspected on desktop and mobile. Independent LibreOffice/Poppler
+checks passed no-edit byte/pixel identity, three edited pages, unchanged page two and
+Ukrainian text. Microsoft Word was not used; all volumes preserved. Next: protected
+E05.2 PR/verified merge, then E05.3 value synchronization and long/multiline input.

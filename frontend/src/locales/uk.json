@@ -187,5 +187,14 @@
   "review.dismissed_one": "Відхилено ({{formattedCount}})",
   "review.dismissed_few": "Відхилено ({{formattedCount}})",
   "review.dismissed_many": "Відхилено ({{formattedCount}})",
-  "review.dismissed_other": "Відхилено ({{formattedCount}})"
+  "review.dismissed_other": "Відхилено ({{formattedCount}})",
+  "editor.values": "Значення полів",
+  "editor.noFields": "Полів ще немає. Виділіть текст у документі, щоб створити поле, або перегляньте пропозиції.",
+  "editor.navigation": "Навігація полями",
+  "editor.chooseLocation": "Виберіть розташування поля.",
+  "editor.position": "Розташування {{current}} з {{total}}",
+  "editor.previousField": "Попереднє поле",
+  "editor.nextField": "Наступне поле",
+  "editor.occurrence": "Розташування поля {{number}}: {{label}}",
+  "editor.activeField": "Вибране розташування"
 }

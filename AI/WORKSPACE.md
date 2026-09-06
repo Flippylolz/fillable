@@ -58,3 +58,20 @@ loads use the owned content endpoint and downloads remain explicitly saved bytes
 E06. The frontend adapter does not write DOCX files, bypass quota accounting or rebuild
 documents from rendered HTML. Locale changes update the existing editor's accessible
 label while retaining document state, selection, review inputs and history.
+
+## Sidebar navigation and review feedback
+
+E05.2 gives each field occurrence an individually named card, including its localized
+position to distinguish repeated labels. Previous/next navigation uses immutable control
+identities and selects the precise editor location without a document transaction. With
+no selected field, next starts at the first and previous at the last; boundaries disable
+the corresponding button. The selected card has a visible marker and `aria-current`,
+and a status message reports its position. Language changes preserve that selection.
+
+Linked occurrences remain separate when their values conflict, with an explicit review
+message; navigation never resolves a conflict or chooses a value. An empty sidebar explains
+manual selection and proposal review. Label/group validation continues in the adjacent
+review panel, whose invalid inputs now reference their localized error description.
+Acceptance/dismissal/missing states and undo remain the same editor-owned review metadata.
+E05.3 completes long/multiline value synchronization; E05.4 completes manual-field and
+missing-control behavior. Those remaining acceptance checks are not claimed by navigation.
