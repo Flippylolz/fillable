@@ -1,5 +1,8 @@
 {
   "app.title": "Fillable",
+  "versionBadge.text": "version: <value>{{version}}</value>",
+  "versionBadge.development": "development",
+  "versionBadge.ariaLabel": "Application version {{version}}",
   "app.description": "A workspace for documents",
   "health.loading": "Checking connection…",
   "health.ok": "Connected to the server",

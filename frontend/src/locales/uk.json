@@ -1,5 +1,8 @@
 {
   "app.title": "Fillable",
+  "versionBadge.text": "version: <value>{{version}}</value>",
+  "versionBadge.development": "development",
+  "versionBadge.ariaLabel": "Версія застосунку {{version}}",
   "app.description": "Робочий простір для документів",
   "health.loading": "Перевіряємо з’єднання…",
   "health.ok": "З’єднання із сервером встановлено",

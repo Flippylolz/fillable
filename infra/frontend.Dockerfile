@@ -7,6 +7,8 @@ USER node
 CMD ["npm", "run", "dev"]
 
 FROM frontend AS build
+ARG VITE_APP_COMMIT_SHA
+ENV VITE_APP_COMMIT_SHA=$VITE_APP_COMMIT_SHA
 RUN npm run build
 
 FROM nginx:1.28.2-alpine@sha256:5b4900b042ccfa8b0a73df622c3a60f2322faeb2be800cbee5aa7b44d241649e AS gateway-base

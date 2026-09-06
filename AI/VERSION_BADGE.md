@@ -1,6 +1,6 @@
 # Git version badge
 
-Status: accepted MVP requirement under D022. The user requested specification-only delivery while the repository is in planning; no badge component, frontend build, or deployment wiring exists yet.
+Status: E01.8 implements the shared shell badge and Docker build metadata. Live release wiring and verification remain E08; later page tasks preserve the shared mount.
 
 ## Display and behavior
 
@@ -83,4 +83,17 @@ Render the message's version interpolation through a safe component slot so only
 - Verify the built static frontend with supplied and missing metadata through Docker. For a controlled release, confirm the badge matches that artifact's source commit, including when deploying a selected older revision.
 - Use focused version-resolution/build checks and browser verification within the existing 90% coverage/CI contract. Do not add exhaustive tests mirroring every CSS declaration for this small presentation feature.
 
-Implementation belongs to E01.8 after its foundation prerequisites. Deployment verification belongs to final epic E08; documenting the badge does not start either task.
+Implementation is in `frontend/src/VersionBadge.tsx`, mounted beside the application
+outside page containers in `main.tsx`. Catalog component slots safely place only
+the resolved value in `code`. The exact `version:` and `development` strings remain
+in both catalogs; accessible labels follow the selected locale. The Docker build
+stage consumes `VITE_APP_COMMIT_SHA`, forwarded by Compose, before Vite compiles.
+
+Focused unit tests cover valid/invalid/missing metadata and locale updates without
+remounting. Browser checks cover desktop/mobile fixed placement, keyboard skipping,
+mouse/touch click-through to the real retry button, theme inline-code overrides and
+simulated safe-area insets through Chromium's
+[Emulation API](https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setSafeAreaInsetsOverride).
+CI checks a supplied checked-out commit in the first production build and the
+fallback in the fresh-development build. Four-page integration awaits those pages
+and E07; live immutable-release verification remains final epic E08.
