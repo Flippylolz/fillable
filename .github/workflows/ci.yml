@@ -52,6 +52,8 @@ jobs:
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
       - name: Verify clean development, reload and persistence
         run: FILLABLE_BROWSER_REPORTS="$PWD/reports/editor" scripts/verify-development.sh
+      - name: Verify independent DOCX rendering
+        run: scripts/verify-docx-render.sh reports/editor
       - name: Backend tests and coverage
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
       - name: Frontend tests and build

@@ -128,3 +128,44 @@ export function linkedChanges(
   }
   return transaction;
 }
+
+export function paragraphIdentities(transaction: Transaction): Transaction {
+  if (!transaction.docChanged) return transaction;
+  const seen = new Set<string>();
+  let previous: string | null = null;
+  transaction.doc.descendants((node, pos) => {
+    if (node.type.name !== "paragraph") return;
+    const id = node.attrs.id as string | null;
+    if (!id || seen.has(id)) {
+      const source = id ?? previous;
+      if (source) {
+        const base = source.startsWith("new:")
+          ? source.slice(4, source.lastIndexOf(":"))
+          : source;
+        transaction.setNodeMarkup(pos, undefined, {
+          ...node.attrs,
+          id: `new:${base}:${newFieldId()}`,
+        });
+      }
+    }
+    if (id) {
+      seen.add(id);
+      previous = id;
+    }
+  });
+  return transaction;
+}
+
+export function removeField(
+  state: EditorState,
+  id: string,
+): Transaction | null {
+  const occurrence = fields(state.doc).find((field) => field.id === id);
+  if (!occurrence) return null;
+  const node = state.doc.nodeAt(occurrence.pos)!;
+  return closeHistory(state.tr).replaceWith(
+    occurrence.pos,
+    occurrence.pos + occurrence.size,
+    node.content,
+  );
+}

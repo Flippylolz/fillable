@@ -4,11 +4,11 @@ import hashlib
 import io
 import re
 from typing import Any
-from xml.etree.ElementTree import Element
 from zipfile import BadZipFile, ZipFile
 
-from defusedxml import ElementTree
-from defusedxml.common import DefusedXmlException
+from lxml import etree
+
+Element = Any
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 Node = dict[str, Any]
@@ -16,6 +16,22 @@ Node = dict[str, Any]
 
 class InvalidDocument(ValueError):
     """The package is invalid or exceeds bounded prototype processing limits."""
+
+
+def parse_xml(content: bytes) -> Element:
+    parser = etree.XMLParser(
+        resolve_entities=False,
+        load_dtd=False,
+        no_network=True,
+        huge_tree=False,
+        remove_blank_text=False,
+        strip_cdata=False,
+        recover=False,
+    )
+    root = etree.fromstring(content, parser)
+    if root.getroottree().docinfo.doctype:
+        raise InvalidDocument("invalid_package")
+    return root
 
 
 class DocxPackage:
@@ -37,15 +53,14 @@ class DocxPackage:
             if "word/document.xml" not in self.parts:
                 raise InvalidDocument("missing_document")
             self.roots = {
-                name: ElementTree.fromstring(content, forbid_dtd=True)
+                name: parse_xml(content)
                 for name, content in self.parts.items()
                 if name.endswith(".xml")
             }
         except (
             BadZipFile,
             KeyError,
-            ElementTree.ParseError,
-            DefusedXmlException,
+            etree.XMLSyntaxError,
             RuntimeError,
         ) as error:
             raise InvalidDocument("invalid_package") from error
@@ -61,7 +76,7 @@ class DocxPackage:
                 if parent is None:
                     raise InvalidDocument("missing_body")
                 self.part = name
-                self.positions = {id(el): str(i) for i, el in enumerate(root.iter())}
+                self.positions = {el: str(i) for i, el in enumerate(root.iter())}
                 content = self.blocks(parent)
                 sections.append(
                     {"type": "section", "attrs": {"part": name}, "content": content}
@@ -69,7 +84,7 @@ class DocxPackage:
         self.model: Node = {"type": "doc", "content": sections}
 
     def identity(self, element: Element) -> str:
-        key = self.part + ":" + self.positions[id(element)]
+        key = self.part + ":" + self.positions[element]
         self.elements[key] = element
         return key
 
@@ -78,13 +93,18 @@ class DocxPackage:
         self.unsupported.append(key)
         return {
             "type": "lockedInline" if inline else "lockedBlock",
-            "attrs": {"id": key, "label": "".join(element.itertext())},
+            "attrs": {
+                "id": key,
+                "label": "".join(element.itertext())
+                if isinstance(element.tag, str)
+                else element.text or "",
+            },
         }
 
     def blocks(self, parent: Element) -> list[Node]:
         result = []
         for el in parent:
-            tag = el.tag.removeprefix(W)
+            tag = el.tag.removeprefix(W) if isinstance(el.tag, str) else ""
             if tag in {"sectPr", "tblPr", "tblGrid", "trPr", "tcPr"}:
                 continue
             attrs: dict[str, Any] = {"id": self.identity(el)}
@@ -108,6 +128,8 @@ class DocxPackage:
                     raise InvalidDocument("invalid_span") from error
                 if not 1 <= attrs["colspan"] <= 64:
                     raise InvalidDocument("invalid_span")
+                if tag != "tc":
+                    attrs.pop("colspan")
                 result.append(
                     {
                         "type": {"tbl": "table", "tr": "tableRow", "tc": "tableCell"}[
@@ -127,10 +149,26 @@ class DocxPackage:
             if el.tag == W + "pPr":
                 continue
             if el.tag == W + "r":
-                if any(child.tag not in {W + "rPr", W + "t"} for child in el):
+                if any(
+                    child.tag not in {W + "rPr", W + "t", W + "tab", W + "br"}
+                    or (
+                        child.tag == W + "br"
+                        and child.get(W + "type", "textWrapping") != "textWrapping"
+                    )
+                    for child in el
+                ):
                     result.append(self.locked(el, True))
                     continue
-                text = "".join(t.text or "" for t in el.findall(W + "t"))
+                text = "".join(
+                    "\n"
+                    if child.tag == W + "br"
+                    else "\t"
+                    if child.tag == W + "tab"
+                    else child.text or ""
+                    if child.tag == W + "t"
+                    else ""
+                    for child in el
+                )
                 if text:
                     attrs: dict[str, Any] = {"id": self.identity(el)}
                     for key, style_tag in [
@@ -152,6 +190,12 @@ class DocxPackage:
                         }
                     )
             elif el.tag == W + "sdt" and el.find(W + "sdtPr/" + W + "text") is not None:
+                if any(
+                    el.find(W + "sdtPr/" + W + name) is not None
+                    for name in ("dataBinding", "lock", "temporary")
+                ):
+                    result.append(self.locked(el, True))
+                    continue
                 content = el.find(W + "sdtContent")
                 tag = el.find(W + "sdtPr/" + W + "tag")
                 tag_value = "" if tag is None else tag.get(W + "val", "")
@@ -163,8 +207,10 @@ class DocxPackage:
                     if key in self.elements:
                         raise InvalidDocument("duplicate_control")
                     self.elements[key] = el
+                previous_unsupported = len(self.unsupported)
                 children = [] if content is None else self.inlines(content)
                 if any(node["type"] != "text" for node in children):
+                    del self.unsupported[previous_unsupported:]
                     result.append(self.locked(el, True))
                     continue
                 result.append(

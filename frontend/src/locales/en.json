@@ -25,5 +25,9 @@
   "editor.focus": "Go to field: {{label}}",
   "editor.inconsistent": "Linked occurrences have different values. Review them before editing.",
   "language.uk": "Українська",
-  "language.en": "English"
+  "language.en": "English",
+  "editor.export": "Export DOCX",
+  "editor.reopen": "Reopen exported DOCX",
+  "editor.failed": "The document could not be processed. Your changes remain in the editor.",
+  "editor.remove": "Remove field: {{label}}"
 }
