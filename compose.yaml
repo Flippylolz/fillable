@@ -78,6 +78,8 @@ services:
       context: .
       dockerfile: infra/frontend.Dockerfile
       target: gateway-prod
+      args:
+        VITE_APP_COMMIT_SHA: ${VITE_APP_COMMIT_SHA:-}
     depends_on:
       api:
         condition: service_healthy

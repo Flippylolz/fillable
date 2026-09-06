@@ -19,7 +19,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
-| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1–E01.6 merged; E01.7 gate audit underway |
+| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1–E01.7 merged; E01.8 badge verification underway |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
@@ -431,3 +431,20 @@ inputs. Required CI runs these negative checks without retaining probe source or
 replacing normal coverage artifacts. Checkout/upload actions now use verified
 upstream v7.0.1 commit pins (Node 24). Next: task PR, required Actions and merge;
 then E01.8 version badge. Deployment remains untouched.
+
+2026-09-06: E01.7 confirmed `done` through [PR #12](https://github.com/Flippylolz/fillable/pull/12)
+at `c627734fcd833391a51452090a91950f46b5cd4b`; Actions 34023028738 passed normal
+coverage, actual uncovered-source probes and the required aggregator. Recorded the
+merge in its PR body and synchronized main. E01.8 began on
+`task/e01-8-version-badge`: shared catalog-based badge outside page containers,
+exact supplied CSS, safe component interpolation, validated seven-character source
+commit/fallback and Docker compilation argument. Local Docker static builds passed
+six desktop/mobile browser tests each with supplied commit and missing metadata.
+Checks include scrolling, real safe-area overrides, light/dark and inline-code theme
+styles, keyboard skipping, and mouse/touch click-through to the retry control.
+Both final screenshots were visually inspected. Frontend lint, catalog/type/build
+checks and 23 unit tests passed: 41/41 lines and 25/25 branches (100%). Backend source
+is unchanged at 99/99 lines and 6/6 branches; required CI reruns its suite. Containers
+for this isolated task were stopped, volumes preserved. Next: PR, CI and confirmed
+merge, then E00.2 free-editor comparison. All four pages and live release verification
+remain their later tasks; no deployment or server access occurred.

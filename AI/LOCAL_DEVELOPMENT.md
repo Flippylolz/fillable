@@ -166,3 +166,19 @@ References: [Compose readiness](https://docs.docker.com/compose/how-tos/startup-
 [Playwright Docker](https://playwright.dev/docs/docker), [Vite](https://vite.dev/guide/),
 [Vitest coverage](https://vitest.dev/config/coverage.html), and
 [FastAPI containers](https://fastapi.tiangolo.com/deployment/docker/).
+
+## Static build version
+
+Unconfigured builds show `version: development`. Supply public source metadata
+when building the production gateway; changing the argument recompiles its assets:
+
+```sh
+VITE_APP_COMMIT_SHA=$(git rev-parse HEAD) docker compose -f compose.yaml -f compose.prod.yaml up --build --wait
+# Match browser verification to the metadata supplied to that build:
+docker compose -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm -e EXPECTED_APP_VERSION=$(git rev-parse --short=7 HEAD) browser
+```
+
+A variable set only on the running nginx container cannot change compiled assets.
+The ordinary fresh-development verifier builds without metadata and checks the
+fallback. Required CI also builds with its checked-out source commit and checks
+that value. E08 will supply the selected release revision and verify live delivery.

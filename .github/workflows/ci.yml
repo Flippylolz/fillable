@@ -29,6 +29,7 @@ jobs:
           docker compose -f compose.yaml -f compose.prod.yaml config --quiet
       - name: Build and verify production gateway
         run: |
+          export VITE_APP_COMMIT_SHA="$(git rev-parse HEAD)"
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml up --build --wait --wait-timeout 120
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T gateway nginx -t -c /etc/nginx/fillable.conf
           curl --fail http://127.0.0.1:8181/api/health
@@ -36,7 +37,7 @@ jobs:
       - name: Browser smoke tests
         run: |
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml build browser
-          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --name fillable-browser-check browser
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --name fillable-browser-check -e EXPECTED_APP_VERSION="$(git rev-parse --short=7 HEAD)" browser
       - name: Stop isolated runtime
         if: always()
         run: |
