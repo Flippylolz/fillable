@@ -24,6 +24,8 @@ trap cleanup EXIT
 dev up --build --wait --wait-timeout 120
 # Explicit synthetic fixture only; normal startup never provisions an account.
 dev exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
+dev exec -T api python /checks/verify_storage_persistence.py write
+dev exec -T worker python /checks/verify_storage_persistence.py read
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml build browser
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp --workdir /tmp -v "$verification_reports:/tmp/fillable-dev-results" -v "$verification_root/frontend/src:/workspace/frontend" -v "$verification_root/backend/app:/workspace/backend" browser /app/node_modules/.bin/playwright test --config /app/playwright.dev.config.ts
 
@@ -35,6 +37,8 @@ test "$(prod exec -T db psql -U fillable -d fillable -At -c 'SELECT value FROM d
 test "$(prod exec -T redis redis-cli GET development_probe)" = retained
 prod exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c 'DROP TABLE development_probe'
 prod exec -T redis redis-cli DEL development_probe
+prod exec -T api python /checks/verify_storage_persistence.py read
+prod exec -T worker python /checks/verify_storage_persistence.py read
 docker compose -p "$verification_project" -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp -e PLAYWRIGHT_OUTPUT_DIR=/tmp/fillable-prod-results/run -e PLAYWRIGHT_HTML_OUTPUT_DIR=/tmp/fillable-prod-results/html --workdir /tmp -v "$verification_reports/production:/tmp/fillable-prod-results" browser /app/node_modules/.bin/playwright test --config /app/playwright.config.ts
 prod exec -T gateway sh -c 'test "$(id -u)" != 0 && ! command -v node'
 echo 'PASS: fresh staged checkout, hot reload, persistent recreation, production browser/static assets.'
