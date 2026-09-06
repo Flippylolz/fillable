@@ -19,7 +19,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
-| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1 scaffold and merge gate |
+| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1–E01.5 merged; E01.6 verification underway |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
@@ -395,3 +395,21 @@ Four Playwright tests passed against the production stack across desktop/mobile,
 covering real health/readiness and failed-request retry. Both full screenshots were
 visually inspected; current shell text fits without clipping. Product pages and
 saved profile locale are not claimed. Next: task PR and required Actions/merge.
+
+2026-09-06: E01.5 confirmed `done` through [PR #10](https://github.com/Flippylolz/fillable/pull/10)
+at `28a03bda435167518235aabd5a878a117f21cb7a`; Actions 34022095669 passed required
+static, browser and coverage checks, then protected auto-merge completed. Recorded
+merge in its PR body, synchronized main and started E01.6 on
+`task/e01-6-development-verification`. A fresh-index verification copy found Vite's
+non-root cache permission failure; moved its cache to `/tmp/fillable-vite` and
+allowed the internal gateway hostname. The repeated check passed real browser HMR,
+backend reload, restoration of temporary edits, PostgreSQL/Redis persistence across
+recreation, four production browser tests and non-root/no-Node static serving.
+The working checkout was not mutated; verification copies/volumes are retained.
+Replaced the planned local guide with executable commands. Next: frontend regression,
+PR, required CI and merged-state verification. No live-server action occurred.
+
+2026-09-06: E01.6 frontend regression passed after the Vite fix: ESLint, 17
+localization checks, TypeScript/build, twelve tests, 35/35 lines and 19/19 branches
+(100%). Backend source is unchanged from E01.5's 99/99 lines and 6/6 branches;
+required CI reruns it. Public Markdown links/fences passed after guide replacement.

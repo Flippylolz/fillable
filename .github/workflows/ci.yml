@@ -41,6 +41,8 @@ jobs:
         if: always()
         run: |
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
+      - name: Verify clean development, reload and persistence
+        run: scripts/verify-development.sh
       - name: Backend tests and coverage
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
       - name: Frontend tests and build

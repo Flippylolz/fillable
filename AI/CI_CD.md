@@ -1,8 +1,8 @@
 # CI, coverage, and final deployment
 
-Status: implementation contract. The user created [Flippylolz/fillable](https://github.com/Flippylolz/fillable), and local `origin` is configured. The repository was verified public and empty on 2026-09-06, with default branch `main`. No Actions workflow, application coverage configuration, push, or deployment has been performed in this task; repository protection is unverified.
+Status: E01 implements the Docker/coverage/browser foundation below. The actual `main` protection requires up-to-date `ci-required`, including administrators; task PRs have merged through this gate. See the execution ledger and task checkpoints for measured evidence. No live deployment has occurred.
 
-Repository auto-merge was enabled on 2026-09-06. Each task is delivered through its own PR under [PR workflow](PR_WORKFLOW.md). Auto-merge availability is configured; coverage enforcement and required branch checks are still E01 work.
+Repository auto-merge was enabled on 2026-09-06. Each task is delivered through its own PR under [PR workflow](PR_WORKFLOW.md). Coverage enforcement and required checks are active; E01.7 audits the completed foundation gate.
 
 ## Order of delivery
 
