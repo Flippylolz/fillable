@@ -12,7 +12,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 - UI localization is required in MVP: Ukrainian by default, English as secondary, all application copy in i18n catalogs, and a saved language switcher in the profile. See [Localization](I18N.md); changing UI language preserves original document content.
 - MVP includes a fixed, translucent, noninteractive [Git version badge](VERSION_BADGE.md) showing the deployed commit's first seven characters or `development`. The supplied design is implemented and browser-verified in E01.8.
 - CI must block below 90% coverage. Deployment is final epic E08 through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`, using a new port and shared nginx while preserving existing services.
-- E00/E01 are verified and merged: Docker foundation, persistent services, migrations, blocking CI and the editor round-trip proof. E02.1 implements local accounts and login/logout; see the execution ledger for delivery state. Storage, library, profile and production workspace work remain on the roadmap.
+- E00–E02 are verified and merged, including the free editor proof, Docker/CI foundation, accounts, profile, and quota-enforced storage. E03 has verified upload validation/persistence, the library, saved downloads and deletion. Persisted workspace entry is in progress; discovery, safe saves/history and deployment remain. See the execution ledger for exact task/PR evidence.
 - Documents are primarily Ukrainian. [Test corpus](TEST_CORPUS.md) provides an initial generated fixture and expected outcomes while real examples are unavailable.
 - D008 selects the proven free ProseMirror/Python source-package adapter. Its tested support matrix and explicit limitations are recorded in Editor feasibility. Production workspace/save integration remains later work.
 - AI is outside MVP. Detection uses rules, existing controls, review, and manual fields. A possible Groq/free-allowance feature is deferred.
@@ -30,6 +30,9 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 | [Decisions](DECISIONS.md) | Accepted choices, proposed defaults, and open decisions |
 | [Architecture](ARCHITECTURE.md) | Components, data ownership, editing, and processing |
 | [Authentication](AUTHENTICATION.md) | Local accounts, sessions, CSRF/origin protection, private provisioning and verification |
+| [Library](LIBRARY.md) | Upload/list UX and readable localized storage sizes |
+| [Document persistence](DOCUMENT_PERSISTENCE.md) | Owned originals, revisions, saved downloads and durable deletion |
+| [Workspace](WORKSPACE.md) | Persisted editor entry, local drafts and navigation guards |
 | [Localization](I18N.md) | Ukrainian/English catalogs, saved profile language, formatting, and acceptance checks |
 | [Version badge](VERSION_BADGE.md) | Supplied desktop/mobile styling, build commit metadata, fallback, and click-through behavior |
 | [Editor feasibility](EDITOR_FEASIBILITY.md) | Free-component research, custom-editor fallback, and required DOCX proof |

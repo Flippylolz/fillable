@@ -125,6 +125,11 @@ class DeletionResult(BaseModel):
     status: Literal["pending", "complete"]
 
 
+class ContentInfo(BaseModel):
+    resource: ResourceInfo
+    document: dict
+
+
 class ResourceList(BaseModel):
     items: list[ResourceInfo]
     next_cursor: UUID | None = None

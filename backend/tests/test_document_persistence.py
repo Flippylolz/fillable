@@ -528,3 +528,50 @@ def test_download_follows_current_revision_and_preserves_original_bytes():
     assert result.headers["x-fillable-version"] == str(identity)
     with store.read(owner.id, resource["original_file_id"]) as original:
         assert original.read() == DATA
+
+
+def test_workspace_content_is_a_single_owned_verified_revision(
+    document_store, monkeypatch
+):
+    owner = account()
+    web = client()
+    saved = upload(web).json()
+    url = "/api/documents/" + saved["id"] + "/content"
+    result = web.get(url)
+    assert result.status_code == 200
+    assert result.json()["resource"] == saved
+    with database().connect() as connection:
+        version = connection.execute(select(versions)).mappings().one()
+    assert result.json()["document"] == version["document_model"]
+    assert result.headers["cache-control"] == "no-store"
+    assert browser().get(url).status_code == 401
+    assert web.get(f"/api/documents/{uuid4()}/content").status_code == 404
+    other = accounts_service.provision(
+        AccountInput(email="other@example.test", display_name="Other"), PASSWORD
+    )
+    peer = browser()
+    peer.post("/api/auth/login", json={"email": other.email, "password": PASSWORD})
+    assert peer.get(url).status_code == 404
+    path = document_store / "files" / str(owner.id) / str(version["file_id"])
+    path.chmod(0o600)
+    path.write_bytes(b"corrupt")
+    assert web.get(url).status_code == 503
+    routes.DOWNLOAD_SLOTS.acquire()
+    routes.DOWNLOAD_SLOTS.acquire()
+    try:
+        assert web.get(url).status_code == 409
+    finally:
+        routes.DOWNLOAD_SLOTS.release()
+        routes.DOWNLOAD_SLOTS.release()
+    for failure, status in (
+        (StorageError("not_found"), 404),
+        (StorageError("operation_in_progress"), 409),
+        (SQLAlchemyError("private text"), 503),
+    ):
+
+        def fail(*args):
+            raise failure
+
+        monkeypatch.setattr(service, "content", fail)
+        response = web.get(url)
+        assert response.status_code == status and "private text" not in response.text

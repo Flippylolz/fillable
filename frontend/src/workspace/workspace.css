@@ -1,0 +1,12 @@
+.workspace { margin-top: 1rem; }
+.workspace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-bottom: 0.8rem; border-bottom: 1px solid #dadce0; }
+.workspace-toolbar h2 { margin: 0; font-size: 1.25rem; font-weight: 500; }
+.workspace-toolbar p, .workspace-save-state { margin: 0.3rem 0; color: #5f6368; font-size: 0.85rem; }
+.workspace .document-tools { background: #edf2fa; padding: 0.8rem; border-radius: 0.75rem; margin-top: 0.7rem; }
+.workspace .document-tools > p { flex-basis: 100%; margin: 0.25rem 0; font-size: 0.8rem; color: #5f6368; }
+.workspace .document-canvas { padding: 1.5rem; background: #edf0f5; border-radius: 0.6rem; }
+.workspace .document-canvas .ProseMirror { min-height: 34rem; box-shadow: 0 1px 5px #20212426; }
+.workspace aside { background: #fff; border: 1px solid #e3e7ed; border-radius: 0.6rem; }
+.workspace aside button { margin: 0.2rem 0.3rem 0.2rem 0; font-size: 0.8rem; }
+.library-open { display: inline-block; margin-top: 0.6rem; font-size: 0.85rem; }
+@media (max-width: 48rem) { .workspace .document-canvas { padding: 0.65rem; } }

@@ -9,7 +9,13 @@ from sqlalchemy import and_, insert, or_, select
 from app.accounts.profile import active_user
 from app.documents.deletion import pending_expression
 from app.documents.package import ARCHIVE_BYTES
-from app.documents.schema import ResourceInfo, ResourceList, resources, versions
+from app.documents.schema import (
+    ContentInfo,
+    ResourceInfo,
+    ResourceList,
+    resources,
+    versions,
+)
 from app.documents.validation import validate_upload
 from app.errors import AppError
 from app.infrastructure import database
@@ -18,12 +24,12 @@ from app.storage.schema import files
 from app.storage.service import StorageError
 
 
-def download(owner, identity):
+def saved_row(owner, identity):
     with database().connect() as connection:
         row = (
             connection.execute(
                 query(owner)
-                .add_columns(versions.c.file_id)
+                .add_columns(versions.c.file_id, versions.c.document_model)
                 .where(resources.c.id == identity)
             )
             .mappings()
@@ -33,6 +39,20 @@ def download(owner, identity):
         raise AppError(404, "not_found")
     if row["size_bytes"] > ARCHIVE_BYTES:
         raise StorageError("storage_failure")
+    return row
+
+
+def content(owner, identity):
+    row = saved_row(owner, identity)
+    with configured().read(owner, row["file_id"]):
+        return ContentInfo(
+            resource=ResourceInfo.model_validate(dict(row)),
+            document=row["document_model"],
+        )
+
+
+def download(owner, identity):
+    row = saved_row(owner, identity)
     with configured().read(owner, row["file_id"]) as stream:
         data = stream.read(ARCHIVE_BYTES + 1)
     if len(data) != row["size_bytes"]:
