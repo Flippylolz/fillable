@@ -216,3 +216,76 @@ process exits immediately after publication; recovery removes that uncommitted f
 and releases its reservation once. The fresh Docker verifier additionally writes
 synthetic data through the API container's shared service, reads it from the worker,
 recreates development as production, and checks immutable bytes/accounting from both.
+
+## E02.4 deletion and maintenance
+
+`app.storage.maintenance.delete_file` authorizes owner/file identity and permits a
+DB-only domain authorization callback when first marking a ready file pending.
+That transaction records deletion intent; used bytes remain charged. Deletion takes
+an exclusive operation lock, removes both final and any redundant staging link,
+fsyncs both directories, then marks deleted and decrements usage in one transaction.
+Repeated deletion is a no-op. A crash after unlink leaves a charged pending record
+that reconciliation can finish once; failed cleanup never frees its capacity.
+Readers hold shared operation locks for the whole stream and recheck readiness
+after acquiring them. Deletion reports busy while a download is active. Deleting
+one independent file never removes another stored copy or original.
+
+`storage_audit` records lifecycle/maintenance action, optional owner/actor UUIDs,
+exact counters/opaque IDs and timestamp. Details reject free-form strings and do
+not include document copy, filenames or paths. Deletion intent/completion, recovered
+operations, failed reconciliation, counter discrepancies and unknown inventory
+entries are auditable. The migration creates an empty table without modifying
+files/counters; downgrade refuses to discard populated audit history. Operator quota
+changes reuse this audit mechanism in E02.5.
+
+Run one-shot maintenance through the container, for example locally:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.maintenance capacity
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.maintenance reconcile --batch 100
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.maintenance accounts --batch 100
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.maintenance inventory --batch 500
+```
+
+`reconcile` processes at most 100 reservation records by default (maximum 500),
+returning `next_cursor`; pass that UUID as `--after` to continue. It finishes pending
+deletion, aborts expired unlocked staging operations, checks ready file integrity
+and cleans redundant committed links. Active locks/leases report busy. Missing or
+corrupt ready files report failure and stay charged. `accounts` pages all storage
+accounts, including owners without operations. Counter repair can raise an undercount
+to the known ready/pending/active totals, but it never reduces an unexpected overcount
+from metadata alone: that reports `repair_required` and preserves capacity until
+physical investigation. Ordinary safe deletion/abort remains the release mechanism.
+
+`inventory` examines a bounded total of staging entries, owner directories and
+retained entries. It reports unknown entry counts and truncation, without returning
+names or deleting unknown files. Its bounded read-only scan is observational during
+concurrent writes; repeat a discrepancy check before investigation. Inventory does
+not follow symlinks or authorize deletion of unrecognized content. The operation
+and account cursors provide complete database traversal; inventory truncation is
+explicit rather than a claim that the entire disk was checked.
+
+Commands emit JSON with machine codes, IDs and counters. Failures/repair-required
+results return nonzero; busy work is retryable. These are storage-operation recovery
+primitives for API/worker callers. Durable document jobs/outbox arrive in E06 and
+periodic scheduling/bounded scheduled retries in E07.3. No successful document job
+or saved field revision is invented by storage cleanup. Parser/export processing
+currently stays in bounded memory; this task cleans retained-write staging and does
+not introduce an unaccounted generic temporary-file API or automatic history pruning.
+
+Both API and worker receive the same exact integer operational configuration:
+`STORAGE_FILE_BYTES` (initial 10 MiB, cannot exceed the parser's 10 MiB ceiling),
+`STORAGE_STAGING_BYTES` (64 MiB), `STORAGE_DISK_HEADROOM_BYTES` (64 MiB), and
+`STORAGE_LEASE_SECONDS` (60, valid 1–3600). Invalid values fail configuration rather
+than silently falling back. Byte settings are bounded by the exact integer range;
+zero can disable capacity. `configuration.configured()` constructs the shared service
+for runtime callers. `capacity` reports a point-in-time physical-headroom snapshot,
+not a reservation or a promise that a later write will fit. The reservation path
+continues serializing current quota, staging limits and outstanding disk promises.
+
+Tests cover owner isolation, shared readers/exclusive deletion, callback rollback,
+failed physical cleanup, a real process exit after unlink, surviving staging links,
+retries, bounded cursors, corruption/unknown-file preservation, conservative counter
+repair, audit migration/guard, invalid settings and private CLI output. The fresh
+Docker verifier stores an original plus independent copy, deletes the copy twice,
+recreates the stack, and verifies original bytes/accounting from API and worker.

@@ -252,3 +252,23 @@ The fresh-checkout and CI browser harnesses explicitly provision the synthetic
 `browser@example.test` fixture using `fixtures/auth/browser-password.txt`, only in
 their isolated project databases. This fixture is never created by normal startup
 or deployment. The normal operator path has no fallback/default credentials.
+
+## Storage maintenance and capacity
+
+E02.4 adds one-shot `python -m app.storage.maintenance` commands inside API/worker
+containers: `capacity`, `reconcile`, `accounts`, and `inventory`. See
+[Storage quotas](STORAGE_QUOTAS.md#e024-deletion-and-maintenance) for exact commands,
+cursor handling, conservative counter repair and failure semantics. These commands
+are not scheduled yet; periodic execution is E07.3. They do not prune version history.
+
+The environment example now exposes the shared exact-byte file/staging/headroom
+limits and lease duration. `configuration.configured()` validates them when building
+the service; API/worker use identical Compose settings. Changing configuration
+requires recreating the affected containers. Keep per-user quota allocation changes
+separate from operating capacity; E02.5 supplies the quota commands.
+
+The fresh-index verifier now creates retained synthetic data through the shared
+service, deletes an independent copy without changing the original, and verifies
+bytes/accounting from both API and worker after development-to-production recreation.
+It then runs storage reconciliation, inventory and capacity commands. It preserves
+its isolated synthetic data/volumes and does not contact the deployment target.
