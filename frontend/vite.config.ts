@@ -6,6 +6,7 @@ export default defineConfig({
   server: { proxy: { '/api': 'http://api:8000' } },
   test: {
     globals: true,
+    include: ['tests/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
     coverage: {

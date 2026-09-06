@@ -378,3 +378,20 @@ Type/build/catalog and raw source-inclusion gates passed. Both generated artifac
 were regenerated using CI's container user/mount commands and compared byte-for-byte
 without differences. Errors omit submitted values/internal messages; typed client
 success/error requests and both-locale mappings passed. Next: task PR and Actions.
+
+2026-09-06: E01.4 confirmed `done` via [PR #9](https://github.com/Flippylolz/fillable/pull/9)
+at `66201ad60070a5dc51883fb26575b03822a9a25b`; Actions 34021791833 passed both
+required jobs including generation drift, and protected squash auto-merge completed.
+Recorded merge evidence in its PR body, synchronized main, then started E01.5 on
+`task/e01-5-browser-quality-checks`. Adds frontend ESLint, backend mypy, stronger
+AST copy/catalog checks with negative tests, and desktop/mobile Playwright smoke
+checks against the full production image. Next: verify browser runs, inspect captures,
+complete required checks, open task PR and verify its merge.
+
+2026-09-06: E01.5 local Docker checks passed: Ruff/mypy, five backend tests with
+99/99 lines and 6/6 branches (100%); ESLint/TypeScript/build, 17 localization
+validator tests, twelve frontend tests with 35/35 lines and 19/19 branches (100%).
+Four Playwright tests passed against the production stack across desktop/mobile,
+covering real health/readiness and failed-request retry. Both full screenshots were
+visually inspected; current shell text fits without clipping. Product pages and
+saved profile locale are not claimed. Next: task PR and required Actions/merge.

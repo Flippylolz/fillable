@@ -207,3 +207,23 @@ and production assets include the new generated types. CI runs these commands an
 fails on a generated diff. The only generated paths are
 `frontend/generated/openapi.json` and `frontend/generated/api.d.ts`; all authored
 client logic stays under `frontend/src` and participates in coverage.
+
+## E01.5 browser and static checks
+
+The existing backend/frontend test commands now also run mypy and ESLint plus
+localization validator negative cases. To run the browser smoke suite:
+
+```sh
+docker compose -p fillable-browser-check -f compose.yaml -f compose.prod.yaml up --build --wait --wait-timeout 120
+docker compose -p fillable-browser-check -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml build browser
+docker compose -p fillable-browser-check -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm browser
+docker compose -p fillable-browser-check -f compose.yaml -f compose.prod.yaml down
+```
+
+Use a free `FILLABLE_UPSTREAM_PORT` if another local stack already occupies 8181.
+No host Node/Python/browser installation is needed. The browser profile does not
+start during normal application startup. Package and browser image versions match,
+with a private 1 GiB shared-memory allocation rather than host IPC.
+
+References: [Playwright Docker](https://playwright.dev/docs/docker) and
+[TypeScript ESLint setup](https://typescript-eslint.io/getting-started/).

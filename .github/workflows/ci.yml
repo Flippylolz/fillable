@@ -29,10 +29,17 @@ jobs:
           docker compose -f compose.yaml -f compose.prod.yaml config --quiet
       - name: Build and verify production gateway
         run: |
-          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml up --build --wait
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml up --build --wait --wait-timeout 120
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T gateway nginx -t -c /etc/nginx/fillable.conf
           curl --fail http://127.0.0.1:8181/api/health
           curl --fail http://127.0.0.1:8181/ | grep '/assets/'
+      - name: Browser smoke tests
+        run: |
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml build browser
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --name fillable-browser-check browser
+      - name: Stop isolated runtime
+        if: always()
+        run: |
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
       - name: Backend tests and coverage
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
@@ -41,9 +48,10 @@ jobs:
       - name: Collect reports
         if: always()
         run: |
-          mkdir -p reports/backend reports/frontend
+          mkdir -p reports/backend reports/frontend reports/browser
           docker cp fillable-backend-check:/app/coverage/. reports/backend/ || true
           docker cp fillable-frontend-check:/app/coverage/. reports/frontend/ || true
+          docker cp fillable-browser-check:/app/test-results/. reports/browser/ || true
       - name: Validate frontend raw coverage and full source inclusion
         run: |
           mkdir -p frontend/coverage
