@@ -15,6 +15,7 @@ from sqlalchemy import (
     Uuid,
     func,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.accounts.schema import metadata
 
@@ -149,6 +150,20 @@ files = Table(
     CheckConstraint(
         "state != 'deleted' OR deleted_at IS NOT NULL", name="file_deleted_timestamp"
     ),
+)
+
+audit_events = Table(
+    "storage_audit",
+    metadata,
+    Column("id", Uuid, primary_key=True),
+    Column("owner_id", Uuid, ForeignKey("users.id", ondelete="RESTRICT")),
+    Column("actor_id", Uuid, ForeignKey("users.id", ondelete="RESTRICT")),
+    Column("action", String(64), nullable=False),
+    Column("details", JSONB, nullable=False),
+    Column(
+        "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
+    ),
+    CheckConstraint("length(btrim(action)) > 0", name="storage_audit_action"),
 )
 
 

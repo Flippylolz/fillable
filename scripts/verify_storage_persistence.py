@@ -1,19 +1,18 @@
 """Synthetic fresh-stack proof only; invoked explicitly by verify-development.sh."""
 import os
 import sys
-from pathlib import Path
 
 from sqlalchemy import select
 
 from app.accounts.schema import users
 from app.infrastructure import database
-from app.storage.filesystem import FileSystem
+from app.storage.configuration import configured
+from app.storage.maintenance import delete_file
 from app.storage.schema import accounts, files, reservations
-from app.storage.service import Storage
 
 assert os.getuid() == 10001
 engine = database()
-store = Storage(engine, FileSystem(Path(os.environ['STORAGE_ROOT'])))
+store = configured()
 with engine.connect() as connection:
     owner = connection.execute(select(users.c.id).where(
         users.c.email == 'browser@example.test',
@@ -22,6 +21,10 @@ payload = 'Synthetic retained storage: Ґанна Їжак'.encode()
 if sys.argv[1] == 'write':
     store.store(owner, 'fresh-storage-proof', 'c' * 64, 'original', [payload],
                 expected_bytes=len(payload))
+    copy = store.store(owner, 'fresh-storage-delete-proof', 'd' * 64, 'document',
+                       [payload], expected_bytes=len(payload))
+    assert delete_file(store, owner, copy.id)
+    assert not delete_file(store, owner, copy.id)
 with engine.connect() as connection:
     result = connection.execute(select(files.c.id).join(
         reservations, reservations.c.id == files.c.reservation_id,

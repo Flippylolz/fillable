@@ -46,7 +46,7 @@ class FileSystem:
             return space.f_bavail * space.f_frsize
 
     @contextmanager
-    def lock(self, operation):
+    def lock(self, operation, *, shared=False):
         with self.area("locks") as area:
             fd = os.open(
                 str(operation),
@@ -57,7 +57,8 @@ class FileSystem:
             try:
                 if not stat.S_ISREG(os.fstat(fd).st_mode):
                     raise OSError("invalid storage lock")
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                mode = fcntl.LOCK_SH if shared else fcntl.LOCK_EX
+                fcntl.flock(fd, mode | fcntl.LOCK_NB)
                 os.fsync(area)
                 yield
             finally:
@@ -132,6 +133,16 @@ class FileSystem:
                 if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
                     raise OSError("invalid stored file")
                 yield stream
+
+    def remove(self, operation, owner, file_id):
+        """Explicit retained deletion: remove both links before releasing usage."""
+        with self.area("staging") as stage, self.area("files", owner) as final:
+            for area, name in ((final, str(file_id)), (stage, str(operation))):
+                try:
+                    os.unlink(name, dir_fd=area)
+                except FileNotFoundError:
+                    pass
+                os.fsync(area)
 
 
 def initialize(root: Path, uid=10001, gid=10001):

@@ -476,13 +476,28 @@ class Storage:
         if row is None:
             raise StorageError("not_found")
         try:
-            with self.fs.read(owner, file_id) as stream:
-                if stream.seek(0, 2) != row["size_bytes"]:
-                    raise StorageError("storage_failure")
-                stream.seek(0)
-                if hashlib.file_digest(stream, "sha256").hexdigest() != row["digest"]:
-                    raise StorageError("storage_failure")
-                stream.seek(0)
-                yield stream
+            with self.fs.lock(row["reservation_id"], shared=True):
+                with self.engine.connect() as connection:
+                    ready = connection.execute(
+                        select(files.c.state).where(
+                            files.c.id == file_id,
+                            files.c.owner_id == owner,
+                        )
+                    ).scalar_one()
+                if ready != "ready":
+                    raise StorageError("not_found")
+                with self.fs.read(owner, file_id) as stream:
+                    if stream.seek(0, 2) != row["size_bytes"]:
+                        raise StorageError("storage_failure")
+                    stream.seek(0)
+                    if (
+                        hashlib.file_digest(stream, "sha256").hexdigest()
+                        != row["digest"]
+                    ):
+                        raise StorageError("storage_failure")
+                    stream.seek(0)
+                    yield stream
+        except BlockingIOError:
+            raise StorageError("operation_in_progress") from None
         except OSError:
             raise StorageError("storage_failure") from None

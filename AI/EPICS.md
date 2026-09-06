@@ -20,7 +20,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.2 merged; E02.3 shared storage service |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.3 merged; E02.4 deletion and reconciliation |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -598,3 +598,28 @@ committed final link is missing or replaced. The focused regression and repeated
 committed cleanup test pass; final full coverage is 1107/1112 lines (99.55%) and
 307/314 branches (97.77%) across 56 backend tests. Auto-merge was paused during this
 update and will be rearmed only for the verified updated head with required CI.
+
+2026-09-06: E02.3 confirmed `done` through [PR #20](https://github.com/Flippylolz/fillable/pull/20)
+at `6c75c83f0863ea9abf72eb05a3a82bff43820573`. Actions 34031170760 passed both
+required checks for exact head `31594cec3f3400546b5e8a17e19e6987eb875218`; final
+merge evidence is in its PR body. Main synchronized and E02.4 started on
+`task/e02-4-storage-reconciliation`. Work covers exclusive retained deletion,
+shared download locks, bounded storage-operation reconciliation, content-free audit
+records and operational capacity configuration. E06 owns document jobs/outbox and
+E07.3 owns periodic scheduling; this task provides their storage recovery primitive.
+Next: implement and verify failure/concurrency/migration/CLI cases, update docs,
+then deliver this individual task through protected CI/auto-merge. Deployment remains last.
+
+E02.4 local verification passed: 67 backend tests, 1332/1338 lines (99.55%) and
+378/386 branches (97.93%), with lint, typing and raw full-source gates. Real
+PostgreSQL/filesystem tests cover shared-reader exclusion, authorized idempotent
+deletion, callback rollback, physical cleanup failure, a real child exit after
+unlink, conservative counter repair, bounded reconciliation/inventory, audit migration
+and validated private maintenance commands. The fresh-index Docker proof passed
+three development and eight production browser checks, separate-copy deletion,
+original/accounting persistence in both API and worker, and one-shot reconciliation,
+inventory and capacity checks. Its isolated local copy is
+`/private/tmp/fillable-verify.w2kcop`; volumes are preserved. Frontend source is
+unchanged (preceding verified 266/270 lines and 156/165 branches); required CI reruns
+its complete checks. Next: E02.4 task PR, strict protected CI and exact-head squash
+auto-merge, verify merged state, then E02.5 usage and audited quota commands.
