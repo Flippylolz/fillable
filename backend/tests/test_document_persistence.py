@@ -400,3 +400,131 @@ def test_service_requires_identity_and_parser_limits_use_machine_codes(monkeypat
     monkeypatch.setattr(service, "validate_upload", limited)
     assert upload(web).json()["error"]["code"] == "document_limit"
     assert counts() == (0, 0, 0, 0)
+
+
+def test_download_is_exact_saved_docx_owned_and_not_a_new_allocation():
+    from urllib.parse import quote
+
+    account()
+    web = client()
+    for kind in ("template", "document"):
+        saved = upload(web, key=kind, kind=kind, filename='Заява "Їжак".docx').json()
+        before = counts()
+        url = "/api/documents/" + saved["id"] + "/download"
+        result = web.get(url)
+        assert result.status_code == 200 and result.content == DATA
+        assert result.headers["content-type"] == routes.MIME
+        assert result.headers["cache-control"] == "no-store"
+        assert result.headers["x-content-type-options"] == "nosniff"
+        assert result.headers["x-fillable-version"] == saved["current_version_id"]
+        assert (
+            quote(saved["original_filename"], safe="")
+            in result.headers["content-disposition"]
+        )
+        assert web.get(url).content == DATA and counts() == before
+        assert browser().get(url).status_code == 401
+    other = accounts_service.provision(
+        AccountInput(email="other@example.test", display_name="Other"), PASSWORD
+    )
+    peer = browser()
+    peer.post("/api/auth/login", json={"email": other.email, "password": PASSWORD})
+    assert peer.get(url).status_code == 404
+    assert web.get(f"/api/documents/{uuid4()}/download").status_code == 404
+    with database().begin() as connection:
+        connection.execute(update(resources).values(state="deleted"))
+    assert web.get(url).status_code == 404
+    web.post("/api/auth/logout")
+    assert web.get(url).status_code == 401
+
+
+def test_download_corruption_and_admission_never_return_partial_success(
+    document_store,
+    monkeypatch,
+):
+    owner = account()
+    web = client()
+    saved = upload(web).json()
+    url = "/api/documents/" + saved["id"] + "/download"
+    with database().connect() as connection:
+        file = connection.execute(select(files)).mappings().one()
+    path = document_store / "files" / str(owner.id) / str(file["id"])
+    path.chmod(0o600)
+    path.write_bytes(b"corrupt")
+    result = web.get(url)
+    assert result.status_code == 503
+    assert result.json()["error"]["code"] == "storage_unavailable"
+    assert "content-disposition" not in result.headers
+    path.unlink()
+    assert web.get(url).status_code == 503
+    routes.DOWNLOAD_SLOTS.acquire()
+    routes.DOWNLOAD_SLOTS.acquire()
+    try:
+        assert web.get(url).json()["error"]["code"] == "operation_in_progress"
+    finally:
+        routes.DOWNLOAD_SLOTS.release()
+        routes.DOWNLOAD_SLOTS.release()
+    for error, status in (
+        (StorageError("not_found"), 404),
+        (StorageError("operation_in_progress"), 409),
+        (SQLAlchemyError("private path and document text"), 503),
+    ):
+
+        def fail(*args):
+            raise error
+
+        monkeypatch.setattr(service, "download", fail)
+        result = web.get(url)
+        assert result.status_code == status
+        assert "private" not in result.text
+        assert result.headers["cache-control"] == "no-store"
+    assert routes.DOWNLOAD_SLOTS.acquire(blocking=False)
+    routes.DOWNLOAD_SLOTS.release()
+
+
+def test_download_follows_current_revision_and_preserves_original_bytes():
+    from sqlalchemy import insert
+
+    from app.storage.configuration import configured
+
+    owner = account()
+    web = client()
+    saved = upload(web).json()
+    identity = uuid4()  # A retained second revision has a distinct identity/file.
+    content = DATA + b"synthetic saved revision marker"
+    with database().connect() as connection:
+        resource = connection.execute(select(resources)).mappings().one()
+        initial = connection.execute(select(versions)).mappings().one()
+
+    def finalize(connection, result):
+        connection.execute(
+            insert(versions).values(
+                id=identity,
+                document_id=resource["id"],
+                owner_id=owner.id,
+                file_id=result.id,
+                number=2,
+                document_model=initial["document_model"],
+                unsupported_count=initial["unsupported_count"],
+            )
+        )
+        connection.execute(
+            update(resources)
+            .where(resources.c.id == resource["id"])
+            .values(current_version_id=identity)
+        )
+
+    store = configured()
+    store.store(
+        owner.id,
+        "saved-revision",
+        hashlib.sha256(content).hexdigest(),
+        "version",
+        [content],
+        expected_bytes=len(content),
+        finalize=finalize,
+    )
+    result = web.get("/api/documents/" + saved["id"] + "/download")
+    assert result.content == content
+    assert result.headers["x-fillable-version"] == str(identity)
+    with store.read(owner.id, resource["original_file_id"]) as original:
+        assert original.read() == DATA

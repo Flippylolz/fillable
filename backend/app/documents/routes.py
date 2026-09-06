@@ -2,6 +2,7 @@ import asyncio
 import base64
 from threading import BoundedSemaphore
 from typing import Annotated, Literal
+from urllib.parse import quote
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response
@@ -19,6 +20,7 @@ from app.storage.service import StorageError
 
 router = APIRouter(prefix="/api/documents")
 UPLOAD_SLOTS = BoundedSemaphore(2)
+DOWNLOAD_SLOTS = BoundedSemaphore(2)
 BODY_SECONDS = 30
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
@@ -142,3 +144,38 @@ def detail(
 ) -> ResourceInfo:
     response.headers["Cache-Control"] = "no-store"
     return service.detail(user.id, identity)
+
+
+@router.get(
+    "/{identity}/download",
+    response_class=Response,
+    responses={
+        200: {"content": {MIME: {"schema": {"type": "string", "format": "binary"}}}}
+    },
+)
+def download(identity: UUID, user: UserInfo = Depends(current_user)) -> Response:
+    if not DOWNLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(409, "operation_in_progress")
+    try:
+        resource, data = service.download(user.id, identity)
+        return Response(
+            data,
+            media_type=MIME,
+            headers={
+                "Cache-Control": "no-store",
+                "X-Content-Type-Options": "nosniff",
+                "X-Fillable-Version": str(resource.current_version_id),
+                "Content-Disposition": 'attachment; filename="document.docx"; '
+                "filename*=UTF-8''" + quote(resource.original_filename, safe=""),
+            },
+        )
+    except StorageError as error:
+        if error.code == "not_found":
+            raise AppError(404, "not_found") from None
+        if error.code == "operation_in_progress":
+            raise AppError(409, "operation_in_progress") from None
+        raise AppError(503, "storage_unavailable") from None
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    finally:
+        DOWNLOAD_SLOTS.release()

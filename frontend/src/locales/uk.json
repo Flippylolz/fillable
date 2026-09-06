@@ -110,5 +110,7 @@
   "profile.bytes_one": "{{value}} байт",
   "profile.bytes_few": "{{value}} байти",
   "profile.bytes_many": "{{value}} байтів",
-  "profile.bytes_other": "{{value}} байта"
+  "profile.bytes_other": "{{value}} байта",
+  "library.downloadSaved": "Завантажити збережений DOCX",
+  "library.downloading": "Готуємо завантаження…"
 }

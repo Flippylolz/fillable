@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3 merged; requested E03.1b visual follow-up in progress |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3 and E03.1b merged; E03.4a downloads verified locally |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -789,3 +789,22 @@ negative-source probe. Fresh index `/private/tmp/fillable-verify.zSyf8a` passed
 mobile layouts were visually inspected. Backend is unchanged from verified PR #27.
 All isolated data/volumes preserved. Next: protected follow-up PR and actual merge,
 then E03.4a downloads. No deployment work has started.
+
+2026-09-06: E03.1b confirmed done through [PR #28](https://github.com/Flippylolz/fillable/pull/28)
+at `aa699b3b23950dbd62e33e7870f0fd22456c469d`; Actions 34043685806 passed both
+required checks for head `0e9f2b659463de882749fc3f73618afc655d4910`.
+Main synchronized; E03.4a starts on `task/e03-4a-saved-downloads` with authorized,
+bounded latest-saved byte downloads and explicit library actions. It creates no
+retained file and does not change quota accounting. E03.4b/c remain separate.
+
+E03.4a local verification passed 143 backend and 58 frontend tests. Backend raw
+coverage: 1857/1866 lines (99.52%), 543/554 branches (98.01%); frontend:
+495/500 lines (99.00%), 392/419 branches (93.56%). Lint, typing, catalogs, build,
+full-source gates passed. Both real unimported-source negative probes correctly blocked coverage.
+Fresh index `/private/tmp/fillable-verify.K9Q4dP` passed 3 development and 14 production
+browser checks, now including real downloads of both kinds with byte equality.
+The mobile Ukrainian download action was visually inspected. The added second-version
+integration test passed after using the storage service's valid purpose/fingerprint
+contract. No application behavior changed after the fresh-index check. All isolated
+volumes are preserved. Next: protected E03.4a PR, exact-head auto-merge, verified
+merge, then E03.4b confirmed deletion and durable cleanup.

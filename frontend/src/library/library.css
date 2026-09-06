@@ -60,3 +60,5 @@ a { color: #1967d2; }
   .library-quota { grid-template-columns: 1fr; gap: 0.25rem; }
   .library .library-upload { grid-template-columns: 1fr; }
 }
+.library-download { margin-top: 0.8rem; }
+.library-download button { font-size: 0.8rem; }

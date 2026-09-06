@@ -29,6 +29,11 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page.getByLabel("Назва документа", { exact: true })).toHaveValue(templateTitle);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
   await expect(page.getByRole("article", { name: templateTitle })).toBeVisible();
+  const templateDownload = page.waitForEvent("download");
+  await page.getByRole("article", { name: templateTitle }).getByRole("button", { name: "Завантажити збережений DOCX" }).click();
+  const templateFile = await templateDownload;
+  expect(templateFile.suggestedFilename()).toBe(file.name);
+  expect(await readFile((await templateFile.path())!)).toEqual(bytes);
   expect(keys[0]).toBe(keys[1]);
   await expect(page.getByLabel("Файл DOCX", { exact: true })).toHaveValue("");
   await page.screenshot({ path: testInfo.outputPath("library-uk.png"), fullPage: true });
@@ -45,6 +50,9 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page.getByRole("combobox", { name: "Save as", exact: true })).toHaveValue("document");
   await page.getByRole("button", { name: "Upload and save", exact: true }).click();
   await expect(page.getByRole("article", { name: documentTitle })).toBeVisible();
+  const documentDownload = page.waitForEvent("download");
+  await page.getByRole("article", { name: documentTitle }).getByRole("button", { name: "Download saved DOCX" }).click();
+  expect(await readFile((await (await documentDownload).path())!)).toEqual(bytes);
   expect(keys[2]).not.toBe(keys[1]);
   await expect(page.getByRole("tab", { name: "Documents", exact: true })).toHaveAttribute("aria-selected", "true");
   await page.screenshot({ path: testInfo.outputPath("library-en.png"), fullPage: true });
