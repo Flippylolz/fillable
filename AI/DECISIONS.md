@@ -218,3 +218,11 @@ Status: **Accepted — explicit user MVP requirement, recorded 2026-09-06.**
 Store all application labels and user-facing messages in i18n catalogs. Ukrainian (`uk`) is the default UI language; English (`en`) is secondary. Include a language switcher in the profile and persist the account preference across sessions. Cover all four pages, editor/settings/sidebar controls, and version-history UI, including errors, tooltips, and accessibility text.
 
 UI language is separate from document language. Changing it preserves document text, user-provided titles, extracted/custom field labels, values, and DOCX metadata. The [Localization contract](I18N.md) specifies persistence, API message codes, formatting, fallback, and translation completeness checks. E01 establishes the catalogs and required checks; E02 delivers the saved profile preference; all UI tasks include both languages. No runtime implementation or i18n package selection is claimed by this decision.
+
+## D022 — Fixed Git version badge
+
+Status: **Accepted — explicit user design; specification-only delivery confirmed 2026-09-06.**
+
+Include a subtle, translucent badge across all four MVP pages on desktop/mobile. Show `version: <first seven commit characters>` or `version: development` when unavailable. Use the deployed artifact's source commit, injected during the frontend build. Preserve the user's fixed bottom-right positioning, safe-area handling, `2.75rem` bottom offset, explicit colors, and click-through CSS. Keep the hash monospace; no icon, link, tooltip, focus stop, or interaction.
+
+[Version badge](VERSION_BADGE.md) preserves the supplied markup/CSS and defines build metadata, fallback, and acceptance. Badge labels still live in i18n: the visible `version:` and `development` strings stay exactly as requested in both catalogs, while the accessible label is localized. This is a narrow display exception, not permission to hardcode other UI labels. E01.8 implements the feature after foundation work; E08 verifies the deployed hash. No application implementation or deployment is part of this specification task.

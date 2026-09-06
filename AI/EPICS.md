@@ -12,6 +12,8 @@ Planning task P00: consolidate the accepted MVP decisions, architecture, epics, 
 
 Planning task P01: add the accepted UI localization requirement in one documentation PR (`task/p01-ui-localization`). Acceptance: product, decisions, architecture, epics, CI plan, and agent rules agree on Ukrainian as the default UI language, English as secondary, all application copy in i18n catalogs, and a profile language switcher whose preference persists across sessions. Specify translation completeness checks and preservation of document content when switching UI language. Validate Markdown links and consistency; application implementation and coverage are outside this documentation task.
 
+Planning task P02: record the user's version badge design and behavior in one documentation PR (`task/p02-version-badge`). Acceptance: preserve the supplied CSS, seven-character deployed-commit display, `development` fallback, fixed desktop/mobile placement, theme-independent colors, monospace value, and noninteractive click-through behavior. Link the build/deployment metadata contract and future implementation/verification tasks, keeping labels in i18n. The user explicitly chose specification-only delivery; validate documentation without adding application code or claiming runtime/coverage checks.
+
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
@@ -64,6 +66,7 @@ Work:
 - E01.5: Add container commands for linting, type checking, pytest/coverage.py, Vitest coverage, and a Playwright smoke test; wire them into GitHub Actions CI with independent >=90% line/branch gates for backend and frontend. Include required catalog key/interpolation/plural validation and checks against hardcoded application copy.
 - E01.6: Verify startup, hot reload, restart persistence, and production asset serving. Replace planned commands in the development guide with verified commands.
 - E01.7: Verify the stable required-check aggregator, coverage-report artifacts, and negative gate checks in `Flippylolz/fillable`. Establish PR-only merging and the required CI check before the first application PR merges, then record their evidence in this task's PR; track the external settings explicitly until verified.
+- E01.8: Implement the shared [Git version badge](VERSION_BADGE.md) with the supplied CSS, catalog-based messages, seven-character commit/fallback resolution, and Docker frontend build metadata. Verify desktop/mobile, theme independence, monospace value, and click-through behavior. Depends on the E01.1 app/i18n foundation, E01.2 Docker build path, and working required CI; deliver as its own PR. Live-release wiring and verification stay in E08.
 
 Acceptance:
 
@@ -77,6 +80,7 @@ Acceptance:
 - Required source coverage includes backend workers/commands and the frontend editor adapter. Gate evidence covers each codebase and metric separately.
 - Merge protection is verified on `Flippylolz/fillable` once CI is established; do not describe it as enabled from workflow YAML alone.
 - Every foundation task is represented by its own PR. Auto-merge honors the real required gates, and merged PR URLs/commits are recorded before dependent tasks are marked ready.
+- The shared version badge matches D022 with known/missing build metadata, remains fixed at the requested safe-area-aware offsets on desktop/mobile, and allows interaction with underlying controls. Its future page integrations preserve this behavior.
 
 ## E02 — Login, profile, storage service, and quotas
 
@@ -205,7 +209,7 @@ Outcome: the four-page MVP passes its acceptance criteria in local/CI Docker, in
 
 Work:
 
-- E07.1: Verify login, library, profile, and workspace navigation and states in Ukrainian and English, including the history panel, localized errors/accessibility text, and long Ukrainian labels. Verify default language, profile preference persistence/failure, and unchanged document data/drafts when switching. Check account/quota operator commands and user-facing storage meters.
+- E07.1: Verify login, library, profile, and workspace navigation and states in Ukrainian and English, including the history panel, localized errors/accessibility text, and long Ukrainian labels. Verify default language, profile preference persistence/failure, and unchanged document data/drafts when switching. Check account/quota operator commands and user-facing storage meters. Confirm the version badge appears once on each page without blocking controls on desktop/mobile or changing its specified colors with theme.
 - E07.2: Add content-free job/capacity diagnostics and audit events through logs or operator commands. Do not create a diagnostics dashboard for MVP.
 - E07.3: Implement scheduled cleanup/reconciliation with bounded retries and clear failure state.
 - E07.4: Verify full-application restart, non-destructive upgrade, and crash reconciliation using synthetic data in local/CI Docker. Check matching PostgreSQL/files state and retained version history. Do not implement backups or a backup/restore drill.
@@ -234,10 +238,10 @@ Dependencies: E00–E07 complete, access and deployment configuration for the su
 Work:
 
 - E08.1: Inspect `<DEPLOY_USER>@<DEPLOY_HOST>` read-only first: existing services, port allocations, capacity, Docker setup, and nginx ownership/networking. Investigate WEF as the possible configuration repository. Record baselines, select a new unused port and isolated Compose namespace, and prepare scoped paths/access without disrupting other workloads.
-- E08.2: Implement the GitHub Actions deployment workflow with serialized runs, an explicit source commit, immutable artifacts, and mandatory CI/coverage dependencies. Default proposal: manual dispatch for a protected default-branch commit.
+- E08.2: Implement the GitHub Actions deployment workflow with serialized runs, an explicit source commit, immutable artifacts, and mandatory CI/coverage dependencies. Inject the verified source commit into the frontend build for the version badge, including manually selected revisions. Default proposal: manual dispatch for a protected default-branch commit.
 - E08.3: Configure only Fillable's persistent volumes, private upstream, resource limits, and schema-compatible release rollback procedure. No backups or staging environment are required. Prepare the new public HTTP listener for `http://<DEPLOY_HOST>:<PORT>` in the authoritative nginx configuration, using WEF's process if it is the owner. Preserve local document storage, quotas, and existing workloads.
 - E08.4: Run the workflow: validate capacity and persistence configuration, apply tested non-destructive migrations, update Fillable services, check private/public ports, validate effective nginx configuration, and apply the route with the owner's established process. Perform app smoke checks at the exact HTTP URL and recheck existing services/routes; do not require a backup.
-- E08.5: Verify save/download, template independence, profile, history restoration, and data persistence on the deployed application. Record release commit, artifact digests, results, and the schema-aware rollback/recovery procedure in `AI/`.
+- E08.5: Verify save/download, template independence, profile, history restoration, and data persistence on the deployed application. Confirm the served version badge matches the first seven characters of the artifact's source commit; a wrong hash or `development` fails a controlled production-release check. Record release commit, artifact digests, results, and the schema-aware rollback/recovery procedure in `AI/`.
 
 Acceptance:
 
@@ -285,3 +289,9 @@ When work begins, update the relevant status and append a concise record here: d
 2026-09-06: P01 records the user's Ukrainian-default/English-secondary UI requirement as D021 on `task/p01-ui-localization`, with the detailed contract in `AI/I18N.md`. Updated the four-page MVP, user preference/API boundaries, free-editor evaluation, foundation/profile/acceptance tasks, CI plan, and agent rules. All UI copy uses catalogs; the profile preference persists across sessions while document content stays original. Application code, synthetic fixture files, server state, and repository settings are unchanged by this documentation task. Validation and PR evidence follow before delivery.
 
 2026-09-06: P01 submitted as [PR #3](https://github.com/Flippylolz/fillable/pull/3), status at submission `in_review`. Validation passed for 16 public Markdown files, 72 local links, balanced fences, and Git whitespace. Excluded deployment identity is absent from public documentation; the DOCX hash was verified and both synthetic fixture files are unchanged. No application tests/coverage are claimed. Confirmed merge evidence goes in this PR's body first and enters the ledger in the next task PR. Next implementation work remains E00 free-editor proof and E01 foundation, now including the localization contract.
+
+2026-09-06: P01 confirmed `done`, merged through [PR #3](https://github.com/Flippylolz/fillable/pull/3) at `481611877b25809fead3d2840f87c6a18fd74213`. Local main was synchronized before P02 began.
+
+2026-09-06: P02 records the user's version badge design as D022 on `task/p02-version-badge`. The user explicitly chose adding it to the MVP specification while the app remains unscaffolded. `AI/VERSION_BADGE.md` preserves the supplied markup/CSS and adds the source-commit/fallback, i18n, and acceptance contracts. E01.8 implements the badge after foundation work; E07 checks integration across pages; E08 wires and verifies the actual release hash. This documentation task adds no application code, build configuration, runtime test result, coverage measurement, or server change. Validation and PR evidence follow before delivery.
+
+2026-09-06: P02 submitted as [PR #4](https://github.com/Flippylolz/fillable/pull/4), status at submission `in_review`. Checks passed for 17 public Markdown files, 81 local links, balanced fences, Git whitespace, and exact preservation of the user's supplied CSS/markup. Public docs exclude the local deployment identity; synthetic fixtures are unchanged. Build-input guidance was checked against official Vite/Docker documentation linked in the specification. No runtime/browser/coverage result is claimed. Record the confirmed merge in this PR's body first and carry it into the next task's ledger update. E01 foundation and E00 editor proof remain the next implementation work.
