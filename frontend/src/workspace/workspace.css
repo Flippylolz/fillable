@@ -10,3 +10,5 @@
 .workspace aside button { margin: 0.2rem 0.3rem 0.2rem 0; font-size: 0.8rem; }
 .library-open { display: inline-block; margin-top: 0.6rem; font-size: 0.85rem; }
 @media (max-width: 48rem) { .workspace .document-canvas { padding: 0.65rem; } }
+.workspace-discovery { margin-bottom: 0.75rem; font-size: 0.85rem; color: #5f6368; }
+.workspace-discovery p { margin: 0.3rem 0; }

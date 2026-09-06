@@ -18,14 +18,22 @@ import {
 } from "./transactions";
 import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
-import { reviewChanges } from "./review";
+import type { components } from "../../generated/api";
+import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
+import { ReviewPanel, type ReviewAction } from "./ReviewPanel";
 
 export function DocumentEditor({
   initialDocument,
   onDocumentChange,
+  discoverySnapshot,
+  sourceVersion,
+  onReopen,
 }: {
   initialDocument: object;
   onDocumentChange?: (document: object) => void;
+  discoverySnapshot?: components["schemas"]["FieldSnapshot"] | null;
+  sourceVersion?: string;
+  onReopen?: () => void;
 }) {
   const { t } = useTranslation();
   const host = useRef<HTMLDivElement>(null);
@@ -38,6 +46,8 @@ export function DocumentEditor({
   const [label, setLabel] = useState("");
   const [invalid, setInvalid] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
+  const [review, setReview] = useState<ReviewState | null>(null);
+  const [reviewStale, setReviewStale] = useState(false);
   useEffect(() => {
     const editor = new EditorView(host.current!, {
       state: EditorState.create({
@@ -55,7 +65,8 @@ export function DocumentEditor({
           reviewChanges(editor.state, paragraphIdentities(linkedChanges(editor.state, transaction))),
         );
         editor.updateState(next);
-        if (transaction.docChanged) change.current?.(next.doc.toJSON());
+        if (transaction.docChanged && !transaction.getMeta("review-initial")) change.current?.(next.doc.toJSON());
+        setReview(reviewState(next.doc));
         const nextFields = fields(next.doc);
         setOccurrences(nextFields);
         const selected = nextFields.find(
@@ -68,6 +79,7 @@ export function DocumentEditor({
     });
     view.current = editor;
     setOccurrences(fields(editor.state.doc));
+    setReview(reviewState(editor.state.doc));
     let locked = false;
     editor.state.doc.descendants((node) => {
       if (node.type.name.startsWith("locked")) locked = true;
@@ -87,6 +99,29 @@ export function DocumentEditor({
       },
     });
   }, [t]);
+
+  useEffect(() => {
+    const editor = view.current!;
+    if (!discoverySnapshot || !sourceVersion || reviewState(editor.state.doc)) return;
+    try {
+      if (!editor.state.doc.content.eq(editorSchema.nodeFromJSON(initial.current).content)) throw new Error("changed_source");
+      const attached = attachReview(editor.state.doc, discoverySnapshot, sourceVersion);
+      editor.dispatch(editor.state.tr.setDocAttribute("review", reviewState(attached))
+        .setMeta("review-initial", true).setMeta("addToHistory", false));
+      setReviewStale(false);
+    } catch { setReviewStale(true); }
+  }, [discoverySnapshot, sourceVersion]);
+
+  function actOnReview(id: string, action: ReviewAction, options: { label: string; key: string; type: string }): boolean {
+    const editor = view.current!;
+    const transaction = action === "focus" ? focusCandidate(editor.state, id)
+      : action === "configure" ? configureCandidate(editor.state, id, options.label, options.key || newFieldId(), options.type)
+      : reviewCandidate(editor.state, id, action, { ...options, key: options.key || undefined });
+    if (!transaction) return false;
+    editor.dispatch(transaction);
+    if (action === "focus" || action === "accept") editor.focus();
+    return true;
+  }
 
   return (
     <div className="document-workbench">
@@ -134,6 +169,10 @@ export function DocumentEditor({
       </div>
       <div ref={host} className="document-canvas" />
       <aside aria-label={t("editor.fields")}>
+        {reviewStale && <div role="alert"><p>{t("review.stale")}</p>{onReopen && <button type="button" onClick={onReopen}>{t("review.reopen")}</button>}</div>}
+        {review && <details className="review-section"><summary>{t("review.title")}</summary>
+          <ReviewPanel review={review} occurrences={occurrences} act={actOnReview} />
+        </details>}
         {occurrences.map((field) => (
           <div key={field.id} data-active={active === field.id}>
             <label>

@@ -66,7 +66,7 @@ test("opening errors retry without a fake editor and stale responses are ignored
     .mockRejectedValueOnce(new Error("offline"))
     .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
   vi.stubGlobal("fetch", fetcher);
-  const view = render(<I18nextProvider i18n={i18n}><Workspace identity={id} dirty={false} onDirty={vi.fn()} /></I18nextProvider>);
+  const view = render(<I18nextProvider i18n={i18n}><Workspace csrfToken="csrf" identity={id} dirty={false} onDirty={vi.fn()} /></I18nextProvider>);
   await screen.findByRole("alert");
   expect(screen.queryByRole("textbox")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Повторити відкриття" }));

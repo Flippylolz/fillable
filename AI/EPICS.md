@@ -1102,3 +1102,29 @@ retained bytes/quota and recreation passed; all volumes preserved. Independent
 LibreOffice/Poppler rendering passed unchanged package/pages, three edited pages,
 unchanged page two and Ukrainian text. Strict required Actions protection remains
 intact. Next: protected E04.5b PR and verified merge, then E04.5c sidebar/result loading.
+
+2026-09-06: E04.5b verified merged through [PR #41](https://github.com/Flippylolz/fillable/pull/41),
+commit `243643cf8011f15d39d1ba244597c6f615732350`; Actions 34058350851 passed both
+required checks for exact head `1821b81dcb7d6d48815dce91418ec1d31c7b2d1a`.
+Main synchronized. E04.5c starts on `task/e04-5c-workspace-review`: localized review
+sidebar, bounded owned-result loading and source revalidation without discarding drafts.
+
+E04.5c implements the collapsible review sidebar, explicit source-checked loading,
+bounded polling and manual retry, and discard-confirmed reopening after stale results.
+Acceptance, dismissal, label/group settings and navigation share editor history; locale
+changes retain unapplied inputs. Review remains an open draft until E06 persistence.
+See [Working field review](FIELD_REVIEW.md).
+
+Local checks passed: 101 frontend tests, raw 808/815 lines (99.14%) and 816/851
+branches (95.89%); 243 backend tests, 2779/2796 lines (99.39%) and 843/862 branches
+(97.80%). Lint, typing, catalogs/build and both raw gates passed. Real unimported-source
+probes rejected below-90% reports while all tests passed. Fresh index
+`/private/tmp/fillable-verify.o7fkk1` passed 4 development and 16 production browser
+checks, actual worker processing, quota/byte invariants and persistent recreation.
+The initial browser run exposed an exact-label selector including dropdown options;
+using the dropdown's accessible role/name fixed both desktop/mobile checks without
+changing application behavior. Ukrainian/English desktop/mobile screenshots were
+inspected. Independent LibreOffice/Poppler rendering passed no-edit byte/pixel identity,
+three edited pages, unchanged page two and Ukrainian text; Microsoft Word was not used.
+All volumes preserved. Strict Actions `ci-required` protection and administrator
+enforcement remain enabled. Next: E04.5c PR/verified merge, then E05.1 adapter integration.
