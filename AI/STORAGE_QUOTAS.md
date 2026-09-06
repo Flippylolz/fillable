@@ -111,7 +111,8 @@ Use real PostgreSQL and a bounded test storage directory, with deterministic fau
 
 The initial inherited default is 1 GiB (1,073,741,824 bytes), stored once in the
 singleton `storage_settings` row. This is an allocation limit, not a promise of
-physical disk capacity; E02.4 checks disk headroom. Operator changes are E02.5.
+physical disk capacity; E02.3 checks initial headroom and E02.4 expands capacity
+configuration. Operator quota changes are E02.5.
 Amounts are exact integer bytes from 0 through 9,007,199,254,740,991, within both
 PostgreSQL integer storage and JavaScript's exact integer range. Unlimited values,
 negative amounts, booleans and fractional configuration values are invalid.
@@ -145,7 +146,73 @@ The migration can roll back only before reservations/files, charged bytes or cus
 quota settings exist. Otherwise it refuses to drop storage metadata; release
 recovery must preserve data. These schema constraints are not yet the write service:
 E02.3 enforces lock ordering, streaming reservation, state transitions and atomic
-file/record finalization; E02.4 adds deletion, liveness-aware cleanup and disk checks.
+file/record finalization and per-operation recovery; E02.4 adds deletion, batch
+cleanup/reconciliation and capacity configuration.
 No retained file is written by E02.2 and no quota enforcement is claimed from models
 alone. Required PostgreSQL tests cover invalid values, identity/owner constraints,
 backfill, repeated upgrades, over-limit preservation and guarded rollback.
+
+## E02.3 enforced write and recovery protocol
+
+`app.storage.service.Storage` is the single retained-write implementation for API,
+worker and maintenance callers. It accepts an authorized owner UUID, owner-scoped
+idempotency key, validated request/source fingerprint, purpose and byte iterable.
+Original filenames never enter a filesystem path. Known sizes reserve before
+opening staging; unknown sizes reserve each bounded 64 KiB slice before writing.
+Actual bytes and SHA-256 are counted; a false declared length aborts. The initial
+processing policy limits each file to 10 MiB, active allocated staging to 64 MiB,
+and preserves 64 MiB of physical disk headroom. E02.4 exposes operational capacity
+configuration and batch reconciliation; these checks already apply to every write.
+
+The lock order is singleton settings, owner account, then reservation/file. Quota
+configuration must use that order too. Each allocation and finalization reads the
+current inherited/override limit, so reductions preserve old files and may abort a
+new in-flight write. Physical checks include outstanding allocated-but-not-written
+promises across all active reservations; written counters advance only after the
+bytes were written, making crash uncertainty conservative. OS disk exhaustion is
+reported separately from user quota exhaustion. No caller role bypasses this path.
+
+Publication uses an exclusive same-filesystem hard link from a fully fsynced,
+read-only staging inode into `files/<owner>/<file>`, followed by directory fsync.
+The staging link stays until SQL commits. It proves inode ownership for abort
+cleanup: a pre-existing final-path collision is neither overwritten nor removed.
+File readiness, reserved-to-used accounting and an optional DB-only document/revision
+finalization callback commit in one SQL transaction. The callback must not commit
+independently or perform external side effects. Future saves use it to validate the
+source revision and attach the matching file/field snapshot. No file becomes readable
+through the service before that transaction succeeds. Reads enforce owner, ready
+state, regular-file type, size and digest; files are outside the static webroot.
+
+Every writer holds a nonblocking OS flock throughout its operation. Zero-byte lock
+files remain to avoid replacing an inode still locked by another process. UUID-only
+paths, directory descriptors and no-follow opens reject symlink escapes; special
+files cannot block a read or lock. The one-shot Docker `storage-init` creates and
+sets ownership on only the Fillable root and its immediate `files`, `staging` and
+`locks` directories. It never recursively changes existing files or unrelated paths.
+API and worker both run as UID 10001 and wait for that initialization.
+
+A committed retry returns its existing result without consuming the input stream,
+rerunning the callback or charging again. A conflicting fingerprint/purpose/declared
+size fails. An active operation reports in-progress; an aborted attempt is terminal
+and requires a new key. A committed result that was later deleted is not recreated.
+A failure after SQL commit (including a lost response) cannot clean the retained file.
+The redundant staging hard link may survive; it adds no second logical byte charge.
+
+Uncommitted failures enter `cleanup_pending`; filesystem removal and directory fsync
+must succeed before reserved capacity is released and the operation becomes `aborted`.
+Failed cleanup retains its reservation. Recovery requires both an expired lease and
+an acquired OS lock; a live writer with a stale heartbeat cannot lose its capacity.
+Recovery aborts uncommitted output, including a fully published staged file, rather
+than inventing a saved revision without matching document metadata. Repeated recovery
+is safe after filesystem removal or SQL commit. Committed recovery removes only the
+redundant staging link. Batch scheduling, retained-file deletion and reconciliation
+reports are E02.4; HTTP upload/download integration follows in E03.
+
+PostgreSQL/filesystem tests exercise exact/inherited/zero quotas, concurrent conflicting
+reservations, active locks with expired leases, unknown and false declared sizes,
+quota reduction mid-write, callback rollback, short writes, actual ENOSPC, cleanup
+failure, symlink/collision protection, corrupt reads and lost responses. A real child
+process exits immediately after publication; recovery removes that uncommitted file
+and releases its reservation once. The fresh Docker verifier additionally writes
+synthetic data through the API container's shared service, reads it from the worker,
+recreates development as production, and checks immutable bytes/accounting from both.

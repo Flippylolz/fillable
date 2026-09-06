@@ -38,6 +38,7 @@ Inspect only this project's logs and fix the failing dependency/configuration.
 | `db` | Private PostgreSQL 18.3, persistent volume at its version-18 `/var/lib/postgresql` layout |
 | `redis` | Private Redis 8.6.1 with append-only persistence |
 | `migrate` | One-shot `alembic upgrade head` after PostgreSQL health |
+| `storage-init` | One-shot scoped storage directory ownership for API/worker UID 10001 |
 | `worker` | Python RQ 2.7.0; starts after migrations and Redis health |
 | `browser` profile | Non-root Playwright test image; never a production service |
 
@@ -67,9 +68,13 @@ SQLAlchemy URL; E08 must validate the final private runtime configuration.
 | `DATABASE_URL`, `REDIS_URL` | Injected internal service connections |
 | `STORAGE_ROOT` | Container document mount at `/data/documents` |
 
-No retained application document writes exist yet. Storage ownership setup, quota
-configuration, disk/temporary limits and account operator commands arrive in E02,
-before uploads. Read [Storage quotas](STORAGE_QUOTAS.md) for that contract. Local
+E02.3 implements shared retained writes, quota reservations, bounded staging,
+disk headroom and crash cleanup. `storage-init` owns only the configured Fillable
+root and its three immediate managed directories; use a dedicated path, never a
+shared directory containing other services' data. It does not recursively chown
+files. Both API and worker wait for it and run as UID 10001. Operator quota/capacity
+configuration and batch reconciliation follow in E02.4/E02.5, before uploads.
+Read [Storage quotas](STORAGE_QUOTAS.md) for the protocol. Local
 production and development data paths/namespaces must be distinct when using real
 data. Persistent staging and backups are outside MVP; retained versions remain required.
 

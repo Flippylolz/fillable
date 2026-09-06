@@ -11,6 +11,8 @@ services:
       DATABASE_URL: postgresql+psycopg://fillable:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/fillable
       REDIS_URL: redis://redis:6379/0
     depends_on:
+      storage-init:
+        condition: service_completed_successfully
       migrate:
         condition: service_completed_successfully
       redis:
@@ -22,6 +24,18 @@ services:
       interval: 5s
       timeout: 6s
       retries: 10
+    security_opt: [no-new-privileges:true]
+  storage-init:
+    build:
+      context: .
+      dockerfile: infra/backend.Dockerfile
+    user: "0:0"
+    command: [python, -c, "from pathlib import Path; from app.storage.filesystem import initialize; initialize(Path('/data/documents'))"]
+    volumes:
+      - ${DOCUMENTS_HOST_PATH:-./var/storage}:/data/documents
+    network_mode: none
+    cap_drop: [ALL]
+    cap_add: [CHOWN, FOWNER, DAC_OVERRIDE]
     security_opt: [no-new-privileges:true]
   db:
     image: postgres:18.3-bookworm@sha256:80630f83606d8db77d30b3851b16a9f78be2d0d4dda6f7b82a1fdca5ebe3acba
@@ -69,6 +83,8 @@ services:
     volumes:
       - ${DOCUMENTS_HOST_PATH:-./var/storage}:/data/documents
     depends_on:
+      storage-init:
+        condition: service_completed_successfully
       migrate:
         condition: service_completed_successfully
       redis:
