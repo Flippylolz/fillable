@@ -16,6 +16,17 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Build check images
         run: docker compose -f compose.test.yaml build
+      - name: Validate runtime Compose configurations
+        run: |
+          docker compose -f compose.yaml -f compose.dev.yaml config --quiet
+          docker compose -f compose.yaml -f compose.prod.yaml config --quiet
+      - name: Build and verify production gateway
+        run: |
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml up --build --wait
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T gateway nginx -t -c /etc/nginx/fillable.conf
+          curl --fail http://127.0.0.1:8181/api/health
+          curl --fail http://127.0.0.1:8181/ | grep '/assets/'
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
       - name: Backend tests and coverage
         run: docker compose -f compose.test.yaml run --name fillable-backend-check backend-test
       - name: Frontend tests and build

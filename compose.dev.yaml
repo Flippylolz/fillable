@@ -1,0 +1,28 @@
+services:
+  api:
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend/app:/app/app:ro
+  web:
+    build:
+      context: .
+      dockerfile: infra/frontend.Dockerfile
+      target: frontend
+    init: true
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/index.html:/app/index.html:ro
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5173').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    security_opt: [no-new-privileges:true]
+  gateway:
+    build:
+      target: gateway-dev
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:${FILLABLE_DEV_PORT:-8180}:8080'

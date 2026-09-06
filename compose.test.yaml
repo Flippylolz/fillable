@@ -9,4 +9,5 @@ services:
     build:
       context: .
       dockerfile: infra/frontend.Dockerfile
+      target: frontend
     command: sh -c 'rm -rf coverage && npm run check:i18n && npm run build && npm test'

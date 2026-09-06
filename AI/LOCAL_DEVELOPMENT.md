@@ -131,3 +131,36 @@ versions/integrity hashes are in the npm lockfile. Backend direct versions are i
 Official foundation references: [Vite runtime requirements](https://vite.dev/guide/),
 [Vitest source inclusion](https://vitest.dev/config/coverage.html), and
 [FastAPI container construction](https://fastapi.tiangolo.com/deployment/docker/).
+
+## E01.2 runtime baseline
+
+Base/development/production Compose definitions now exist. The initial runtime has
+API, Vite (development only), and a non-root nginx gateway. Database/Redis/worker
+and migration services arrive in E01.3. No application document writes exist yet.
+
+```sh
+cp .env.example .env
+docker compose -f compose.yaml -f compose.dev.yaml up --build --wait
+# Open http://localhost:8180; API health is /api/health.
+docker compose -f compose.yaml -f compose.dev.yaml down
+```
+
+The frontend source/index and backend application source mount read-only; Vite and
+Uvicorn reload them. Dependency/config changes require rebuilding. The gateway
+forwards Vite WebSockets. API health currently proves process responsiveness only.
+
+Local production-image verification (not deployment):
+
+```sh
+docker compose -p fillable-production-check -f compose.yaml -f compose.prod.yaml up --build --wait
+# Open http://localhost:8181; this serves built assets without a Node runtime.
+docker compose -p fillable-production-check -f compose.yaml -f compose.prod.yaml down
+```
+
+Use separate `DOCUMENTS_HOST_PATH` values when testing with retained application
+data. Ordinary `down` preserves bind-mounted data and future named database/Redis
+volumes; never add `-v` as a troubleshooting shortcut. The storage service and host
+mount ownership setup arrive before document writes in E02. The current app never
+writes retained files. Both published defaults bind 127.0.0.1; E08 will inspect the
+actual shared ingress before choosing production ports/networking. No host ports
+80/443 are claimed, and shared nginx is outside these Compose projects.
