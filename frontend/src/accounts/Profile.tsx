@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { api, apiErrorMessage } from "../api";
-import { formatNumber } from "../i18n";
+import { formatBytes } from "../i18n";
 import type { Session } from "./Authentication";
 import "./profile.css";
 
@@ -85,9 +85,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
     }
   }
 
-  function bytes(value: number) {
-    return t("profile.bytes", { count: value, value: formatNumber(value) });
-  }
+  const bytes = formatBytes;
 
   return <section className="profile" aria-labelledby="profile-title">
     <h2 id="profile-title">{t("profile.title")}</h2>

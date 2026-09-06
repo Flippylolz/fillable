@@ -31,9 +31,11 @@ export function App() {
   }, [attempt]);
 
   return <main>
-    <h1>{t('app.title')}</h1>
-    <p>{t('app.description')}</p>
-    <p role="status">{t(`health.${status}`)}</p>
+    <header className="app-header">
+      <div className="app-brand"><span className="app-document-icon" aria-hidden="true" /><h1>{t('app.title')}</h1></div>
+      <p className="app-description">{t('app.description')}</p>
+      <p className={`app-connection app-connection-${status}`} role="status">{t(`health.${status}`)}</p>
+    </header>
     <Authentication>{(session, actions) => session.user && <SessionPages
       session={session} accept={actions.accept}
       setAuthBusy={actions.setBusy} authBusy={actions.busy}
