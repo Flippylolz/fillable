@@ -1,0 +1,14 @@
+.document-workbench aside { min-width: 0; max-height: 80vh; overflow: auto; background: #fff; border-radius: 1rem; }
+.field-review { padding: 0.8rem; color: #202124; }
+.review-section > summary { padding: 0.8rem; cursor: pointer; color: #174ea6; font-weight: 600; }
+.field-review label { display: block; margin-top: 0.6rem; font-size: 0.85rem; }
+.field-review input, .field-review select { box-sizing: border-box; width: 100%; padding: 0.45rem; border: 1px solid #dadce0; border-radius: 0.4rem; font: inherit; background: #fff; color: inherit; }
+.review-card { border-top: 1px solid #e3e7ed; margin-top: 1rem; padding-top: 0.8rem; }
+.review-reason, .review-draft-note { font-size: 0.8rem; color: #5f6368; }
+.review-context { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 6rem; overflow: auto; padding: 0.5rem; background: #f8fafd; border-radius: 0.4rem; font-size: 0.85rem; }
+.review-missing { color: #8a3800; }
+.review-actions, .review-pages { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.7rem; }
+.review-actions button, .review-pages button { border: 1px solid #dadce0; border-radius: 1rem; padding: 0.35rem 0.7rem; background: white; color: #174ea6; cursor: pointer; }
+.review-actions .review-accept { background: #e8f0fe; border-color: #e8f0fe; }
+.review-actions button:disabled, .review-pages button:disabled { opacity: 0.5; cursor: default; }
+@media (max-width: 700px) { .document-workbench aside { max-height: 70vh; } }
