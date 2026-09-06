@@ -117,7 +117,9 @@ class ResourceInfo(BaseModel):
     size_bytes: ByteCount
     digest: str
     unsupported_count: int
-    processing_status: Literal["not_started"] = "not_started"
+    processing_status: Literal[
+        "not_started", "queued", "running", "succeeded", "failed", "stale"
+    ] = "not_started"
     deletion_pending: bool = False
 
 

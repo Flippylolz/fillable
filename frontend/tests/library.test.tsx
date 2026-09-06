@@ -9,7 +9,7 @@ import { i18n, setLanguage } from "../src/i18n";
 const usage = { used_bytes: 10, reserved_bytes: 2, limit_bytes: 1000, available_bytes: 988, over_limit: false };
 const item = { id: "resource", kind: "template", title: "Ґанна <script>", original_filename: "Заява.docx", current_version_id: "version", size_bytes: 10, digest: "a".repeat(64), unsupported_count: 1, processing_status: "not_started", created_at: "2026-09-06T10:00:00Z", updated_at: "2026-09-06T10:00:00Z" };
 const session = { csrf_token: "csrf", user: { id: "owner", email: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
-const fail = (code: string) => Response.json({ error: { code, parameters: {} } }, { status: 409 });
+const fail = (code: string) => Response.json({ error: { code, parameters: {} } }, { status: code === "rate_limited" ? 429 : 409 });
 const onBusy = vi.fn(); const onDirty = vi.fn(); const onSaved = vi.fn();
 const empty = () => Response.json({ items: [], next_cursor: null });
 function show(disabled = false) { return render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={disabled} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} /></I18nextProvider>); }
@@ -18,6 +18,7 @@ function choose(value: File) { fireEvent.change(screen.getByLabelText("Файл 
 function submit() { fireEvent.submit(screen.getByRole("form", { name: "Завантажити файл DOCX" })); }
 function defaults(request: Request) {
   const path = new URL(typeof request === "string" ? request : request.url, window.location.origin).pathname;
+  if (path.endsWith("/processing")) return Response.json({ source_version_id: "version", status: "not_started" });
   if (path === "/api/storage/usage") return Response.json(usage);
   if (path === "/api/auth/session") return Response.json(session);
   if (path === "/api/health") return Response.json({ status: "ok" });
@@ -29,7 +30,7 @@ beforeEach(async () => {
   await setLanguage("uk"); window.history.replaceState(null, "", "/"); onBusy.mockClear(); onDirty.mockClear(); onSaved.mockClear();
 });
 
-test.each(["operation_aborted", "operation_conflict"])("ambiguous upload retries preserve bytes and key; %s starts a new attempt", async code => {
+test.each(["operation_aborted", "operation_conflict", "rate_limited"])("ambiguous upload retries preserve bytes and key; %s starts a new attempt", async code => {
   let attempt = 0;
   let saved = false;
   const fetcher = vi.fn(async (request: Request) => {

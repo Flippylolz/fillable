@@ -18,7 +18,7 @@ with httpx.Client(base_url=origin, headers={"Origin": origin}, timeout=30) as cl
     saved = response.json()["items"][0]
     before = client.get("/api/storage/usage").json()["used_bytes"]
     endpoint = f"/api/documents/{saved['id']}/processing"
-    response = client.post(endpoint)
+    response = client.get(endpoint)
     response.raise_for_status()
     identity = response.json()["id"]
     for _ in range(30):

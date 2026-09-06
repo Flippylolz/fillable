@@ -53,7 +53,7 @@ with httpx.Client(base_url=origin, headers={'Origin': origin}, timeout=30) as cl
     assert len(items) == 1
     assert items[0]['digest'] == hashlib.sha256(data).hexdigest()
     assert items[0]['size_bytes'] == len(data)
-    assert items[0]['processing_status'] == 'not_started'
+    assert items[0]['processing_status'] in {'queued', 'running', 'succeeded'}
     client.post('/api/auth/logout').raise_for_status()
 with database().connect() as connection:
     owner = connection.execute(select(users.c.id).where(users.c.email == 'profile@example.test')).scalar_one()

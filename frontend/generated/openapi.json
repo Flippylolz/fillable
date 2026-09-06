@@ -349,8 +349,15 @@
             "type": "string"
           },
           "processing_status": {
-            "const": "not_started",
             "default": "not_started",
+            "enum": [
+              "not_started",
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "stale"
+            ],
             "title": "Processing Status",
             "type": "string"
           },

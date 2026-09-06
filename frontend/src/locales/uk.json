@@ -129,5 +129,14 @@
   "workspace.loading": "Відкриваємо збережений документ…",
   "workspace.saved": "Відкрито збережену версію.",
   "workspace.unsaved": "Є незбережені зміни. Завантаження DOCX містить лише збережену версію.",
-  "workspace.discard": "Відкинути незбережені зміни та продовжити?"
+  "workspace.discard": "Відкинути незбережені зміни та продовжити?",
+  "processing.not_started": "Ще не перевірено",
+  "processing.queued": "Перевірка в черзі",
+  "processing.running": "Перевіряємо документ…",
+  "processing.succeeded": "Перевірку завершено",
+  "processing.failed": "Не вдалося перевірити. Збережений документ не змінено.",
+  "processing.stale": "Перевірка стосується попередньої версії. Оновіть бібліотеку.",
+  "processing.start": "Перевірити документ",
+  "processing.retry": "Повторити перевірку",
+  "processing.refresh": "Повторити запит стану"
 }

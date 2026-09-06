@@ -42,7 +42,7 @@ def start():
     web = client()
     saved = upload(web).json()
     url = "/api/documents/" + saved["id"] + "/processing"
-    assert web.get(url).json()["status"] == "not_started"
+    assert web.get(url).json()["status"] == "queued"
     result = web.post(url)
     assert result.status_code == 200, result.text
     return owner, web, saved, url, result.json()
@@ -245,11 +245,25 @@ def test_concurrent_delivery_runs_one_attempt_and_inactive_owner_cancels(monkeyp
 def test_submission_admission_and_dispatch_loop_failures_are_bounded(
     monkeypatch, capsys
 ):
-    _, web, _, _, _ = start()
+    owner, web, original, _, _ = start()
     for index in range(5):
-        saved = upload(web, key=str(index)).json()
-        response = web.post("/api/documents/" + saved["id"] + "/processing")
-        assert response.status_code == (429 if index == 4 else 200)
+        uploaded = upload(web, key=str(index))
+        if index == 4:
+            assert uploaded.status_code == 429
+        else:
+            assert uploaded.status_code == 201
+            response = web.post(
+                "/api/documents/" + uploaded.json()["id"] + "/processing"
+            )
+            assert response.status_code == 200
+    with database().connect() as connection:
+        assert len(connection.execute(select(jobs)).all()) == 5
+        assert (
+            connection.execute(
+                select(accounts.c.used_bytes).where(accounts.c.user_id == owner.id)
+            ).scalar_one()
+            == len(DATA) * 5
+        )
     with pytest.raises(ValueError):
         dispatcher.dispatch(101)
     worker.process("bad-id", 1)
@@ -269,7 +283,7 @@ def test_submission_admission_and_dispatch_loop_failures_are_bounded(
     from app.errors import AppError
 
     with pytest.raises(AppError):
-        service.submit(state, UUID(saved["id"]))
+        service.submit(state, UUID(original["id"]))
 
 
 def test_abandoned_delivery_before_business_claim_is_retried_and_bounded():

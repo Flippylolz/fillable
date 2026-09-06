@@ -127,5 +127,14 @@
   "workspace.loading": "Opening saved document…",
   "workspace.saved": "Saved revision opened.",
   "workspace.unsaved": "You have unsaved changes. DOCX downloads contain only the saved revision.",
-  "workspace.discard": "Discard unsaved changes and continue?"
+  "workspace.discard": "Discard unsaved changes and continue?",
+  "processing.not_started": "Not inspected yet",
+  "processing.queued": "Inspection queued",
+  "processing.running": "Inspecting document…",
+  "processing.succeeded": "Inspection complete",
+  "processing.failed": "Inspection failed. The saved document is unchanged.",
+  "processing.stale": "Inspection belongs to an earlier revision. Refresh the library.",
+  "processing.start": "Inspect document",
+  "processing.retry": "Retry inspection",
+  "processing.refresh": "Retry status check"
 }
