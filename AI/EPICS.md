@@ -22,7 +22,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1 schemas |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1 merged; E04.2a explicit extraction |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
@@ -945,3 +945,24 @@ Next: E04.1 protected PR and verified merge, then deterministic extraction in E0
 The updated backend real-unimported-source probe passed: its 2423/7640 line report
 was rejected below 90% while all 201 tests remained successful. The unchanged frontend
 source retains the preceding task's successful negative probe and is checked again by CI.
+
+2026-09-06: E04.1 verified merged through [PR #35](https://github.com/Flippylolz/fillable/pull/35),
+commit `7d5b168232e412a89e68b36de8a366143c9b3f9b`; Actions 34051020682 passed both
+required checks for exact head `7540087f93419e3d3b53e39b6b61ee4436ad67ff`.
+Main synchronized. E04.2 is split into E04.2a deterministic native-control/explicit-token
+extraction and E04.2b source-revision result persistence/API integration, each with
+its own PR. E04.2a starts on `task/e04-2a-explicit-discovery`. Literal token-shaped text
+remains a proposal and is never auto-accepted. E04.3 adds blank rules; E04.4 measures
+labeled accuracy; E04.5 implements workspace review actions.
+
+E04.2a local checks pass 208 backend tests, raw 2478/2493 lines (99.40%) and
+710/726 branches (97.80%). The detector reproduces all 22 labeled explicit locations
+in the Ukrainian corpus plus one permitted, unaccepted token-shaped literal. It
+preserves source Unicode/native values, exact-tag groups, protected barriers and
+source paragraph order; candidate/value limits fail without truncation. See
+[Field discovery](FIELD_DISCOVERY.md). No UI, API wiring or retained-file change is
+claimed in this subtask. Next: protected PR/merge, then E04.2b result persistence/API.
+Frontend local checks also passed all 78 tests, raw 613/620 lines (98.87%) and
+547/582 branches (93.99%), with lint, typing and catalogs/build. The updated backend
+negative probe rejected 2478/7827 lines with all 208 tests passing. Required protection
+still enforces strict, up-to-date Actions `ci-required`, including administrators.
