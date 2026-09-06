@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.4 and E03.1b merged; E03.5a merged; E03.5b upload intent/status in progress |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.4 and E03.1b merged; E03.5 merged; E03.6 independent copies in progress |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -904,3 +904,24 @@ were inspected; readable storage units and the Docs-inspired layout remain intac
 The first fresh run `/private/tmp/fillable-verify.Fvq9tg` stopped on a duplicate test
 variable, corrected in the final run. All verification volumes remain preserved.
 Next: protected E03.5b PR and verified merge, then E03.6.
+
+2026-09-06: E03.5b verified merged through [PR #33](https://github.com/Flippylolz/fillable/pull/33),
+commit `e3e3ab51419090c077c529efa937c002aeaa26da`; Actions 34049142719 passed
+`checks` and `ci-required` for exact head `45ef4368485632b458f511497944b69f9922a56f`.
+Main synchronized. E03.6 is underway on `task/e03-6-template-copies`: independent
+saved-template copies, quota/idempotency enforcement, and workspace navigation.
+
+E03.6 implementation and local unit/integration gates pass. See [Template copies](TEMPLATE_COPIES.md)
+for transaction and retry behavior. Fresh Docker/browser verification is next, including
+a lost committed response and source deletion with the independent copy still usable.
+
+E03.6 final local gates passed: 163 backend tests, 2253/2268 lines (99.34%) and
+620/636 branches (97.48%); 78 frontend tests, 613/620 lines (98.87%) and 547/582
+branches (93.99%). Lint, typing, catalogs/build, generated API and raw full-source
+checks passed. Both real unimported-source probes failed below 90% as required.
+Final fresh index `/private/tmp/fillable-verify.EskYGN` passed 3 development and
+14 production browser tests, including committed-copy response loss, idempotent retry,
+workspace entry, independent quota and source deletion. Desktop/mobile copy-form
+error screenshots inspected. Earlier successful proof `/private/tmp/fillable-verify.hws0Kr`
+and all isolated volumes remain preserved. Next: protected E03.6 PR, actual merge,
+then E04.1 field/occurrence/candidate/review schemas. Deployment stays E08 last.

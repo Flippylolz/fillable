@@ -12,10 +12,11 @@ from starlette.concurrency import run_in_threadpool
 from app.accounts.routes import current_user, mutation_session
 from app.accounts.schema import UserInfo
 from app.accounts.service import SessionState
-from app.documents import deletion, service
+from app.documents import copies, deletion, service
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.schema import (
     ContentInfo,
+    CopyRequest,
     DeletionResult,
     ResourceInfo,
     ResourceList,
@@ -29,6 +30,38 @@ UPLOAD_SLOTS = BoundedSemaphore(2)
 DOWNLOAD_SLOTS = BoundedSemaphore(2)
 BODY_SECONDS = 30
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+@router.post("/{identity}/copies", response_model=ResourceInfo, status_code=201)
+def copy_template(
+    identity: UUID,
+    payload: CopyRequest,
+    response: Response,
+    idempotency_key: Annotated[
+        str, Header(min_length=1, max_length=120, pattern=r"^[A-Za-z0-9._:-]+$")
+    ],
+    state: SessionState = Depends(mutation_session),
+) -> ResourceInfo:
+    if not UPLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(429, "upload_busy")
+    try:
+        result = copies.create(state, identity, payload, idempotency_key)
+    except StorageError as error:
+        failures: dict[str, tuple[int, ErrorCode]] = {
+            "not_found": (404, "not_found"),
+            "quota_exceeded": (409, "quota_exceeded"),
+            "idempotency_conflict": (409, "operation_conflict"),
+            "operation_in_progress": (409, "operation_in_progress"),
+            "operation_aborted": (409, "operation_aborted"),
+        }
+        status, code = failures.get(error.code, (503, "storage_unavailable"))
+        raise AppError(status, code) from None
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    finally:
+        UPLOAD_SLOTS.release()
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 def parse_metadata(value):

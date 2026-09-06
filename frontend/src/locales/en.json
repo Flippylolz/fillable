@@ -136,5 +136,11 @@
   "processing.stale": "Inspection belongs to an earlier revision. Refresh the library.",
   "processing.start": "Inspect document",
   "processing.retry": "Retry inspection",
-  "processing.refresh": "Retry status check"
+  "processing.refresh": "Retry status check",
+  "copy.use": "Use template",
+  "copy.description": "Create an independent document from this saved template revision. Unsaved template edits are not included.",
+  "copy.title": "New document title",
+  "copy.create": "Create and open document",
+  "copy.creating": "Creating document…",
+  "copy.cancel": "Cancel"
 }

@@ -106,6 +106,17 @@ class UploadMetadata(BaseModel):
         return value
 
 
+class CopyRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_version_id: UUID
+    title: str = Field(min_length=1, max_length=160)
+
+    @field_validator("title")
+    @classmethod
+    def title_present(cls, value):
+        return UploadMetadata.title_present(value)
+
+
 class ResourceInfo(BaseModel):
     id: UUID
     kind: Literal["template", "document"]
