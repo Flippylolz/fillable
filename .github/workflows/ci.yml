@@ -14,8 +14,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Configure isolated local defaults
+        run: cp .env.example .env
       - name: Build check images
-        run: docker compose -f compose.test.yaml build
+        run: docker compose -p fillable-checks -f compose.test.yaml build
       - name: Validate runtime Compose configurations
         run: |
           docker compose -f compose.yaml -f compose.dev.yaml config --quiet
@@ -28,9 +30,9 @@ jobs:
           curl --fail http://127.0.0.1:8181/ | grep '/assets/'
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
       - name: Backend tests and coverage
-        run: docker compose -f compose.test.yaml run --name fillable-backend-check backend-test
+        run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
       - name: Frontend tests and build
-        run: docker compose -f compose.test.yaml run --name fillable-frontend-check frontend-test
+        run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-frontend-check frontend-test
       - name: Collect reports
         if: always()
         run: |

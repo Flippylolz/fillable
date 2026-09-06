@@ -1,4 +1,16 @@
 services:
+  db:
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 1.0
+  redis:
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+  worker:
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 1.0
   api:
     restart: unless-stopped
     read_only: true

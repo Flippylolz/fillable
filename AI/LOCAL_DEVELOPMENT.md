@@ -106,12 +106,12 @@ E01.2–E01.6 work. Do not use the planned startup command until those tasks lan
 Run the current checks with Git and Docker only:
 
 ```sh
-docker compose -f compose.test.yaml build
-docker compose -f compose.test.yaml run --rm backend-test
-docker compose -f compose.test.yaml run --name fillable-frontend-report frontend-test
+docker compose -p fillable-checks -f compose.test.yaml build
+docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test
+docker compose -p fillable-checks -f compose.test.yaml run --name fillable-frontend-report frontend-test
 mkdir -p frontend/coverage
 docker cp fillable-frontend-report:/app/coverage/. frontend/coverage/
-docker compose -f compose.test.yaml run --rm -v "$PWD/frontend:/source:ro" backend-test python /checks/check_coverage.py frontend /source
+docker compose -p fillable-checks -f compose.test.yaml run --rm -v "$PWD/frontend:/source:ro" backend-test python /checks/check_coverage.py frontend /source
 docker rm fillable-frontend-report
 ```
 
@@ -164,3 +164,30 @@ mount ownership setup arrive before document writes in E02. The current app neve
 writes retained files. Both published defaults bind 127.0.0.1; E08 will inspect the
 actual shared ingress before choosing production ports/networking. No host ports
 80/443 are claimed, and shared nginx is outside these Compose projects.
+
+## E01.3 persistent services and migrations
+
+The runtime now includes PostgreSQL 18.3, Redis 8.6.1 and RQ 2.7.0. PostgreSQL uses
+its version-18 volume layout (`/var/lib/postgresql`); Redis enables append-only
+persistence. Neither service publishes a host port. Ordinary shutdown preserves
+both named volumes. The local example password is only for isolated development;
+production requires a distinct privately configured password. The Compose value
+must be URL-safe for the generated database URL.
+
+Alembic runs `upgrade head` after PostgreSQL health and must finish successfully
+before API/worker startup. The initial baseline creates only the migration version
+record. Later schema changes are reviewed task migrations. API `/api/ready`
+checks the database migration heads and Redis connectivity; `/api/health` remains
+process-only. RQ starts with `app.worker_config`, the explicit
+`rq.serializers.JSONSerializer`, and disabled job-description logging.
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml run --rm migrate
+docker compose -f compose.yaml -f compose.dev.yaml logs --tail 30 worker
+docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test
+```
+
+The test stack uses its own PostgreSQL tmpfs and Redis service. Migration tests
+exercise repeat upgrades and preserve a synthetic marker; worker tests execute a
+JSON queue round trip against real Redis. There are no retained document jobs
+or quota bypasses. Worker source changes currently require a scoped restart/rebuild.

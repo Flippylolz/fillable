@@ -346,3 +346,21 @@ hashed assets serve through gateway; same-origin health succeeds. Production ngi
 runs non-root without Node. Required Docker suites passed again: backend 9/9 lines,
 branches not applicable; frontend 27/27 lines, 14/14 branches (100%). Actual
 application persistence and hot-reload browser acceptance remain E01.3/E01.6.
+
+2026-09-06: E01.2 confirmed `done` through [PR #7](https://github.com/Flippylolz/fillable/pull/7)
+at `9891ab5fd8dab66d06b65df890737008ad8c97df`; Actions 34021093942 passed both
+required jobs and squash auto-merge completed. Recorded merge in the PR body,
+synchronized main, and started E01.3 on `task/e01-3-persistent-services`.
+PostgreSQL/Redis are digest-pinned, private and persistent; Alembic completes
+before API/worker startup. Readiness checks exact migration heads and Redis;
+process health stays separate. RQ uses JSON serialization and disables job-argument
+logging. Next: real-service tests, startup/restart persistence, PR and required CI.
+
+2026-09-06: E01.3 local verification passed: four backend tests against real
+PostgreSQL/Redis, online/offline/repeat migrations and synthetic-data preservation,
+readiness failures, and actual RQ JSON job execution. Backend includes migration and
+worker configuration source: 64/64 lines, 6/6 branches (100%). Frontend nine tests,
+27/27 lines and 14/14 branches (100%), type/build/catalog checks passed unchanged.
+Isolated production stack started in migration order; PostgreSQL and Redis synthetic
+markers survived `down` and recreation, then only those markers were removed.
+Worker was listening and public-local `/api/ready` returned ok. No live server touched.

@@ -4,6 +4,14 @@ services:
     build:
       context: .
       dockerfile: infra/backend.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://fillable:test-only@test-db:5432/fillable
+      REDIS_URL: redis://test-redis:6379/0
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
     command: sh -c 'rm -rf coverage && ruff check . && pytest --cov=app --cov-branch --cov-report=term-missing --cov-report=json:coverage/coverage.json && python /checks/check_coverage.py backend /app && python /checks/test_coverage_gate.py'
   frontend-test:
     build:
@@ -11,3 +19,22 @@ services:
       dockerfile: infra/frontend.Dockerfile
       target: frontend
     command: sh -c 'rm -rf coverage && npm run check:i18n && npm run build && npm test'
+  test-db:
+    image: postgres:18.3-bookworm@sha256:80630f83606d8db77d30b3851b16a9f78be2d0d4dda6f7b82a1fdca5ebe3acba
+    environment:
+      POSTGRES_USER: fillable
+      POSTGRES_DB: fillable
+      POSTGRES_PASSWORD: test-only
+    tmpfs: [/var/lib/postgresql]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U fillable -d fillable']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  test-redis:
+    image: redis:8.6.1-alpine@sha256:2afba59292f25f5d1af200496db41bea2c6c816b059f57ae74703a50a03a27d0
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 20
