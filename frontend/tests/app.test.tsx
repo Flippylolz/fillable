@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import { App } from '../src/App';
-import { i18n, setLanguage, formatDate, formatNumber } from '../src/i18n';
+import { i18n, setLanguage, formatBytes, formatDate, formatNumber } from '../src/i18n';
 
 // Connection/locale unit tests isolate auth; its real flows have separate tests and browser coverage.
 vi.mock('../src/accounts/Authentication', () => ({ Authentication: () => null }));
@@ -9,6 +9,17 @@ vi.mock('../src/accounts/Authentication', () => ({ Authentication: () => null })
 beforeEach(async () => { await setLanguage('uk'); });
 function mount() { return render(<I18nextProvider i18n={i18n}><App /></I18nextProvider>); }
 const healthy = () => Promise.resolve({ ok: true, json: async () => ({ status: 'ok' }) });
+
+test('storage sizes use readable decimal units and the selected locale', async () => {
+  expect(formatBytes(0)).toBe('0 байтів');
+  expect(formatBytes(999)).toBe('999 байтів');
+  expect(formatBytes(1073741824)).toMatch(/1,07\s+ГБ/);
+  await setLanguage('en');
+  expect(formatBytes(1000)).toBe('1 kB');
+  expect(formatBytes(2380376)).toBe('2.38 MB');
+  expect(formatBytes(1073741824)).toBe('1.07 GB');
+  expect(formatBytes(Number.MAX_SAFE_INTEGER)).toBe('9.01 PB');
+});
 
 test('defaults to Ukrainian and follows locale changes without remounting', async () => {
   const fetchMock = vi.fn(healthy);

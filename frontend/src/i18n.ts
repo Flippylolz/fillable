@@ -26,3 +26,12 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions) 
 export function formatDate(value: Date, options?: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat(locale(), options).format(value);
 }
+
+export function formatBytes(value: number) {
+  if (value < 1000) return i18n.t('profile.bytes', { count: value, value: formatNumber(value) });
+  const units = ['kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte'];
+  const exponent = Math.min(Math.floor(Math.log10(value) / 3), units.length);
+  return formatNumber(value / 1000 ** exponent, {
+    style: 'unit', unit: units[exponent - 1], unitDisplay: 'short', maximumFractionDigits: 2,
+  });
+}

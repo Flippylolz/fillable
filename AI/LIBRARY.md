@@ -37,3 +37,18 @@ The final E03.1 local run passed 55 frontend tests and full-source coverage gate
 recreation. Ukrainian desktop and English mobile screenshots were visually inspected.
 All isolated volumes were preserved. Backend application code is unchanged from E03.3;
 required CI reruns its 140 tests and independent coverage gate before merge.
+
+## Requested visual follow-up (E03.1b)
+
+The user requested a visual direction similar to Google Docs. The library now uses
+a compact document-brand header, quiet navigation, rounded upload controls and a
+grid of document cards. Their paper illustrations are decorative generic icons,
+not previews of document contents. All existing upload, retry, profile and language
+behavior remains available. The shared version badge retains its original styling.
+
+Library sizes and profile usage share a locale-aware formatter: values below 1000
+retain byte plurals; larger values use decimal kB/MB/GB/TB/PB with at most two decimal
+places. For example, 1,073,741,824 bytes displays as 1.07 GB in English. These are
+rounded display values only; quotas, meter values, API responses and accounting
+continue to use exact integer bytes. Decimal units avoid labeling binary quantities
+as MB or GB. Zero availability remains visibly zero.

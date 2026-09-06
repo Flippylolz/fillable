@@ -96,10 +96,11 @@ export function Authentication({
       )}
       {session?.user && (
         <>
-          <p>{t("auth.signedIn", { name: session.user.display_name })}</p>
+          <div className="account-strip"><p>{t("auth.signedIn", { name: session.user.display_name })}</p>
           <button disabled={busy || childBusy} onClick={() => void submit()}>
             {t("auth.logout")}
           </button>
+          </div>
           {children(session, { accept, busy, setBusy: setChildBusy })}
         </>
       )}

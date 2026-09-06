@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
-import { formatDate, formatNumber } from "../i18n";
+import { formatBytes, formatDate } from "../i18n";
 import { useLibrary, type Kind } from "./useLibrary";
 import "./library.css";
 
@@ -79,7 +79,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved }: {
       if (!controller.signal.aborted) { setBusy(false); onBusy(false); }
     }
   }
-  function bytes(value: number) { return t("profile.bytes", { count: value, value: formatNumber(value) }); }
+  const bytes = formatBytes;
 
   return <section className="library" aria-labelledby="library-title">
     <div className="library-heading"><div><h2 id="library-title">{t("library.title")}</h2><p>{t("library.description")}</p></div>
@@ -113,6 +113,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved }: {
       {data.error && <p role="alert">{apiErrorMessage(data.error)}</p>}
       {!data.loading && !data.error && data.items.length === 0 && <p className="library-empty">{t(tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
       <div className="library-items">{data.items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
+        <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span></div>
         <h3>{item.title}</h3><p className="library-filename">{item.original_filename}</p>
         <p>{t("library.saved")}</p><p>{t("library.notStarted")}</p>
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>

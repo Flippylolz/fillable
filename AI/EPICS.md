@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.2 and E03.3 merged; E03.1 library verified locally |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3 merged; requested E03.1b visual follow-up in progress |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -771,3 +771,21 @@ Ukrainian desktop and English mobile screenshots were inspected. An HTTP-only
 that browser capability. Final unit mock also handles the health endpoint's string
 URL. Earlier proof copies and all volumes are preserved. See [Library](LIBRARY.md).
 Next: protected E03.1 PR, exact-head auto-merge, actual merge verification, then E03.4.
+
+2026-09-06: E03.1 confirmed done through [PR #27](https://github.com/Flippylolz/fillable/pull/27)
+at `a5c4721a49a1889ac09de32dcb0a37846deeaf35`; Actions 34043078067 passed checks
+and ci-required for exact head `9c3381b1c682ba0ade9ad717a13cf7febf3683d0`.
+Main synchronized. User requested a Google Docs-like visual direction and readable
+storage units. E03.1b on `task/e03-1b-library-design` implements that requested
+follow-up before continuing E03.4. It keeps the functional controls and original
+accounting, formats sizes consistently in library/profile, and compacts the shell.
+E03.4 is split into E03.4a saved downloads, E03.4b confirmed deletion with durable
+cleanup, and E03.4c persisted workspace open/edit entry, each with its own PR.
+
+E03.1b local checks passed: 56 frontend tests, 470/475 lines (98.95%) and
+376/401 branches (93.77%), lint, catalogs, typing/build, full-source gate and real
+negative-source probe. Fresh index `/private/tmp/fillable-verify.zSyf8a` passed
+3 development and 14 production browser checks; English desktop and Ukrainian
+mobile layouts were visually inspected. Backend is unchanged from verified PR #27.
+All isolated data/volumes preserved. Next: protected follow-up PR and actual merge,
+then E03.4a downloads. No deployment work has started.
