@@ -1,0 +1,70 @@
+.document-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: 1rem;
+  font-family: system-ui, sans-serif;
+}
+.document-tools {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.document-canvas {
+  min-width: 0;
+  background: #f1f3f5;
+  padding: 1rem;
+}
+.document-canvas .ProseMirror {
+  padding: 2rem;
+  background: white;
+  color: #17212b;
+  font-family: Georgia, serif;
+}
+.document-canvas table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.document-canvas td {
+  border: 1px solid #b8c4cf;
+  padding: 0.5rem;
+}
+.document-canvas section {
+  margin-bottom: 2rem;
+}
+.document-canvas p[data-numbered="true"] {
+  display: list-item;
+  margin-left: 1.5rem;
+  list-style-type: decimal;
+}
+.document-field {
+  display: inline-block;
+  background: #dceefd;
+  outline: 1px solid #91bedb;
+  min-width: 0.5rem;
+}
+.document-unsupported {
+  background: #fff1c9;
+  user-select: none;
+}
+.document-workbench aside > div {
+  border-bottom: 1px solid #c7d2dc;
+  padding: 0.75rem;
+}
+.document-workbench aside [data-active="true"] {
+  background: #e8f2fa;
+}
+.document-workbench aside input {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+@media (max-width: 700px) {
+  .document-workbench {
+    grid-template-columns: 1fr;
+  }
+  .document-canvas .ProseMirror {
+    padding: 0.75rem;
+  }
+}

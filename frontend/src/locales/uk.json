@@ -12,5 +12,18 @@
   "errors.not_found": "Не знайдено.",
   "errors.method_not_allowed": "Ця дія недоступна.",
   "errors.invalid_request": "Перевірте введені дані.",
-  "errors.internal_error": "Сталася помилка. Спробуйте ще раз."
+  "errors.internal_error": "Сталася помилка. Спробуйте ще раз.",
+  "editor.document": "Редагований документ",
+  "editor.fieldLabel": "Назва нового поля",
+  "editor.createField": "Створити поле з виділення",
+  "editor.undo": "Скасувати",
+  "editor.redo": "Повторити",
+  "editor.invalidSelection": "Виділіть звичайний текст в одному абзаці та введіть назву поля.",
+  "editor.unsupported": "Жовті фрагменти зберігаються, але не редагуються. Підтримувані частини документа доступні для редагування.",
+  "editor.fields": "Поля документа",
+  "editor.fieldValue": "Значення поля: {{label}}",
+  "editor.focus": "Перейти до поля: {{label}}",
+  "editor.inconsistent": "Пов’язані входження мають різні значення. Перевірте їх перед зміною.",
+  "language.uk": "Українська",
+  "language.en": "English"
 }

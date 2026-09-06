@@ -1,6 +1,8 @@
 name: fillable-checks
 services:
   backend-test:
+    volumes:
+      - ./fixtures:/fixtures:ro
     build:
       context: .
       dockerfile: infra/backend.Dockerfile

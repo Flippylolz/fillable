@@ -182,3 +182,22 @@ A variable set only on the running nginx container cannot change compiled assets
 The ordinary fresh-development verifier builds without metadata and checks the
 fallback. Required CI also builds with its checked-out source commit and checks
 that value. E08 will supply the selected release revision and verify live delivery.
+
+## Editor corpus prototype
+
+After rebuilding the development web image, `/prototype.html` is a test harness
+for the source-derived Ukrainian corpus. It is excluded from the production entry
+and makes no retained document writes. Source code remains in the reusable application
+editor modules; the synthetic JSON and harness live under `frontend/prototype`.
+
+Regenerate after mapper changes (the test Compose mount supplies `/fixtures`):
+
+```sh
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/prototype:/output" backend-test python /checks/export_editor_fixture.py /output/document.json
+```
+
+The fresh-checkout verifier now runs both reload and corpus-editor browser checks.
+It retains browser screenshots/traces in its printed temporary directory's
+`browser-results/`; CI supplies an absolute `FILLABLE_BROWSER_REPORTS` directory
+inside its uploaded reports. The prototype does not implement export or account/file
+APIs; those task boundaries remain in the ledger.

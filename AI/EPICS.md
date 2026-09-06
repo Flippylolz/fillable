@@ -18,7 +18,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
-| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 merged; E00.2 comparison underway; runtime proof pending |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1–E00.2 merged; E00.3 synchronization prototype verified locally |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | ready |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
@@ -463,3 +463,23 @@ D008 and the project license remain unsettled; no paid API, trial or engine adop
 This documentation task changes no application source and claims no new application
 coverage run. Next: validate documentation, PR and required CI/merge, then E00.3;
 E02 is independently ready. Deployment/server inspection remains deferred to E08.
+
+2026-09-06: E00.2 confirmed `done` through [PR #14](https://github.com/Flippylolz/fillable/pull/14)
+at `38d2a3dd1b741dc1c515a2ae51cbe511720c816f`; Actions 34023851032 passed both
+required jobs. Merge recorded in its PR body, main synchronized and E00.3 started
+on `task/e00-3-editor-synchronization`. Adds bounded source-package mapping,
+stable native IDs, reusable ProseMirror controls/transactions, source-derived corpus
+harness, full MIT notices, and required fixture/license/browser checks. No retained
+file write or public document API was introduced. Native text replacement required
+an explicit transaction handler to preserve controls; DOM parsing now preserves
+run identities and whitespace. The HTTP harness uses compatible random identifiers.
+Final local gates passed: 16 backend tests, 209/209 lines and 48/48 branches (100%);
+30 frontend tests, 156/159 lines (98.11%) and 82/85 branches (96.47%), with lint,
+catalog/type/build checks. Browser proof covers linked native fields, direct/sidebar
+updates, split-run field creation, focus and locale-preserved draft/history. The
+complete corpus screenshot was visually inspected as a structural editor canvas,
+not a Word-pagination claim. The final fresh-index Docker run passed editor/reload,
+persistent recreation and six production browser tests; earlier artifact-mount and
+test-option typing failures were corrected. Next: task PR, required CI/auto-merge,
+then E00.4 export/reopen and surrounding-edit proof. D008 remains provisional; E02
+is independently ready and deployment remains untouched.
