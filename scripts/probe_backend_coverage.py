@@ -7,9 +7,11 @@ from check_coverage import check
 assert Path.cwd() == Path('/app')
 probe = Path('app/coverage_probe.py')
 assert not probe.exists()
+# Keep the negative probe effective as application source grows.
+source_lines = sum(len(path.read_text().splitlines()) for path in Path('app').rglob('*.py'))
 try:
     probe.write_text('def untested(value):\n' + ''.join(
-        f'    if value == {i}:\n        return {i}\n' for i in range(30)
+        f'    if value == {i}:\n        return {i}\n' for i in range(max(30, source_lines // 2))
     ) + '    return -1\n')
     subprocess.run(['pytest', '--cov=app', '--cov-branch',
                     '--cov-report=json:coverage/coverage.json'], check=True)

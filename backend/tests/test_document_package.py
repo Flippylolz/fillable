@@ -123,7 +123,7 @@ def test_limits_missing_parts_duplicate_entries_and_reader_failures():
         with patch("app.documents.package.ZipFile.infolist", return_value=entries):
             with pytest.raises(InvalidDocument, match="package_limit"):
                 DocxPackage(data)
-    with patch("app.documents.package.ZipFile.read", side_effect=RuntimeError):
+    with patch("app.documents.package.ZipFile.open", side_effect=RuntimeError):
         with pytest.raises(InvalidDocument, match="invalid_package"):
             DocxPackage(data)
 
