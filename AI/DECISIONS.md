@@ -79,23 +79,33 @@ Reference: [Word content controls](https://learn.microsoft.com/en-us/office/clie
 
 ## D008 — Embedded editor
 
-Status: **Free-only constraint accepted; implementation choice open.**
+Status: **Accepted — project-owned ProseMirror editor and Python OOXML adapter.**
 
-The user permits only solutions with no required license/subscription fees for MVP development and production. Trials and paid-required integration APIs do not qualify. Building the necessary integration or a scoped editor ourselves is allowed if no suitable free solution exists. Prefer permissively licensed components; the project's own license is still undecided and a public repository alone does not settle it.
+The free-only development/production constraint remains unchanged: no paid-required
+API, subscription, trial or external conversion service. E00.5 settles the engineering
+choice after E00.3/E00.4 demonstrated direct editing, field creation/focus, two-way
+synchronization, undo/redo, DOCX export and reopening on the Ukrainian corpus.
 
-The previous paid SuperDoc/ONLYOFFICE Developer proposal is superseded. E00 evaluates demonstrably free end-to-end options, including import/export and the actual sidebar APIs, then a project-owned implementation using open components if needed. Do not infer that an open-source editor makes every associated DOCX component free or unrestricted. Record version-specific terms and required runtime services before adoption.
+Use the locked MIT ProseMirror browser packages and BSD-licensed lxml 6.1.3 in the
+project-owned Python source-package adapter. Preserve their notices; Fillable's own
+license remains undecided. Exact versions, licensing evidence and the tested support
+matrix are in [Editor feasibility](EDITOR_FEASIBILITY.md). No editor server or Node
+backend is introduced. The earlier paid proposal and provisional E00.2 direction
+are superseded by this tested choice; the comparison remains historical evidence.
 
-Full editing, synchronized fields, and downloadable DOCX remain required. A custom implementation needs a tested support matrix and preservation of untouched document parts; a preview-only viewer or lossy text-to-DOCX conversion does not meet D001. See [Editor feasibility](EDITOR_FEASIBILITY.md) for research and proof requirements. E00.3 implements a synchronization prototype; no production editor has been adopted.
+The live editor owns the draft. Python validates the source digest and mapped
+identities before applying supported edits to original OOXML parts. No-edit output
+is byte-identical; untouched parts/properties are retained. Unknown/locked content
+is protected, never flattened into text or HTML. New paragraph/control identities
+must remain distinct and saved file/field data must share one revision.
 
-E00.2 (2026-09-06) compared current official license/API/localization and deployment
-evidence. The next prototype uses MIT ProseMirror with a project-owned Python OOXML
-adapter; no evaluated ready-made route established all required field APIs within
-the accepted stack/license boundary. This is a provisional engineering direction,
-not final adoption or a claim that every alternative requires fees. ONLYOFFICE's
-Community plugin route and Collabora CODE remain unproven alternatives; SuperDoc's
-engine terms are separate from its editor. Exact evidence and remaining proof are
-in the feasibility matrix. D008 remains open until E00.3–E00.5 pass, and the project's
-license has not been changed.
+Full ordinary text/field editing and downloadable DOCX remain required. The tested
+canvas is structural, not Word pagination; complex features and arbitrary table
+structure changes remain explicitly protected. Independent LibreOffice rendering
+and embedded-editor reopening passed; Microsoft Word itself was not tested. The
+support matrix is a tested boundary, not a universal compatibility claim. E03–E07
+still implement ownership, quotas, production workspace/saves/history and acceptance.
+Deployment remains E08, after those tasks are complete.
 
 ## D009 — LLM provider and document-data processing
 

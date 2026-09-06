@@ -1,6 +1,6 @@
 # Free editor feasibility
 
-Status: E00.2 comparison merged; E00.3 implements and verifies a free custom synchronization prototype. Final editor adoption, export/reopen and compatibility proof remain E00.4–E00.5. The user permits a project-owned implementation.
+Status: E00.1–E00.4 verified and merged. E00.5 adopts the project-owned ProseMirror/Python source-package implementation, with the explicit support matrix below. Production feature integration remains E03–E07.
 
 ## Selection boundary
 
@@ -211,3 +211,49 @@ and the intended title paragraph and client-name edits render correctly. All six
 original/edited pages were visually inspected for clipping, layout and Unicode.
 The browser's downloaded files, reopened screenshot, PDF pages and extracted text
 are retained as CI QA artifacts. D008's adoption decision remains E00.5.
+
+## E00.5 adoption and support matrix
+
+Decision: **go** with the project-owned ProseMirror editor and Python source-package
+adapter for the MVP. E00.3/E00.4 establish the required editable field workflow and
+DOCX round trip on the synthetic Ukrainian corpus. This is an engineering choice
+within the already accepted free-only/custom-implementation option, with no new fee,
+service, project-license decision or product-page change.
+
+| Capability | Verified result | Boundary carried into production work |
+| --- | --- | --- |
+| Native field import/identity | Five native occurrences, including linked client names, map to stable part-scoped control IDs | Malformed/duplicate identities fail; revision-local run/paragraph anchors require matching source digest |
+| Field creation | A real selection across styled Cyrillic runs becomes a control, exports and reopens with its label/key/value | Plain text within one paragraph; invalid/cross-control selections fail visibly |
+| Sidebar and direct editing | Both native occurrences update in both directions; focus selects the correct control | Ambiguous linked values remain visible for review; no global same-text replacement |
+| Surrounding text | Direct typing, paragraph split/deletion and source formatting export/reopen | Existing table containers remain fixed; new paragraph IDs are distinct in editor and OOXML |
+| Control removal and history | Removal keeps text, undo restores the control, redo removes it; exported state reopens | Production version history is E06, distinct from transient editor undo |
+| Unicode and whitespace | Ґ/Є/І/Ї, apostrophes, mixed scripts, spaces, tabs and multiline values survive | No transliteration or document translation; broader IME/composition acceptance is E05/E07 |
+| Source preservation | No-edit bytes identical; untouched package parts, table subtrees and paragraph properties retained | Locked/unknown structures cannot be removed or rewritten; source revision is mandatory |
+| Independent rendering | Three original/export pages match; edited file remains three pages, with intended changes and untouched page two identical | LibreOffice/Poppler evidence; no Microsoft Word test or universal layout guarantee |
+| UI localization | Exposed controls/accessibility text use uk/en catalogs; language switch preserves draft and editor history | Account-persisted preference is E02.7; locale never changes document values |
+| Production footprint | Browser libraries plus existing Python backend; no editor server, Node business runtime or conversion service | Development proof routes stay opt-in; production ownership/quota/save routes remain E03/E06 |
+
+The locked browser packages are ProseMirror model 1.25.4, state 1.4.4, view 1.41.7,
+commands 1.7.1, history 1.5.0, keymap 1.2.3, transform 1.12.1, orderedmap 2.1.1,
+rope-sequence 1.3.4 and w3c-keyname 2.2.8. All ten are MIT and their complete notices
+are generated into the distributed static asset and drift-checked by CI. The Python
+XML component is BSD-licensed lxml 6.1.3 with installed distribution/dependency
+notices retained. The QA-only LibreOffice/Poppler image has no production role and
+is not the canonical export path. Fillable's own license remains undecided.
+
+Explicitly protected/unproved features include page/column breaks, complex fields,
+XML-bound or locked controls, drawings/unknown OOXML, tracked-change editing,
+arbitrary table structure/formatting changes and exact Word pagination in the
+browser. Preserve these features or reject the attempted operation; never silently
+flatten them. The UI is a structural editing canvas. These boundaries do not remove
+required ordinary text editing, field creation, synchronization, undo/redo or DOCX
+export, which have actual end-to-end proof.
+
+Production adoption requires reusing this source revision/anchor contract. E03
+adds upload/package validation and ownership; E04 produces validated detector
+locations; E05 integrates the editor and input behavior; E06 makes immutable
+file/field revisions and quota-backed writes atomic, with failed-save draft retention
+and explicit restore/reopen choices. E07 tests complete user flows. E00's go decision
+is not a claim those application tasks are already implemented or permission for
+early deployment. Revisit the support matrix when adding a new OOXML feature or
+reviewed real fixture, preserving the immutable v1 corpus.

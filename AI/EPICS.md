@@ -18,7 +18,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
-| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1–E00.3 merged; E00.4 round-trip proof verified locally |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1–E00.4 merged; E00.5 adoption decision ready for PR |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | ready |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
@@ -511,3 +511,16 @@ and Ukrainian text. Original and edited pages were fully inspected; Microsoft Wo
 has not been used. Required CI now includes the reproducible QA-only rendering check.
 Strict `ci-required` protection and administrator enforcement were reverified.
 E00.4 is ready for its individual PR; E00.5 follows only after verified merge.
+
+2026-09-06: E00.4 confirmed `done` through [PR #16](https://github.com/Flippylolz/fillable/pull/16)
+at `b3119eb6e0ec6b1d7c21bf51f62cccd97a4fe90a`; Actions 34027104805 passed both
+required checks at head `bc45e334544dd1e3f7e433ebde9aaabe880a873d`, including
+independent rendering and actual below-threshold probes. Final merge evidence was
+recorded in its PR body and main synchronized. E00.5 starts on
+`task/e00-5-editor-adoption`: D008 selects the proven free ProseMirror/Python path,
+with exact versions, notices, support matrix and protected/unproved features.
+This documentation-only task adds no application source or new coverage claim;
+E00.4's measured results remain the preceding implementation evidence. Next:
+validate linked docs, deliver this individual PR through required CI/auto-merge,
+verify its merge and mark E00 complete, then implement E02.1 accounts/sessions.
+Production editor/save integration and all live-server work remain later tasks.
