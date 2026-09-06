@@ -272,3 +272,10 @@ service, deletes an independent copy without changing the original, and verifies
 bytes/accounting from both API and worker after development-to-production recreation.
 It then runs storage reconciliation, inventory and capacity commands. It preserves
 its isolated synthetic data/volumes and does not contact the deployment target.
+
+E02.5 supplies `python -m app.storage.quota_cli default|override|inherit|show` for
+trusted operators, with exact-byte arguments and audited changes. Use the examples
+in [Storage quotas](STORAGE_QUOTAS.md#e025-usage-and-operator-allocation-commands).
+These commands share database locks with retained allocations; lowering a limit
+preserves existing bytes. Ordinary web users receive only their authenticated
+`GET /api/storage/usage` response. No quota administration HTTP route is exposed.

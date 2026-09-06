@@ -26,6 +26,12 @@ dev up --build --wait --wait-timeout 120
 dev exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python /checks/verify_storage_persistence.py write
 dev exec -T worker python /checks/verify_storage_persistence.py read
+dev exec -T worker python -m app.storage.quota_cli default --bytes 1048576
+dev exec -T worker python -m app.storage.quota_cli override --email browser@example.test --bytes 0
+dev exec -T worker python /checks/verify_storage_persistence.py quota-zero
+dev exec -T worker python -m app.storage.quota_cli inherit --email browser@example.test
+dev exec -T worker python -m app.storage.quota_cli default --bytes 1073741824
+dev exec -T worker python -m app.storage.quota_cli show --email browser@example.test
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml build browser
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp --workdir /tmp -v "$verification_reports:/tmp/fillable-dev-results" -v "$verification_root/frontend/src:/workspace/frontend" -v "$verification_root/backend/app:/workspace/backend" browser /app/node_modules/.bin/playwright test --config /app/playwright.dev.config.ts
 
