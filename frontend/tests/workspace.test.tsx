@@ -26,7 +26,7 @@ test("direct workspace opens a verified model, preserves the live editor across 
   const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
   show();
   await screen.findByRole("heading", { name: resource.title });
-  const editor = screen.getByRole("textbox", { name: "Редагований документ" });
+  const editor = await screen.findByRole("textbox", { name: "Редагований документ" });
   const field = (await screen.findAllByRole("textbox", { name: /^Значення поля:/ }))[0];
   fireEvent.change(field, { target: { value: "Незбережений Їжак" } });
   expect(await screen.findByText(/Є незбережені зміни/)).toBeVisible();
@@ -46,7 +46,7 @@ test("direct workspace opens a verified model, preserves the live editor across 
   fireEvent.click(links[1]);
   await waitFor(() => expect(window.location.pathname).toBe(`/editor/${second}`));
   expect(await screen.findByText("Saved revision opened.")).toBeVisible();
-  expect(screen.getByRole("textbox", { name: "Editable document" })).not.toBe(editor);
+  expect(await screen.findByRole("textbox", { name: "Editable document" })).not.toBe(editor);
 });
 
 test("history cannot replace a dirty workspace without consent", async () => {

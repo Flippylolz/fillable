@@ -22,7 +22,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.3 merged; E04.4 accuracy evaluation |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.4 merged; E04.5 review integration |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
@@ -1032,3 +1032,45 @@ fresh Docker, browsers, independent rendering and all failure probes. Next: prot
 E04.4 PR/verified merge, then E04.5 workspace review. Deployment stays last.
 The frontend real-unimported-source probe also passed: 613/2231 lines and 547/3802
 branches were rejected with all 78 tests passing.
+
+
+2026-09-06: E04.4 verified merged through [PR #39](https://github.com/Flippylolz/fillable/pull/39),
+commit `1f74de722a34c9f774d2d3abe708462c559d4b2a`; Actions 34055321934 passed both
+required checks for exact head `04e158be60efa69f3101182e74dac7754d830cb1`.
+Main synchronized. E04.5 is split before implementation into E04.5a safe reviewed
+label/group DOCX export, E04.5b editor review transactions/location tracking, and
+E04.5c localized workspace sidebar integration, each in its own PR. E04.5a begins
+on `task/e04-5a-review-export`. E04 remains open until review UI acceptance passes;
+retained revision saves remain E06.
+
+E04.5a implements bounded alias/group edits with immutable control identities and
+unique IDs for newly grouped controls. Metadata-only changes preserve native control
+content/properties, including placeholder display. Corpus and generalized tests cover
+explicit grouping with distinct values, same-label independence, original formatting,
+legacy metadata, invalid attributes and ambiguous property rejection. Targeted export
+regressions pass (22 tests). Full Docker/coverage and rendered/fresh verification follow.
+
+E04.5a final local verification passed: 243 backend tests, raw 2779/2796 lines
+(99.39%) and 843/862 branches (97.80%); 78 frontend tests, 613/620 lines (98.87%)
+and 547/582 branches (93.99%). Lint, typing, catalogs/build and both raw source gates
+passed. The backend negative probe rejected 2779/8706 lines with tests successful.
+Fresh index `/private/tmp/fillable-verify.4ekJgq` passed 3 development and 14 production
+browser tests, real-worker discovery/persistence, and recreation. The established
+independent rendering check passed original byte/pixel identity, three edited pages,
+unchanged page two and Ukrainian text. A separate export changing all five native
+aliases/group keys rendered pixel-identical to the original on all three pages;
+all three images were inspected. These are LibreOffice/Poppler and structural XML
+checks; Microsoft Word was not used. All volumes preserved. Next: protected E04.5a
+PR/verified merge, then editor review transactions in E04.5b.
+The frontend real-unimported-source probe also passed (613/2231 lines, 547/3802
+branches rejected; 78 tests successful). Strict required Actions protection is intact.
+
+E04.5a PR #40's first CI run (34056273020) was correctly blocked: the frontend
+negative probe reported one failed test, but the old assertion omitted its identity.
+All earlier CI steps passed. The probe now prints failing test diagnostics; the
+workspace test waits for editor readiness instead of assuming its heading means
+mount effects completed. Vitest workers are bounded to two for the small CI runner.
+The complete frontend rerun passed all 78 tests with unchanged raw coverage, and
+the updated real-source probe passed under a two-CPU Docker limit. No thresholds,
+source inclusion or assertions were removed. Required CI will rerun on the updated
+PR head before dependent implementation.

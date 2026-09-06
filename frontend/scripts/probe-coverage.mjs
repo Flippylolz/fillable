@@ -15,8 +15,11 @@ try {
   const run = spawnSync('npm', ['test', '--', '--reporter=json', '--outputFile=/tmp/probe-results.json'], { encoding: 'utf8' });
   assert.equal(run.status, 1, run.stdout + run.stderr);
   const results = JSON.parse(fs.readFileSync('/tmp/probe-results.json'));
-  assert.equal(results.numFailedTests, 0);
-  assert.equal(results.numFailedTestSuites, 0);
+  const failures = results.testResults.flatMap(suite => suite.assertionResults
+    .filter(test => test.status === 'failed')
+    .map(test => `${test.fullName}\n${test.failureMessages.join('\n')}`)).join('\n');
+  assert.equal(results.numFailedTests, 0, failures);
+  assert.equal(results.numFailedTestSuites, 0, failures || run.stdout + run.stderr);
   assert.equal(results.numPendingTests, 0);
   assert.ok(results.numPassedTests > 0);
   const report = JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));

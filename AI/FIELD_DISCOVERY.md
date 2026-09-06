@@ -172,3 +172,28 @@ Review any report change together with detector behavior; do not rewrite the v1
 answer key to accommodate mistakes. Tests deliberately remove and misclassify results,
 accept a literal, alter hashes/text/locators, and exercise Unicode/tab/line-break and
 locked-region projection to verify that the report detects these failures.
+
+## Reviewed metadata export (E04.5a)
+
+The source-preserving DOCX adapter permits explicit changes to a known plain-text
+control's alias (`label`) and grouping tag (`key`). Its control identity, source part,
+other attributes, protected regions and source formatting remain validated. New
+controls retain unique identities but may share an explicit group key with each
+other or an existing control. Grouping alone does not overwrite conflicting values;
+equal labels alone do not group anything.
+
+Changed/new labels must be nonblank strings of at most 256 Unicode code points;
+changed/new keys are nonblank strings of at most 512. Control characters are rejected.
+Unchanged legacy metadata remains intact, including empty or longer aliases. Editing
+an ambiguous duplicate tag/alias fails rather than guessing which property Word uses.
+New control attributes are limited to `id`, `key`, and `label`.
+
+When only metadata changes, the adapter retains the original control content and
+properties, including the placeholder-display flag. Actual value edits rebuild only
+supported runs and clear that flag, as before. Existing control IDs survive reopening;
+new controls receive collision-checked Word IDs. Unchanged package parts remain
+byte-identical; XML namespace serialization within a changed part may differ.
+
+This subtask provides the export operation required by review. Editor transactions
+and localized review UI follow in E04.5b/c; production revision saves remain E06.
+It does not itself persist a review decision or expose a new editing endpoint.
