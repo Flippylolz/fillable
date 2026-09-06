@@ -7,6 +7,7 @@ from uuid import NAMESPACE_URL, uuid5
 from sqlalchemy import and_, insert, or_, select
 
 from app.accounts.profile import active_user
+from app.documents.deletion import pending_expression
 from app.documents.package import ARCHIVE_BYTES
 from app.documents.schema import ResourceInfo, ResourceList, resources, versions
 from app.documents.validation import validate_upload
@@ -39,13 +40,19 @@ def download(owner, identity):
     return ResourceInfo.model_validate(dict(row)), data
 
 
-def query(owner):
+def query(owner, include_deleting=False):
+    visible = and_(resources.c.state == "active", files.c.state == "ready")
+    if include_deleting:
+        visible = or_(
+            visible, and_(resources.c.state == "deleted", pending_expression())
+        )
     return (
         select(
             resources,
             files.c.size_bytes,
             files.c.digest,
             versions.c.unsupported_count,
+            (resources.c.state == "deleted").label("deletion_pending"),
         )
         .join(versions, versions.c.id == resources.c.current_version_id)
         .join(
@@ -54,8 +61,7 @@ def query(owner):
         )
         .where(
             resources.c.owner_id == owner,
-            resources.c.state == "active",
-            files.c.state == "ready",
+            visible,
         )
     )
 
@@ -73,7 +79,7 @@ def detail(owner, identity):
 
 
 def listing(owner, kind, limit, cursor):
-    statement = query(owner).where(resources.c.kind == kind)
+    statement = query(owner, include_deleting=True).where(resources.c.kind == kind)
     with database().connect() as connection:
         if cursor is not None:
             previous = (

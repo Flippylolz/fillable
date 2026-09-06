@@ -62,3 +62,10 @@ a { color: #1967d2; }
 }
 .library-download { margin-top: 0.8rem; }
 .library-download button { font-size: 0.8rem; }
+.library-delete { margin-top: 0.5rem; }
+.library-delete > button { color: #b3261e; font-size: 0.8rem; }
+.library-delete dialog { max-width: 28rem; width: calc(100% - 4rem); padding: 1.5rem; border: 0; border-radius: 1rem; color: #202124; box-shadow: 0 8px 40px #20212440; }
+.library-delete dialog::backdrop { background: #20212466; }
+.library-delete dialog p { font-size: 0.95rem; margin-block: 1rem; }
+.dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.7rem; }
+.dialog-actions .confirm-delete { background: #b3261e; color: #fff; border-color: #b3261e; }

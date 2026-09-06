@@ -212,3 +212,15 @@ test("an in-flight upload prevents logout/navigation and refreshes profile usage
   const before = new Event("beforeunload", { cancelable: true }); window.dispatchEvent(before);
   expect(before.defaultPrevented).toBe(false);
 });
+
+test("pending deletion remains visible after loading and cannot offer a saved download", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => {
+    if (new URL(request.url).pathname === "/api/documents") return Response.json({ items: [{ ...item, deletion_pending: true }], next_cursor: null });
+    return defaults(request);
+  }));
+  show();
+  expect(await screen.findByRole("article", { name: item.title })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Повторити очищення" })).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Завантажити збережений DOCX" })).toBeNull();
+  expect(screen.getByText(/Очищення ще не завершено/)).toBeVisible();
+});

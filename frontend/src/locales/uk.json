@@ -112,5 +112,13 @@
   "profile.bytes_many": "{{value}} байтів",
   "profile.bytes_other": "{{value}} байта",
   "library.downloadSaved": "Завантажити збережений DOCX",
-  "library.downloading": "Готуємо завантаження…"
+  "library.downloading": "Готуємо завантаження…",
+  "library.delete": "Видалити",
+  "library.deleting": "Видаляємо…",
+  "library.retryDeletion": "Повторити очищення",
+  "library.deleteTitle": "Видалити «{{title}}»?",
+  "library.deleteWarning": "Оригінал і всі збережені версії буде видалено назавжди. Цю дію неможливо скасувати. Місце звільниться після завершення очищення.",
+  "library.cancelDeletion": "Скасувати",
+  "library.confirmDeletion": "Видалити назавжди",
+  "library.deletionPending": "Очищення ще не завершено. Решта файлів поки займає місце. Повторіть очищення."
 }

@@ -5,6 +5,7 @@ import { formatBytes, formatDate } from "../i18n";
 import { useLibrary, type Kind } from "./useLibrary";
 import "./library.css";
 import { DownloadSaved } from "./DownloadSaved";
+import { DeleteResource } from "./DeleteResource";
 
 // getRandomValues also works on the explicitly supported HTTP origin.
 function newKey() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), value => value.toString(16).padStart(2, "0")).join(""); }
@@ -116,9 +117,10 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved }: {
       <div className="library-items">{data.items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
         <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span></div>
         <h3>{item.title}</h3><p className="library-filename">{item.original_filename}</p>
-        <p>{t("library.saved")}</p><p>{t("library.notStarted")}</p>
+        {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><p>{t("library.notStarted")}</p></>}
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>
-      <DownloadSaved item={item} disabled={blocked} />
+        {!item.deletion_pending && <DownloadSaved item={item} disabled={blocked} />}
+        <DeleteResource item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
       </article>)}</div>
       {data.next && <button type="button" disabled={data.more || blocked} onClick={() => void data.loadMore()}>{t(data.more ? "library.loading" : "library.more")}</button>}
     </section>

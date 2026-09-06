@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3 and E03.1b merged; E03.4a downloads verified locally |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3, E03.1b and E03.4a merged; E03.4b deletion in progress |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -808,3 +808,31 @@ integration test passed after using the storage service's valid purpose/fingerpr
 contract. No application behavior changed after the fresh-index check. All isolated
 volumes are preserved. Next: protected E03.4a PR, exact-head auto-merge, verified
 merge, then E03.4b confirmed deletion and durable cleanup.
+
+2026-09-06: E03.4a confirmed done through [PR #29](https://github.com/Flippylolz/fillable/pull/29)
+at `9bde1d414886096e6737fd494fc88912ceb1ca3a`; Actions 34044435542 passed checks
+and ci-required for exact head `ec3209edc6318ea3decbd063de878b6291145322`.
+Main synchronized; E03.4b is underway on `task/e03-4b-document-deletion`.
+Deletion records durable intent for original/all version files, keeps accounting
+charged through cleanup, and exposes pending cleanup in the existing library after
+reload. Native confirmation/cancel and retry actions have both translations.
+Local application tests pass 147 backend and 62 frontend tests; real browser checks
+and coverage probes are being finalized. E03.4c workspace entry follows actual merge.
+
+E03.4b initial final checks passed 147 backend and 62 frontend tests, all four raw
+coverage gates and both negative-source probes. Fresh index
+`/private/tmp/fillable-verify.lqBkK3` passed 3 development and 14 production browser
+checks, including cancellation, both-kind confirmed deletion, exact quota reduction,
+deleted download 404 and reload. Mobile English confirmation was visually inspected.
+Review added clearing parsed model snapshots when recording deletion intent; the
+multi-version integration assertion and final backend checks are rerunning for that
+small backend-only change. Browser behavior is unchanged. All volumes preserved.
+
+E03.4b final checks passed: 147 backend tests, 1916/1926 lines (99.48%) and
+555/566 branches (98.06%); 62 frontend tests, 518/524 lines (98.85%) and 416/445
+branches (93.48%). Both real unimported-source probes blocked below-threshold reports.
+Final fresh index `/private/tmp/fillable-verify.uhi77E` passed 3 development and 14
+production browser checks, including native modal initial focus, Escape cancellation
+and focus return, both-kind deletion, quota and reload checks. Parsed model cleanup
+is included in this final checkout. The earlier inspected confirmation layout is
+unchanged. Next: individual protected PR and actual merge, then E03.4c. No deployment.
