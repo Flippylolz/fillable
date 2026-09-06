@@ -19,7 +19,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
-| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1–E01.5 merged; E01.6 verification underway |
+| E01 | Docker foundation and application skeleton | Accepted stack | in_progress: E01.1–E01.6 merged; E01.7 gate audit underway |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
@@ -413,3 +413,21 @@ PR, required CI and merged-state verification. No live-server action occurred.
 localization checks, TypeScript/build, twelve tests, 35/35 lines and 19/19 branches
 (100%). Backend source is unchanged from E01.5's 99/99 lines and 6/6 branches;
 required CI reruns it. Public Markdown links/fences passed after guide replacement.
+
+2026-09-06: E01.6 confirmed `done` through [PR #11](https://github.com/Flippylolz/fillable/pull/11)
+at `bee8847297980f54d38a8388a9c891519d48ab15`; Actions 34022545662 passed the fresh
+Docker development/persistence check and required coverage jobs. Recorded merge in
+its PR body, synchronized main and started E01.7 on
+`task/e01-7-coverage-gate-audit`. The real downloaded Actions 34022095669 artifact
+contains both raw reports and desktop/mobile screenshots: backend 99/99 lines,
+6/6 branches; frontend 35/35 lines, 19/19 branches (100%). Strict Actions-bound
+`ci-required` and administrator enforcement were reread from GitHub protection.
+Disposable-container probes passed: unimported backend source caused 99/161 lines
+and rejected coverage despite five passing tests; frontend caused 35/66 lines and
+19/79 branches with twelve passing tests and correctly failed. Contract tests
+accept exactly 90% independently, reject deficient lines/branches, missing/invalid
+reports and unreported source, and reject missing/failed/skipped/cancelled aggregator
+inputs. Required CI runs these negative checks without retaining probe source or
+replacing normal coverage artifacts. Checkout/upload actions now use verified
+upstream v7.0.1 commit pins (Node 24). Next: task PR, required Actions and merge;
+then E01.8 version badge. Deployment remains untouched.
