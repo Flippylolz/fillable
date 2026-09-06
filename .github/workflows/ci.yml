@@ -28,6 +28,7 @@ jobs:
           docker cp fillable-frontend-check:/app/coverage/. reports/frontend/ || true
       - name: Validate frontend raw coverage and full source inclusion
         run: |
+          mkdir -p frontend/coverage
           docker run --rm -v "$PWD/frontend:/source:ro" -v "$PWD/reports/frontend:/source/coverage:ro" --entrypoint python fillable-checks-backend-test /checks/check_coverage.py frontend /source
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()

@@ -322,3 +322,11 @@ frontend TypeScript/production build, catalog checks, nine behavior tests,
 Coverage negative tests reject 89.99%, invalid counts, missing/invalid reports,
 and unreported source; exactly 90% passes. Browser, migrations, persistence, and
 editor checks are not claimed by this scaffold task. Next: PR and Actions verification.
+
+2026-09-06: E01.1 submitted as [PR #6](https://github.com/Flippylolz/fillable/pull/6),
+status `in_review`, auto-merge enabled under verified strict protection. HTTPS push
+lacked workflow scope; the existing authorized SSH identity successfully published
+the same branch. CI passed both application suites but failed on Linux creating a
+nested mountpoint in a read-only source mount. Added the mountpoint before container
+startup. The failed `checks` propagated to failed `ci-required` and blocked merging,
+providing real aggregation evidence. Next: verify the corrected Actions run and merge.
