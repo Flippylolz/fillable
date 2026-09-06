@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from app.accounts.routes import router as authentication_router
 from app.errors import AppError, ErrorEnvelope, register_errors
 from app.infrastructure import dependencies_ready
+from app.storage.routes import router as storage_router
 
 app = FastAPI(
     title="Fillable",
@@ -19,6 +20,7 @@ app = FastAPI(
 )
 register_errors(app)
 app.include_router(authentication_router)
+app.include_router(storage_router)
 
 
 class Health(BaseModel):

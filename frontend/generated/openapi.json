@@ -88,6 +88,47 @@
         "title": "LoginInput",
         "type": "object"
       },
+      "QuotaUsage": {
+        "properties": {
+          "available_bytes": {
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Available Bytes",
+            "type": "integer"
+          },
+          "limit_bytes": {
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Limit Bytes",
+            "type": "integer"
+          },
+          "over_limit": {
+            "title": "Over Limit",
+            "type": "boolean"
+          },
+          "reserved_bytes": {
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Reserved Bytes",
+            "type": "integer"
+          },
+          "used_bytes": {
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Used Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "limit_bytes",
+          "used_bytes",
+          "reserved_bytes",
+          "available_bytes",
+          "over_limit"
+        ],
+        "title": "QuotaUsage",
+        "type": "object"
+      },
       "SessionInfo": {
         "properties": {
           "csrf_token": {
@@ -761,6 +802,124 @@
           }
         },
         "summary": "Ready"
+      }
+    },
+    "/api/storage/usage": {
+      "get": {
+        "operationId": "current_usage_api_storage_usage_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotaUsage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "405": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Method Not Allowed"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Current Usage"
       }
     }
   }

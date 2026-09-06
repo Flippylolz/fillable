@@ -20,7 +20,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.3 merged; E02.4 deletion and reconciliation |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.4 merged; E02.5 usage and quota commands |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -623,3 +623,26 @@ inventory and capacity checks. Its isolated local copy is
 unchanged (preceding verified 266/270 lines and 156/165 branches); required CI reruns
 its complete checks. Next: E02.4 task PR, strict protected CI and exact-head squash
 auto-merge, verify merged state, then E02.5 usage and audited quota commands.
+
+2026-09-06: E02.4 confirmed `done` through [PR #21](https://github.com/Flippylolz/fillable/pull/21)
+at `a2bd687d54d056537ee51e8236b3b10495019359`. Actions 34032214377 passed both
+required checks for exact head `f4514577a472d2dcbcbf6266b6b7f7f27ee27ea7`; final
+merge evidence is recorded in its PR body. Main synchronized and E02.5 began on
+`task/e02-5-quota-administration`. Current-user usage and audited container-only
+quota commands are implemented; 72 backend tests pass, including PostgreSQL lock
+wait evidence and actual setters during streaming. Typed API regeneration and fresh
+Docker/operator/browser verification are in progress. Next: finish checks/docs,
+individual protected PR and verified auto-merge, then E02.6 profile. No deployment.
+
+E02.5 local verification passed: 72 backend tests, 1419/1426 lines (99.51%) and
+395/404 branches (97.77%), including lint, typing and raw full-source gates. The
+OpenAPI/TypeScript contract was regenerated through Docker. The fresh-index proof
+passed three development and eight desktop/mobile production browser checks,
+real default/zero-override/inherit/show commands, rejection of a retained write at
+zero allowance without losing the original, and authenticated no-store usage reads
+with rejection after logout. The isolated local copy is
+`/private/tmp/fillable-verify.f1Efoc`; its volumes are preserved. Frontend runtime
+source is unchanged; preceding verified coverage remains 266/270 lines and 156/165
+branches, and required CI reruns the full frontend checks. Next: E02.5 individual
+PR, reverified strict protection and exact-head squash auto-merge; confirm actual
+merge before E02.6 profile implementation. Deployment remains last.

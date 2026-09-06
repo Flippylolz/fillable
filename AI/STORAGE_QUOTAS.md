@@ -289,3 +289,50 @@ retries, bounded cursors, corruption/unknown-file preservation, conservative cou
 repair, audit migration/guard, invalid settings and private CLI output. The fresh
 Docker verifier stores an original plus independent copy, deletes the copy twice,
 recreates the stack, and verifies original bytes/accounting from API and worker.
+
+## E02.5 usage and operator allocation commands
+
+`GET /api/storage/usage` requires an authenticated active account and always reads
+that account's current quota. It returns exact integer `limit_bytes`, `used_bytes`,
+`reserved_bytes`, `available_bytes` and boolean `over_limit`, with `Cache-Control:
+no-store`. A single joined database read provides the inherited default/account
+snapshot. There is no owner selector or HTTP quota-mutation route. The generated
+OpenAPI/TypeScript contract includes the response; profile/library presentation
+follows in E02.6/E03.1.
+
+Quota changes require trusted operator access to execute a container command, using
+the same boundary as account provisioning. A web user's role or request cannot
+invoke these commands; there is no administrator screen or artificial `--admin`
+flag. Examples for a local stack, using the intended existing account email:
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli default --bytes 1073741824
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli override --email user@example.test --bytes 2147483648
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli inherit --email user@example.test
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli show --email user@example.test
+```
+
+`default` changes the singleton inherited allowance and increments its revision;
+explicit overrides retain their values. `override` sets a specific allowance, and
+`inherit` restores null inheritance. Zero blocks additional bytes. Values must be
+exact integers in the documented range; negative, fractional, boolean or oversized
+service inputs fail. The CLI requires action-specific arguments, looks up an existing
+canonical account email and returns JSON counters/status without printing credentials,
+email addresses or file paths. Failure is nonzero; it never provisions a missing user.
+
+`quotas.set_default` and `set_override` serialize against allocations using the same
+settings-first lock order. A current setting is read under lock; no-op requests
+leave revision/audit unchanged. Actual changes and their `storage_audit` record
+commit together, recording previous/new integers or null, owner where relevant,
+and global revision. Actor null identifies trusted container-operator execution;
+it does not claim an authenticated web actor. Limits never change used/reserved
+counters or remove files. Reducing an allowance below retained use leaves downloads
+available, returns over-limit usage and can abort an in-flight new write at finalization.
+
+Tests use real sessions for two accounts, verify read-only owner-scoped usage,
+no-store responses and exact byte arithmetic, exercise all commands and audit
+transitions, observe a real PostgreSQL lock wait, and invoke the actual setters
+mid-stream while preserving the original. Fresh Docker verification changes the
+synthetic default, sets zero override, proves a retained write is rejected without
+losing the original, restores inheritance/default, and checks the authenticated
+usage endpoint in desktop/mobile browser flows. No server access is needed.
