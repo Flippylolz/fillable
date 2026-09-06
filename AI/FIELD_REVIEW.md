@@ -39,7 +39,8 @@ metadata or mark a document dirty.
   and the dismissed proposal can later be accepted. Existing accepted controls are removed
   through the editor's control-removal operation, not hidden through a suggestion dismissal.
 - Configure changes a proposal's label/group or the corresponding live control's alias/tag.
-  Labels and keys follow E04.5a bounds (256/512 code points, nonblank, no control characters).
+  Labels and keys follow E04.5a bounds (256/512 code points, nonblank, no control characters),
+  and reject text DOCX XML cannot store.
   MVP supports text only. Invalid operations preserve the current document and metadata.
 - Focus selects the precise proposal/control range without changing the document. Missing
   locations cannot be focused or accepted.
@@ -90,3 +91,26 @@ the server schema must explicitly support that origin/location combination and m
 records rather than silently relabeling them as native controls or retaining invalid spans.
 Copied saved revisions must carry independently rebased metadata. No claim of those E06
 behaviors is made by this transaction subtask.
+
+## Manual controls and missing locations
+
+E05.4 records each manually created control as an accepted manual location, preserving
+its immutable identity, selected source runs and independent group key. Creating a field
+and its record is one undoable operation. Moving a uniquely identified control updates
+its location without creating another record. Removing it unwraps the text and retains
+an explicitly missing record; undo restores the same identity and enables navigation.
+Duplicate identities are ambiguous and cannot be focused or removed arbitrarily.
+
+When editing begins before discovery attaches, existing controls receive local native
+records and new controls receive manual records. This draft has `sourceVersion: null`: it
+is explicitly unbound, not a fabricated saved discovery result. A later result cannot
+overwrite it; reopening the saved revision uses the existing discard confirmation.
+Ordinary edits in documents without controls do not invent review metadata. E06 must
+validate and bind persisted metadata against the actual saved revision.
+
+Manual labels are trimmed and bounded to 256 Unicode code points, excluding control and
+invalid XML characters. Creation requires nonempty editable text in one paragraph,
+outside existing fields or protected content. At 2,000 live controls or review records,
+creation reports the document limit. Invalid requests preserve selection and source text
+and display a localized error. Manual records use the existing accepted filter and
+missing-location feedback; they are not separate server-side writes.

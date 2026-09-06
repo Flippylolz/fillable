@@ -4,6 +4,7 @@ import { closeHistory } from "prosemirror-history";
 import type { components } from "../../generated/api";
 import { fields, type FieldOccurrence } from "./model";
 import { newFieldId } from "./transactions";
+import { validFieldProperty } from "./fieldProperties";
 
 type Snapshot = components["schemas"]["FieldSnapshot"];
 type Candidate = components["schemas"]["Candidate"];
@@ -21,7 +22,7 @@ export type ReviewItem = {
   location: { kind: "span"; from: number; to: number; text: string }
     | { kind: "control"; id: string };
 };
-export type ReviewState = { sourceVersion: string; items: ReviewItem[] };
+export type ReviewState = { sourceVersion: string | null; items: ReviewItem[] };
 export function reviewState(doc: EditorNode): ReviewState | null {
   return doc.attrs.review;
 }
@@ -131,17 +132,22 @@ function mappedReview(review: ReviewState, transaction: Transaction): ReviewStat
 
 export function reviewChanges(state: EditorState, transaction: Transaction): Transaction {
   const review = reviewState(state.doc);
-  if (!review || !transaction.docChanged || transaction.steps.some(step => {
+  if (!transaction.docChanged || transaction.steps.some(step => {
     const json = step.toJSON();
     return json.stepType === "docAttr" && json.attr === "review";
   })) return transaction;
   // Undo/redo already carries the inverse review attribute step; never remap twice.
-  return transaction.setDocAttribute("review", mappedReview(review, transaction));
+  const base = review ?? { sourceVersion: null, items: [...controls(state.doc).values()].map(field => localControl(field, "native_control")) };
+  const mapped = mappedReview(base, transaction);
+  const tracked = new Set(mapped.items.flatMap(item => item.location.kind === "control" ? [item.location.id] : []));
+  for (const field of controls(transaction.doc).values()) if (!tracked.has(field.id)) mapped.items.push(localControl(field, "manual"));
+  return mapped.items.length || review ? transaction.setDocAttribute("review", mapped) : transaction;
 }
 
-function validProperty(value: string, limit: number): boolean {
-  return typeof value === "string" && !!value.trim() && [...value].length <= limit
-    && ![...value].some(char => char.charCodeAt(0) < 32 || (char.charCodeAt(0) >= 127 && char.charCodeAt(0) <= 159));
+function localControl(field: FieldOccurrence, reason: "native_control" | "manual"): ReviewItem {
+  return { id: `local:${field.id}`, occurrenceId: `local:${field.id}`, reason, sourceKey: field.key,
+    context: [...field.value].slice(0, 1024).join(""), label: field.label, key: field.key,
+    type: "text", decision: "accepted", missing: false, location: { kind: "control", id: field.id } };
 }
 
 export function reviewCandidate(state: EditorState, id: string, action: "dismiss" | "accept",
@@ -153,8 +159,8 @@ export function reviewCandidate(state: EditorState, id: string, action: "dismiss
   });
   const label = options.label ?? item.label, identity = newFieldId();
   const key = options.key ?? (item.key || identity);
-  if (item.missing || item.location.kind !== "span" || !validProperty(label, 256)
-    || !validProperty(key, 512) || (options.type ?? "text") !== "text") return null;
+  if (item.missing || item.location.kind !== "span" || !validFieldProperty(label, 256)
+    || !validFieldProperty(key, 512) || (options.type ?? "text") !== "text") return null;
   const { from, to, text } = item.location;
   if (!allowedSpan(state.doc, from, to, text)) return null;
   const node = state.schema.nodes.field.create({ id: identity, key, label }, state.doc.slice(from, to).content);
@@ -167,7 +173,7 @@ export function reviewCandidate(state: EditorState, id: string, action: "dismiss
 
 export function configureCandidate(state: EditorState, id: string, label: string, key: string, type = "text"): Transaction | null {
   const review = reviewState(state.doc), item = review?.items.find(entry => entry.id === id);
-  if (!review || !item || item.missing || !validProperty(label, 256) || !validProperty(key, 512) || type !== "text") return null;
+  if (!review || !item || item.missing || !validFieldProperty(label, 256) || !validFieldProperty(key, 512) || type !== "text") return null;
   const transaction = closeHistory(state.tr);
   if (item.location.kind === "control") {
     const field = controls(state.doc).get(item.location.id);

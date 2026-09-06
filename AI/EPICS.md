@@ -23,7 +23,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.4 merged; E04.5 review integration |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1/E05.2 merged; E05.3 in verification; E05.4–E05.6 pending |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.3 merged; E05.4 in verification; E05.5–E05.6 pending |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
@@ -1211,3 +1211,29 @@ five multiline and all six original/edited pages were inspected. Source justific
 explicit breaks and the resulting pagination remain intact. Microsoft Word was not used.
 All volumes preserved. Next: protected E05.3 PR/verified merge, then E05.4 manual/missing
 field integration; E06 still owns production retained saves and revision history.
+
+2026-09-07: E05.3 verified merged through [PR #45](https://github.com/Flippylolz/fillable/pull/45),
+commit `db79591a2e7fb50a5d94a2273b93e4810274613d`; Actions 34064122825 passed both
+required checks for exact head `61c9c5fc442718d4c772dc401637b1b90b171113`.
+Main synchronized. E05.4 starts on `task/e05-4-manual-fields`: bounded manual creation
+and explicit missing/moved control records in the existing review history. Local tracking
+before discovery is explicitly unbound; it cannot replace the saved source's result.
+
+E05.4 adds bounded manual creation and accepted local records tied to immutable control
+identities. Movement retains the record, removal preserves source text and marks its
+location missing, and undo restores it. Duplicate identities cannot be focused or
+removed arbitrarily. Invalid labels/selection/capacity leave the draft intact with
+localized feedback. Tracking before discovery remains explicitly unbound and refuses
+late attachment. See [Working field review](FIELD_REVIEW.md).
+
+Local verification passed: 113 frontend tests, raw 851/855 lines (99.53%) and 894/926
+branches (96.54%); 243 backend tests, 2779/2796 lines (99.39%) and 843/862 branches
+(97.80%). Lint, typing, catalogs/build, independent raw gates and both actual unimported-
+source negative probes passed. Fresh index `/private/tmp/fillable-verify.YX8Lmp` passed
+5 development and 16 production browser checks, including manual creation/removal/undo
+and actual export/reopen, plus real worker/persistence/byte/quota checks. UK/EN production
+workspace and manual proof screenshots were inspected. Independent LibreOffice/Poppler
+verification passed unchanged byte/pixel identity, three edited pages with unchanged
+page two, and five multiline pages with exact repeated Ukrainian/astral text; an edited
+page was visually inspected. Microsoft Word was not used; all volumes preserved.
+Next: protected E05.4 PR/verified merge, then E05.5 keyboard/composition/history checks.

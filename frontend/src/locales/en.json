@@ -190,5 +190,8 @@
   "editor.occurrence": "Field location {{number}}: {{label}}",
   "editor.activeField": "Selected location",
   "editor.value.too_long": "This value exceeds {{limit}} characters. It remains in your draft; shorten it before exporting or saving.",
-  "editor.value.invalid_text": "This value contains characters that DOCX cannot store. It remains in your draft; remove them before exporting or saving."
+  "editor.value.invalid_text": "This value contains characters that DOCX cannot store. It remains in your draft; remove them before exporting or saving.",
+  "editor.creation.invalid_label": "Enter a nonblank label of up to {{labelLimit}} characters, without control characters or characters DOCX cannot store.",
+  "editor.creation.invalid_selection": "Select nonempty editable text within one paragraph, outside existing fields and protected content.",
+  "editor.creation.field_limit": "This document has reached the limit of {{fieldLimit}} fields and suggestions."
 }

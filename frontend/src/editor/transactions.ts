@@ -6,6 +6,7 @@ import {
 import { closeHistory, isHistoryTransaction } from "prosemirror-history";
 import { fields } from "./model";
 import type { EditorView } from "prosemirror-view";
+import { FIELD_LABEL_LIMIT, FIELD_RECORD_LIMIT, validFieldProperty } from "./fieldProperties";
 
 export function fieldTextInput(
   editor: Pick<EditorView, "state" | "dispatch">,
@@ -65,24 +66,31 @@ export function updateField(
   return transaction.setMeta("field-update", true);
 }
 
+export type ManualFieldIssue = "invalid_label" | "invalid_selection" | "field_limit" | null;
+export function manualFieldIssue(state: EditorState, label: string): ManualFieldIssue {
+  if (!validFieldProperty(label.trim(), FIELD_LABEL_LIMIT)) return "invalid_label";
+  if (fields(state.doc).length >= FIELD_RECORD_LIMIT || (state.doc.attrs.review?.items.length ?? 0) >= FIELD_RECORD_LIMIT) return "field_limit";
+  const { from, to, $from, $to, empty } = state.selection;
+  if (
+    empty ||
+    $from.parent !== $to.parent ||
+    $from.parent.type.name !== "paragraph"
+  )
+    return "invalid_selection";
+  let blocked = false;
+  state.doc.nodesBetween(from, to, (node) => {
+    if (node.isInline && !node.isText) blocked = true;
+  });
+  return blocked ? "invalid_selection" : null;
+}
+
 export function createField(
   state: EditorState,
   label: string,
   id: string,
 ): Transaction | null {
-  const { from, to, $from, $to, empty } = state.selection;
-  if (
-    empty ||
-    $from.parent !== $to.parent ||
-    $from.parent.type.name !== "paragraph" ||
-    !label.trim()
-  )
-    return null;
-  let blocked = false;
-  state.doc.nodesBetween(from, to, (node) => {
-    if (node.isInline && !node.isText) blocked = true;
-  });
-  if (blocked) return null;
+  if (manualFieldIssue(state, label)) return null;
+  const { from, to } = state.selection;
   const field = state.schema.nodes.field.create(
     { id, key: id, label: label.trim() },
     state.doc.slice(from, to).content,
@@ -94,7 +102,8 @@ export function createField(
 }
 
 export function focusField(state: EditorState, id: string): Transaction | null {
-  const occurrence = fields(state.doc).find((field) => field.id === id);
+  const matches = fields(state.doc).filter(field => field.id === id);
+  const occurrence = matches.length === 1 ? matches[0] : null;
   return occurrence
     ? state.tr
         .setSelection(
@@ -178,8 +187,9 @@ export function removeField(
   state: EditorState,
   id: string,
 ): Transaction | null {
-  const occurrence = fields(state.doc).find((field) => field.id === id);
-  if (!occurrence) return null;
+  const matches = fields(state.doc).filter(field => field.id === id);
+  if (matches.length !== 1) return null;
+  const occurrence = matches[0];
   const node = state.doc.nodeAt(occurrence.pos)!;
   return closeHistory(state.tr).replaceWith(
     occurrence.pos,
