@@ -207,6 +207,14 @@ Reference: [Browser cookie attributes and port behavior](https://developer.mozil
 
 Status: **Accepted — explicit user language priority and fixture request.**
 
-Documents will mostly be Ukrainian. Prioritize Ukrainian prose, labels, field names, native control tags, Cyrillic run boundaries, and Unicode preservation in E00/E04/E05 acceptance. Preserve Ґ, Є, І, Ї, apostrophe variants, punctuation, and mixed Ukrainian/Latin content without transliteration. Do not infer a UI-language requirement from the document-language priority.
+Documents will mostly be Ukrainian. Prioritize Ukrainian prose, labels, field names, native control tags, Cyrillic run boundaries, and Unicode preservation in E00/E04/E05 acceptance. Preserve Ґ, Є, І, Ї, apostrophe variants, punctuation, and mixed Ukrainian/Latin content without transliteration. D021 separately defines the user's UI-language requirement.
 
 Representative user files are not available yet. E00.1 supplies an author-generated Ukrainian DOCX and an external answer key as the initial regression baseline. The user selected the Legal Memorandum visual template for this fixture. The sample is fictional and is not evidence of compatibility with all Ukrainian documents. Keep v1 and add reviewed real-world cases/expectations when sanitized examples become available; do not block development on those examples.
+
+## D021 — Ukrainian and English UI localization
+
+Status: **Accepted — explicit user MVP requirement, recorded 2026-09-06.**
+
+Store all application labels and user-facing messages in i18n catalogs. Ukrainian (`uk`) is the default UI language; English (`en`) is secondary. Include a language switcher in the profile and persist the account preference across sessions. Cover all four pages, editor/settings/sidebar controls, and version-history UI, including errors, tooltips, and accessibility text.
+
+UI language is separate from document language. Changing it preserves document text, user-provided titles, extracted/custom field labels, values, and DOCX metadata. The [Localization contract](I18N.md) specifies persistence, API message codes, formatting, fallback, and translation completeness checks. E01 establishes the catalogs and required checks; E02 delivers the saved profile preference; all UI tasks include both languages. No runtime implementation or i18n package selection is claimed by this decision.

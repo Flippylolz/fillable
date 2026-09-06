@@ -2,13 +2,15 @@
 
 Status vocabulary: `ready`, `waiting`, `in_progress`, `in_review`, `done`. Waiting means dependencies or a recorded product decision are outstanding. A task awaiting PR merge is `in_review`; an epic remains open until all required tasks and acceptance criteria are delivered. No implementation epic is complete yet.
 
-Scope: the four pages in [Product](PRODUCT.md), including version-history UI inside the workspace. Epics describe implementation boundaries, not additional product pages. Administrator screens, a trash browser, advanced diffs, and public registration are outside MVP.
+Scope: the four pages in [Product](PRODUCT.md), including version-history UI inside the workspace. Ukrainian/English UI localization and the saved profile language switcher are MVP requirements under [Localization](I18N.md). Every user-facing task supplies both translations. Epics describe implementation boundaries, not additional product pages. Administrator screens, a trash browser, advanced diffs, and public registration are outside MVP.
 
 Delivery rule: each individual task ID below gets its own branch and PR, with auto-merge enabled when ready and actually protected by required checks. Follow [PR workflow](PR_WORKFLOW.md); record PR URLs and merge commits rather than marking an open PR done.
 
 ## Roadmap
 
 Planning task P00: consolidate the accepted MVP decisions, architecture, epics, and agent rules in one documentation PR (`task/p00-mvp-plan`). Acceptance: linked documents agree on free-only editor components, deterministic detection without AI, local/production environments without backups, HTTP on a new shared-nginx port, and the existing four-page/history/coverage/PR requirements. Validate Markdown links and consistency; no application coverage is claimed for this documentation task. A separate empty Git-history bootstrap establishes `main` before opening the PR and contains no task files.
+
+Planning task P01: add the accepted UI localization requirement in one documentation PR (`task/p01-ui-localization`). Acceptance: product, decisions, architecture, epics, CI plan, and agent rules agree on Ukrainian as the default UI language, English as secondary, all application copy in i18n catalogs, and a profile language switcher whose preference persists across sessions. Specify translation completeness checks and preservation of document content when switching UI language. Validate Markdown links and consistency; application implementation and coverage are outside this documentation task.
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
@@ -35,7 +37,7 @@ Outcome: choose a free editor or prove a project-owned implementation using evid
 Work:
 
 - E00.1: Build the initial Ukrainian synthetic DOCX baseline with an external answer key: tables, headers/footers, numbered lists, split-run Cyrillic placeholders, repeated names, native controls, long values, Ukrainian characters/apostrophes, and negative cases. Use [Test corpus](TEST_CORPUS.md); keep v1 and add reviewed samples when the user's real document becomes available.
-- E00.2: Compare free end-to-end options, field APIs, import/export, license obligations, Python-backend compatibility, and total deployment needs. Record evidence in D008 and the feasibility notes; paid APIs and expiring trials do not qualify.
+- E00.2: Compare free end-to-end options, field APIs, import/export, license obligations, Python-backend compatibility, Ukrainian/English UI localization hooks, and total deployment needs. Record evidence in D008 and the feasibility notes; paid APIs and expiring trials do not qualify.
 - E00.3: Demonstrate field creation, sidebar-to-document updates, document-to-sidebar updates, and focus navigation using a qualifying free solution. If none fits, prototype a project-owned editor/adapter using open components and source-package preservation; do not silently reduce the editing requirement.
 - E00.4: Test direct surrounding edits, deletion of controls, undo/redo, repeated occurrences, export, and reopen.
 - E00.5: Record the chosen editor, version, support matrix, limitations, and go/no-go evidence in `AI/`. Supersede D008 only after the choice is settled.
@@ -46,6 +48,7 @@ Acceptance:
 - Required formatting is checked visually, including in Word when available. Distinguish editor self-reopening from independent Word compatibility evidence.
 - Known unsupported features produce an explicit supported scope; do not adopt a vendor's fidelity claim as a test result.
 - Required development/production components carry no required license/subscription fees. Record exact versions and obligations; no paid solution or trial is adopted.
+- Exposed editor UI can use Ukrainian and English, including supplied custom translations where needed. Verify locale switching preserves document/editor state; record localization gaps before adopting an editor.
 - A custom implementation, if needed, preserves untouched DOCX structures and demonstrates direct edits as well as field edits. Unsupported structures are explicit; a viewer-only or lossy HTML/text conversion does not pass.
 
 ## E01 — Docker foundation
@@ -54,11 +57,11 @@ Outcome: a fresh checkout runs the app skeleton and checks entirely through Dock
 
 Work:
 
-- E01.1: Scaffold React/Vite and FastAPI with the planned repository layout and pinned dependencies, including the minimum Docker test/coverage workflow needed to enforce 90% on the first application PR. Later foundation tasks expand this baseline; do not merge application code before its gate exists.
+- E01.1: Scaffold React/Vite and FastAPI with the planned repository layout and pinned dependencies, including Ukrainian/English catalogs, a shared translation/formatting entry point, and the minimum Docker test/coverage workflow needed to enforce 90% on the first application PR. Establish Ukrainian as default and baseline localization checks with the first UI copy. Later foundation tasks expand this baseline; do not merge application code before its gate exists.
 - E01.2: Add base, development, and production Compose files; a project-owned nginx gateway; persistent volumes; source reload; and readiness checks. Production exposes a configurable private upstream for shared nginx, without binding public host ports 80/443.
 - E01.3: Add PostgreSQL, Redis, RQ worker bootstrap, and an ordered Alembic migration step.
-- E01.4: Define OpenAPI contracts and a reproducible generated TypeScript client. Document generation and check for drift.
-- E01.5: Add container commands for linting, type checking, pytest/coverage.py, Vitest coverage, and a Playwright smoke test; wire them into GitHub Actions CI with independent >=90% line/branch gates for backend and frontend.
+- E01.4: Define OpenAPI contracts and a reproducible generated TypeScript client, including stable error/status codes and typed parameters for localized presentation. Document generation and check for drift.
+- E01.5: Add container commands for linting, type checking, pytest/coverage.py, Vitest coverage, and a Playwright smoke test; wire them into GitHub Actions CI with independent >=90% line/branch gates for backend and frontend. Include required catalog key/interpolation/plural validation and checks against hardcoded application copy.
 - E01.6: Verify startup, hot reload, restart persistence, and production asset serving. Replace planned commands in the development guide with verified commands.
 - E01.7: Verify the stable required-check aggregator, coverage-report artifacts, and negative gate checks in `Flippylolz/fillable`. Establish PR-only merging and the required CI check before the first application PR merges, then record their evidence in this task's PR; track the external settings explicitly until verified.
 
@@ -69,6 +72,7 @@ Acceptance:
 - Frontend and backend changes are visible through the development workflow.
 - Containers restart without losing persistent state; ordinary shutdown does not remove data.
 - CI and local checks use reproducible dependencies and documented commands.
+- Ukrainian is the unconfigured UI default; both shipped catalogs cover every application message key. Missing/invalid translations and prohibited hardcoded copy fail required CI, and interface formatting/page language follow the selected locale.
 - Below-90% coverage, missing reports, and failing/skipped required jobs fail CI. Exactly 90% passes without rounding up a lower value; no temporary relaxed threshold is allowed.
 - Required source coverage includes backend workers/commands and the frontend editor adapter. Gate evidence covers each codebase and metric separately.
 - Merge protection is verified on `Flippylolz/fillable` once CI is established; do not describe it as enabled from workflow YAML alone.
@@ -80,12 +84,13 @@ Outcome: users can sign in, manage a simple profile, and own local files whose r
 
 Work:
 
-- E02.1: Implement local accounts, server sessions, user/admin authorization, and the login/logout flow. Add containerized account provisioning and credential-reset commands without public default credentials.
+- E02.1: Implement local accounts, server sessions, user/admin authorization, and the login/logout flow. Include a validated user `ui_language` (`uk`/`en`, default `uk`) and read it on authentication. Add containerized account provisioning and credential-reset commands without public default credentials.
 - E02.2: Model global quota settings, per-user overrides, storage accounts, reservations, and file lifecycle states.
 - E02.3: Implement the shared local storage service with streaming allocation, atomic reservation, idempotency, safe paths, and crash recovery.
 - E02.4: Add deletion, temporary-file cleanup, job reconciliation, and disk-capacity checks.
 - E02.5: Expose current-user usage and provide privileged containerized commands for default/override quota changes with audit records. Reuse the service layer; no administrator screen is needed.
 - E02.6: Build the profile page with account email, editable display name, current-password-verified password change, logout, and read-only storage usage/allowance.
+- E02.7: Add the profile language selector (Українська / English), authorized preference update, immediate application after successful save, and restoration across refresh/login/browser sessions. Handle invalid values, failed saves, and stale browser preferences under [Localization](I18N.md). Depends on E02.1 and E02.6; deliver through its own PR.
 
 Acceptance:
 
@@ -96,6 +101,7 @@ Acceptance:
 - Invalid credentials, successful login, session expiry, and logout behave correctly across protected pages.
 - Login works for the explicit HTTP origin in D019 with HttpOnly/SameSite, Secure=false, CSRF, and exact-origin checks including the port. An HTTPS configuration enables Secure. Do not assume cookies are isolated from other apps by port.
 - Profile updates persist, password changes require the current credential, and users cannot update their own quota or role.
+- New accounts default to Ukrainian. The profile language switcher persists English or Ukrainian across sessions; save failures retain the prior language. A user's saved preference overrides stale browser state and cannot be changed by another user. Language switching preserves active state and document data.
 - Account and quota maintenance run through Docker without direct database edits or a separate administration page.
 
 ## E03 — Upload, templates, and document library
@@ -150,7 +156,7 @@ Outcome: the user edits the DOCX and sidebar as one coherent workspace.
 
 Work:
 
-- E05.1: Integrate the selected editor behind a narrow adapter with load/export and field operations. Reuse one workspace for templates and individual documents, clearly labeled.
+- E05.1: Integrate the selected editor behind a narrow adapter with load/export and field operations. Connect Ukrainian/English localization for its exposed controls without remounting document state on a locale change. Reuse one workspace for templates and individual documents, clearly labeled.
 - E05.2: Build sidebar fields with validation, navigation, active-field indication, and review states.
 - E05.3: Apply sidebar values through editor transactions and read direct document changes back into the sidebar.
 - E05.4: Allow manual field creation from a selection and handle moved/deleted controls explicitly.
@@ -165,6 +171,7 @@ Acceptance:
 - Undo/redo does not leave sidebar and document values inconsistent.
 - Check long text, Unicode, table fields, and the chosen editor's supported field types.
 - Workspace settings and field review fit within the page. Navigation and expired sessions do not silently discard unsaved work.
+- Ukrainian and English cover workspace/editor/settings/sidebar controls, errors, and accessible names. Extracted/custom field labels and values remain original data; locale changes preserve draft content, selection, and undo state without triggering document saves or revisions.
 
 ## E06 — Safe saves, version-history UI, and DOCX export
 
@@ -198,7 +205,7 @@ Outcome: the four-page MVP passes its acceptance criteria in local/CI Docker, in
 
 Work:
 
-- E07.1: Verify login, library, profile, and workspace navigation and states, including the history panel. Check account/quota operator commands and user-facing storage meters.
+- E07.1: Verify login, library, profile, and workspace navigation and states in Ukrainian and English, including the history panel, localized errors/accessibility text, and long Ukrainian labels. Verify default language, profile preference persistence/failure, and unchanged document data/drafts when switching. Check account/quota operator commands and user-facing storage meters.
 - E07.2: Add content-free job/capacity diagnostics and audit events through logs or operator commands. Do not create a diagnostics dashboard for MVP.
 - E07.3: Implement scheduled cleanup/reconciliation with bounded retries and clear failure state.
 - E07.4: Verify full-application restart, non-destructive upgrade, and crash reconciliation using synthetic data in local/CI Docker. Check matching PostgreSQL/files state and retained version history. Do not implement backups or a backup/restore drill.
@@ -212,6 +219,7 @@ Acceptance:
 - The full login → upload template → detect/review → use template → edit/sidebar → save → download → reopen flow passes on the supported corpus; direct document upload also passes.
 - History preview, historical download, and restoration pass without altering later retained revisions or the source/derived document relationship.
 - Profile changes persist and the UI stays within four main pages.
+- Both locales pass the product flows, Ukrainian is the initial default, and the profile language survives refresh and a new login/browser session. Catalog completeness checks block missing translations; localized layout and formatting are verified without changing document text, metadata, field labels/values, or saved bytes.
 - Docker development and production instructions match tested commands.
 - Known compatibility limits and unresolved issues are recorded without overstating release readiness.
 - Backend and frontend each pass >=90% line and branch coverage, with reports and all required CI jobs passing for the release candidate. Merge-blocking repository rules are verified before this epic is done.
@@ -271,3 +279,9 @@ When work begins, update the relevant status and append a concise record here: d
 2026-09-06: E00.1 generated `client-intake-uk-v1.docx` and its external expected-outcomes JSON on branch `task/e00-1-synthetic-docx`. Incorporated the user's Ukrainian-language priority as D020. The user-selected Legal Memorandum template was adapted to a fictional client intake form. Verified 19 logical fields, 27 stored occurrences (22 explicit and five review candidates), five native controls, six negative cases, Unicode/run structure, ZIP/XML/relationships, and 14 unchanged template parts. Final three-page LibreOffice render inspected completely; Microsoft Word and browser-editor behavior remain untested. See [Test corpus](TEST_CORPUS.md). This fixture/data task adds no application source or coverage claim; E00.2–E00.5 and E01 remain outstanding. PR/merge evidence follows the established task workflow.
 
 2026-09-06: E00.1 submitted as [PR #2](https://github.com/Flippylolz/fillable/pull/2), status at submission `in_review`. Documentation validation passed for 15 public Markdown files and 61 local links. The DOCX hash and all fixture expectations passed structural verification; all three final rendered pages were inspected. Confirmed merge evidence belongs in this PR's body first and is carried into the ledger by the next task PR. No application tests or coverage are claimed for this fixture-only change.
+
+2026-09-06: E00.1 confirmed `done`, merged through [PR #2](https://github.com/Flippylolz/fillable/pull/2) at `e084a9ba3dc8d0c8fc8bcb2dd52fd3b59fdd9454`. Local main was synchronized before P01 began. E00.2–E00.5 editor proof remains outstanding.
+
+2026-09-06: P01 records the user's Ukrainian-default/English-secondary UI requirement as D021 on `task/p01-ui-localization`, with the detailed contract in `AI/I18N.md`. Updated the four-page MVP, user preference/API boundaries, free-editor evaluation, foundation/profile/acceptance tasks, CI plan, and agent rules. All UI copy uses catalogs; the profile preference persists across sessions while document content stays original. Application code, synthetic fixture files, server state, and repository settings are unchanged by this documentation task. Validation and PR evidence follow before delivery.
+
+2026-09-06: P01 submitted as [PR #3](https://github.com/Flippylolz/fillable/pull/3), status at submission `in_review`. Validation passed for 16 public Markdown files, 72 local links, balanced fences, and Git whitespace. Excluded deployment identity is absent from public documentation; the DOCX hash was verified and both synthetic fixture files are unchanged. No application tests/coverage are claimed. Confirmed merge evidence goes in this PR's body first and enters the ledger in the next task PR. Next implementation work remains E00 free-editor proof and E01 foundation, now including the localization contract.
