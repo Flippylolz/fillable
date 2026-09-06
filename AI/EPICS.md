@@ -330,3 +330,19 @@ the same branch. CI passed both application suites but failed on Linux creating 
 nested mountpoint in a read-only source mount. Added the mountpoint before container
 startup. The failed `checks` propagated to failed `ci-required` and blocked merging,
 providing real aggregation evidence. Next: verify the corrected Actions run and merge.
+
+2026-09-06: E01.1 confirmed `done` via [PR #6](https://github.com/Flippylolz/fillable/pull/6),
+merged `8d0903014a2d0b2c771693caba2199fb80e9ed3e`; Actions run 34020883600 passed
+`checks` and `ci-required`. Merge evidence was added to its PR body and main was
+synchronized. E01.2 started on `task/e01-2-compose-gateway` from that commit.
+Adds base/dev/prod Compose and non-root nginx static/dev gateway targets, same-origin
+API routing, Vite WebSocket forwarding, loopback-only configurable ports, source
+mounts, health ordering, and retained document bind mount. Persistent database/queue
+volumes and migrations remain E01.3. Next: verify both isolated local stacks, CI and PR.
+
+2026-09-06: E01.2 local checks passed: both Compose variants validate and reach
+health; both effective nginx configs validate; development HTML/Vite and production
+hashed assets serve through gateway; same-origin health succeeds. Production nginx
+runs non-root without Node. Required Docker suites passed again: backend 9/9 lines,
+branches not applicable; frontend 27/27 lines, 14/14 branches (100%). Actual
+application persistence and hot-reload browser acceptance remain E01.3/E01.6.

@@ -1,0 +1,13 @@
+services:
+  api:
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 512m
+    cpus: 1.0
+  gateway:
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${FILLABLE_UPSTREAM_PORT:-8181}:8080'
+    mem_limit: 128m
+    cpus: 0.5
