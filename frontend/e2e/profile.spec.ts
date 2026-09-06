@@ -7,6 +7,7 @@ async function login(page: Page) {
   await page.getByLabel("Електронна пошта", { exact: true }).fill("profile@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill(originalPassword);
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Профіль", exact: true })).toBeVisible();
 }
 async function password(page: Page, current: string, next: string) {
@@ -88,6 +89,7 @@ test("language saves preserve drafts and restore the account preference across b
     await other.getByLabel("Електронна пошта", { exact: true }).fill("profile@example.test");
     await other.getByLabel("Пароль", { exact: true }).fill(originalPassword);
     await other.getByRole("button", { name: "Увійти", exact: true }).click();
+    await other.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(other.getByRole("combobox", { name: "Interface language" })).toHaveValue("en");
     await page.getByRole("combobox", { name: "Interface language" }).selectOption("uk");
     await page.getByRole("button", { name: "Save language" }).click();

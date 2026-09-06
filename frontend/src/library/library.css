@@ -1,0 +1,31 @@
+body { margin: 0; background: #f5f7fb; color: #1b2940; font-family: system-ui, sans-serif; line-height: 1.5; }
+main { max-width: 72rem; margin: auto; padding: 1.5rem; }
+h1, h2, h3, p { overflow-wrap: anywhere; }
+button, input, select { font: inherit; }
+button { border: 1px solid #78869a; border-radius: 0.4rem; background: #fff; color: #1b2940; padding: 0.6rem 0.9rem; cursor: pointer; }
+button:disabled { opacity: 0.65; cursor: wait; }
+a { color: #164f9e; }
+:focus-visible { outline: 3px solid #447cc9; outline-offset: 3px; }
+.page-nav { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-block: 1.5rem; border-bottom: 1px solid #cad4e3; }
+.page-nav a { padding: 0.7rem 1rem; text-decoration: none; border-radius: 0.4rem 0.4rem 0 0; }
+.page-nav a[aria-current="page"] { background: #e0eafa; border-bottom: 3px solid #164f9e; font-weight: 600; }
+.library { display: grid; gap: 1.25rem; }
+.library h2, .library h3 { margin-block: 0 0.5rem; }
+.library p { margin-block: 0.4rem; }
+.library-heading { display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap; }
+.library-quota, .library .library-upload, .library-item { background: #fff; border: 1px solid #cad4e3; border-radius: 0.75rem; padding: 1.25rem; min-width: 0; }
+.library-quota meter { display: block; width: 100%; max-width: 40rem; height: 1.1rem; }
+.library .library-upload { max-width: none; display: grid; gap: 0.8rem; }
+.library-upload label { min-width: 0; }
+.library-upload input, .library-upload select { width: 100%; min-width: 0; box-sizing: border-box; padding: 0.55rem; border: 1px solid #78869a; border-radius: 0.35rem; background: #fff; color: #1b2940; }
+.library-upload button { justify-self: start; background: #164f9e; color: #fff; border-color: #164f9e; }
+.library-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.library-tabs [aria-selected="true"] { background: #164f9e; color: #fff; }
+.library-items { display: grid; gap: 1rem; margin-bottom: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+.library-filename { color: #53647a; }
+.library-empty { padding: 2rem; border: 1px dashed #9bacbf; border-radius: 0.75rem; text-align: center; }
+@media (min-width: 48rem) {
+  .library .library-upload { grid-template-columns: 1fr 1fr; }
+  .library-upload > h3, .library-upload > p { grid-column: 1 / -1; }
+}
+@media (max-width: 30rem) { main { padding: 1rem; } }

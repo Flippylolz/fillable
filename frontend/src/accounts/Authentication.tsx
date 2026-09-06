@@ -29,6 +29,9 @@ export function Authentication({
     if (value.user) void setLanguage(value.user.ui_language);
   }
   useEffect(() => {
+    if (session && !session.user) window.history.replaceState(null, "", "/login");
+  }, [session]);
+  useEffect(() => {
     const controller = new AbortController();
     setBusy(true);
     setError("");

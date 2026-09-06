@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.2 merged; E03.3 persistence verification, then E03.1 UI |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.2 and E03.3 merged; E03.1 library verified locally |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -748,3 +748,26 @@ The worker QA invocation explicitly receives the public origin; normal worker co
 is unchanged. Earlier incomplete proof copy `/private/tmp/fillable-verify.B7XtaQ`
 and all isolated volumes remain preserved. Uploads have no library UI yet; E03.1
 is next after protected PR/CI and verified merge. Deployment remains last.
+
+2026-09-06: E03.3 confirmed done through [PR #26](https://github.com/Flippylolz/fillable/pull/26)
+at `364d72220f00b58d8ced3195d820b47cf4a8b1d2`; Actions 34040916102 passed both
+checks for exact head `6098d681fe27cc9649add77ac34a05cf2d8e4241`. Final evidence is
+in the PR body. Main synchronized; E03.1 is underway on `task/e03-1-library`.
+Real library/upload UI and authenticated library/profile navigation are implemented,
+with preserved drafts, quota/empty/error states, cursor paging and stable retry keys.
+Initial frontend verification passes 54 tests above both gates. Browser fixture and
+profile navigation checks are updated; fresh Docker and visual verification are next.
+A pinned development-only Node type package supports actual File-byte assertions;
+no Node backend or runtime dependency was introduced. Download/delete/open actions
+and processing jobs remain their own tasks. Deployment remains last.
+
+E03.1 final local verification passed 55 frontend tests, 466/471 lines (98.94%)
+and 374/399 branches (93.73%), lint, typing, catalogs, build and raw full-source gate.
+Fresh staged checkout `/private/tmp/fillable-verify.iOp4LS` passed 3 development and
+14 production browser checks, including real uploads of both kinds, interrupted
+request retry, language/draft preservation, reload and source digest checks.
+Ukrainian desktop and English mobile screenshots were inspected. An HTTP-only
+`randomUUID` failure was fixed using `getRandomValues`; unit coverage now models
+that browser capability. Final unit mock also handles the health endpoint's string
+URL. Earlier proof copies and all volumes are preserved. See [Library](LIBRARY.md).
+Next: protected E03.1 PR, exact-head auto-merge, actual merge verification, then E03.4.

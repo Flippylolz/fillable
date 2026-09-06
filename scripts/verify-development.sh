@@ -25,6 +25,7 @@ dev up --build --wait --wait-timeout 120
 # Explicit synthetic fixture only; normal startup never provisions an account.
 dev exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python -m app.accounts.cli provision --email profile@example.test --display-name "Тест профілю" --language uk --password-stdin < fixtures/auth/browser-password.txt
+dev exec -T api python -m app.accounts.cli provision --email library@example.test --display-name "Тест бібліотеки" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python /checks/verify_storage_persistence.py write
 dev exec -T api python /checks/verify_document_persistence.py write < fixtures/docx/v1/client-intake-uk-v1.docx
 dev exec -T worker python /checks/verify_storage_persistence.py read
