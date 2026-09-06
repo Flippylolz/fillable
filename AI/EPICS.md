@@ -1064,3 +1064,13 @@ checks; Microsoft Word was not used. All volumes preserved. Next: protected E04.
 PR/verified merge, then editor review transactions in E04.5b.
 The frontend real-unimported-source probe also passed (613/2231 lines, 547/3802
 branches rejected; 78 tests successful). Strict required Actions protection is intact.
+
+E04.5a PR #40's first CI run (34056273020) was correctly blocked: the frontend
+negative probe reported one failed test, but the old assertion omitted its identity.
+All earlier CI steps passed. The probe now prints failing test diagnostics; the
+workspace test waits for editor readiness instead of assuming its heading means
+mount effects completed. Vitest workers are bounded to two for the small CI runner.
+The complete frontend rerun passed all 78 tests with unchanged raw coverage, and
+the updated real-source probe passed under a two-CPU Docker limit. No thresholds,
+source inclusion or assertions were removed. Required CI will rerun on the updated
+PR head before dependent implementation.
