@@ -9,9 +9,10 @@ import "./profile.css";
 type User = components["schemas"]["UserInfo"];
 type Usage = components["schemas"]["QuotaUsage"];
 
-export function Profile({ user, csrfToken, onSession, onBusy, disabled }: {
+export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRevision = 0 }: {
   user: User; csrfToken: string; onSession: (session: Session) => void;
   onBusy: (busy: boolean) => void; disabled: boolean;
+  usageRevision?: number;
 }) {
   const { t } = useTranslation();
   const [name, setName] = useState(user.display_name);
@@ -44,7 +45,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled }: {
       })
       .catch(() => { if (!controller.signal.aborted) setUsageError("internal_error"); });
     return () => controller.abort();
-  }, [user.id, attempt]);
+  }, [user.id, attempt, usageRevision]);
 
   async function submit(kind: "name" | "password" | "language", event: FormEvent) {
     event.preventDefault();
