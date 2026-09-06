@@ -4,6 +4,7 @@ import { api, apiErrorMessage } from "../api";
 import { formatBytes, formatDate } from "../i18n";
 import { useLibrary, type Kind } from "./useLibrary";
 import "./library.css";
+import { DownloadSaved } from "./DownloadSaved";
 
 // getRandomValues also works on the explicitly supported HTTP origin.
 function newKey() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), value => value.toString(16).padStart(2, "0")).join(""); }
@@ -117,6 +118,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved }: {
         <h3>{item.title}</h3><p className="library-filename">{item.original_filename}</p>
         <p>{t("library.saved")}</p><p>{t("library.notStarted")}</p>
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>
+      <DownloadSaved item={item} disabled={blocked} />
       </article>)}</div>
       {data.next && <button type="button" disabled={data.more || blocked} onClick={() => void data.loadMore()}>{t(data.more ? "library.loading" : "library.more")}</button>}
     </section>

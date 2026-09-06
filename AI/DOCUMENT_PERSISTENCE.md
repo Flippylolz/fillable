@@ -80,3 +80,27 @@ uploads through the gateway, retries, recreates the stack, reads metadata throug
 the API and verifies original bytes from both API and worker. It also sends malformed
 input larger than 1 MiB to prove it reaches the bounded validator. The verifier is
 explicit QA only and provisions no account during normal startup.
+
+## Latest saved download (E03.4a)
+
+`GET /api/documents/{identity}/download` requires an active authenticated owner and
+resolves the current saved revision of an active resource. It never exports an
+unsaved browser draft. The storage reader holds a shared operation lock and verifies
+ready state, actual size and SHA-256. Download preparation admits two concurrent
+requests and bounds each file to 10 MiB. Complete verified bytes are buffered before
+sending headers so storage failures return the standard error envelope rather than
+a successful partial attachment. No new retained file or quota allocation is made.
+
+Responses use the DOCX media type, `no-store`, `nosniff`, an ASCII fallback filename
+plus percent-encoded UTF-8 original filename, and `X-Fillable-Version` identifying
+the exact returned saved revision. Missing/deleted/foreign resources return 404;
+missing sessions return 401; busy storage returns a retryable 409; corrupt or
+unavailable storage returns a content-free 503. Original uploads remain immutable.
+
+The bilingual library button explicitly says "Download saved DOCX". Failed requests
+retain the page and show a localized error; no empty file is created. Successful
+requests create a temporary browser Blob URL, initiate the named download and revoke
+the URL. Unit checks verify ownership, metadata, corruption, bounded admission,
+retry, original preservation and selection of a second saved revision. Browser tests
+compare both resource kinds' downloaded bytes with the uploaded fixture in both
+languages on desktop and mobile. Historical selection remains E06.

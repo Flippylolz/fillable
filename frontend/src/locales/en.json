@@ -108,5 +108,7 @@
   "profile.refreshUsage": "Refresh usage",
   "profile.overLimit": "Your usage exceeds your allowance. Existing files remain available, but new files cannot be saved.",
   "profile.bytes_one": "{{value}} byte",
-  "profile.bytes_other": "{{value}} bytes"
+  "profile.bytes_other": "{{value}} bytes",
+  "library.downloadSaved": "Download saved DOCX",
+  "library.downloading": "Preparing download…"
 }
