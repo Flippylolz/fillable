@@ -1,0 +1,47 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build check images
+        run: docker compose -f compose.test.yaml build
+      - name: Backend tests and coverage
+        run: docker compose -f compose.test.yaml run --name fillable-backend-check backend-test
+      - name: Frontend tests and build
+        run: docker compose -f compose.test.yaml run --name fillable-frontend-check frontend-test
+      - name: Collect reports
+        if: always()
+        run: |
+          mkdir -p reports/backend reports/frontend
+          docker cp fillable-backend-check:/app/coverage/. reports/backend/ || true
+          docker cp fillable-frontend-check:/app/coverage/. reports/frontend/ || true
+      - name: Validate frontend raw coverage and full source inclusion
+        run: |
+          mkdir -p frontend/coverage
+          docker run --rm -v "$PWD/frontend:/source:ro" -v "$PWD/reports/frontend:/source/coverage:ro" --entrypoint python fillable-checks-backend-test /checks/check_coverage.py frontend /source
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: coverage
+          path: reports/
+          if-no-files-found: error
+  ci-required:
+    if: always()
+    needs: [checks]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every check to succeed
+        env:
+          RESULT: ${{ needs.checks.result }}
+        run: test "$RESULT" = success

@@ -86,3 +86,30 @@ Rollback must also be scoped to Fillable's nginx change and resources. Never rol
 - Image delivery mechanism and the final deployment trigger preference.
 
 The server address/user are already supplied and should not be requested again. Remaining unknowns are E08 preflight dependencies; continue preceding epics without live-server changes.
+
+## E01.1 gate implementation (2026-09-06)
+
+`.github/workflows/ci.yml` now runs Docker-based backend lint/tests, frontend
+catalog validation/type checking/build/tests, and independent raw line/branch
+coverage checks. Reports are collected as artifacts; collection tolerates a
+missing container only for diagnostics, while test and gate steps fail closed.
+`ci-required` uses `always()` and explicitly accepts only a successful `checks`
+job. No path filters or deployment trigger are present.
+
+Source measurement is `backend/app/**/*.py` and `frontend/src/**/*.{ts,tsx}`,
+including unimported modules and the React entry point. There are no authored
+application exclusions. Tests, fixture data, build/configuration/check tooling,
+JSON catalogs, and dependencies are outside these application roots. Check tooling
+has controlled boundary/negative tests. Migrations do not exist yet; E01.3 must
+explicitly add their coverage and upgrade checks when introduced.
+
+The actual GitHub `main` protection API was configured and reread: PRs required,
+strict/up-to-date `ci-required` bound to GitHub Actions app 15368, administrator
+enforcement enabled, zero mandatory human approvals, linear history, no force
+pushes or branch deletion. Repository auto-merge remains enabled. This protection
+was established before the first code PR; E01.7 will audit the completed foundation.
+
+E01.5 expands the initial copy checker beyond JSX text/accessibility literals,
+adds full lint/browser checks and localization negative fixtures; the present
+catalog checker already checks logical keys, nonempty strings, interpolation,
+and locale plural categories. No product pages or profile persistence exist yet.

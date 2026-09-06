@@ -1,0 +1,12 @@
+name: fillable-checks
+services:
+  backend-test:
+    build:
+      context: .
+      dockerfile: infra/backend.Dockerfile
+    command: sh -c 'rm -rf coverage && ruff check . && pytest --cov=app --cov-branch --cov-report=term-missing --cov-report=json:coverage/coverage.json && python /checks/check_coverage.py backend /app && python /checks/test_coverage_gate.py'
+  frontend-test:
+    build:
+      context: .
+      dockerfile: infra/frontend.Dockerfile
+    command: sh -c 'rm -rf coverage && npm run check:i18n && npm run build && npm test'

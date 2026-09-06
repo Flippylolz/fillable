@@ -1,0 +1,8 @@
+{
+  "app.title": "Fillable",
+  "app.description": "A workspace for documents",
+  "health.loading": "Checking connection…",
+  "health.ok": "Connected to the server",
+  "health.error": "Could not connect to the server",
+  "health.retry": "Try again"
+}

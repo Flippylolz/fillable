@@ -96,3 +96,38 @@ E02 supplies containerized operator commands for account provisioning, credentia
 - CI enforces at least 90% line and branch coverage independently for backend and frontend; missing reports and below-threshold results fail. Implement the full gate in E01, not at deployment time.
 - A production build serves static frontend assets with no Node application backend.
 - Document actual commands and observed results after implementation; remove the specification-only warning only when justified.
+
+## E01.1 executable check baseline (2026-09-06)
+
+The app skeleton and isolated check images now exist. The service stack, gateway,
+source reload, persistent dependencies, migrations, and browser checks above remain
+E01.2–E01.6 work. Do not use the planned startup command until those tasks land.
+
+Run the current checks with Git and Docker only:
+
+```sh
+docker compose -f compose.test.yaml build
+docker compose -f compose.test.yaml run --rm backend-test
+docker compose -f compose.test.yaml run --name fillable-frontend-report frontend-test
+mkdir -p frontend/coverage
+docker cp fillable-frontend-report:/app/coverage/. frontend/coverage/
+docker compose -f compose.test.yaml run --rm -v "$PWD/frontend:/source:ro" backend-test python /checks/check_coverage.py frontend /source
+docker rm fillable-frontend-report
+```
+
+The named report container is disposable test output; removing it does not touch
+application volumes. Tests erase old coverage before running. Dependency updates
+use the pinned Node/Python images in `infra/`, `npm install --save-exact`, and
+`pip-tools==7.5.3` with `pip-compile --generate-hashes`; rebuild after changing locks.
+Runtime images are pinned by multi-platform digest. Application processes run as
+non-root. E01.2 supplies separate production build targets.
+
+Frontend uses React 19.2.8, Vite 8.2.2, Vitest 5.0.0, TypeScript 5.9.3 (compiler API
+used by catalog checks), i18next 26.4.2 and react-i18next 17.0.13. The complete exact
+versions/integrity hashes are in the npm lockfile. Backend direct versions are in
+`backend/requirements.in`; every transitive dependency/hash is locked in
+`backend/requirements.lock` for Python 3.13.12. Node is 24.14.0.
+
+Official foundation references: [Vite runtime requirements](https://vite.dev/guide/),
+[Vitest source inclusion](https://vitest.dev/config/coverage.html), and
+[FastAPI container construction](https://fastapi.tiangolo.com/deployment/docker/).
