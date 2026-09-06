@@ -104,3 +104,38 @@ the URL. Unit checks verify ownership, metadata, corruption, bounded admission,
 retry, original preservation and selection of a second saved revision. Browser tests
 compare both resource kinds' downloaded bytes with the uploaded fixture in both
 languages on desktop and mobile. Historical selection remains E06.
+
+## Confirmed deletion (E03.4b)
+
+`DELETE /api/documents/{identity}` requires exact-origin CSRF and an active owner
+session, fenced inside the transaction. The domain transaction follows the storage
+settings/account → user/session → resource lock order. It marks the resource deleted,
+clears parsed document-model snapshots, and marks every unique original/version file
+pending deletion. Cross-resource file references are rejected rather than allowing
+one deletion to remove another resource's data. Future saves/copies must take the
+same domain lock and reject deleted resources in their finalization transaction.
+
+Filesystem locks are acquired only after that transaction commits. Each request
+attempts at most 50 pending files using the existing storage deletion service:
+exclusive operation lock, unlink/fsync, then accounting release. Reader contention
+or filesystem failure leaves durable pending files charged. The response explicitly
+reports `pending` or `complete`; repeating the authenticated DELETE resumes cleanup.
+The existing one-shot storage reconciliation also completes it after a crash;
+periodic scheduling remains E07.3. Resource/version metadata tombstones remain for
+ownership and idempotency, but parsed document contents are cleared and successfully
+cleaned DOCX files are removed. No trash browser or restore path is introduced.
+
+The library includes pending tombstones only while referenced files remain. Their
+cards show pending cleanup, prohibit downloads, and offer an explicit retry across
+reloads. Fully cleaned resources disappear. A native modal confirmation names the
+resource and warns that the original and all retained versions are permanently
+removed; cancel and Escape use native dialog behavior. UI failures preserve a retry,
+and both partial and complete results refresh library/profile usage from the API.
+
+Real PostgreSQL/filesystem tests cover multi-version cleanup, original/current file
+deduplication, another resource's preservation, authorization/CSRF, revoked sessions,
+failed unlink with charged/listed state, reconciliation, an active reader, concurrent
+retries and shared-reference rejection. Browser checks exercise cancel/confirm and
+both resource kinds, verify a deleted download returns 404 and exact quota reduction,
+and reload the library. The jsdom unit test supplies only the missing native dialog
+methods; modal behavior is tested in the real browser.

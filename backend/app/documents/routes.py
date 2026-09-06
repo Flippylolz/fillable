@@ -12,9 +12,14 @@ from starlette.concurrency import run_in_threadpool
 from app.accounts.routes import current_user, mutation_session
 from app.accounts.schema import UserInfo
 from app.accounts.service import SessionState
-from app.documents import service
+from app.documents import deletion, service
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
-from app.documents.schema import ResourceInfo, ResourceList, UploadMetadata
+from app.documents.schema import (
+    DeletionResult,
+    ResourceInfo,
+    ResourceList,
+    UploadMetadata,
+)
 from app.errors import AppError, ErrorCode
 from app.storage.service import StorageError
 
@@ -144,6 +149,18 @@ def detail(
 ) -> ResourceInfo:
     response.headers["Cache-Control"] = "no-store"
     return service.detail(user.id, identity)
+
+
+@router.delete("/{identity}", response_model=DeletionResult)
+def remove(
+    identity: UUID, response: Response, state: SessionState = Depends(mutation_session)
+) -> DeletionResult:
+    try:
+        result = deletion.remove(state, identity)
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 @router.get(

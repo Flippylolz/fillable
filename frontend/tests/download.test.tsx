@@ -4,7 +4,7 @@ import { DownloadSaved } from "../src/library/DownloadSaved";
 import type { Resource } from "../src/library/useLibrary";
 import { i18n, setLanguage } from "../src/i18n";
 
-const item: Resource = { id: "id", kind: "document", title: "Заява", original_filename: "Заява-Їжак.docx", current_version_id: "v1", created_at: "2026-09-06", updated_at: "2026-09-06", size_bytes: 3, digest: "hash", unsupported_count: 0, processing_status: "not_started" };
+const item: Resource = { id: "id", kind: "document", title: "Заява", original_filename: "Заява-Їжак.docx", current_version_id: "v1", created_at: "2026-09-06", updated_at: "2026-09-06", size_bytes: 3, digest: "hash", unsupported_count: 0, processing_status: "not_started", deletion_pending: false };
 function show(disabled = false) { return render(<I18nextProvider i18n={i18n}><DownloadSaved item={item} disabled={disabled} /></I18nextProvider>); }
 beforeEach(async () => {
   await setLanguage("uk");

@@ -118,6 +118,11 @@ class ResourceInfo(BaseModel):
     digest: str
     unsupported_count: int
     processing_status: Literal["not_started"] = "not_started"
+    deletion_pending: bool = False
+
+
+class DeletionResult(BaseModel):
+    status: Literal["pending", "complete"]
 
 
 class ResourceList(BaseModel):
