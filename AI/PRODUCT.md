@@ -73,6 +73,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 
 - Keep all application labels/messages in Ukrainian and English i18n catalogs, including errors, tooltips, accessibility text, editor controls, sidebar/settings, and history states. Every UI feature supplies both translations; translation completeness is a required CI check.
 - UI language changes do not translate document content, filenames/titles, extracted/custom field labels, or field values, and do not create document revisions. Format interface dates/numbers/storage values for the selected locale while preserving canonical data.
+- Show a small fixed [Git version badge](VERSION_BADGE.md) across all four pages: `version: <first seven deployed-commit characters>` or `version: development`. Preserve the supplied translucent colors, safe-area-aware bottom-right placement and bottom offset on desktop/mobile, with monospace value and click-through behavior. It has no icon, link, tooltip, or interaction; its text remains catalog-based under D022.
 - Start with text fields; add checkbox, date, and choice fields only where the selected editor has verified support.
 - Inferred fields are correctable. Repeated occurrences share a logical field only when their relationship is explicit or user-confirmed.
 - Saved files and their field metadata describe the same revision and preserve supported formatting.
@@ -107,3 +108,4 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Concurrent allocations cannot bypass quotas, and users cannot access each other's files or historical versions.
 - A fresh checkout runs and tests through Docker without host Python or Node installations.
 - The complete MVP passes mandatory CI, including the independent 90% coverage gates, before its final GitHub Actions deployment.
+- The version badge remains unobtrusive across desktop/mobile and themes, allows clicks through, and identifies the deployed artifact's source commit. Missing metadata uses the documented development fallback; a controlled production release must provide and verify its commit.

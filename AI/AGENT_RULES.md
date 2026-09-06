@@ -80,6 +80,7 @@ These instructions guide automated implementation in this repository. Direct use
 - Keep UI language separate from document content. Extracted/custom field labels, filenames/titles, and values are user data, never dynamic translation keys. A language change must not mutate DOCX bytes, metadata, or revisions.
 - Return machine-readable API errors/statuses and typed parameters; translate their presentation in the frontend. Use locale-aware formatting for interface numbers/dates and complete localized messages with appropriate plurals.
 - Validate both catalogs, interpolation/plurals, and prohibited hardcoded application copy through required CI. Check both-language flows and layout; runtime Ukrainian fallback must not hide missing English translations from checks.
+- Follow D022 and [Version badge](VERSION_BADGE.md) when adding the shared badge or changing build metadata. Preserve its exact visible catalog strings, explicit CSS colors/offsets, and noninteractive click-through behavior. Use the built artifact's source commit; deployment verification stays in E08.
 
 ## Storage invariants
 
