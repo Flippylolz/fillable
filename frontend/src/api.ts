@@ -10,6 +10,17 @@ export const api = createClient<paths>({
 
 export function apiErrorMessage(code: string) {
   switch (code) {
+    case 'invalid_document': return i18n.t('errors.invalid_document');
+    case 'unsupported_document': return i18n.t('errors.unsupported_document');
+    case 'document_limit': return i18n.t('errors.document_limit');
+    case 'quota_exceeded': return i18n.t('errors.quota_exceeded');
+    case 'file_too_large': return i18n.t('errors.file_too_large');
+    case 'storage_unavailable': return i18n.t('errors.storage_unavailable');
+    case 'operation_conflict': return i18n.t('errors.operation_conflict');
+    case 'operation_in_progress': return i18n.t('errors.operation_in_progress');
+    case 'operation_aborted': return i18n.t('errors.operation_aborted');
+    case 'upload_busy': return i18n.t('errors.upload_busy');
+    case 'upload_timeout': return i18n.t('errors.upload_timeout');
     case 'current_password_invalid': return i18n.t('errors.current_password_invalid');
     case 'authentication_required': return i18n.t('errors.authentication_required');
     case 'invalid_credentials': return i18n.t('errors.invalid_credentials');

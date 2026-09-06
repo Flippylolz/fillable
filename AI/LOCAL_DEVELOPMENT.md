@@ -286,3 +286,10 @@ reject an incorrect current password, rotate credentials, revoke a second browse
 session, and restore the fixture through the UI. Normal startup provisions neither
 browser fixture. Profile screenshots are retained under the verifier's printed
 `browser-results/production/run` directory.
+
+E03.3 extends the fresh-index proof with an API upload and committed retry using
+the synthetic profile account. After recreation, API and worker verify the owned
+initial revision and immutable original. The worker receives the QA origin explicitly
+for this check; normal worker configuration has no browser-origin dependency.
+See [Document persistence](DOCUMENT_PERSISTENCE.md) for the upload header/body
+contract, admission bounds and the gateway's streaming configuration.
