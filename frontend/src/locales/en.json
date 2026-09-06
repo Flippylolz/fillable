@@ -179,5 +179,14 @@
   "review.accepted_one": "Accepted ({{formattedCount}})",
   "review.accepted_other": "Accepted ({{formattedCount}})",
   "review.dismissed_one": "Dismissed ({{formattedCount}})",
-  "review.dismissed_other": "Dismissed ({{formattedCount}})"
+  "review.dismissed_other": "Dismissed ({{formattedCount}})",
+  "editor.values": "Field values",
+  "editor.noFields": "No fields yet. Select text in the document to create a field, or review the suggestions.",
+  "editor.navigation": "Field navigation",
+  "editor.chooseLocation": "Choose a field location.",
+  "editor.position": "Location {{current}} of {{total}}",
+  "editor.previousField": "Previous field",
+  "editor.nextField": "Next field",
+  "editor.occurrence": "Field location {{number}}: {{label}}",
+  "editor.activeField": "Selected location"
 }

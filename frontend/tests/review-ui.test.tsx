@@ -23,15 +23,18 @@ async function openReview() { fireEvent.click(await screen.findByText("Review fi
 test("initial proposals do not dirty the document; review validates drafts and accepts through undoable operations", async () => {
   const changed = vi.fn(); render(ui(changed)); await openReview();
   expect(changed).not.toHaveBeenCalled();
-  expect(screen.getAllByRole("article")).toHaveLength(10);
-  const first = screen.getAllByRole("article")[0], card = within(first);
+  expect(screen.getAllByRole("article", { name: /^Field suggestion:/ })).toHaveLength(10);
+  const first = screen.getAllByRole("article", { name: /^Field suggestion:/ })[0], card = within(first);
   const originalLabel = card.getByLabelText("Field label").getAttribute("value");
   fireEvent.change(card.getByLabelText("Field label"), { target: { value: "" } });
   fireEvent.click(card.getByRole("button", { name: "Accept" }));
   expect(card.getByRole("alert")).toBeVisible(); expect(changed).not.toHaveBeenCalled();
+  expect(card.getByLabelText("Field label")).toHaveAttribute("aria-invalid", "true");
+  expect(card.getByLabelText("Field label")).toHaveAccessibleDescription(card.getByRole("alert").textContent!);
   fireEvent.change(card.getByLabelText("Field label"), { target: { value: "Reviewed name" } });
   fireEvent.change(card.getByLabelText("Link values with"), { target: { value: "" } });
   fireEvent.click(card.getByRole("button", { name: "Apply settings" }));
+  expect(card.getByLabelText("Field label")).not.toHaveAttribute("aria-invalid");
   const latest = () => editorSchema.nodeFromJSON(changed.mock.calls.at(-1)![0]);
   expect(latest().content.eq(editorSchema.nodeFromJSON(corpus).content)).toBe(true);
   fireEvent.click(card.getByRole("button", { name: "Go to location" }));
@@ -44,7 +47,7 @@ test("initial proposals do not dirty the document; review validates drafts and a
   fireEvent.click(screen.getByRole("button", { name: "Undo" }));
   expect(fields(latest())).toHaveLength(5);
   fireEvent.click(screen.getByRole("button", { name: "Undo" }));
-  expect(within(screen.getAllByRole("article")[0]).getByLabelText("Field label")).toHaveValue(originalLabel);
+  expect(within(screen.getAllByRole("article", { name: /^Field suggestion:/ })[0]).getByLabelText("Field label")).toHaveValue(originalLabel);
 });
 
 test("pagination, dismissals and filters keep content intact and clamp a shrinking last page", async () => {
@@ -56,23 +59,23 @@ test("pagination, dismissals and filters keep content intact and clamp a shrinki
   fireEvent.click(screen.getByRole("button", { name: "Next suggestions" }));
   fireEvent.click(screen.getByRole("button", { name: "Next suggestions" }));
   expect(screen.getByRole("button", { name: "Next suggestions" })).toBeDisabled();
-  expect(screen.getAllByRole("article")).toHaveLength(3);
-  for (let index = 0; index < 3; index++) fireEvent.click(within(screen.getAllByRole("article")[0]).getByRole("button", { name: "Dismiss" }));
+  expect(screen.getAllByRole("article", { name: /^Field suggestion:/ })).toHaveLength(3);
+  for (let index = 0; index < 3; index++) fireEvent.click(within(screen.getAllByRole("article", { name: /^Field suggestion:/ })[0]).getByRole("button", { name: "Dismiss" }));
   expect(screen.getByText("2 of 2")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Previous suggestions" }));
   expect(screen.getByText("1 of 2")).toBeVisible();
   const latest = editorSchema.nodeFromJSON(changed.mock.calls.at(-1)![0]);
   expect(latest.content.eq(editorSchema.nodeFromJSON(corpus).content)).toBe(true);
   fireEvent.change(screen.getByLabelText("Show"), { target: { value: "dismissed" } });
-  expect(screen.getAllByRole("article")).toHaveLength(3);
-  fireEvent.click(within(screen.getAllByRole("article")[0]).getByRole("button", { name: "Accept" }));
-  expect(screen.getAllByRole("article")).toHaveLength(2);
+  expect(screen.getAllByRole("article", { name: /^Field suggestion:/ })).toHaveLength(3);
+  fireEvent.click(within(screen.getAllByRole("article", { name: /^Field suggestion:/ })[0]).getByRole("button", { name: "Accept" }));
+  expect(screen.getAllByRole("article", { name: /^Field suggestion:/ })).toHaveLength(2);
 });
 
 test("native configuration preserves values, missing locations are explicit and locale keeps input drafts", async () => {
   const changed = vi.fn(); const view = render(ui(changed)); await openReview();
   fireEvent.change(screen.getByLabelText("Show"), { target: { value: "accepted" } });
-  const first = screen.getAllByRole("article")[0], card = within(first);
+  const first = screen.getAllByRole("article", { name: /^Field suggestion:/ })[0], card = within(first);
   fireEvent.change(card.getByLabelText("Field label"), { target: { value: "Native label" } });
   const group = card.getByLabelText("Link values with") as HTMLSelectElement;
   const another = [...group.options].find(option => option.value && option.value !== group.value)!;

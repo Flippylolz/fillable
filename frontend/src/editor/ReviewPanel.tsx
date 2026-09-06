@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { FieldSummary, ReviewAction } from "./adapter";
 import type { ReviewItem, ReviewState } from "./review";
@@ -12,6 +12,7 @@ function ReviewCard({ item, groups, act }: { item: ReviewItem; groups: Group[];
   const numbers = new Intl.NumberFormat(i18n.resolvedLanguage);
   const [label, setLabel] = useState(item.label), [key, setKey] = useState(item.key);
   const [invalid, setInvalid] = useState(false);
+  const errorId = useId();
   useEffect(() => { setLabel(item.label); setKey(item.key); }, [item.label, item.key]);
   function apply(action: ReviewAction) {
     setInvalid(!act(item.id, action, { label, key, type: "text" }));
@@ -20,14 +21,14 @@ function ReviewCard({ item, groups, act }: { item: ReviewItem; groups: Group[];
     <p className="review-reason">{t(`review.reason.${item.reason}`)}</p>
     <p className="review-context">{item.context}</p>
     {item.missing && <p role="status" className="review-missing">{t("review.missing")}</p>}
-    <label>{t("review.label")}<input value={label} disabled={item.missing} onChange={event => setLabel(event.target.value)} /></label>
+    <label>{t("review.label")}<input aria-invalid={invalid || undefined} aria-describedby={invalid ? errorId : undefined} value={label} disabled={item.missing} onChange={event => setLabel(event.target.value)} /></label>
     <label>{t("review.type")}<select defaultValue="text" disabled={item.missing}><option value="text">{t("review.text")}</option></select></label>
-    <label>{t("review.group")}<select value={key} disabled={item.missing} onChange={event => setKey(event.target.value)}>
+    <label>{t("review.group")}<select aria-invalid={invalid || undefined} aria-describedby={invalid ? errorId : undefined} value={key} disabled={item.missing} onChange={event => setKey(event.target.value)}>
       <option value="">{t("review.independent")}</option>
       {key && !groups.some(group => group.key === key) && <option value={key}>{t("review.sourceGroup")}</option>}
       {groups.map((group, index) => <option key={group.key} value={group.key}>{t("review.groupOption", { label: group.label, number: numbers.format(index + 1) })}</option>)}
     </select></label>
-    {invalid && <p role="alert">{t("review.invalid")}</p>}
+    {invalid && <p id={errorId} role="alert">{t("review.invalid")}</p>}
     <div className="review-actions">
       <button type="button" disabled={item.missing} onClick={() => apply("focus")}>{t("review.focus")}</button>
       <button type="button" disabled={item.missing} onClick={() => apply("configure")}>{t("review.apply")}</button>

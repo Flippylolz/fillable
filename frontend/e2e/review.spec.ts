@@ -23,6 +23,13 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   await libraryCard.getByRole("link", { name: "Відкрити", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Повторити запит стану", exact: true }).click();
+  await page.getByRole("button", { name: "Наступне поле", exact: true }).click();
+  await expect(page.getByRole("article", { name: "Розташування поля 1: ПІБ клієнта", exact: true })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByRole("button", { name: "Попереднє поле", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "Наступне поле", exact: true }).click();
+  await expect(page.getByText("Розташування 2 з 5", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Попереднє поле", exact: true }).click();
+  await page.getByRole("complementary", { name: "Поля документа", exact: true }).screenshot({ path: testInfo.outputPath("field-values-uk.png") });
   await page.getByText("Перевірка полів", { exact: true }).click();
   await expect(page.getByText("Відкрито збережену версію.", { exact: true })).toBeVisible();
   const identity = page.url().split("/").at(-1)!;
@@ -70,6 +77,10 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   await expect(page.getByRole("article", { name: "Field suggestion: Контактна особа", exact: true }).getByLabel("Field label", { exact: true })).toHaveValue("Незастосована назва");
   await expect(page.getByRole("textbox", { name: "Field value: Місце зустрічі", exact: true })).toHaveValue("Кімната 204");
   await page.getByRole("complementary", { name: "Document fields", exact: true }).screenshot({ path: testInfo.outputPath("review-en.png") });
+  await page.getByText("Review fields", { exact: true }).click();
+  await page.getByRole("button", { name: "Go to field: Контактна особа", exact: true }).click();
+  await expect(page.getByText("Location 1 of 7", { exact: true })).toBeVisible();
+  await page.getByRole("complementary", { name: "Document fields", exact: true }).screenshot({ path: testInfo.outputPath("field-values-en.png") });
   const after = await (await page.request.get("/api/storage/usage")).json();
   expect(after.used_bytes).toBe(usage.used_bytes); expect(after.reserved_bytes).toBe(usage.reserved_bytes);
   expect(await (await page.request.get(`/api/documents/${identity}/download`)).body()).toEqual(bytes);

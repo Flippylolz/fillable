@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { mountEditor, type EditorAdapter, type EditorPresentation } from "./adapter";
 import { ReviewPanel } from "./ReviewPanel";
+import { FieldSidebar } from "./FieldSidebar";
 import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
 
@@ -77,31 +78,9 @@ export function DocumentEditor({
         {review && <details className="review-section"><summary>{t("review.title")}</summary>
           <ReviewPanel review={review} occurrences={occurrences} act={(id, action, options) => view.current!.review(id, action, options)} />
         </details>}
-        {occurrences.map((field) => (
-          <div key={field.id} data-active={active === field.id}>
-            <label>
-              {field.label}
-              <input
-                aria-label={t("editor.fieldValue", { label: field.label })}
-                value={field.value}
-                onChange={event => view.current!.updateField(field.key, event.target.value)}
-              />
-            </label>
-            <button
-              onClick={() => view.current!.focusField(field.id)}
-            >
-              {t("editor.focus", { label: field.label })}
-            </button>
-            <button
-              onClick={() => view.current!.removeField(field.id)}
-            >
-              {t("editor.remove", { label: field.label })}
-            </button>
-            {occurrences.some(
-              (other) => other.key === field.key && other.value !== field.value,
-            ) && <p role="status">{t("editor.inconsistent")}</p>}
-          </div>
-        ))}
+        <FieldSidebar fields={occurrences} active={active}
+          update={(key, value) => { view.current!.updateField(key, value); }}
+          focus={id => { view.current!.focusField(id); }} remove={id => { view.current!.removeField(id); }} />
       </aside>
     </div>
   );

@@ -1,0 +1,15 @@
+.field-sidebar { padding: 0.8rem; color: #202124; overflow-wrap: anywhere; }
+.field-sidebar h3 { margin: 0 0 0.6rem; font-size: 1rem; }
+.field-navigation { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.field-navigation p { flex-basis: 100%; margin: 0 0 0.3rem; font-size: 0.85rem; color: #5f6368; }
+.field-value-card { margin-top: 0.8rem; border: 1px solid #e3e7ed; border-radius: 0.7rem; padding: 0.6rem; }
+.field-value-card[data-active="true"] { border-color: #1a73e8; }
+.field-value-card label { font-size: 0.9rem; }
+.field-value-card input { border: 1px solid #dadce0; border-radius: 0.4rem; padding: 0.45rem; font: inherit; }
+.field-type, .field-active { margin: 0 0 0.4rem; font-size: 0.8rem; }
+.field-type { color: #5f6368; }
+.field-active { color: #174ea6; font-weight: 600; }
+.field-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.field-sidebar button { border: 1px solid #dadce0; border-radius: 1rem; padding: 0.35rem 0.7rem; background: white; color: #174ea6; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+.field-sidebar button:disabled { opacity: 0.5; cursor: default; }
+.field-conflict { color: #8a3800; font-size: 0.85rem; }
