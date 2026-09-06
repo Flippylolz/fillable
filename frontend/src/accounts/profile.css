@@ -1,0 +1,48 @@
+.profile {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 54rem;
+  margin-block: 1.5rem;
+}
+.profile > h2,
+.profile > [role] {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.profile .profile-card {
+  box-sizing: border-box;
+  max-width: none;
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid #a9b6c6;
+  border-radius: 0.65rem;
+  background: Canvas;
+  color: CanvasText;
+}
+.profile h3 {
+  margin: 0 0 0.75rem;
+}
+.profile p {
+  margin-block: 0 0.75rem;
+}
+.profile button {
+  justify-self: start;
+}
+.profile-storage {
+  grid-column: 1 / -1;
+}
+.profile dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 0.6rem 1rem;
+}
+.profile dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (min-width: 48rem) {
+  .profile {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}

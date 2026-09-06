@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from app.accounts.profile import router as profile_router
 from app.accounts.routes import router as authentication_router
 from app.errors import AppError, ErrorEnvelope, register_errors
 from app.infrastructure import dependencies_ready
@@ -20,6 +21,7 @@ app = FastAPI(
 )
 register_errors(app)
 app.include_router(authentication_router)
+app.include_router(profile_router)
 app.include_router(storage_router)
 
 

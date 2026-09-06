@@ -20,7 +20,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.4 merged; E02.5 usage and quota commands |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.5 merged; E02.6 profile verification |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -646,3 +646,32 @@ source is unchanged; preceding verified coverage remains 266/270 lines and 156/1
 branches, and required CI reruns the full frontend checks. Next: E02.5 individual
 PR, reverified strict protection and exact-head squash auto-merge; confirm actual
 merge before E02.6 profile implementation. Deployment remains last.
+
+2026-09-06: E02.5 confirmed `done` through [PR #22](https://github.com/Flippylolz/fillable/pull/22)
+at `4b0c762c7a3d15ea79f0d6fc93829fe94bb4cb8a`; Actions 34032925674 passed both
+required checks for exact head `c49ab01b9f1432310c3c13d95d7c2d302a28aa05`. Final
+merge evidence is in its PR body. Main synchronized and E02.6 began on
+`task/e02-6-profile`. Profile display-name/password endpoints, session fencing and
+rotation, consistent credential lock ordering, bilingual profile/usage UI and
+logout/save coordination are implemented. Local backend verification passes 77 tests
+(1487/1494 lines, 409/418 branches); frontend verification passes 45 tests above both
+gates. Docker browser and visual checks are next, using a separate explicitly
+provisioned synthetic profile account. No E02.6 PR yet; language editing is E02.7.
+Next: finish browser/visual/raw-gate checks and docs, deliver individual protected PR,
+verify merge before continuing. The user's renewed “continue” instruction preserves
+the full autonomous roadmap and deployment-last scope; no server access occurred.
+
+E02.6 local verification passed: 77 backend tests with 1487/1494 lines (99.53%)
+and 409/418 branches (97.85%); 45 frontend tests with 322/326 lines (98.77%) and
+214/228 branches (93.85%). Lint, typing, catalogs, build and raw full-source gates
+passed. The fresh-index Docker proof at `/private/tmp/fillable-verify.rH1jo0`
+passed three development and ten production browser checks, including both profile
+viewports, name persistence, password rotation and peer-session revocation. Desktop
+and mobile profile screenshots were visually inspected; labels/cards remain readable
+and the mobile layout stacks without horizontal overflow. Retained storage and
+operator/reconciliation checks passed; isolated volumes remain preserved. The real
+negative frontend coverage probe now scales its uncovered source to application
+size so growth cannot invalidate its assertion; thresholds/exclusions are unchanged.
+Profile is the signed-in foundation-shell content until E03 adds library navigation.
+Next: individual E02.6 PR, strict required CI and exact-head squash auto-merge;
+verify actual merge before E02.7. Deployment remains last.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Authentication } from './accounts/Authentication';
+import { Profile } from './accounts/Profile';
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -33,7 +34,10 @@ export function App() {
     <h1>{t('app.title')}</h1>
     <p>{t('app.description')}</p>
     <p role="status">{t(`health.${status}`)}</p>
-    <Authentication>{() => null}</Authentication>
+    <Authentication>{(session, actions) => session.user && <Profile
+      user={session.user} csrfToken={session.csrf_token} onSession={actions.accept}
+      onBusy={actions.setBusy} disabled={actions.busy}
+    />}</Authentication>
     {status === 'error' && <button onClick={() => setAttempt(value => value + 1)}>{t('health.retry')}</button>}
   </main>;
 }

@@ -10,6 +10,7 @@ export const api = createClient<paths>({
 
 export function apiErrorMessage(code: string) {
   switch (code) {
+    case 'current_password_invalid': return i18n.t('errors.current_password_invalid');
     case 'authentication_required': return i18n.t('errors.authentication_required');
     case 'invalid_credentials': return i18n.t('errors.invalid_credentials');
     case 'forbidden': return i18n.t('errors.forbidden');

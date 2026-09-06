@@ -77,6 +77,7 @@ def reset_password(email: str, password: str) -> None:
     validate_password(password)
     hashed = hash_password(password)
     with database().begin() as connection:
+        lock_attempt(connection, attempt_key(email))
         user_id = connection.execute(
             select(users.c.id)
             .where(users.c.email == email.strip().casefold())
@@ -181,33 +182,39 @@ def bootstrap(token: str | None) -> SessionState:
         return issue(connection, None)
 
 
+def lock_attempt(connection, key):
+    connection.execute(
+        delete(login_attempts).where(login_attempts.c.expires_at <= now())
+    )
+    connection.execute(
+        pg_insert(login_attempts)
+        .values(
+            key=key,
+            count=0,
+            expires_at=now() + timedelta(minutes=15),
+        )
+        .on_conflict_do_nothing()
+    )
+    return (
+        connection.execute(
+            select(login_attempts)
+            .where(
+                login_attempts.c.key == key,
+            )
+            .with_for_update()
+        )
+        .mappings()
+        .one()
+    )
+
+
 def login(token: str, email: str, password: str) -> SessionState:
     email = email.strip().casefold()
     key = attempt_key(email)
     result = None
     limited = False
     with database().begin() as connection:
-        connection.execute(
-            delete(login_attempts).where(login_attempts.c.expires_at <= now())
-        )
-        connection.execute(
-            pg_insert(login_attempts)
-            .values(
-                key=key,
-                count=0,
-                expires_at=now() + timedelta(minutes=15),
-            )
-            .on_conflict_do_nothing()
-        )
-        bucket = (
-            connection.execute(
-                select(login_attempts)
-                .where(login_attempts.c.key == key)
-                .with_for_update()
-            )
-            .mappings()
-            .one()
-        )
+        bucket = lock_attempt(connection, key)
         if bucket["count"] >= 5:
             limited = True
         else:
