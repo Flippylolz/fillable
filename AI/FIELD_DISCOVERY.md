@@ -87,3 +87,36 @@ copy survival, and safe malformed-metadata failures without quota leakage. The r
 Docker verifier checks the 23-proposal/five-native-decision corpus result before and
 after service recreation. Desktop/mobile copy flows verify cloned results and their
 survival after source deletion, alongside unchanged saved bytes.
+
+## E04.3 conservative blank suggestions
+
+`discover` combines the explicit extractor with unaccepted blank proposals. Supported
+signals are underlined ordinary/nonbreaking spaces (including split runs), long
+underscore/dot runs and segmented underscore dates. Dates are one span, not several
+overlapping fields. A nearby table label or short colon-ended prefix supplies context;
+short labels at the end of a line also support underscore/underlined-space blanks.
+Dots require the stronger colon/table-label context, avoiding ordinary ellipses.
+Identifiers and adjacent word/combining characters block blank interpretation.
+
+A genuinely empty paragraph in an unmerged two-column label/value row may be suggested
+when the neighboring label is short and meaningful. Multi-column reference rows,
+merged cells, multiple empty padding paragraphs, ordinary spacing and ambiguous
+bracketed labels are deliberately excluded from this empty-cell rule. These are
+conservative heuristics, not universal form understanding. Inherited underline styles
+that the current adapter does not resolve can be missed; manual selection remains the
+fallback. The rules read actual model structure and formatting, never fixture XPath
+or expected label names.
+
+Existing controls, protected content and explicit proposals remain barriers. Empty
+native controls break whitespace-run merging. Combined results obey the 2,000-proposal
+limit and complete revision/location validation. No blank is grouped or accepted
+automatically, and no DOCX/editor content is changed. The worker/result/copy pipeline
+now stores the combined snapshot through the existing fenced completion path.
+
+The fixed corpus produces 28 proposals: the prior 23 explicit/native proposals plus
+all five labeled blank suggestions. Their exact paragraph, offsets and source text
+match the independent fixture locators. The intentionally empty reference cell and
+spacing paragraph produce no blanks. Regression tests cover generalized positive and
+negative cases, Unicode offsets, split formatting, protected/overlapping locations,
+empty-cell boundaries and the combined budget. Detector-specific precision/misses
+are reported in E04.4; this observation is not a universal accuracy guarantee.

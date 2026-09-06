@@ -10,7 +10,7 @@ from app.accounts.schema import users
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.schema import resources, versions
 from app.documents.validation import validate_upload
-from app.fields.discovery import extract
+from app.fields.blanks import discover
 from app.fields.schema import FieldSnapshot
 from app.infrastructure import database
 from app.jobs.schema import jobs
@@ -104,7 +104,7 @@ def inspect_file(owner, file_id, filename, source_version_id):
         result["supported_controls"] += node["type"] == "field"
         result["paragraphs"] += node["type"] == "paragraph"
         nodes.extend(node.get("content", []))
-    snapshot = extract(package.model, source_version_id)
+    snapshot = discover(package.model, source_version_id)
     result["field_candidates"] = len(snapshot.candidates)
     return {"summary": result, "field_snapshot": snapshot.model_dump(mode="json")}
 

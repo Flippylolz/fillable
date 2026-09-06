@@ -46,9 +46,9 @@ def test_real_result_is_owned_revision_bound_and_copied_without_processing_again
     result = web.get(endpoint)
     assert result.headers["cache-control"] == "no-store"
     snapshot = result.json()["snapshot"]
-    assert len(snapshot["candidates"]) == 23
+    assert len(snapshot["candidates"]) == 28
     assert snapshot["source_version_id"] == saved["current_version_id"]
-    assert web.get(url).json()["summary"]["field_candidates"] == 23
+    assert web.get(url).json()["summary"]["field_candidates"] == 28
     assert "snapshot" not in web.get(url).json()  # Polling remains content-free.
     assert amounts(owner) == before
     target = copy(web, saved).json()
