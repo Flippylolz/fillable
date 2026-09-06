@@ -47,6 +47,16 @@ test("corpus fields synchronize, navigate and survive locale changes", async ({
     exact: true,
   });
   await expect(mail).toHaveValue("{{ЕЛЕКТРОННА_ПОШТА}}");
+  await page.getByText("Перевірка полів", { exact: true }).click();
+  await page.getByRole("combobox", { name: "Показати", exact: true }).selectOption("accepted");
+  const manualReview = page.getByRole("article", { name: "Пропозиція поля: Пошта", exact: true });
+  await page.getByRole("button", { name: "Прибрати поле: Пошта", exact: true }).click();
+  await expect(manualReview.getByRole("button", { name: "Перейти до місця", exact: true })).toBeDisabled();
+  await expect(mail).toHaveCount(0);
+  await page.getByRole("button", { name: "Скасувати", exact: true }).click();
+  await expect(mail).toHaveValue("{{ЕЛЕКТРОННА_ПОШТА}}");
+  await expect(manualReview.getByRole("button", { name: "Перейти до місця", exact: true })).toBeEnabled();
+  await page.getByText("Перевірка полів", { exact: true }).click();
   await mail.fill("їжак@example.test");
   await expect(
     page.locator(".document-field").filter({ hasText: "їжак@example.test" }),

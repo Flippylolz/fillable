@@ -5,7 +5,7 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import type { components } from "../../generated/api";
 import { editorSchema, fields, type FieldOccurrence } from "./model";
-import { createField, fieldBeforeInput, fieldPaste, fieldTextInput, focusField, linkedChanges, newFieldId, paragraphIdentities, removeField, updateField } from "./transactions";
+import { createField, fieldBeforeInput, fieldPaste, fieldTextInput, focusField, linkedChanges, manualFieldIssue, newFieldId, paragraphIdentities, removeField, updateField } from "./transactions";
 import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
 import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
 
@@ -64,7 +64,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       editor.setProps({ attributes: { "aria-label": label, role: "textbox", "aria-multiline": "true" } });
     },
     attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string): boolean {
-      if (reviewState(editor.state.doc)) return true;
+      const current = reviewState(editor.state.doc);
+      if (current) return current.sourceVersion !== null;
       try {
         if (!editor.state.doc.content.eq(source.content)) return false;
         const attached = attachReview(editor.state.doc, snapshot, sourceVersion);
@@ -79,7 +80,11 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
         : reviewCandidate(editor.state, id, action, { ...options, key: options.key || undefined });
       return dispatch(transaction, action === "focus" || action === "accept");
     },
-    createField(label: string) { return dispatch(createField(editor.state, label, newFieldId()), true); },
+    createField(label: string) {
+      const issue = manualFieldIssue(editor.state, label);
+      if (!issue) dispatch(createField(editor.state, label, newFieldId()), true);
+      return issue;
+    },
     updateField(key: string, value: string) { return dispatch(updateField(editor.state, key, value)); },
     focusField(id: string) { return dispatch(focusField(editor.state, id), true); },
     removeField(id: string) { return dispatch(removeField(editor.state, id)); },

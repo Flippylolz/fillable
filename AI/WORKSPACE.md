@@ -73,8 +73,9 @@ message; navigation never resolves a conflict or chooses a value. An empty sideb
 manual selection and proposal review. Label/group validation continues in the adjacent
 review panel, whose invalid inputs now reference their localized error description.
 Acceptance/dismissal/missing states and undo remain the same editor-owned review metadata.
-E05.3 completes long/multiline value synchronization; E05.4 completes manual-field and
-missing-control behavior. Those remaining acceptance checks are not claimed by navigation.
+Long/multiline values are covered below. Manual creation and moved/missing control
+records follow [Working field review](FIELD_REVIEW.md); invalid creation retains the label
+and selection with a specific associated error. Undo restores removed control identities.
 
 ## Field values and recoverable validation
 

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { mountEditor, type EditorAdapter, type EditorPresentation } from "./adapter";
 import { ReviewPanel } from "./ReviewPanel";
 import { FieldSidebar } from "./FieldSidebar";
+import { FIELD_LABEL_LIMIT, FIELD_RECORD_LIMIT } from "./fieldProperties";
 import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
 
@@ -22,7 +23,7 @@ export function DocumentEditor({
   sourceVersion?: string;
   onReopen?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorAdapter | null>(null);
   const initial = useRef(initialDocument);
@@ -33,7 +34,8 @@ export function DocumentEditor({
   const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true });
   const { fields: occurrences, active, review, unsupported } = presentation;
   const [label, setLabel] = useState("");
-  const [invalid, setInvalid] = useState(false);
+  const [creationIssue, setCreationIssue] = useState<ReturnType<EditorAdapter["createField"]>>(null);
+  const creationErrorId = useId();
   const [reviewStale, setReviewStale] = useState(false);
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
@@ -54,12 +56,14 @@ export function DocumentEditor({
         <label>
           {t("editor.fieldLabel")}
           <input
+            aria-invalid={creationIssue === "invalid_label" || undefined}
+            aria-describedby={creationIssue === "invalid_label" ? creationErrorId : undefined}
             value={label}
             onChange={(event) => setLabel(event.target.value)}
           />
         </label>
         <button
-          onClick={() => setInvalid(!view.current!.createField(label))}
+          onClick={() => setCreationIssue(view.current!.createField(label))}
         >
           {t("editor.createField")}
         </button>
@@ -73,7 +77,7 @@ export function DocumentEditor({
         >
           {t("editor.redo")}
         </button>
-        {invalid && <p role="alert">{t("editor.invalidSelection")}</p>}
+        {creationIssue && <p role="alert" id={creationErrorId}>{t(`editor.creation.${creationIssue}`, { labelLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_LABEL_LIMIT), fieldLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_RECORD_LIMIT) })}</p>}
         {unsupported && <p>{t("editor.unsupported")}</p>}
       </div>
       <div ref={host} className="document-canvas" />

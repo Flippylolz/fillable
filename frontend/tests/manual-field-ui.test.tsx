@@ -1,0 +1,46 @@
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { I18nextProvider } from "react-i18next";
+import { DocumentEditor } from "../src/editor/DocumentEditor";
+import { editorSchema } from "../src/editor/model";
+import { reviewState } from "../src/editor/review";
+import { i18n, setLanguage } from "../src/i18n";
+import type { components } from "../generated/api";
+import corpus from "../prototype/document.json";
+import generated from "../prototype/fields.json";
+
+test("manual label errors preserve input/selection and removal exposes a recoverable missing record", async () => {
+  await setLanguage("en");
+  Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => [] });
+  Object.defineProperty(Range.prototype, "getBoundingClientRect", { configurable: true, value: () => new DOMRect() });
+  const changed = vi.fn();
+  render(<I18nextProvider i18n={i18n}><DocumentEditor initialDocument={corpus} discoverySnapshot={generated as components["schemas"]["FieldSnapshot"]}
+    sourceVersion={generated.source_version_id} onDocumentChange={changed} /></I18nextProvider>);
+  fireEvent.click(screen.getByText("Review fields"));
+  const proposal = screen.getAllByRole("article", { name: /^Field suggestion:/ })[0];
+  fireEvent.click(within(proposal).getByRole("button", { name: "Go to location" }));
+  const input = screen.getByRole("textbox", { name: "New field label" });
+  fireEvent.change(input, { target: { value: "🙂".repeat(257) } });
+  fireEvent.click(screen.getByRole("button", { name: "Create field from selection" }));
+  expect(input).toHaveAttribute("aria-invalid", "true");
+  expect(input).toHaveAccessibleDescription(/256/);
+  expect(changed).not.toHaveBeenCalled();
+  await act(() => setLanguage("uk"));
+  expect(screen.getByRole("textbox", { name: "Назва нового поля" })).toBe(input);
+  expect(input).toHaveValue("🙂".repeat(257));
+  fireEvent.change(input, { target: { value: "Ручна назва" } });
+  fireEvent.click(screen.getByRole("button", { name: "Створити поле з виділення" }));
+  expect(input).not.toHaveAttribute("aria-invalid");
+  const local = () => reviewState(editorSchema.nodeFromJSON(changed.mock.calls.at(-1)![0]))!;
+  expect(local().items.filter(item => item.reason === "manual")).toHaveLength(1);
+  expect(local().sourceVersion).toBe(generated.source_version_id);
+  fireEvent.change(screen.getByRole("combobox", { name: "Показати" }), { target: { value: "accepted" } });
+  const manual = within(screen.getByRole("article", { name: "Пропозиція поля: Ручна назва" }));
+  expect(manual.getByText("Місце, вибране вручну")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Прибрати поле: Ручна назва" }));
+  expect(manual.getByRole("button", { name: "Перейти до місця" })).toBeDisabled();
+  expect(manual.getByRole("status")).toHaveTextContent("видалено або змінено");
+  expect(local().items.find(item => item.reason === "manual")!.missing).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Скасувати" }));
+  expect(manual.getByRole("button", { name: "Перейти до місця" })).toBeEnabled();
+  expect(screen.getByRole("textbox", { name: "Значення поля: Ручна назва" })).toHaveValue("{{ІМʼЯ_РЕЦЕНЗЕНТА}}");
+});

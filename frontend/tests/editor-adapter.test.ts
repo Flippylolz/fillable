@@ -66,11 +66,11 @@ test("adapter creates a selected manual field and exports the same source model 
   const host = document.createElement("div"); document.body.append(host);
   const changed = vi.fn(), updated = vi.fn();
   const editor = mountEditor(host, corpus, { onChange: changed, onUpdate: updated });
-  expect(editor.createField("Назва")).toBe(false);
+  expect(editor.createField("Назва")).toBe("invalid_selection");
   expect(editor.attachDiscovery(snapshot, snapshot.source_version_id)).toBe(true);
   const id = snapshot.candidates![0].id;
   expect(editor.review(id, "focus", { label: "", key: "", type: "text" })).toBe(true);
-  expect(editor.createField("Рецензент")).toBe(true);
+  expect(editor.createField("Рецензент")).toBeNull();
   const saved = editor.exportSnapshot();
   const restored = mountEditor(document.createElement("div"), saved.document, { onChange: vi.fn(), onUpdate: updated });
   expect(restored.exportSnapshot().document).toEqual(saved.document);

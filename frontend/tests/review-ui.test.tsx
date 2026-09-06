@@ -108,7 +108,10 @@ test("late proposals cannot replace an edited draft and reopening requires an ex
   view.rerender(ui(changed, snapshot, reopen));
   expect(await screen.findByRole("alert")).toHaveTextContent("Your draft has changed");
   expect(value).toHaveValue("My draft"); expect(changed).toHaveBeenCalledTimes(count);
-  expect(screen.queryByText("Review fields")).toBeNull();
+  const local = reviewState(editorSchema.nodeFromJSON(changed.mock.calls.at(-1)![0]))!;
+  expect(local.sourceVersion).toBeNull();
+  expect(local.items).toHaveLength(5);
+  expect(local.items.every(item => item.decision === "accepted")).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: "Reopen saved document" }));
   expect(reopen).toHaveBeenCalledOnce();
 });
