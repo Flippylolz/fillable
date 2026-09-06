@@ -87,6 +87,16 @@ The previous paid SuperDoc/ONLYOFFICE Developer proposal is superseded. E00 eval
 
 Full editing, synchronized fields, and downloadable DOCX remain required. A custom implementation needs a tested support matrix and preservation of untouched document parts; a preview-only viewer or lossy text-to-DOCX conversion does not meet D001. See [Editor feasibility](EDITOR_FEASIBILITY.md) for research and proof requirements. No editor has been selected or implemented.
 
+E00.2 (2026-09-06) compared current official license/API/localization and deployment
+evidence. The next prototype uses MIT ProseMirror with a project-owned Python OOXML
+adapter; no evaluated ready-made route established all required field APIs within
+the accepted stack/license boundary. This is a provisional engineering direction,
+not final adoption or a claim that every alternative requires fees. ONLYOFFICE's
+Community plugin route and Collabora CODE remain unproven alternatives; SuperDoc's
+engine terms are separate from its editor. Exact evidence and remaining proof are
+in the feasibility matrix. D008 remains open until E00.3–E00.5 pass, and the project's
+license has not been changed.
+
 ## D009 — LLM provider and document-data processing
 
 Status: **AI excluded from MVP — explicit user decision.**
