@@ -125,6 +125,43 @@ class DocxExport:
         self.seen.add(identity)
         return deepcopy(self.package.elements[identity])
 
+    def reviewed_field(self, node: Node, part: str) -> Any:
+        original = self.known.get(node["attrs"]["id"])
+        if original is None or original["type"] != "field":
+            raise InvalidDocument("invalid_anchor")
+        attrs = node["attrs"]
+        # Only alias and explicit grouping key may change; identity stays immutable.
+        anchored = {
+            **node,
+            "attrs": {
+                **attrs,
+                "key": original["attrs"]["key"],
+                "label": original["attrs"]["label"],
+            },
+        }
+        element = self.anchor(anchored, part)
+        properties = element.find(W + "sdtPr")
+        for name, tag, limit in (("key", "tag", 512), ("label", "alias", 256)):
+            if attrs[name] == original["attrs"][name]:
+                continue
+            self.field_property(attrs[name], limit)
+            matches = properties.findall(W + tag)
+            if len(matches) > 1:
+                raise InvalidDocument("invalid_field")
+            prop = matches[0] if matches else etree.SubElement(properties, W + tag)
+            prop.set(W + "val", attrs[name])
+        return element
+
+    @staticmethod
+    def field_property(value: Any, limit: int) -> None:
+        if (
+            not isinstance(value, str)
+            or not value.strip()
+            or len(value) > limit
+            or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in value)
+        ):
+            raise InvalidDocument("invalid_field")
+
     def blocks(
         self, parent: Any, nodes: list[Node], originals: list[Node], part: str
     ) -> None:
@@ -216,23 +253,29 @@ class DocxExport:
             elif kind == "field":
                 identity = node["attrs"]["id"]
                 if identity in self.known:
-                    element = self.anchor(node, part)
+                    element = self.reviewed_field(node, part)
                 else:
                     element = self.new_field(node)
-                content = element.find(W + "sdtContent")
-                if content is None:
-                    content = etree.SubElement(element, W + "sdtContent")
                 if any(child["type"] != "text" for child in node.get("content", [])):
                     raise InvalidDocument("invalid_field")
-                self.replace_inlines(content, node.get("content", []), part)
-                if any(
-                    "\n" in child["text"] or "\t" in child["text"]
-                    for child in node.get("content", [])
-                ):
-                    element.find(W + "sdtPr/" + W + "text").set(W + "multiLine", "1")
-                placeholder = element.find(W + "sdtPr/" + W + "showingPlcHdr")
-                if placeholder is not None:
-                    placeholder.getparent().remove(placeholder)
+                content_changed = identity not in self.known or comparable(
+                    node.get("content", [])
+                ) != comparable(self.known[identity].get("content", []))
+                if content_changed:
+                    content = element.find(W + "sdtContent")
+                    if content is None:
+                        content = etree.SubElement(element, W + "sdtContent")
+                    self.replace_inlines(content, node.get("content", []), part)
+                    if any(
+                        "\n" in child["text"] or "\t" in child["text"]
+                        for child in node.get("content", [])
+                    ):
+                        element.find(W + "sdtPr/" + W + "text").set(
+                            W + "multiLine", "1"
+                        )
+                    placeholder = element.find(W + "sdtPr/" + W + "showingPlcHdr")
+                    if placeholder is not None:
+                        placeholder.getparent().remove(placeholder)
             elif kind == "lockedInline":
                 element = self.anchor(node, part)
                 self.preserve_locked(node, self.known[node["attrs"]["id"]])
@@ -277,12 +320,11 @@ class DocxExport:
             or len(identity) != 32
             or any(char not in "0123456789abcdef" for char in identity)
             or identity in self.seen
-            or attrs["key"] != identity
-            or not isinstance(attrs["label"], str)
-            or not attrs["label"].strip()
-            or len(attrs["label"]) > 256
+            or set(attrs) != {"id", "key", "label"}
         ):
             raise InvalidDocument("invalid_field")
+        self.field_property(attrs["key"], 512)
+        self.field_property(attrs["label"], 256)
         self.seen.add(identity)
         native = int(hashlib.sha256(identity.encode()).hexdigest()[:8], 16) % 2147483647
         while str(native) in self.control_ids:
@@ -292,7 +334,7 @@ class DocxExport:
         properties = etree.SubElement(element, W + "sdtPr")
         for name, value in [
             ("id", str(native)),
-            ("tag", identity),
+            ("tag", attrs["key"]),
             ("alias", attrs["label"]),
         ]:
             etree.SubElement(properties, W + name).set(W + "val", value)

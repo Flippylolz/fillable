@@ -191,7 +191,7 @@ def test_new_controls_collision_checks_and_invalid_nested_content():
     )
     with pytest.raises(InvalidDocument):
         exporter.new_field(node)
-    for attrs in ({"id": "invalid"}, {"key": "wrong"}, {"label": " "}, {"label": 10}):
+    for attrs in ({"id": "invalid"}, {"key": " "}, {"label": " "}, {"label": 10}):
         altered = deepcopy(node)
         altered["attrs"].update(attrs)
         with pytest.raises(InvalidDocument):
