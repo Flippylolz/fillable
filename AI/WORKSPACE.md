@@ -35,3 +35,26 @@ entry, editor identity across language/navigation changes, history and logout gu
 error retries and aborted requests. Production browser checks edit an existing control,
 change the account language without losing either an upload or editor draft, undo/redo,
 open another resource with cancel/confirm, and retain exact saved-download bytes.
+
+## Editor adapter
+
+E05.1 isolates ProseMirror lifecycle and transactions in `frontend/src/editor/adapter.ts`.
+`mountEditor` loads the verified source model once and exposes only the operations used
+by the workspace: field enumeration through presentation updates, create/update/focus/
+remove, review actions, undo/redo, discovery attachment, accessible labeling, snapshot
+export and destruction. React controls receive field identities and values without
+depending on ProseMirror positions, views or transactions. Both resource kinds use it.
+
+The adapter owns its input and returns detached document/review snapshots. Mutating an
+export, callback payload or presentation cannot modify the live editor or its source
+anchor baseline. `exportSnapshot` includes a local monotonic change counter: authored
+document transactions, including undo/redo, advance it; selection, initial discovery
+attachment and interface-language changes do not. This counter is not a server revision
+or editing lease. E06 provides the authoritative save/version fence.
+
+The existing development round-trip proof exports these same model snapshots through
+the Python source-preserving DOCX adapter, then reopens its returned model. Production
+loads use the owned content endpoint and downloads remain explicitly saved bytes until
+E06. The frontend adapter does not write DOCX files, bypass quota accounting or rebuild
+documents from rendered HTML. Locale changes update the existing editor's accessible
+label while retaining document state, selection, review inputs and history.

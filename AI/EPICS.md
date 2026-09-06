@@ -1128,3 +1128,27 @@ inspected. Independent LibreOffice/Poppler rendering passed no-edit byte/pixel i
 three edited pages, unchanged page two and Ukrainian text; Microsoft Word was not used.
 All volumes preserved. Strict Actions `ci-required` protection and administrator
 enforcement remain enabled. Next: E04.5c PR/verified merge, then E05.1 adapter integration.
+
+2026-09-06: E04.5c verified merged through [PR #42](https://github.com/Flippylolz/fillable/pull/42),
+commit `3f631c1c72dea32df837d87918969c2cc8137494`; Actions 34060992071 passed both
+required checks for exact head `6331ad2a57c228e6c6f42b77c1ecc0a21aa8ca18`.
+Main synchronized. E05.1 starts on `task/e05-1-editor-adapter`: isolate mounted editor
+operations behind a narrow adapter, preserving shared workspace behavior and source
+snapshots. E06 retains responsibility for production revision saves and history.
+
+E05.1 isolates the editor lifecycle and operations behind `mountEditor`. React consumes
+field summaries and review presentation; no raw view or transaction reaches its controls.
+Inputs, exported models and callback/review payloads are detached from live state. A local
+monotonic change counter excludes selection, initial discovery and interface localization.
+The same adapter supplies production workspaces and the Python DOCX round-trip proof.
+See [Workspace](WORKSPACE.md). Production retained saves remain E06.
+
+Local verification passed: 103 frontend tests, raw 801/806 lines (99.38%) and 816/847
+branches (96.34%); 243 backend tests, 2779/2796 lines (99.39%) and 843/862 branches
+(97.80%). Lint, typing, catalogs/build and independent raw gates passed. Both real
+unimported-source probes rejected below-90% reports with all tests passing. Fresh index
+`/private/tmp/fillable-verify.5nW9Lx` passed 4 development and 16 production browser
+checks, worker discovery, retained byte/quota invariants and persistent recreation.
+Independent LibreOffice/Poppler checks passed no-edit byte/pixel identity, three edited
+pages, unchanged page two and Ukrainian text. Microsoft Word was not used; all volumes
+preserved. Next: protected E05.1 PR/verified merge, then E05.2 sidebar validation/navigation.

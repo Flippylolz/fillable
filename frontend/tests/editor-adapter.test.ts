@@ -1,0 +1,77 @@
+import { mountEditor, type EditorPresentation } from "../src/editor/adapter";
+import { editorSchema, fields } from "../src/editor/model";
+import corpus from "../prototype/document.json";
+import discovery from "../prototype/fields.json";
+import type { components } from "../generated/api";
+
+const snapshot = discovery as components["schemas"]["FieldSnapshot"];
+beforeEach(() => {
+  Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => [] });
+  Object.defineProperty(Range.prototype, "getBoundingClientRect", { configurable: true, value: () => new DOMRect() });
+});
+
+test("adapter owns its input, exported snapshots and presentation without leaking live document state", () => {
+  const host = document.createElement("div"); document.body.append(host);
+  const source = structuredClone(corpus), changed = vi.fn();
+  let presentation: EditorPresentation;
+  const editor = mountEditor(host, source, { onChange: changed, onUpdate: value => { presentation = value; } });
+  source.content[0].attrs.part = "changed outside editor";
+  const exported = editor.exportSnapshot();
+  (exported.document as typeof corpus).content[0].attrs.part = "changed exported snapshot";
+  expect((editor.exportSnapshot().document as typeof corpus).content[0].attrs.part).toBe(corpus.content[0].attrs.part);
+  expect(editor.attachDiscovery(snapshot, "stale")).toBe(false);
+  expect(editor.attachDiscovery(snapshot, snapshot.source_version_id)).toBe(true);
+  const id = presentation!.fields[0].id, key = presentation!.fields[0].key;
+  presentation!.fields[0].value = "changed presentation";
+  presentation!.review!.items[0].label = "changed review presentation";
+  const current = editorSchema.nodeFromJSON(editor.exportSnapshot().document);
+  expect(fields(current)[0].value).not.toBe("changed presentation");
+  expect(current.attrs.review.items[0].label).not.toBe("changed review presentation");
+  expect(editor.attachDiscovery(snapshot, snapshot.source_version_id)).toBe(true);
+  editor.setDocumentLabel("Редагований документ");
+  const dom = host.firstElementChild;
+  expect(editor.focusField(id)).toBe(true);
+  editor.setDocumentLabel("Editable document");
+  expect(host.firstElementChild).toBe(dom);
+  expect(dom).toHaveAttribute("aria-label", "Editable document");
+  expect(presentation!.active).toBe(id);
+  expect(changed).not.toHaveBeenCalled();
+  expect(editor.exportSnapshot().revision).toBe(0);
+  editor.updateField(key, "Ґанна Їжак");
+  expect(changed).toHaveBeenCalledTimes(1);
+  expect(changed.mock.calls[0][0].revision).toBe(1);
+  (changed.mock.calls[0][0].document as typeof corpus).content[0].attrs.part = "changed callback snapshot";
+  expect((editor.exportSnapshot().document as typeof corpus).content[0].attrs.part).toBe(corpus.content[0].attrs.part);
+  expect(editor.undo()).toBe(true); expect(editor.exportSnapshot().revision).toBe(2);
+  expect(editor.redo()).toBe(true); expect(editor.exportSnapshot().revision).toBe(3);
+  expect(presentation!.fields[0].value).toBe("Ґанна Їжак");
+  expect(editor.removeField(id)).toBe(true);
+  expect(presentation!.fields.some(field => field.id === id)).toBe(false);
+  expect(editor.undo()).toBe(true);
+  expect(presentation!.fields[0].value).toBe("Ґанна Їжак");
+  const calls = changed.mock.calls.length;
+  expect(editor.focusField("missing")).toBe(false);
+  expect(editor.removeField("missing")).toBe(false);
+  expect(changed).toHaveBeenCalledTimes(calls);
+  editor.destroy(); expect(host.children).toHaveLength(0); host.remove();
+});
+
+test("adapter creates a selected manual field and exports the same source model and review history", () => {
+  const host = document.createElement("div"); document.body.append(host);
+  const changed = vi.fn(), updated = vi.fn();
+  const editor = mountEditor(host, corpus, { onChange: changed, onUpdate: updated });
+  expect(editor.createField("Назва")).toBe(false);
+  expect(editor.attachDiscovery(snapshot, snapshot.source_version_id)).toBe(true);
+  const id = snapshot.candidates![0].id;
+  expect(editor.review(id, "focus", { label: "", key: "", type: "text" })).toBe(true);
+  expect(editor.createField("Рецензент")).toBe(true);
+  const saved = editor.exportSnapshot();
+  const restored = mountEditor(document.createElement("div"), saved.document, { onChange: vi.fn(), onUpdate: updated });
+  expect(restored.exportSnapshot().document).toEqual(saved.document);
+  expect(fields(editorSchema.nodeFromJSON(saved.document)).some(field => field.label === "Рецензент" && field.value === "{{ІМʼЯ_РЕЦЕНЗЕНТА}}")).toBe(true);
+  expect(editor.undo()).toBe(true);
+  expect(fields(editorSchema.nodeFromJSON(editor.exportSnapshot().document))).toHaveLength(5);
+  expect(editor.redo()).toBe(true);
+  expect(editor.exportSnapshot().document).toEqual(saved.document);
+  restored.destroy(); editor.destroy(); host.remove();
+});
