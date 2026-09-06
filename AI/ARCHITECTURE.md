@@ -36,7 +36,7 @@ compose.prod.yaml       Production overrides
 .env.example            Documented, non-secret configuration template
 ```
 
-Only `AI/` and root discovery/configuration files exist at this stage. Future implementation should use these paths unless a documented practical reason requires adjustment.
+`AI/`, root discovery/configuration files, and the initial synthetic `fixtures/docx/v1/` baseline exist at this stage. Application and infrastructure code are not implemented. Future implementation should use these paths unless a documented practical reason requires adjustment.
 
 ## Data model boundaries
 
@@ -93,6 +93,7 @@ The editor and its required import/export path must be free under D008. [Editor 
 
 - Use deterministic extraction of existing controls, explicit placeholders, and rule-based blank candidates; no AI or model inference is part of MVP.
 - Preserve table and paragraph context. Text may span multiple Word runs.
+- Prioritize Ukrainian/Cyrillic labels, tokens, and tags under D020. Preserve source Unicode and map matches across runs; the [Test corpus](TEST_CORPUS.md) includes apostrophe variants, Ґ/Є/І/Ї, and mixed-script cases. Fixture answer keys are not inputs to production detection.
 - Record source revision and validated anchors for every candidate. A confidence score is a hint, not a guarantee.
 - Detectors return validated proposals, never arbitrary replacement XML or executable instructions.
 - Revalidate locations before applying suggestions. If the document changed, remap through verified editor APIs or rerun detection.

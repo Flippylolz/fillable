@@ -12,7 +12,7 @@ Planning task P00: consolidate the accepted MVP decisions, architecture, epics, 
 
 | Epic | Outcome | Dependencies | Status |
 | --- | --- | --- | --- |
-| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | ready: research and synthetic test design |
+| E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | in_progress: E00.1 baseline; editor proof still pending |
 | E01 | Docker foundation and application skeleton | Accepted stack | ready |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | waiting |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
@@ -34,7 +34,7 @@ Outcome: choose a free editor or prove a project-owned implementation using evid
 
 Work:
 
-- E00.1: Build a small synthetic corpus: tables, headers/footers, numbered lists, split-run placeholders, repeated names, native controls, long values, and non-ASCII text.
+- E00.1: Build the initial Ukrainian synthetic DOCX baseline with an external answer key: tables, headers/footers, numbered lists, split-run Cyrillic placeholders, repeated names, native controls, long values, Ukrainian characters/apostrophes, and negative cases. Use [Test corpus](TEST_CORPUS.md); keep v1 and add reviewed samples when the user's real document becomes available.
 - E00.2: Compare free end-to-end options, field APIs, import/export, license obligations, Python-backend compatibility, and total deployment needs. Record evidence in D008 and the feasibility notes; paid APIs and expiring trials do not qualify.
 - E00.3: Demonstrate field creation, sidebar-to-document updates, document-to-sidebar updates, and focus navigation using a qualifying free solution. If none fits, prototype a project-owned editor/adapter using open components and source-package preservation; do not silently reduce the editing requirement.
 - E00.4: Test direct surrounding edits, deletion of controls, undo/redo, repeated occurrences, export, and reopen.
@@ -265,3 +265,7 @@ When work begins, update the relevant status and append a concise record here: d
 2026-09-06: automatic approval review rejected the first P00 branch-push attempt because tracked documents contained the supplied deployment hostname/account. The branch was not published. Moved those values into ignored `AI/DEPLOYMENT.local.md` and replaced public references with placeholders before replacing the unpublished planning commit and retrying. Actual connection values remain available locally for E08.
 
 2026-09-06: P00 submitted as [PR #1](https://github.com/Flippylolz/fillable/pull/1), branch `task/p00-mvp-plan`, status at submission `in_review`. The redacted push succeeded after checks passed for 14 tracked Markdown files, 51 local links, whitespace/fences, and all reachable commits for the excluded deployment identity. This PR is documentation only; application CI/coverage remains E01. Record confirmed merge evidence in this PR's body and carry it into the ledger in the next task PR, per [PR workflow](PR_WORKFLOW.md). Next implementation work: E00 free-editor proof and E01 foundation.
+
+2026-09-06: P00 confirmed `done`, merged through [PR #1](https://github.com/Flippylolz/fillable/pull/1) at `ab3606a634b4d57e2cf7bd15f70e7977871f2a08`. Local main was synchronized before E00.1 began.
+
+2026-09-06: E00.1 generated `client-intake-uk-v1.docx` and its external expected-outcomes JSON on branch `task/e00-1-synthetic-docx`. Incorporated the user's Ukrainian-language priority as D020. The user-selected Legal Memorandum template was adapted to a fictional client intake form. Verified 19 logical fields, 27 stored occurrences (22 explicit and five review candidates), five native controls, six negative cases, Unicode/run structure, ZIP/XML/relationships, and 14 unchanged template parts. Final three-page LibreOffice render inspected completely; Microsoft Word and browser-editor behavior remain untested. See [Test corpus](TEST_CORPUS.md). This fixture/data task adds no application source or coverage claim; E00.2–E00.5 and E01 remain outstanding. PR/merge evidence follows the established task workflow.

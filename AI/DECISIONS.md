@@ -202,3 +202,11 @@ Configure the exact origin, including the port, in `APP_PUBLIC_URL`. For this ex
 HTTP does not encrypt credentials, cookies, or documents in transit. Record that limitation without introducing an HTTPS purchase or approval prerequisite. No certificate or new domain is needed for the accepted MVP route. See [Deployment target](DEPLOYMENT_TARGET.md).
 
 Reference: [Browser cookie attributes and port behavior](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie).
+
+## D020 — Ukrainian document priority and synthetic baseline
+
+Status: **Accepted — explicit user language priority and fixture request.**
+
+Documents will mostly be Ukrainian. Prioritize Ukrainian prose, labels, field names, native control tags, Cyrillic run boundaries, and Unicode preservation in E00/E04/E05 acceptance. Preserve Ґ, Є, І, Ї, apostrophe variants, punctuation, and mixed Ukrainian/Latin content without transliteration. Do not infer a UI-language requirement from the document-language priority.
+
+Representative user files are not available yet. E00.1 supplies an author-generated Ukrainian DOCX and an external answer key as the initial regression baseline. The user selected the Legal Memorandum visual template for this fixture. The sample is fictional and is not evidence of compatibility with all Ukrainian documents. Keep v1 and add reviewed real-world cases/expectations when sanitized examples become available; do not block development on those examples.

@@ -1,0 +1,815 @@
+{
+  "schema_version": 1,
+  "fixture_id": "client-intake-uk-v1",
+  "file": "client-intake-uk-v1.docx",
+  "sha256": "1baf22bdc155380ae71deddaedaa50bd3ab8038763c73fdbfbfba98f51ce1173",
+  "provenance": {
+    "content": "Fictional author-generated data; no user documents or deployment details.",
+    "visual_template": "User-selected Legal Memorandum template",
+    "primary_language": "uk-UA",
+    "reference_sha256": "d3006f9074e46823d103fe283be19901f55f75c19811558455d7a16c61797355"
+  },
+  "scope": "Deterministic text-field discovery and document-editing baseline, not a universal DOCX support guarantee.",
+  "namespaces": {
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "w14": "http://schemas.microsoft.com/office/word/2010/wordml"
+  },
+  "locator_contract": "XPath refers to the exact source ZIP member. Offsets are zero-based, end-exclusive Unicode code points over concatenated descendant w:t text, excluding line breaks and field instructions. Resolve/validate against the recorded SHA; do not use these locators as production editor identities.",
+  "counting_contract": "Count XML occurrences once per package part. A header/footer displayed on three pages is still one stored occurrence. Logical fields group only the explicit matching tokens/tags listed here; two ПІБ labels do not imply shared identity.",
+  "expected": {
+    "logical_fields": 19,
+    "occurrences": 27,
+    "detect_occurrences": 22,
+    "review_occurrences": 5,
+    "native_text_controls": 5,
+    "negative_cases": 6,
+    "baseline_render_pages": 3,
+    "word_sections": 1,
+    "tables": 2,
+    "explicit_page_breaks": 2
+  },
+  "fields": [
+    {
+      "key": "REVIEWER_NAME",
+      "source_key": "ІМʼЯ_РЕЦЕНЗЕНТА",
+      "label": "Рецензент",
+      "mvp_type": "text",
+      "sample_value": "Катерина Коваль",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O01"
+      ]
+    },
+    {
+      "key": "CLIENT_NAME",
+      "source_key": "ПІБ_КЛІЄНТА",
+      "label": "ПІБ клієнта",
+      "mvp_type": "text",
+      "sample_value": "Марія Ґалаган",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O02",
+        "O05",
+        "O18",
+        "O20"
+      ]
+    },
+    {
+      "key": "MEMO_DATE",
+      "source_key": "ДАТА_АНКЕТИ",
+      "label": "Дата анкети",
+      "mvp_type": "text",
+      "sample_value": "16.09.2026",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O03"
+      ]
+    },
+    {
+      "key": "MATTER_TITLE",
+      "source_key": "ТЕМА_ЗВЕРНЕННЯ",
+      "label": "Тема звернення",
+      "mvp_type": "text",
+      "sample_value": "Погодження розкладу громадської майстерні",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O04",
+        "O06"
+      ]
+    },
+    {
+      "key": "ORGANIZATION",
+      "source_key": "ОРГАНІЗАЦІЯ",
+      "label": "Організація",
+      "mvp_type": "text",
+      "sample_value": "Майстерня «Ґанок» & Partners",
+      "expected_action": "detect",
+      "initial_value": "Майстерня «Їжак і Ґудзик»",
+      "occurrence_ids": [
+        "O07"
+      ]
+    },
+    {
+      "key": "CLIENT_EMAIL",
+      "source_key": "ЕЛЕКТРОННА_ПОШТА",
+      "label": "Електронна пошта",
+      "mvp_type": "text",
+      "sample_value": "mariia.g@example.test",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O08",
+        "O19",
+        "O27"
+      ]
+    },
+    {
+      "key": "CONTACT_PHONE",
+      "source_key": "ТЕЛЕФОН",
+      "label": "Телефон",
+      "mvp_type": "text",
+      "sample_value": "+380 (00) 000-00-00",
+      "expected_action": "review",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O09"
+      ]
+    },
+    {
+      "key": "POSTAL_ADDRESS",
+      "source_key": "ПОШТОВА_АДРЕСА",
+      "label": "Поштова адреса",
+      "mvp_type": "text",
+      "sample_value": "вул. Прикладна, буд. 12, кв. 4\n01001, м. Київ\nУкраїна",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O10"
+      ]
+    },
+    {
+      "key": "MEETING_LOCATION",
+      "source_key": "МІСЦЕ_ЗУСТРІЧІ",
+      "label": "Місце зустрічі",
+      "mvp_type": "text",
+      "sample_value": "Кімната 204, північний корпус",
+      "expected_action": "review",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O11"
+      ]
+    },
+    {
+      "key": "REFERENCE_NUMBER",
+      "source_key": "НОМЕР_КЛІЄНТА",
+      "label": "Номер клієнта",
+      "mvp_type": "text",
+      "sample_value": "КЛ-А_42",
+      "expected_action": "review",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O12"
+      ]
+    },
+    {
+      "key": "MATTER_ID",
+      "source_key": "НОМЕР_СПРАВИ",
+      "label": "Номер справи",
+      "mvp_type": "text",
+      "sample_value": "СПР-2026-0042",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O13",
+        "O26"
+      ]
+    },
+    {
+      "key": "SCOPE_DESCRIPTION",
+      "source_key": "ОПИС_ЗАПИТУ",
+      "label": "Опис запиту",
+      "mvp_type": "text",
+      "sample_value": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00.\nДодайте короткий абзац про доступ до приміщення та зручний час для зв’язку.",
+      "expected_action": "detect",
+      "initial_value": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00.",
+      "occurrence_ids": [
+        "O14"
+      ]
+    },
+    {
+      "key": "AGREEMENT_REF",
+      "source_key": "AGREEMENT_REF",
+      "label": "Номер договору",
+      "mvp_type": "text",
+      "sample_value": "ДОГ-2026-17",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O15",
+        "O17"
+      ]
+    },
+    {
+      "key": "EVENT_DATE",
+      "source_key": "ДАТА_ПОДІЇ",
+      "label": "Дата події",
+      "mvp_type": "text",
+      "sample_value": "03.10.2026",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O16"
+      ]
+    },
+    {
+      "key": "TARGET_DATE",
+      "source_key": "СТРОК_ВИКОНАННЯ",
+      "label": "Строк виконання",
+      "mvp_type": "text",
+      "sample_value": "15 / 10 / 2026",
+      "expected_action": "review",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O21"
+      ]
+    },
+    {
+      "key": "REPRESENTATIVE_NAME",
+      "source_key": "ПІБ_ПРЕДСТАВНИКА",
+      "label": "ПІБ представника",
+      "mvp_type": "text",
+      "sample_value": "Ілля Єфименко",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O22"
+      ]
+    },
+    {
+      "key": "REPRESENTATIVE_ROLE",
+      "source_key": "ПОСАДА_ПРЕДСТАВНИКА",
+      "label": "Посада представника",
+      "mvp_type": "text",
+      "sample_value": "Координатор проєкту",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O23"
+      ]
+    },
+    {
+      "key": "APPROVER_NAME",
+      "source_key": "ПІБ_ПОГОДЖУВАЧА",
+      "label": "ПІБ погоджувача",
+      "mvp_type": "text",
+      "sample_value": "Олена Їжак",
+      "expected_action": "detect",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O24"
+      ]
+    },
+    {
+      "key": "APPROVER_INITIALS",
+      "source_key": "ІНІЦІАЛИ_ПОГОДЖУВАЧА",
+      "label": "Ініціали погоджувача",
+      "mvp_type": "text",
+      "sample_value": "ОЇ",
+      "expected_action": "review",
+      "initial_value": null,
+      "occurrence_ids": [
+        "O25"
+      ]
+    }
+  ],
+  "occurrences": [
+    {
+      "id": "O01",
+      "field_key": "REVIEWER_NAME",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ІМʼЯ_РЕЦЕНЗЕНТА}}",
+      "start": 6,
+      "end": 25,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[2]"
+      }
+    },
+    {
+      "id": "O02",
+      "field_key": "CLIENT_NAME",
+      "kind": "native_text_control",
+      "expected_action": "detect",
+      "initial_text": "[Введіть ПІБ клієнта]",
+      "start": 10,
+      "end": 31,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[3]"
+      },
+      "control": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[3]/w:sdt"
+      },
+      "control_tag": "ПІБ_КЛІЄНТА",
+      "control_id": 1001
+    },
+    {
+      "id": "O03",
+      "field_key": "MEMO_DATE",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "[[ДАТА_АНКЕТИ]]",
+      "start": 6,
+      "end": 21,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[4]"
+      }
+    },
+    {
+      "id": "O04",
+      "field_key": "MATTER_TITLE",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ТЕМА_ЗВЕРНЕННЯ}}",
+      "start": 6,
+      "end": 24,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[5]"
+      }
+    },
+    {
+      "id": "O05",
+      "field_key": "CLIENT_NAME",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ПІБ_КЛІЄНТА}}",
+      "start": 7,
+      "end": 22,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[8]"
+      }
+    },
+    {
+      "id": "O06",
+      "field_key": "MATTER_TITLE",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ТЕМА_ЗВЕРНЕННЯ}}",
+      "start": 49,
+      "end": 67,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[8]"
+      }
+    },
+    {
+      "id": "O07",
+      "field_key": "ORGANIZATION",
+      "kind": "native_text_control",
+      "expected_action": "detect",
+      "initial_text": "Майстерня «Їжак і Ґудзик»",
+      "start": 0,
+      "end": 25,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[2]/w:tc[2]/w:p"
+      },
+      "control": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[2]/w:tc[2]/w:p/w:sdt"
+      },
+      "control_tag": "ОРГАНІЗАЦІЯ",
+      "control_id": 1002
+    },
+    {
+      "id": "O08",
+      "field_key": "CLIENT_EMAIL",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ЕЛЕКТРОННА_ПОШТА}}",
+      "start": 0,
+      "end": 20,
+      "expected_run_texts": [
+        "{{ЕЛЕК",
+        "ТРОННА_",
+        "ПОШТА}}"
+      ],
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[3]/w:tc[2]/w:p"
+      }
+    },
+    {
+      "id": "O09",
+      "field_key": "CONTACT_PHONE",
+      "kind": "underlined_spaces",
+      "expected_action": "review",
+      "initial_text": "                ",
+      "start": 0,
+      "end": 16,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[4]/w:tc[2]/w:p"
+      }
+    },
+    {
+      "id": "O10",
+      "field_key": "POSTAL_ADDRESS",
+      "kind": "native_text_control",
+      "expected_action": "detect",
+      "initial_text": "[Введіть поштову адресу]",
+      "start": 0,
+      "end": 24,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[5]/w:tc[2]/w:p"
+      },
+      "control": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[5]/w:tc[2]/w:p/w:sdt"
+      },
+      "control_tag": "ПОШТОВА_АДРЕСА",
+      "control_id": 1003
+    },
+    {
+      "id": "O11",
+      "field_key": "MEETING_LOCATION",
+      "kind": "empty_cell",
+      "expected_action": "review",
+      "initial_text": "",
+      "start": 0,
+      "end": 0,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[6]/w:tc[2]/w:p"
+      }
+    },
+    {
+      "id": "O12",
+      "field_key": "REFERENCE_NUMBER",
+      "kind": "underscore_blank",
+      "expected_action": "review",
+      "initial_text": "________________",
+      "start": 0,
+      "end": 16,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[1]/w:tr[7]/w:tc[2]/w:p"
+      }
+    },
+    {
+      "id": "O13",
+      "field_key": "MATTER_ID",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{НОМЕР_СПРАВИ}}",
+      "start": 14,
+      "end": 30,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[11]"
+      }
+    },
+    {
+      "id": "O14",
+      "field_key": "SCOPE_DESCRIPTION",
+      "kind": "native_text_control",
+      "expected_action": "detect",
+      "initial_text": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00.",
+      "start": 0,
+      "end": 295,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[13]"
+      },
+      "control": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[13]/w:sdt"
+      },
+      "control_tag": "ОПИС_ЗАПИТУ",
+      "control_id": 1004
+    },
+    {
+      "id": "O15",
+      "field_key": "AGREEMENT_REF",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{AGREEMENT_REF}}",
+      "start": 0,
+      "end": 17,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[2]/w:tr[2]/w:tc[3]/w:p"
+      }
+    },
+    {
+      "id": "O16",
+      "field_key": "EVENT_DATE",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "[[ДАТА_ПОДІЇ]]",
+      "start": 0,
+      "end": 14,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[2]/w:tr[3]/w:tc[3]/w:p"
+      }
+    },
+    {
+      "id": "O17",
+      "field_key": "AGREEMENT_REF",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{AGREEMENT_REF}}",
+      "start": 20,
+      "end": 37,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[15]"
+      }
+    },
+    {
+      "id": "O18",
+      "field_key": "CLIENT_NAME",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ПІБ_КЛІЄНТА}}",
+      "start": 35,
+      "end": 50,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[16]"
+      }
+    },
+    {
+      "id": "O19",
+      "field_key": "CLIENT_EMAIL",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ЕЛЕКТРОННА_ПОШТА}}",
+      "start": 37,
+      "end": 57,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[17]"
+      }
+    },
+    {
+      "id": "O20",
+      "field_key": "CLIENT_NAME",
+      "kind": "native_text_control",
+      "expected_action": "detect",
+      "initial_text": "[Введіть ПІБ клієнта]",
+      "start": 23,
+      "end": 44,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[19]"
+      },
+      "control": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[19]/w:sdt"
+      },
+      "control_tag": "ПІБ_КЛІЄНТА",
+      "control_id": 1005
+    },
+    {
+      "id": "O21",
+      "field_key": "TARGET_DATE",
+      "kind": "segmented_date_blank",
+      "expected_action": "review",
+      "initial_text": "____ / ____ / ______",
+      "start": 24,
+      "end": 44,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[20]"
+      }
+    },
+    {
+      "id": "O22",
+      "field_key": "REPRESENTATIVE_NAME",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "[[ПІБ_ПРЕДСТАВНИКА]]",
+      "start": 5,
+      "end": 25,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[22]"
+      }
+    },
+    {
+      "id": "O23",
+      "field_key": "REPRESENTATIVE_ROLE",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{ПОСАДА_ПРЕДСТАВНИКА}}",
+      "start": 8,
+      "end": 31,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[23]"
+      }
+    },
+    {
+      "id": "O24",
+      "field_key": "APPROVER_NAME",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "[[ПІБ_ПОГОДЖУВАЧА]]",
+      "start": 5,
+      "end": 24,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[25]"
+      }
+    },
+    {
+      "id": "O25",
+      "field_key": "APPROVER_INITIALS",
+      "kind": "dotted_blank",
+      "expected_action": "review",
+      "initial_text": ".................",
+      "start": 10,
+      "end": 27,
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[26]"
+      }
+    },
+    {
+      "id": "O26",
+      "field_key": "MATTER_ID",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "{{НОМЕР_СПРАВИ}}",
+      "start": 28,
+      "end": 44,
+      "paragraph": {
+        "part": "word/header1.xml",
+        "xpath": "/w:hdr/w:p[1]"
+      }
+    },
+    {
+      "id": "O27",
+      "field_key": "CLIENT_EMAIL",
+      "kind": "placeholder",
+      "expected_action": "detect",
+      "initial_text": "[[ЕЛЕКТРОННА_ПОШТА]]",
+      "start": 20,
+      "end": 40,
+      "paragraph": {
+        "part": "word/footer1.xml",
+        "xpath": "/w:ftr/w:p[2]"
+      }
+    }
+  ],
+  "negative_cases": [
+    {
+      "id": "N01",
+      "initial_text": "У попередній нотатці Марія Ґалаган згадується як приклад. Це ім’я в описі не пов’язане з полями анкети та може редагуватися окремо.",
+      "expected_action": "do_not_link",
+      "reason": "An ordinary name matching a filled sample must not be globally replaced or automatically linked to CLIENT_NAME.",
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[9]"
+      }
+    },
+    {
+      "id": "N02",
+      "initial_text": "Додаткові нотатки [див. додаток]",
+      "expected_action": "do_not_create",
+      "reason": "Bracketed cross-reference text is not a fillable placeholder.",
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[2]/w:tr[4]/w:tc[2]/w:p"
+      }
+    },
+    {
+      "id": "N03",
+      "initial_text": "",
+      "expected_action": "do_not_create",
+      "reason": "The reference for supporting notes is intentionally inapplicable; an empty cell alone does not prove a field.",
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[2]/w:tr[4]/w:tc[3]/w:p"
+      }
+    },
+    {
+      "id": "N04",
+      "initial_text": "Зберігайте імена та адреси без транслітерації. Зразки «Ґґ Єє Іі Її», «пам’ятка», «звʼязок», «об'єкт» та «München · Café · São Paulo» є звичайним текстом, як і позначення архів_2026 та case_A_17.",
+      "expected_action": "do_not_create",
+      "reason": "Unicode text and underscores inside identifiers are not field boundaries.",
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[28]"
+      }
+    },
+    {
+      "id": "N05",
+      "initial_text": "Рядок «{{НЕ_ЗАПОВНЮВАТИ}}» є прикладом позначення, а не запитом даних. Збережіть його, якщо користувач не редагує це речення безпосередньо.",
+      "expected_action": "do_not_auto_accept",
+      "reason": "A token-shaped literal needs context. A review candidate is allowed, but it must not be accepted or linked automatically.",
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[29]"
+      }
+    },
+    {
+      "id": "N06",
+      "initial_text": " ",
+      "expected_action": "do_not_create",
+      "reason": "A whitespace-only paragraph is layout spacing, not an unlabeled input.",
+      "paragraph": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:p[31]"
+      }
+    }
+  ],
+  "preservation_cases": [
+    {
+      "id": "P01",
+      "feature": "merged table cell",
+      "expected": "gridSpan=3; text and cell boundary preserved",
+      "locator": {
+        "part": "word/document.xml",
+        "xpath": "/w:document/w:body/w:tbl[2]/w:tr[5]/w:tc"
+      }
+    }
+  ],
+  "preserve_on_no_edit": {
+    "package_members": [
+      "word/header1.xml",
+      "word/footer1.xml",
+      "word/numbering.xml",
+      "word/settings.xml",
+      "word/fontTable.xml",
+      "word/_rels/fontTable.xml.rels",
+      "word/styles.xml",
+      "word/document.xml",
+      "word/_rels/document.xml.rels",
+      "_rels/.rels",
+      "word/fonts/Play-bold.ttf",
+      "word/theme/theme1.xml",
+      "word/fonts/Garamond-italic.ttf",
+      "word/fonts/Garamond-boldItalic.ttf",
+      "word/fonts/Play-regular.ttf",
+      "word/fonts/Garamond-regular.ttf",
+      "word/fonts/Garamond-bold.ttf",
+      "[Content_Types].xml"
+    ],
+    "section_xml_sha256": "7fe6f918dd3d05741245b2e07e6f1aa32f9f57ba81e1d5158e5fc465a7c6e508",
+    "template_parts_sha256": {
+      "word/numbering.xml": "b9cd5c4d69a7d349d72b51c6d1aa772535fc0f79b59bfc151de934f5d3f04e97",
+      "word/fontTable.xml": "e25b194948cea4e2415ef72c3794fb553228a89f4bdac1dcf69477854ca8d6a8",
+      "word/_rels/fontTable.xml.rels": "8fcc2b8df2c6d091f6bdd5abae90b1a81bff6baa0d000231516c77d655b5e95a",
+      "word/styles.xml": "07e6c88d3cf405f46abb8121b0b5783862591145331ecb67e87aa1c489b3a9a6",
+      "word/_rels/document.xml.rels": "afd4dd44a3aeafb973d1b9f52b1ec386e420b6a44e07904d1515126b145420c9",
+      "_rels/.rels": "77494e8e16bbf29213e494792349e3d49d2397a4007b2816a058337d804e79a1",
+      "word/fonts/Play-bold.ttf": "b0270d79073f111f528ee9c25503ab9ec92dc19517198dcf7528b00f89fbd4b7",
+      "word/theme/theme1.xml": "742bf86bb312d06389e21644f7e861273fe4f124f422c57cce0c28360b06f32d",
+      "word/fonts/Garamond-italic.ttf": "51dc05f9531b0e72a787de4e3ab12ec5da73713a9022eebe0edfda975d67c4e9",
+      "word/fonts/Garamond-boldItalic.ttf": "5a2790500ab0c624a5921b82493689e902aa099bff84870deb1d067618885ab9",
+      "word/fonts/Play-regular.ttf": "e1e9c9a87d56ac9897b41de72db27e5b5c7f97e1583690e338be7d4dd6c68deb",
+      "word/fonts/Garamond-regular.ttf": "4de8e1a0dcbedce028a76fc9150775411954a8227ee229d750774fcf684e7dc8",
+      "word/fonts/Garamond-bold.ttf": "bb30b2c43e41f898bce0be760ca5b0ecf6b46ad6d9233558dc7369d462666c3e",
+      "[Content_Types].xml": "33cf23c14df8a903cb5e34102d4e69a8867b2b47903f70afc6ba3faa8ca5c23c"
+    },
+    "structural_expectations": [
+      "decimal numbering numId=1, three paragraphs",
+      "merged cell gridSpan=3",
+      "PAGE field in footer, not a fillable field",
+      "two native client-name controls share the Cyrillic tag ПІБ_КЛІЄНТА but have different numeric IDs",
+      "CLIENT_EMAIL placeholder split across three styled runs",
+      "no external relationships, comments, macros, or remote image links"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "S01",
+      "action": "Import and save without edits",
+      "expect": "Preserve all text, supported layout, native controls, numbering, tables, package relationships, and PAGE field; no new fields from negative cases."
+    },
+    {
+      "id": "S02",
+      "action": "Fill CLIENT_NAME and CLIENT_EMAIL from sidebar using sample values",
+      "expect": "Update every listed occurrence, including native controls and header/footer; preserve N01 narrative name and every other field."
+    },
+    {
+      "id": "S03",
+      "action": "Edit CLIENT_NAME directly in a native control, then undo and redo",
+      "expect": "Sidebar and explicitly linked occurrences agree after each transaction. Other ПІБ fields stay independent."
+    },
+    {
+      "id": "S04",
+      "action": "Insert text before the split-run email token and create a manual field from MEETING_LOCATION",
+      "expect": "Field anchors stay attached to the intended location; the blank supporting-notes cell remains unfilled."
+    },
+    {
+      "id": "S05",
+      "action": "Apply multiline POSTAL_ADDRESS and long SCOPE_DESCRIPTION sample values",
+      "expect": "Text wraps and rows grow without clipping; Unicode, ampersands, decimal amounts and line breaks survive export/reopen. Page count may grow."
+    },
+    {
+      "id": "S06",
+      "action": "Delete a linked occurrence, then undo",
+      "expect": "Missing occurrence is explicit; no silent remap by matching text. Undo restores the same logical relationship."
+    },
+    {
+      "id": "S07",
+      "action": "Save revision A, change a value, save B, preview A and restore A",
+      "expect": "Preview is read-only; restore creates C with matching field metadata and preserves B. These are future app tests, not passed checks."
+    }
+  ],
+  "future_adjustment": "Keep this v1 baseline. Add sanitized real-world samples and a separately reviewed manifest when available; do not silently rewrite expected outcomes to match detector mistakes."
+}
