@@ -50,9 +50,8 @@ def register_errors(app: FastAPI) -> None:
 
     @app.exception_handler(HTTPException)
     async def http_error(_request: Request, exc: HTTPException):
-        code: ErrorCode = {404: "not_found", 405: "method_not_allowed"}.get(
-            exc.status_code, "invalid_request"
-        )
+        codes: dict[int, ErrorCode] = {404: "not_found", 405: "method_not_allowed"}
+        code = codes.get(exc.status_code, "invalid_request")
         return error_response(exc.status_code, ErrorDetail(code=code))
 
     @app.exception_handler(RequestValidationError)

@@ -130,3 +130,20 @@ Always use `-p fillable-checks` for the disposable test stack, independently of
 `.env`'s runtime `COMPOSE_PROJECT_NAME`. Production-image CI uses `-p fillable-ci`.
 Neither namespace contains production user data. Tests use temporary PostgreSQL
 storage; runtime PostgreSQL/Redis use named persistent volumes.
+
+## E01.5 complete foundation check commands
+
+Required Docker checks now include Ruff, mypy, TypeScript/ESLint, catalog and AST
+copy validation with negative cases, application unit/integration coverage, generated
+contract drift and Playwright production-image smoke flows. The browser runner is a
+separate non-root, digest-pinned Playwright 1.63.0 image with matching npm package;
+it is not a production service. Desktop/mobile tests exercise real same-origin
+health/readiness and recovery after a browser network failure. Test screenshots and
+failure traces join coverage artifacts. Browser errors fail the required job.
+
+Copy checks reject JSX text and literal expressions, referenced string constants,
+conditional literal branches, accessible/title/placeholder attributes, static page
+titles and browser dialog strings. Catalog tests reject missing/empty translations,
+interpolation mismatches/malformed braces and invalid/incomplete locale plurals.
+Original user data remains renderable. Profile switching and full four-page browser
+flows are added when those features exist; this foundation does not claim them.
