@@ -20,7 +20,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.5 merged; E02.6 profile verification |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.6 merged; E02.7 language verification |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -675,3 +675,26 @@ size so growth cannot invalidate its assertion; thresholds/exclusions are unchan
 Profile is the signed-in foundation-shell content until E03 adds library navigation.
 Next: individual E02.6 PR, strict required CI and exact-head squash auto-merge;
 verify actual merge before E02.7. Deployment remains last.
+
+2026-09-06: E02.6 confirmed done through [PR #23](https://github.com/Flippylolz/fillable/pull/23)
+at `ebd287051262505c9fa53a8098fb8d4418c54c74`; Actions 34037776985 passed both
+checks for exact head `1f1a14cde04d709bf384c45667ff6e2b040b848a`. Final evidence is
+in the PR body. Main synchronized; E02.7 is underway on `task/e02-7-language`.
+Authorized language updates and bilingual selector are implemented; failed saves
+restore the saved selection, successful responses apply the account language without
+clearing profile drafts. Verification is in progress. No deployment access occurred.
+
+E02.7 local verification passed: 79 backend tests, 1496/1503 lines (99.53%) and
+409/418 branches (97.85%); 46 frontend tests, 329/333 lines (98.80%) and 230/244
+branches (94.26%). Lint, typing, catalogs, build, raw full-source coverage and both
+real negative probes passed. Fresh-index Docker proof at
+`/private/tmp/fillable-verify.s0sgni` passed three development and twelve production
+browser checks, including failed-save recovery, unchanged drafts/usage, refresh,
+new browser login and stale peer preference recovery on both viewports. English
+screenshots were visually inspected: native language labels and storage numbers
+remain readable on desktop/mobile. Original synthetic storage persisted through
+recreation and all quota/maintenance checks passed; volumes preserved. Next:
+individual E02.7 PR, required protected CI and verified auto-merge, then E03.
+E03.2 validation and E03.3 persistence are prerequisites for delivering E03.1's real
+upload flow; follow that dependency order rather than shipping a simulated upload.
+Deployment remains E08, last.

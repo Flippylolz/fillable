@@ -36,7 +36,7 @@ checks include the port. Cookies themselves are not port-isolated. This preserve
 D019, rather than silently changing the requested public origin. The four-page UI
 restores the saved account language on session load/login; successful logout clears
 the password field. Failed requests retain inputs/authenticated state as appropriate.
-E02.6 adds profile editing; language preference updates remain E02.7.
+E02.6 adds profile editing; E02.7 adds persisted language preferences.
 
 The profile shows read-only email and authenticated storage usage, and permits a
 trimmed nonblank display name up to 120 characters. `PATCH /api/profile` accepts
@@ -52,6 +52,16 @@ Profile and logout requests are serialized in the UI. Failed saves preserve draf
 successful password changes clear credential inputs. Usage failures have an explicit
 retry and never display fabricated zero counters. The responsive profile is currently
 the signed-in content of the foundation shell; E03 supplies library navigation.
+
+`PATCH /api/profile/language` accepts only `ui_language: "uk" | "en"`, using the
+same exact-origin, CSRF and active-session transaction checks. Its only database
+write is the authenticated user's preference; it does not write files, reserve
+storage, or create document work. The returned account preference applies immediately
+without remounting profile/editor state. Failed saves restore the saved selector
+value and keep the applied language and other drafts. Every authenticated bootstrap
+and login restores the database value, overriding stale browser UI state. A fresh
+anonymous page defaults to Ukrainian regardless of browser locale; no browser-local
+language preference is persisted.
 
 Validation must include real PostgreSQL migrations/constraints, concurrent attempt
 accounting, session rotation/expiry/revocation, inactive users, role separation,
