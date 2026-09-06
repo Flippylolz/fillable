@@ -142,6 +142,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/documents/{identity}/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fields */
+        get: operations["fields_api_documents__identity__fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/documents/{identity}/processing": {
         parameters: {
             query?: never;
@@ -269,6 +286,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Candidate */
+        Candidate: {
+            /** Context */
+            context: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Occurrence Id */
+            occurrence_id: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "native_control" | "placeholder" | "blank_line" | "blank_cell" | "manual";
+            /** Source Key */
+            source_key?: string | null;
+        };
         /** ContentInfo */
         ContentInfo: {
             /** Document */
@@ -276,6 +311,20 @@ export interface components {
                 [key: string]: unknown;
             };
             resource: components["schemas"]["ResourceInfo"];
+        };
+        /** ControlAnchor */
+        ControlAnchor: {
+            /** Control Id */
+            control_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "control";
+            /** Paragraph Id */
+            paragraph_id: string;
+            /** Part */
+            part: string;
         };
         /** CopyRequest */
         CopyRequest: {
@@ -311,6 +360,41 @@ export interface components {
         ErrorEnvelope: {
             error: components["schemas"]["ErrorDetail"];
         };
+        /** FieldSnapshot */
+        FieldSnapshot: {
+            /** Candidates */
+            candidates?: components["schemas"]["Candidate"][];
+            /** Decisions */
+            decisions?: components["schemas"]["ReviewDecision"][];
+            /** Fields */
+            fields?: components["schemas"]["TextField"][];
+            /** Occurrences */
+            occurrences?: components["schemas"]["Occurrence"][];
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            /**
+             * Source Version Id
+             * Format: uuid
+             */
+            source_version_id: string;
+        };
+        /** FieldsResult */
+        FieldsResult: {
+            snapshot?: components["schemas"]["FieldSnapshot"] | null;
+            /**
+             * Source Version Id
+             * Format: uuid
+             */
+            source_version_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_started" | "queued" | "running" | "succeeded" | "failed" | "stale";
+        };
         /** Health */
         Health: {
             /**
@@ -338,6 +422,15 @@ export interface components {
         NameInput: {
             /** Display Name */
             display_name: string;
+        };
+        /** Occurrence */
+        Occurrence: {
+            /** Anchor */
+            anchor: components["schemas"]["ControlAnchor"] | components["schemas"]["SpanAnchor"];
+            /** Id */
+            id: string;
+            /** Value */
+            value: string;
         };
         /** PasswordInput */
         PasswordInput: {
@@ -446,11 +539,54 @@ export interface components {
             /** Next Cursor */
             next_cursor?: string | null;
         };
+        /** ReviewDecision */
+        ReviewDecision: {
+            /** Candidate Id */
+            candidate_id: string;
+            /** Field Id */
+            field_id?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "dismissed";
+        };
         /** SessionInfo */
         SessionInfo: {
             /** Csrf Token */
             csrf_token: string;
             user: components["schemas"]["UserInfo"] | null;
+        };
+        /** SpanAnchor */
+        SpanAnchor: {
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "span";
+            /** Paragraph Id */
+            paragraph_id: string;
+            /** Part */
+            part: string;
+            /** Start */
+            start: number;
+        };
+        /** TextField */
+        TextField: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Occurrence Ids */
+            occurrence_ids: string[];
+            /**
+             * Type
+             * @default text
+             * @constant
+             */
+            type: "text";
         };
         /** UserInfo */
         UserInfo: {
@@ -1764,6 +1900,145 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": string;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Method Not Allowed */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Request Timeout */
+            408: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    fields_api_documents__identity__fields_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identity: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldsResult"];
                 };
             };
             /** @description Bad Request */

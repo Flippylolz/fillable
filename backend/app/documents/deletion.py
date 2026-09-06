@@ -6,6 +6,7 @@ from app.accounts.profile import active_user
 from app.documents.schema import DeletionResult, resources, versions
 from app.errors import AppError
 from app.infrastructure import database
+from app.jobs.schema import jobs
 from app.storage.configuration import configured
 from app.storage.maintenance import audit, delete_file
 from app.storage.schema import files
@@ -86,6 +87,11 @@ def remove(state, identity):
         if shared_original or shared_version:
             raise AppError(409, "operation_conflict")
         if resource["state"] == "active":
+            connection.execute(
+                update(jobs)
+                .where(jobs.c.document_id == identity)
+                .values(field_snapshot=None)
+            )
             connection.execute(
                 update(versions)
                 .where(versions.c.document_id == identity)

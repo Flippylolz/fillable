@@ -22,7 +22,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1 merged; E04.2a explicit extraction |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1/E04.2a merged; E04.2b durable results |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
@@ -966,3 +966,27 @@ Frontend local checks also passed all 78 tests, raw 613/620 lines (98.87%) and
 547/582 branches (93.99%), with lint, typing and catalogs/build. The updated backend
 negative probe rejected 2478/7827 lines with all 208 tests passing. Required protection
 still enforces strict, up-to-date Actions `ci-required`, including administrators.
+
+2026-09-06: E04.2a verified merged through [PR #36](https://github.com/Flippylolz/fillable/pull/36),
+commit `043ea4bb4e0f51f7ddaf9f060d662f69b7e08ce3`; Actions 34051985712 passed both
+required checks for exact head `ce17f6115831a752ee1db0f94404068cfa14466e`.
+Main synchronized. E04.2b is underway on `task/e04-2b-discovery-results`: derived
+source-revision result persistence/API, independent copy cloning and deletion cleanup.
+
+E04.2b local backend/frontend checks pass (211/78 tests). The new migration preserves
+existing data and refuses destructive result downgrade. Results are published under
+revision/attempt/lease fences, cloned independently on completed template copies,
+and cleared on source deletion. Typed API artifacts are regenerated. Fresh Docker
+verification is next, including durable results after recreation and copied results
+after source deletion. Deployment remains last.
+
+E04.2b final local verification passed: 211 backend tests, raw 2536/2551 lines
+(99.41%) and 724/740 branches (97.84%); 78 frontend tests, 613/620 lines (98.87%)
+and 547/582 branches (93.99%). Lint, typing, generated API, catalogs/build and raw
+full-source gates passed. Both real unimported-source probes rejected below-90%
+reports. Fresh index `/private/tmp/fillable-verify.WoHOKJ` passed durable discovery
+results through the real dispatcher/forked worker before and after recreation,
+3 development and 14 production browser tests, including independently cloned
+results surviving source deletion and unchanged saved bytes/quota. All isolated
+volumes preserved. No review UI is claimed; E04.5 consumes the new owned result API.
+Next: protected E04.2b PR and verified merge, then E04.3 conservative blank rules.

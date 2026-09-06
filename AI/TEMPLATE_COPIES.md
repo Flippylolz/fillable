@@ -15,8 +15,8 @@ before writing, and atomically commits that file, accounting, a new resource, it
 initial version and processing intent. The initial version and original reference
 only that new physical file; neither references the template's file. The saved model,
 including the current field/control metadata and unsupported-feature counts, is copied
-with the saved DOCX bytes. No HTML conversion or text regeneration occurs. Formal E04
-field schemas and E06 revision retention extend the same revision snapshot contract.
+with the saved DOCX bytes. No HTML conversion or text regeneration occurs. E04.2b also clones the completed, validated proposal snapshot into an independent
+completed job for the target revision; E06 retention extends the same contract.
 
 A lazy source iterator permits a committed operation retry to return its existing
 copy without reopening a source that was subsequently changed or deleted. Its request

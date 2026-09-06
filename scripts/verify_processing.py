@@ -33,10 +33,17 @@ with httpx.Client(base_url=origin, headers={"Origin": origin}, timeout=30) as cl
         raise RuntimeError("Processing did not finish within QA deadline")
     assert status["source_version_id"] == saved["current_version_id"]
     assert status["summary"]["supported_controls"] > 0
+    fields = client.get(f"/api/documents/{saved['id']}/fields")
+    fields.raise_for_status()
+    assert fields.json()["status"] == "succeeded"
+    snapshot = fields.json()["snapshot"]
+    assert snapshot["source_version_id"] == saved["current_version_id"]
+    assert len(snapshot["candidates"]) == 23
+    assert len(snapshot["decisions"]) == 5
     assert client.post(endpoint).json()["id"] == identity
     download = client.get(f"/api/documents/{saved['id']}/download")
     download.raise_for_status()
     assert hashlib.sha256(download.content).hexdigest() == saved["digest"]
     assert client.get("/api/storage/usage").json()["used_bytes"] == before
     client.post("/api/auth/logout").raise_for_status()
-print("PASS: durable processing completed through dispatcher/worker; saved bytes and quota unchanged")
+print("PASS: durable discovery completed through dispatcher/worker; saved bytes and quota unchanged")
