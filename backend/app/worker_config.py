@@ -1,4 +1,4 @@
-"""RQ configuration. Business jobs arrive with document processing."""
+"""Private JSON-only RQ queue for bounded document processing."""
 
 import os
 

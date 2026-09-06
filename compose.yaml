@@ -98,6 +98,21 @@ services:
       redis:
         condition: service_healthy
     security_opt: [no-new-privileges:true]
+  dispatcher:
+    build:
+      context: .
+      dockerfile: infra/backend.Dockerfile
+    command: python -m app.jobs.dispatcher
+    init: true
+    environment:
+      DATABASE_URL: postgresql+psycopg://fillable:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/fillable
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    security_opt: [no-new-privileges:true]
   gateway:
     build:
       context: .
