@@ -548,3 +548,40 @@ def test_committed_cleanup_preserves_last_link_if_final_is_missing(setup, monkey
             store.recover(owner, op["id"])
         assert (root / "staging" / str(op["id"])).read_bytes() == b"original"
         assert counters(owner) == (8, 0)
+
+
+def test_active_retry_cannot_take_the_creating_writers_lock(setup, monkeypatch):
+    store, owner, _, _ = setup
+    created, release = Event(), Event()
+    begin, lock = store._begin, store.fs.lock
+    locks = []
+
+    def paused_begin(*args):
+        result = begin(*args)
+        if result[1]:
+            created.set()
+            assert release.wait(5)
+        return result
+
+    def observed_lock(*args, **kwargs):
+        locks.append(args[0])
+        return lock(*args, **kwargs)
+
+    monkeypatch.setattr(store, "_begin", paused_begin)
+    monkeypatch.setattr(store.fs, "lock", observed_lock)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        writer = pool.submit(save, store, owner, key="race", expected_bytes=8)
+        try:
+            assert created.wait(5)
+            with pytest.raises(StorageError, match="operation_in_progress"):
+                save(store, owner, key="race", expected_bytes=8)
+            assert locks == []
+            assert counters(owner) == (0, 8)
+        finally:
+            release.set()
+        result = writer.result(timeout=5)
+    assert len(locks) == 1
+    assert counters(owner) == (8, 0)
+    assert save(store, owner, key="race", expected_bytes=8) == result
+    assert len(locks) == 2
+    assert counters(owner) == (8, 0)

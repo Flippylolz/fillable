@@ -199,7 +199,8 @@ API and worker both run as UID 10001 and wait for that initialization.
 
 A committed retry returns its existing result without consuming the input stream,
 rerunning the callback or charging again. A conflicting fingerprint/purpose/declared
-size fails. An active operation reports in-progress; an aborted attempt is terminal
+size fails. An active operation reports in-progress without acquiring the creating writer’s
+filesystem lock; an aborted attempt is terminal
 and requires a new key. A committed result that was later deleted is not recreated.
 A failure after SQL commit (including a lost response) cannot clean the retained file.
 The redundant staging hard link may survive; it adds no second logical byte charge.

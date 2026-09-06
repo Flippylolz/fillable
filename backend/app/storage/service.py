@@ -368,16 +368,18 @@ class Storage:
             raise StorageError("file_too_large")
         try:
             op, fresh = self._begin(owner, key, fingerprint, purpose, expected_bytes)
+            # An active replay has no work to do. Taking its lock could beat the
+            # creating request to the lock and make both callers report busy.
+            if not fresh and op["state"] != "committed":
+                raise StorageError(
+                    "operation_aborted"
+                    if op["state"] == "aborted"
+                    else "operation_in_progress"
+                )
             with self.fs.lock(op["id"]):
                 if not fresh:
-                    if op["state"] == "committed":
-                        with self.engine.connect() as connection:
-                            return self._result(connection, op)
-                    raise StorageError(
-                        "operation_aborted"
-                        if op["state"] == "aborted"
-                        else "operation_in_progress"
-                    )
+                    with self.engine.connect() as connection:
+                        return self._result(connection, op)
                 try:
                     size, digest = 0, hashlib.sha256()
                     with self.fs.stage(op["id"]) as stream:

@@ -1237,3 +1237,28 @@ verification passed unchanged byte/pixel identity, three edited pages with uncha
 page two, and five multiline pages with exact repeated Ukrainian/astral text; an edited
 page was visually inspected. Microsoft Word was not used; all volumes preserved.
 Next: protected E05.4 PR/verified merge, then E05.5 keyboard/composition/history checks.
+
+2026-09-07: E05.4 verified merged through [PR #46](https://github.com/Flippylolz/fillable/pull/46),
+commit `85c4534c76ddf2ec202cfe0d60ec725347302f46`; Actions 34065403103 passed required
+checks for head `a96d15fba5034fa5470becbf5ba7455e354cec4b`.
+
+E02.3a is a bounded corrective task discovered during E05.5 verification. The concurrent
+copy regression returned two busy responses: an active retry could acquire the operation
+lock before its creating writer, briefly preventing the writer from starting. Acceptance:
+active/aborted retries do not acquire that lock, a coordinated real PostgreSQL regression
+proves the creator completes with one allocation, and committed replays retain locking
+and exact idempotent results. Dedicated branch `task/e02-3a-retry-lock` starts from merged
+E05.4. E05.5 editor changes remain isolated on `task/e05-5-editor-input` and resume after
+this correction merges. No retained format, quota, lease or recovery policy is relaxed.
+
+E02.3a local verification passed: 244 backend tests, raw 2778/2796 lines (99.36%)
+and 843/862 branches (97.80%); 113 frontend tests, 851/855 lines (99.53%) and
+894/926 branches (96.54%). Lint, typing, catalogs/build, raw gates and both real
+unimported-source negative probes passed. The deterministic test pauses a writer
+after reservation and verifies a retry takes no filesystem lock or extra allocation,
+then the writer and committed replay succeed with exact accounting. Fresh index
+`/private/tmp/fillable-verify.P3qqpS` passed 5 development and 16 production browser
+checks, real worker processing and persistent byte/quota invariants. Independent
+LibreOffice/Poppler regression checks passed. No frontend appearance, DOCX format,
+server service or persistent volume was changed. Next: individual protected PR,
+verified merge, then synchronize the unfinished E05.5 editor branch.
