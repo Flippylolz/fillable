@@ -8,6 +8,8 @@ Ordinary documents are in scope, including documents without predefined template
 
 MVP discovery is deterministic: existing Word controls, explicit placeholders, and rule-based blank detection, plus manual field creation. AI is outside MVP. The editor must use free components, with a project-owned implementation allowed if needed; this does not remove direct document editing or version history from scope.
 
+Documents are primarily Ukrainian. Detection must handle Ukrainian labels, Cyrillic placeholder names and native tags, including text split across Word runs. Editing/export must preserve Ukrainian letters, apostrophes, and mixed-language content without transliteration. UI language remains a separate implementation decision. Use the synthetic baseline in [Test corpus](TEST_CORPUS.md) until representative user files are available.
+
 ## Four MVP pages
 
 The user defined these four pages as the MVP boundary and explicitly retained version-history UI. History, settings, and review live within these pages. Paths and the detailed defaults below are proposed implementation choices.
