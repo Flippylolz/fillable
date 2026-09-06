@@ -147,3 +147,34 @@ titles and browser dialog strings. Catalog tests reject missing/empty translatio
 interpolation mismatches/malformed braces and invalid/incomplete locale plurals.
 Original user data remains renderable. Profile switching and full four-page browser
 flows are added when those features exist; this foundation does not claim them.
+
+## E01.7 gate audit
+
+The repository protection API confirms PR-only merging with strict, up-to-date
+`ci-required` bound to GitHub Actions app 15368 and administrator enforcement.
+PR #6's initial failing check also failed the aggregator and blocked its merge;
+its corrected run subsequently merged through the required check.
+
+`scripts/require-ci-success.sh` is the actual aggregator entry point. Its contract
+tests reject absent, empty, failed, skipped, cancelled and unknown results. The
+coverage contract tests exercise each language's raw line/branch boundary separately,
+missing/invalid reports and eligible source absent from reports. Exactly 90% passes.
+Every required CI run also adds an unimported file in each disposable test container,
+runs the real suite, verifies all application tests passed but coverage rejected the
+file, then removes it. Probe reports cannot overwrite the normal report containers.
+
+The downloaded artifact from Actions run 34022095669 was inspected: backend JSON,
+frontend detailed/summary JSON and both browser screenshots are present. Raw results
+were backend 99/99 lines and 6/6 branches, frontend 35/35 lines and 19/19 branches.
+The negative probes produced backend 99/161 lines, frontend 35/66 lines and 19/79
+branches, correctly failing. Run them locally after building the test images:
+
+```sh
+docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/test_gate_contract.py
+docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/probe_backend_coverage.py
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test node scripts/probe-coverage.mjs
+```
+
+Checkout and artifact upload use immutable upstream v7.0.1 pins and their Node 24
+runtime. No required job is optional and diagnostic collection is the only place
+where a missing container is tolerated. No deployment workflow exists before E08.

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Configure isolated local defaults
         run: cp .env.example .env
       - name: Build check images
@@ -47,6 +47,11 @@ jobs:
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
       - name: Frontend tests and build
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-frontend-check frontend-test
+      - name: Verify coverage and aggregation failure gates
+        run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/test_gate_contract.py
+          docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/probe_backend_coverage.py
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test node scripts/probe-coverage.mjs
       - name: Collect reports
         if: always()
         run: |
@@ -58,7 +63,7 @@ jobs:
         run: |
           mkdir -p frontend/coverage
           docker run --rm -v "$PWD/frontend:/source:ro" -v "$PWD/reports/frontend:/source/coverage:ro" --entrypoint python fillable-checks-backend-test /checks/check_coverage.py frontend /source
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: coverage
@@ -69,7 +74,8 @@ jobs:
     needs: [checks]
     runs-on: ubuntu-24.04
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Require every check to succeed
         env:
           RESULT: ${{ needs.checks.result }}
-        run: test "$RESULT" = success
+        run: scripts/require-ci-success.sh "$RESULT"

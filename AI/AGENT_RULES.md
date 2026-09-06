@@ -1,6 +1,6 @@
 # Agent rules
 
-These instructions guide automated implementation in this repository. Direct user instructions take precedence. Current stage: planning; follow the epic ledger rather than assuming the application exists.
+These instructions guide automated implementation in this repository. Direct user instructions take precedence. Implementation is underway; follow the epic ledger for verified application capabilities and outstanding work.
 
 ## Read before working
 
