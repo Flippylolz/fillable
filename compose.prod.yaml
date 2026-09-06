@@ -17,6 +17,12 @@ services:
     tmpfs: [/tmp]
     mem_limit: 512m
     cpus: 1.0
+  dispatcher:
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 256m
+    cpus: 0.5
   gateway:
     restart: unless-stopped
     ports:

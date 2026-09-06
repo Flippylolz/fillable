@@ -293,3 +293,14 @@ initial revision and immutable original. The worker receives the QA origin expli
 for this check; normal worker configuration has no browser-origin dependency.
 See [Document persistence](DOCUMENT_PERSISTENCE.md) for the upload header/body
 contract, admission bounds and the gateway's streaming configuration.
+
+## Processing dispatcher
+
+E03.5a adds the private Python `dispatcher` service beside the RQ worker. Both use the
+same pinned backend image; only the worker mounts document storage. The dispatcher
+recovers PostgreSQL processing intent into the JSON-only `fillable` queue in bounded
+batches. No host cron or public port is added. Backend job/dispatcher code changes
+require rebuilding/recreating those services; only the API has the existing development
+reload watcher. `scripts/verify-development.sh` explicitly verifies actual job completion
+and preserved saved bytes/quota through the isolated dispatcher/worker stack. See
+[Processing](PROCESSING.md) for retry and source-revision guarantees.

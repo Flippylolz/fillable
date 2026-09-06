@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.3, E03.1b and E03.4a/b merged; E03.4c workspace in progress |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.4 and E03.1b merged; E03.5a durable processing in progress |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -859,3 +859,26 @@ on another resource. Desktop English and mobile Ukrainian workspace layouts were
 inspected. Failed initial proof `/private/tmp/fillable-verify.61AMZK` and all volumes
 remain preserved. Next: protected E03.4c PR, actual merge, then E03.5 durable processing.
 Safe persisted edits, leases/history and autosave remain E06. Deployment stays last.
+
+2026-09-06: E03.4c confirmed done through [PR #31](https://github.com/Flippylolz/fillable/pull/31)
+at `4b9c029f1139d46239cc5ab281e7fea0f6a494cb`; Actions 34046414338 passed both
+required checks for exact head `5264ea774584fedb89381fdb6319d2c0ea85c121`.
+Main synchronized. E03.5 is split into E03.5a durable processing API/outbox/worker
+and E03.5b upload intent/library polling, each in its own PR. E03.5a is underway on
+`task/e03-5a-durable-processing`; migration, private dispatcher, source/lease fences,
+three-attempt recovery and explicit owned APIs are implemented. See [Processing](PROCESSING.md).
+The initial processor inspects existing supported controls/structure; E04 discovery
+is not claimed. No retained files or quota writes occur during inspection.
+Local checks pass 156 backend and 65 frontend tests. Initial fresh Docker proof
+`/private/tmp/fillable-verify.trQNef` passed real dispatcher/worker completion before
+and after recreation plus all existing browser checks. Review added bounded recovery
+for delivery failure before the business claim; final fresh proof is underway.
+
+E03.5a final local checks passed: 156 backend tests, 2182/2197 lines (99.32%) and
+609/626 branches (97.28%); 65 frontend tests, 560/566 lines (98.94%) and 484/518
+branches (93.44%). Lint, typing, generated API, catalog/build and both raw full-source
+gates passed. Both real unimported-source probes blocked below-threshold reports.
+Final fresh index `/private/tmp/fillable-verify.KUQm67` passed real dispatcher/forked
+worker processing before/after recreation, unchanged saved bytes/quota, 3 development
+and 14 production browser checks. All isolated volumes preserved. Next: protected
+E03.5a PR and verified merge, then E03.5b upload intent and library status polling.

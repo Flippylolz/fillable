@@ -8,6 +8,7 @@ from app.accounts.routes import router as authentication_router
 from app.documents.routes import router as document_router
 from app.errors import AppError, ErrorEnvelope, register_errors
 from app.infrastructure import dependencies_ready
+from app.jobs.routes import router as processing_router
 from app.storage.routes import router as storage_router
 
 app = FastAPI(
@@ -25,6 +26,7 @@ app.include_router(authentication_router)
 app.include_router(profile_router)
 app.include_router(storage_router)
 app.include_router(document_router)
+app.include_router(processing_router)
 
 
 class Health(BaseModel):

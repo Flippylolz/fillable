@@ -28,6 +28,7 @@ dev exec -T api python -m app.accounts.cli provision --email profile@example.tes
 dev exec -T api python -m app.accounts.cli provision --email library@example.test --display-name "Тест бібліотеки" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python /checks/verify_storage_persistence.py write
 dev exec -T api python /checks/verify_document_persistence.py write < fixtures/docx/v1/client-intake-uk-v1.docx
+dev exec -T api python /checks/verify_processing.py
 dev exec -T worker python /checks/verify_storage_persistence.py read
 dev exec -T worker python -m app.storage.quota_cli default --bytes 1048576
 dev exec -T worker python -m app.storage.quota_cli override --email browser@example.test --bytes 0
@@ -49,6 +50,7 @@ prod exec -T redis redis-cli DEL development_probe
 prod exec -T api python /checks/verify_storage_persistence.py read
 prod exec -T worker python /checks/verify_storage_persistence.py read
 prod exec -T api python /checks/verify_document_persistence.py read < fixtures/docx/v1/client-intake-uk-v1.docx
+prod exec -T api python /checks/verify_processing.py
 prod exec -T -e FILLABLE_PUBLIC_ORIGIN="$FILLABLE_PUBLIC_ORIGIN" worker python /checks/verify_document_persistence.py read < fixtures/docx/v1/client-intake-uk-v1.docx
 prod exec -T worker python -m app.storage.maintenance reconcile
 prod exec -T worker python -m app.storage.maintenance inventory
