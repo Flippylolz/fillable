@@ -22,7 +22,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1/E04.2 merged; E04.3 blank rules |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.3 merged; E04.4 accuracy evaluation |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
@@ -1009,3 +1009,26 @@ ordinary prose, protected controls, ambiguous empty cells and budget limits are
 covered. No blank is auto-accepted. Existing volumes preserved. Required protection
 remains strict Actions `ci-required`, including administrators. Next: protected
 E04.3 PR and verified merge, then E04.4 per-detector accuracy evaluation.
+
+
+2026-09-06: E04.3 verified merged through [PR #38](https://github.com/Flippylolz/fillable/pull/38),
+commit `ff83cec3d4d507639360ea33b3970cf84b14eaec`; Actions 34054416368 passed both
+required checks for exact head `b319209b8a11f8f110439893021e848b69325729`.
+Main synchronized. E04.4 starts on `task/e04-4-detector-evaluation`: reproducible
+per-detector accuracy, exact answer-key location projection and committed report
+checked for drift in required backend tests. The v1 source and answer key stay unchanged.
+
+E04.4 local verification passed 229 backend tests: raw 2753/2770 lines (99.39%)
+and 831/850 branches (97.76%). All 78 frontend tests passed: 613/620 lines (98.87%)
+and 547/582 branches (93.99%). Lint, types, catalogs/build and both raw source gates
+passed. The backend real-unimported-source probe rejected 2753/8638 lines while
+all 229 tests passed. The evaluator report is compared exactly in required tests;
+all 27 positive locations are found, with one permitted unaccepted literal suggestion,
+zero incorrect confirmed fields and no inferred auto-acceptance. Projection and
+scoring regressions cover native values, Unicode, tabs/breaks, protected text,
+repeated text, deliberate misses/misclassification and invalid answer keys.
+No UI, DOCX transformation or retained-file behavior changed; required CI reruns
+fresh Docker, browsers, independent rendering and all failure probes. Next: protected
+E04.4 PR/verified merge, then E04.5 workspace review. Deployment stays last.
+The frontend real-unimported-source probe also passed: 613/2231 lines and 547/3802
+branches were rejected with all 78 tests passing.

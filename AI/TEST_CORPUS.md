@@ -41,7 +41,7 @@ The JSON is an external answer key. No fixture bookmarks, answer-key custom XML,
 ## How to use it
 
 1. Verify the file hash and source structure before interpreting the answer key.
-2. Evaluate explicit detection and heuristic proposals separately. Report occurrence recall, incorrect proposals, and incorrect confirmed fields with the fixture/version. The counts describe desired behavior; no detector has been implemented or measured yet.
+2. Evaluate explicit detection and heuristic proposals separately. Report occurrence recall, incorrect proposals, and incorrect confirmed fields with the fixture/version. E04.4 records the measured detector results in [Field discovery](FIELD_DISCOVERY.md) and its committed report; these counts remain the independent answer key.
 3. Exercise sidebar/direct edits, linked fields, selection, insertion before a field, deletion, undo/redo, multiline values, save, download, and reopen. The JSON supplies sample values and precise expected relationships.
 4. Verify Unicode, unedited narrative, tables/merged cells, numbering, headers/footers, and native controls after export. Allow page count to grow when long values are entered; three pages is the original render baseline, not a fixed pagination requirement after edits.
 5. Use the save/preview/restore scenario once application history exists. This fixture alone does not test quota concurrency, authentication, malformed ZIP protection, or storage recovery.
