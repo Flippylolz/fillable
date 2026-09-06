@@ -21,8 +21,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.4 and E03.1b merged; E03.5 merged; E03.6 independent copies in progress |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
+| E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1 schemas |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
@@ -925,3 +925,23 @@ workspace entry, independent quota and source deletion. Desktop/mobile copy-form
 error screenshots inspected. Earlier successful proof `/private/tmp/fillable-verify.hws0Kr`
 and all isolated volumes remain preserved. Next: protected E03.6 PR, actual merge,
 then E04.1 field/occurrence/candidate/review schemas. Deployment stays E08 last.
+
+2026-09-06: E03.6 verified merged through [PR #34](https://github.com/Flippylolz/fillable/pull/34),
+commit `b9cc874f1823917af02056b75c4385a04688591d`; Actions 34050140543 passed both
+required checks for exact head `2c3603ab30427488b98e90b43616e2cf8c62b191`.
+E03 upload/library task implementations are merged; end-to-end later source edits,
+restoration and formal field-schema copies remain cross-epic E04/E06 acceptance.
+Main synchronized; E04.1 is underway on `task/e04-1-field-schemas`, defining bounded
+field/occurrence/candidate/review records and validation against known revision anchors.
+
+E04.1 local checks passed: 201 backend tests, raw 2423/2438 lines (99.38%) and
+692/708 branches (97.74%); 78 frontend tests, 613/620 lines (98.87%) and 547/582
+branches (93.99%). Lint, typing, catalog/build and both raw source gates passed.
+The new schemas and validator are covered by corpus/native-control, Unicode/split-run,
+protected/overlapping range, reference/review/provenance, revision and resource-limit
+tests. See [Field schemas](FIELD_SCHEMAS.md). No UI or document transformation changed;
+required CI will rerun browser, fresh Docker, rendering and negative-gate checks.
+Next: E04.1 protected PR and verified merge, then deterministic extraction in E04.2.
+The updated backend real-unimported-source probe passed: its 2423/7640 line report
+was rejected below 90% while all 201 tests remained successful. The unchanged frontend
+source retains the preceding task's successful negative probe and is checked again by CI.
