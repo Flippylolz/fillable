@@ -20,7 +20,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1 accounts and sessions |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1 merged; E02.2 quota and lifecycle models |
 | E03 | Upload, templates, and processed-document library | E02 | waiting |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
@@ -550,3 +550,22 @@ QA reports use writable mounted output paths. Login screenshots were inspected.
 The CI job pins its private browser origin across dependency recreation. Next:
 individual E02.1 PR, reverify strict required checks, enable auto-merge and verify
 completion before E02.2 quota models. Deployment and server services remain untouched.
+
+2026-09-06: E02.1 confirmed `done` through [PR #18](https://github.com/Flippylolz/fillable/pull/18)
+at `15b568b5e7eefe27124b30cb9823276dec28c2ec`; Actions 34028841683 passed both
+required checks at head `ee2f2af275315618bbe482e79abbafe32ab0043d`. Merge evidence
+was recorded in its PR body. Main synchronized and E02.2 began on
+`task/e02-2-quota-lifecycle-models`. Quota settings/accounts, reservation/file schemas,
+strict byte arithmetic and migration/backfill tests are in progress. This task
+adds no retained-file write path; E02.3 implements allocation and filesystem recovery.
+Next: complete schema/integration checks and docs, enforce coverage/CI, deliver
+this individual PR and verify protected auto-merge before E02.3.
+
+E02.2 local verification passed: 41 backend tests, 796/801 lines (99.38%) and
+223/230 branches (96.96%), with lint, typing and raw full-source coverage. Tests
+compare runtime metadata against the actual migrated schema, exercise backfill and
+repeat upgrades, reject owner/result mismatches and invalid counters/states, and
+verify populated storage metadata blocks downgrade. Frontend source is unchanged;
+its preceding verified coverage is 266/270 lines and 156/165 branches, and required
+CI will rerun all frontend/browser checks. No retained file write is introduced.
+Next: task PR and protected CI/auto-merge, then E02.3's shared allocation/write service.

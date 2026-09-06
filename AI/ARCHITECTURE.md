@@ -40,7 +40,7 @@ The repository now contains the Docker foundation, application/test scaffold, so
 
 ## Data model boundaries
 
-- `User`: identity, display name, credential hash, role, status, nullable quota override, validated `ui_language` (`uk` or `en`, default `uk`).
+- `User`: identity, display name, credential hash, role, status, validated `ui_language` (`uk` or `en`, default `uk`).
 - `Session`: server-side authenticated session and expiry.
 - `Document`: owner, kind (`template` or `document`), title, current version, lifecycle state, editing lease, optional source-template provenance.
 - `DocumentVersion`: immutable revision, file reference, matching field-schema snapshot, parent revision, creation time, optional restored-from revision.
@@ -48,7 +48,7 @@ The repository now contains the Docker foundation, application/test scaffold, so
 - `FieldDefinition`: logical key, label, type, validation, review status.
 - `FieldOccurrence`: one location/control in one document version, associated with a logical field.
 - `DetectionCandidate`: source revision, location evidence, proposed type/label, review status.
-- `QuotaAccount` and `StorageReservation`: used/reserved bytes and operation-bound allocations.
+- `QuotaAccount` and `StorageReservation`: nullable per-user quota override, used/reserved bytes and durable operation-bound allocations; global defaults live in the singleton storage settings.
 - `Job`: owner, operation, source revision, status, retry state, and result reference.
 
 The database is the authority for permissions and committed versions. A version must not claim a field snapshot from a different DOCX revision. Original uploads are retained unchanged.

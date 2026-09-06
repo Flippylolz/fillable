@@ -17,6 +17,7 @@ from app.accounts.schema import AccountInput, login_attempts, sessions, users
 from app.errors import AppError, register_errors
 from app.infrastructure import database
 from app.main import app
+from app.storage.schema import accounts as storage_accounts
 
 PASSWORD = "Synthetic-їжак-2026"
 
@@ -27,11 +28,13 @@ def account_database():
     with database().begin() as connection:
         connection.execute(delete(sessions))
         connection.execute(delete(login_attempts))
+        connection.execute(delete(storage_accounts))
         connection.execute(delete(users))
     yield
     with database().begin() as connection:
         connection.execute(delete(sessions))
         connection.execute(delete(login_attempts))
+        connection.execute(delete(storage_accounts))
         connection.execute(delete(users))
 
 
