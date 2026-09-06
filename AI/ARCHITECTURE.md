@@ -119,6 +119,7 @@ Jobs carry identifiers and revision references rather than document bytes or cre
 
 - Apply ownership checks to every read and mutation, including download URLs and job polling.
 - Parse DOCX as untrusted ZIP/XML with compressed-size, expanded-size, entry-count, and processing-time limits. Disable external entity resolution and external resource fetching.
+- E03.2 implements the source-preserving [DOCX admission contract](DOCX_VALIDATION.md), including package/relationship validation and shared reader limits. Upload persistence remains E03.3.
 - Keep temporary files, filesystem capacity, parser resources, and job runtimes bounded.
 - Use local synthetic documents in development and tests. Do not log document contents, entered field values, or credentials.
 - Maintain isolated local and production data/configuration; CI uses disposable test stacks. Backups and persistent staging are outside MVP under D018.

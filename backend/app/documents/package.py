@@ -3,8 +3,11 @@
 import hashlib
 import io
 import re
+import stat
+import time
+import zlib
 from typing import Any
-from zipfile import BadZipFile, ZipFile
+from zipfile import ZIP_DEFLATED, ZIP_STORED, BadZipFile, ZipFile
 
 from lxml import etree
 
@@ -15,7 +18,23 @@ Node = dict[str, Any]
 
 
 class InvalidDocument(ValueError):
-    """The package is invalid or exceeds bounded prototype processing limits."""
+    """The package is invalid or exceeds bounded processing limits."""
+
+
+ARCHIVE_BYTES = 10 * 1024 * 1024
+EXPANDED_BYTES = 50 * 1024 * 1024
+XML_ELEMENTS = 100_000
+PROCESS_SECONDS = 5
+
+
+def safe_part_name(name):
+    return (
+        bool(name)
+        and len(name) <= 512
+        and not any(ord(char) < 32 for char in name)
+        and not any(char in name for char in "\\:%?#")
+        and all(part not in {"", ".", ".."} for part in name.rstrip("/").split("/"))
+    )
 
 
 def parse_xml(content: bytes) -> Element:
@@ -36,7 +55,8 @@ def parse_xml(content: bytes) -> Element:
 
 class DocxPackage:
     def __init__(self, data: bytes):
-        if len(data) > 10 * 1024 * 1024:
+        self.deadline = time.monotonic() + PROCESS_SECONDS
+        if len(data) > ARCHIVE_BYTES:
             raise InvalidDocument("archive_limit")
         try:
             with ZipFile(io.BytesIO(data)) as archive:
@@ -45,23 +65,54 @@ class DocxPackage:
                 if (
                     len(entries) > 256
                     or len(names) != len(set(names))
-                    or sum(e.file_size for e in entries) > 50 * 1024 * 1024
+                    or sum(e.file_size for e in entries) > EXPANDED_BYTES
                     or any(e.flag_bits & 1 for e in entries)
                 ):
                     raise InvalidDocument("package_limit")
-                self.parts = {name: archive.read(name) for name in names}
+                self.parts = {}
+                total = 0
+                for entry in entries:
+                    if (
+                        not safe_part_name(entry.filename)
+                        or entry.orig_filename != entry.filename
+                        or entry.compress_type not in {ZIP_STORED, ZIP_DEFLATED}
+                        or stat.S_IFMT(entry.external_attr >> 16)
+                        not in {0, stat.S_IFREG, stat.S_IFDIR}
+                    ):
+                        raise InvalidDocument("invalid_package")
+                    chunks = []
+                    with archive.open(entry) as source:
+                        while chunk := source.read(
+                            min(65536, EXPANDED_BYTES - total + 1)
+                        ):
+                            self.check_deadline()
+                            total += len(chunk)
+                            if total > EXPANDED_BYTES:
+                                raise InvalidDocument("package_limit")
+                            chunks.append(chunk)
+                    self.parts[entry.filename] = b"".join(chunks)
             if "word/document.xml" not in self.parts:
                 raise InvalidDocument("missing_document")
-            self.roots = {
-                name: parse_xml(content)
-                for name, content in self.parts.items()
-                if name.endswith(".xml")
-            }
+            self.roots = {}
+            elements = 0
+            for name, content in self.parts.items():
+                if name.lower().endswith((".xml", ".rels")):
+                    root = parse_xml(content)
+                    for _ in root.iter():
+                        elements += 1
+                        if elements > XML_ELEMENTS:
+                            raise InvalidDocument("package_limit")
+                    self.roots[name] = root
+                self.check_deadline()
         except (
             BadZipFile,
             KeyError,
             etree.XMLSyntaxError,
             RuntimeError,
+            NotImplementedError,
+            EOFError,
+            UnicodeError,
+            zlib.error,
         ) as error:
             raise InvalidDocument("invalid_package") from error
         self.digest = hashlib.sha256(data).hexdigest()
@@ -77,11 +128,15 @@ class DocxPackage:
                     raise InvalidDocument("missing_body")
                 self.part = name
                 self.positions = {el: str(i) for i, el in enumerate(root.iter())}
-                content = self.blocks(parent)
+                blocks = self.blocks(parent)
                 sections.append(
-                    {"type": "section", "attrs": {"part": name}, "content": content}
+                    {"type": "section", "attrs": {"part": name}, "content": blocks}
                 )
         self.model: Node = {"type": "doc", "content": sections}
+
+    def check_deadline(self):
+        if time.monotonic() > self.deadline:
+            raise InvalidDocument("processing_limit")
 
     def identity(self, element: Element) -> str:
         key = self.part + ":" + self.positions[element]
@@ -104,6 +159,7 @@ class DocxPackage:
     def blocks(self, parent: Element) -> list[Node]:
         result = []
         for el in parent:
+            self.check_deadline()
             tag = el.tag.removeprefix(W) if isinstance(el.tag, str) else ""
             if tag in {"sectPr", "tblPr", "tblGrid", "trPr", "tcPr"}:
                 continue
@@ -146,6 +202,7 @@ class DocxPackage:
     def inlines(self, parent: Element) -> list[Node]:
         result = []
         for el in parent:
+            self.check_deadline()
             if el.tag == W + "pPr":
                 continue
             if el.tag == W + "r":

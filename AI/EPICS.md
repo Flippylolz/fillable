@@ -20,8 +20,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | --- | --- | --- | --- |
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
-| E02 | Login/profile, accounts, local storage, and quotas | E01 | in_progress: E02.1–E02.6 merged; E02.7 language verification |
-| E03 | Upload, templates, and processed-document library | E02 | waiting |
+| E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.2 validation, then E03.3 persistence and E03.1 UI |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -698,3 +698,27 @@ individual E02.7 PR, required protected CI and verified auto-merge, then E03.
 E03.2 validation and E03.3 persistence are prerequisites for delivering E03.1's real
 upload flow; follow that dependency order rather than shipping a simulated upload.
 Deployment remains E08, last.
+
+2026-09-06: E02.7 confirmed done through [PR #24](https://github.com/Flippylolz/fillable/pull/24)
+at `75c897f834cbdbafb134e7506ba742132e85f760`; Actions 34038437879 passed both
+checks for exact head `a113247bf75f298f8d309f4cce1c5968d4338dd4`. E02 is complete.
+Main synchronized and E03.2 began on `task/e03-2-docx-validation`, preceding E03.3
+persistence and E03.1's real upload UI. Source-preserving upload admission checks
+and bounded shared ZIP/XML reading are implemented. Initial full checks passed 128
+backend tests (1635/1643 lines, 496/506 branches); corruption checks and round-trip
+verification are in progress. No upload endpoint is exposed by this task. Next:
+finish checks/docs, individual PR and verified protected merge before persistence.
+
+E03.2 final local backend checks passed: 131 tests, 1646/1653 lines (99.58%) and
+505/514 branches (98.25%), with lint, typing and full-source gates. The shared-reader
+fresh-index proof at `/private/tmp/fillable-verify.4nE0DS` passed three development
+and twelve production browser checks plus storage/quota/persistence verification.
+Independent LibreOffice/Poppler verification passed: no-edit bytes and all pages
+identical, edited output retains three pages, unchanged page two and Ukrainian text.
+Edited pages one and three were visually inspected. The final additional same-part
+relationship-ID check is covered by the full backend suite; required CI rechecks the
+complete final commit. The backend negative coverage probe now scales with source
+size, preserving thresholds/exclusions. Frontend source is unchanged from E02.7's
+verified 329/333 lines and 230/244 branches; required CI reruns it. No upload endpoint
+or persisted resource is claimed yet. Next: E03.2 protected task PR, exact-head
+auto-merge and actual merge verification, then E03.3 persistence. No deployment.
