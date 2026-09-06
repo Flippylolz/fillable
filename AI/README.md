@@ -39,6 +39,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 | [Storage quotas](STORAGE_QUOTAS.md) | Local file storage and configurable per-user allowances |
 | [Epics](EPICS.md) | Ordered implementation work and acceptance criteria |
 | [Agent rules](AGENT_RULES.md) | Instructions for automated implementation and handoffs |
+| [Autonomous agent prompt](AUTONOMOUS_AGENT_PROMPT.md) | Ready-to-use implementation mandate, task/PR loop, escalation conditions, and resumption guidance |
 | [PR workflow](PR_WORKFLOW.md) | One branch/PR per task, auto-merge, CI prerequisites, and merged-state verification |
 
 ## Starting implementation
