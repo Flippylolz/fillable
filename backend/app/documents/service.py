@@ -4,7 +4,7 @@ import hashlib
 import json
 from uuid import NAMESPACE_URL, uuid5
 
-from sqlalchemy import and_, insert, or_, select
+from sqlalchemy import and_, func, insert, or_, select
 
 from app.accounts.profile import active_user
 from app.documents.deletion import pending_expression
@@ -19,6 +19,8 @@ from app.documents.schema import (
 from app.documents.validation import validate_upload
 from app.errors import AppError
 from app.infrastructure import database
+from app.jobs.schema import jobs
+from app.jobs.service import intent
 from app.storage.configuration import configured
 from app.storage.schema import files
 from app.storage.service import StorageError
@@ -73,6 +75,16 @@ def query(owner, include_deleting=False):
             files.c.digest,
             versions.c.unsupported_count,
             (resources.c.state == "deleted").label("deletion_pending"),
+            func.coalesce(
+                select(jobs.c.status)
+                .where(
+                    jobs.c.document_id == resources.c.id,
+                    jobs.c.source_version_id == resources.c.current_version_id,
+                )
+                .correlate(resources)
+                .scalar_subquery(),
+                "not_started",
+            ).label("processing_status"),
         )
         .join(versions, versions.c.id == resources.c.current_version_id)
         .join(
@@ -172,6 +184,9 @@ def upload(state, metadata, data, key):
                 document_model=package.model,
                 unsupported_count=len(package.unsupported),
             )
+        )
+        intent(
+            connection, state.user.id, {"id": identity, "current_version_id": version}
         )
 
     result = store.store(

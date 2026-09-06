@@ -21,6 +21,7 @@ from app.documents import routes, service
 from app.documents.schema import resources, versions
 from app.errors import AppError
 from app.infrastructure import database
+from app.jobs.schema import jobs
 from app.storage.filesystem import initialize
 from app.storage.quotas import set_override
 from app.storage.schema import accounts, audit_events, files, reservations
@@ -37,7 +38,7 @@ def document_store(account_database, tmp_path, monkeypatch):
     monkeypatch.setenv("STORAGE_DISK_HEADROOM_BYTES", "0")
     yield tmp_path
     with database().begin() as connection:
-        for table in (versions, resources, audit_events, files, reservations):
+        for table in (jobs, versions, resources, audit_events, files, reservations):
             connection.execute(delete(table))
 
 
@@ -79,7 +80,7 @@ def test_uploads_keep_originals_and_initial_models_and_retries_charge_once(
     assert not first.request.url.query
     result = first.json()
     assert result["title"] == "Заява Ґанни"
-    assert result["processing_status"] == "not_started"
+    assert result["processing_status"] == "queued"
     assert result["digest"] == hashlib.sha256(DATA).hexdigest()
     assert result["unsupported_count"] > 0
     assert first.headers["cache-control"] == "no-store"
@@ -112,6 +113,8 @@ def test_uploads_keep_originals_and_initial_models_and_retries_charge_once(
     # A new engine/client reads persisted metadata; no process-local resource cache.
     database().dispose()
     assert client().get("/api/documents/" + result["id"]).json() == result
+    with database().begin() as connection:
+        connection.execute(delete(jobs))
     with pytest.raises(RuntimeError, match="Documents exist"):
         command.downgrade(Config("alembic.ini"), "0004_storage_audit")
 
@@ -245,6 +248,7 @@ def test_database_constraints_and_empty_downgrade_upgrade():
         with database().begin() as connection:
             connection.execute(update(resources).values(current_version_id=uuid4()))
     with database().begin() as connection:
+        connection.execute(delete(jobs))
         connection.execute(delete(versions))
         connection.execute(delete(resources))
     command.downgrade(Config("alembic.ini"), "0004_storage_audit")
@@ -575,3 +579,27 @@ def test_workspace_content_is_a_single_owned_verified_revision(
         monkeypatch.setattr(service, "content", fail)
         response = web.get(url)
         assert response.status_code == status and "private text" not in response.text
+
+
+def test_upload_job_intent_rolls_back_with_file_and_quota(document_store, monkeypatch):
+    owner = account()
+    web = client()
+    original = service.intent
+
+    def fail(*args):
+        original(*args)
+        raise SQLAlchemyError("synthetic transaction interruption")
+
+    monkeypatch.setattr(service, "intent", fail)
+    assert upload(web).status_code == 503
+    assert counts() == (0, 0, 1, 1)
+    assert not list((document_store / "files" / str(owner.id)).iterdir())
+    with database().connect() as connection:
+        assert connection.execute(select(jobs)).first() is None
+        assert connection.execute(select(files.c.state)).scalar_one() == "deleted"
+        usage = (
+            connection.execute(select(accounts).where(accounts.c.user_id == owner.id))
+            .mappings()
+            .one()
+        )
+        assert usage["used_bytes"] == 0 and usage["reserved_bytes"] == 0

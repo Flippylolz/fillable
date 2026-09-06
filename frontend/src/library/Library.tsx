@@ -5,6 +5,7 @@ import { formatBytes, formatDate } from "../i18n";
 import { useLibrary, type Kind } from "./useLibrary";
 import "./library.css";
 import { DownloadSaved } from "./DownloadSaved";
+import { ProcessingStatus } from "./ProcessingStatus";
 import { DeleteResource } from "./DeleteResource";
 
 // getRandomValues also works on the explicitly supported HTTP origin.
@@ -74,7 +75,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen 
       } else {
         const code = result.error.error.code;
         setError(code);
-        if (code === "operation_aborted" || code === "operation_conflict") key.current = newKey();
+        if (code === "operation_aborted" || code === "operation_conflict" || code === "rate_limited") key.current = newKey();
       }
     } catch {
       if (!controller.signal.aborted) setError("internal_error");
@@ -118,7 +119,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen 
       <div className="library-items">{data.items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
         <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span></div>
         <h3>{item.title}</h3><p className="library-filename">{item.original_filename}</p>
-        {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><p>{t("library.notStarted")}</p></>}
+        {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><ProcessingStatus key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} /></>}
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>
         {!item.deletion_pending && <><a className="library-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => {
           if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

@@ -397,9 +397,9 @@ export interface components {
             /**
              * Processing Status
              * @default not_started
-             * @constant
+             * @enum {string}
              */
-            processing_status: "not_started";
+            processing_status: "not_started" | "queued" | "running" | "succeeded" | "failed" | "stale";
             /** Size Bytes */
             size_bytes: number;
             /** Title */

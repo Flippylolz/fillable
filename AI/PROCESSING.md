@@ -16,7 +16,10 @@ session inside the transaction. It returns existing live/completed work idempote
 an explicit failed-job retry gets a new attempt number and a fresh three-attempt budget.
 At most five queued/running jobs per owner may be admitted. `GET` on that path reads
 the owned current revision's status. Both use no-store responses. Deleted/foreign
-resources cannot be submitted or polled. Initial upload submission remains E03.5b.
+resources cannot be submitted or polled. Initial uploads commit intent in the same
+transaction as the resource, initial version and file/quota finalization. Admission
+limits abort the upload cleanly; the UI preserves the draft and uses a new operation
+key after a definitive capacity rejection. Ambiguous network retries retain the key.
 
 The PostgreSQL row commits before any Redis dispatch. RQ contains only a job UUID and
 attempt number using JSON serialization; document content, paths, names and credentials
@@ -46,6 +49,17 @@ machine codes, not exception strings. Worker job-description logging remains dis
 This dispatcher handles processing delivery only. General storage cleanup scheduling,
 capacity diagnostics and retention remain E07/E06. Historical version pruning must
 respect or explicitly retire processing references before removing version metadata.
+
+## Library status
+
+The library distinguishes saved bytes from inspection state in both UI languages.
+Each visible resource polls its current revision every two seconds while queued or
+running; terminal states stop polling. Requests/timers are cancelled on unmount or
+revision replacement, and obsolete results cannot replace a newer revision status.
+A failed status request preserves the known state and offers a status retry. Failed
+inspection and legacy uninspected revisions offer an explicit CSRF-protected submit.
+Background checks do not block navigation or clear upload/editor drafts. Pending
+deletions have no processing controls.
 
 ## Verification
 

@@ -21,7 +21,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E00 | Free editor feasibility and selection | Zero-fee end-to-end components or project-owned implementation | done: E00.1–E00.5 verified and merged, PRs #2 and #14–#17 |
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
-| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.4 and E03.1b merged; E03.5a durable processing in progress |
+| E03 | Upload, templates, and processed-document library | E02 | in_progress: E03.1–E03.4 and E03.1b merged; E03.5a merged; E03.5b upload intent/status in progress |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | waiting |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | waiting |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
@@ -882,3 +882,25 @@ Final fresh index `/private/tmp/fillable-verify.KUQm67` passed real dispatcher/f
 worker processing before/after recreation, unchanged saved bytes/quota, 3 development
 and 14 production browser checks. All isolated volumes preserved. Next: protected
 E03.5a PR and verified merge, then E03.5b upload intent and library status polling.
+
+2026-09-06: E03.5a verified merged in [PR #32](https://github.com/Flippylolz/fillable/pull/32),
+commit `312fa274d8801d0685b6749b0ec2a7a4c58d03a0`, exact head
+`98c73386a5ab20a02f390a20059b8de8e11175bc`; Actions 34047918000 passed required checks.
+E03.5b resumed on `task/e03-5b-processing-status`: upload and job intent commit
+atomically, list status reflects the current revision, and localized polling/retry
+controls preserve drafts. Backend 157 tests and frontend 71 tests pass; raw coverage
+and fresh real-worker/browser verification are being finalized. Next: protected task
+PR, actual merge, then E03.6 independent template snapshots. Deployment stays last.
+
+E03.5b final local verification passed: 157 backend tests, raw 2188/2203 lines
+(99.32%) and 609/626 branches (97.28%); 71 frontend tests, 584/590 lines
+(98.98%) and 511/545 branches (93.76%). Lint, typing, catalogs/build and generated
+API checks passed. Both real uncovered-source probes failed below 90% as required.
+Fresh index `/private/tmp/fillable-verify.P65paP` passed automatic upload processing
+through the real dispatcher/worker before and after recreation, 3 development and
+14 production browser tests, including interrupted polling/retry and both upload
+kinds reaching inspection completion. English desktop/Ukrainian mobile screenshots
+were inspected; readable storage units and the Docs-inspired layout remain intact.
+The first fresh run `/private/tmp/fillable-verify.Fvq9tg` stopped on a duplicate test
+variable, corrected in the final run. All verification volumes remain preserved.
+Next: protected E03.5b PR and verified merge, then E03.6.

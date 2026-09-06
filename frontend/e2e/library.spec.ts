@@ -13,6 +13,11 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/);
   await expect(page.getByRole("heading", { name: "Бібліотека документів" })).toBeVisible();
+  let pollFailure = true;
+  await page.route("**/api/documents/*/processing", async route => {
+    if (pollFailure) { pollFailure = false; await route.abort(); return; }
+    await route.continue();
+  });
   let fail = true;
   const keys: string[] = [];
   await page.route("**/api/documents", async route => {
@@ -29,6 +34,10 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page.getByLabel("Назва документа", { exact: true })).toHaveValue(templateTitle);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
   await expect(page.getByRole("article", { name: templateTitle })).toBeVisible();
+  const templateCard = page.getByRole("article", { name: templateTitle });
+  await expect(templateCard.getByRole("alert")).toBeVisible();
+  await templateCard.getByRole("button", { name: "Повторити запит стану", exact: true }).click();
+  await expect(templateCard.getByText("Перевірку завершено", { exact: true })).toBeVisible({ timeout: 30000 });
   const templateDownload = page.waitForEvent("download");
   await page.getByRole("article", { name: templateTitle }).getByRole("button", { name: "Завантажити збережений DOCX" }).click();
   const templateFile = await templateDownload;
@@ -83,11 +92,12 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.reload();
   await page.getByRole("tab", { name: "Documents", exact: true }).click();
   await expect(page.getByRole("article", { name: documentTitle })).toBeVisible();
+  await expect(page.getByRole("article", { name: documentTitle }).getByText("Inspection complete", { exact: true })).toBeVisible({ timeout: 30000 });
   const list = await (await page.request.get("/api/documents?kind=document")).json();
   const saved = list.items.find((item: { title: string }) => item.title === documentTitle);
   expect(saved.digest).toBe(createHash("sha256").update(bytes).digest("hex"));
   expect(saved.size_bytes).toBe(bytes.length);
-  expect(saved.processing_status).toBe("not_started");
+  expect(saved.processing_status).toBe("succeeded");
   const beforeDelete = await (await page.request.get("/api/storage/usage")).json();
   const card = page.getByRole("article", { name: documentTitle });
   await card.getByRole("button", { name: "Delete", exact: true }).click();
@@ -115,7 +125,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page.getByText("Мову інтерфейсу збережено.", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
   await page.getByRole("tab", { name: "Шаблони", exact: true }).click();
-  const templateCard = page.getByRole("article", { name: templateTitle });
+
   await templateCard.getByRole("button", { name: "Видалити", exact: true }).click();
   await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
   await expect(templateCard).toHaveCount(0);
