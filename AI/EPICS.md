@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c in_review (PR #54) |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c merged; E06.2d manual-save UI |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1482,3 +1482,52 @@ zero retries remain unchanged. Final fresh index `fillable-verify.k0Fd9w` passed
 Application source and measured coverage are unchanged from the preceding run;
 DOCX render verification remains the passed q6vaJu evidence. Next: verified CI and
 actual merge for this corrected PR head, then E06.2d.
+
+2026-09-07: E06.2c verified merged through [PR #54](https://github.com/Flippylolz/fillable/pull/54),
+commit `fef906636106df8e32f99c141af9d7448c285726`; Actions 34094472364 passed checks
+and ci-required for exact head `b73ce913fdeb8801ccc19f2c1a828c335b53bee1`. Main synchronized.
+E06.2d starts on `task/e06-2d-manual-save`: exact local revision acknowledgment,
+immutable uncertain retries, stable tab lease identity, settled input/field checks,
+retained editor history, proposed title and recoverable failure/reopen behavior.
+
+E06.2d local verification passed: 311 backend tests, raw 3355/3377 lines (99.35%)
+and 1035/1058 branches (97.83%); 153 frontend tests, 1083/1091 lines (99.27%) and
+1190/1243 branches (95.74%). Lint/type/catalog/build/raw gates passed; real uncovered
+source probes blocked backend 3355/10353 and frontend 1083/3553 lines, 1190/6165
+branches while all tests passed. The final adapter regression also verifies that
+acknowledgment leaves snapshot, revision and undo unchanged.
+Fresh index `fillable-verify.LRbyhe` passed 7 development and 26 production browser
+checks with worker/persistence/recreation. New desktop/mobile flows cover early
+manual fields, exact acknowledgment with later edits, pending title, subsequent save
+with stable tab identity, undo/redo, saved reopen and matching review. Native CDP
+composition prevents new saves; a real committed save with an aborted response
+replays exactly after old-revision renewal pauses access. Later draft and locale
+survive. Injected quota failure retains input and a subsequent real save succeeds;
+actual quota/disk enforcement remains covered by PostgreSQL/storage tests.
+Both actual saved downloads reproduce exact bytes from their paired model/review
+and immutable original, pass structural correspondence and retain manual provenance.
+LibreOffice/Poppler renders each as three pages with page two pixel-identical to the
+original and both repeated Ukrainian/astral values preserved. Changed pages and
+Ukrainian desktop/mobile UI plus English quota error were visually inspected. Standard
+no-edit/edited/multiline regression also passed. Microsoft Word was not run.
+Next: individual E06.2d PR, actual strict gate verification, exact-head auto-merge and
+verified merge. Then split history API/download/restore/UI dependencies before their
+implementation. Autosave/history remain unfinished; E08 deployment stays last.
+
+PR #55 initial Actions 34097000657 blocked merge at browser setup. Trace inspection
+confirmed overlapping initial session GETs (both set cookies) before the new test's
+API login returned 403. Its helper now waits for the login form, matching established
+API-assisted test setup and preserving the real CSRF checks. Final fresh index
+`fillable-verify.5uLD76` passed all 7 development and 26 production browser tests with
+worker/persistence/recreation. Application code/coverage and inspected DOCX render
+artifacts remain unchanged. Next: push this test correction and verify exact-head
+required CI and actual PR #55 merge before E06.3a.
+
+Final PR #55 review corrected inherited upload wording for in-progress, aborted and
+invalid-document save failures. Both catalogs now describe the save/draft action;
+real frontend checks passed 154 tests and the raw gate remains 1083/1091 lines
+(99.27%), 1190/1243 branches (95.74%). The actual uncovered-source probe again
+blocked 1083/3553 lines and 1190/6165 branches with all 154 tests passing. The change
+is message presentation only; existing fresh browser and rendered DOCX evidence
+remains applicable. Auto-merge was disabled while verifying the correction and will
+be rearmed for its exact commit under the strict required gate.

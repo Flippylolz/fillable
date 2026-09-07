@@ -85,3 +85,11 @@ review-only versions, stale leases/revisions, concurrent requests, quota/deletio
 revocation races, lost commit response and disk failure. The production browser test
 reopens the saved fixture in the existing editor and retains an actual saved DOCX for
 byte/render comparison; this is backend save/reopen evidence, not manual-save UI.
+
+E06.2d browser acceptance exports an actual manually saved template on desktop and
+mobile after creating an early manual title field and editing repeated native values.
+The saved model/review exactly reproduces downloaded DOCX bytes against the immutable
+original; embedded-editor reopen retains manual provenance and matching values.
+Independent Writer/Poppler checks render three pages, preserve original page two
+pixel-for-pixel and verify both repeated Ukrainian/astral values. Changed pages and
+workspace/save-error layouts were inspected. This is not Microsoft Word execution.

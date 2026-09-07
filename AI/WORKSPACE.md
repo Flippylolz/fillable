@@ -281,3 +281,35 @@ null-origin snapshots from the same mounted editor retain that binding. The requ
 and undo history are not mutated; reopening loads a bound review and does not enter
 a repeating stale-discovery/reopen prompt. This changes provenance only, not DOCX
 bytes, locations, labels, values or user decisions.
+
+## Manual saves (E06.2d)
+
+The workspace toolbar saves a detached snapshot from the mounted editor. New saves
+require valid field values, settled native composition and a synchronously valid
+editing lease. One cryptographic client identity survives the tab's own saved-version
+transitions; cleanup for the old source cannot release the advanced generation.
+
+Acknowledgment records the exact local revision sent. It updates saved resource
+metadata and download identity without replacing the editor document, selection or
+undo history. Edits made during the request stay unsaved; undo after acknowledgment
+also changes the local revision. A proposed title is tracked separately, so saving
+document content never clears it. Rename/reload requests are serialized with pending
+document saves; zoom, highlighting and document editing remain local. Normal route
+and authentication guards protect active requests. Locale/profile navigation after
+a request retains the same mounted editor and draft.
+
+Network errors, timeouts, 5xx and in-progress results retain the original detached
+body and idempotency key. Retry sends that attempt even if newer input is invalid or
+editing has paused; it never captures a new draft under an old key. Definite failures
+leave the draft and permit a new operation where editing access allows it. A replay
+whose saved version differs from the server's current version does not adopt that
+newer UUID as the old draft's base. Revision/lease/authentication failures pause access.
+The user must explicitly reopen after a conflict; unknown save results receive an
+additional discard explanation. Reopen and unmount abort/ignore obsolete responses.
+
+Confirmed reviewed snapshots allow later proposals to recognize the retained local
+review without rewriting its null origin inside undo history. This acknowledgment
+is outside the document; actual reopened review uses the server's persisted origin.
+Proposals never replace user review. The UI provides Ukrainian/English save, pending,
+retry, failure and exact-acknowledgment states. This task adds manual save; automatic
+save and the history panel remain subsequent E06 tasks.

@@ -115,10 +115,10 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     setDocumentLabel(label: string) {
       editor.setProps({ attributes: { "aria-label": label, role: "textbox", "aria-multiline": "true" } });
     },
-    attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string): boolean {
+    attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string, reviewSaved = false): boolean {
       if (compositionSource) return false;
       const current = reviewState(editor.state.doc);
-      if (current) return current.sourceVersion !== null;
+      if (current) return current.sourceVersion !== null || reviewSaved;
       try {
         if (!editor.state.doc.content.eq(source.content)) return false;
         const attached = attachReview(editor.state.doc, snapshot, sourceVersion);
