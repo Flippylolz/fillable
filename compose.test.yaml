@@ -15,13 +15,13 @@ services:
         condition: service_healthy
       test-redis:
         condition: service_healthy
-    command: sh -c 'rm -rf coverage && ruff check . && mypy app && pytest --cov=app --cov-branch --cov-report=term-missing --cov-report=json:coverage/coverage.json && python /checks/check_coverage.py backend /app && python /checks/test_coverage_gate.py'
+    command: sh -c 'rm -rf coverage && ruff check . && mypy app && python /checks/coverage_provenance.py backend /app pytest --cov=app --cov-branch --cov-report=term-missing --cov-report=json:coverage/coverage.json && python /checks/check_coverage.py backend /app && python /checks/test_coverage_gate.py'
   frontend-test:
     build:
       context: .
       dockerfile: infra/frontend.Dockerfile
       target: frontend
-    command: sh -c 'rm -rf coverage && npm run lint && npm run check:i18n && npm run build && npm test'
+    command: sh -c 'rm -rf coverage && npm run lint && npm run check:i18n && npm run build && node scripts/coverage-provenance.mjs'
   test-db:
     image: postgres:18.3-bookworm@sha256:80630f83606d8db77d30b3851b16a9f78be2d0d4dda6f7b82a1fdca5ebe3acba
     environment:

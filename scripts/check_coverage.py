@@ -1,7 +1,10 @@
 """Fail closed on raw independent coverage counts and missing source files."""
+
 import json
 import sys
 from pathlib import Path
+
+from coverage_provenance import verify
 
 
 def require_metric(covered, total):
@@ -13,21 +16,29 @@ def require_metric(covered, total):
 
 def check(scope, root):
     root = Path(root)
+    report = json.loads(verify(scope, root))
     if scope == "backend":
-        report = json.loads((root / "coverage/coverage.json").read_text())
         expected = {str(p.relative_to(root)) for p in (root / "app").rglob("*.py")}
         if set(report["files"]) != expected:
             raise ValueError("Backend source/report mismatch")
         summary = report["totals"]
-        metrics = [(summary["covered_lines"], summary["num_statements"]),
-                   (summary["covered_branches"], summary["num_branches"])]
+        metrics = [
+            (summary["covered_lines"], summary["num_statements"]),
+            (summary["covered_branches"], summary["num_branches"]),
+        ]
     elif scope == "frontend":
-        report = json.loads((root / "coverage/coverage-summary.json").read_text())
-        expected = {str(p.relative_to(root)) for p in (root / "src").rglob("*") if p.suffix in {".ts", ".tsx"}}
+        expected = {
+            str(p.relative_to(root))
+            for p in (root / "src").rglob("*")
+            if p.suffix in {".ts", ".tsx"}
+        }
         actual = {"src/" + p.split("/src/", 1)[1] for p in report if p != "total"}
         if actual != expected:
             raise ValueError("Frontend source/report mismatch")
-        metrics = [(report["total"][key]["covered"], report["total"][key]["total"]) for key in ("lines", "branches")]
+        metrics = [
+            (report["total"][key]["covered"], report["total"][key]["total"])
+            for key in ("lines", "branches")
+        ]
     else:
         raise ValueError("Unknown scope")
     if not expected or metrics[0][1] <= 0:
