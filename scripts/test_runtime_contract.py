@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from fillable_edge import (
     BLOCK,
@@ -258,6 +258,48 @@ class RuntimeContracts(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "preserved"):
                     install(source, SOURCE, wrong)
                 self.assertEqual((home / "fillable/runtime.env").read_bytes(), private)
+
+    @patch("fillable_runtime.execute", return_value="sha256:" + "0" * 64)
+    def test_initial_account_is_source_bound_and_cannot_replace_existing_users(
+        self, execute_mock
+    ):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            state = {
+                "source_sha": SOURCE,
+                "sha256": "b" * 64,
+                "status": "succeeded",
+                "images": {
+                    role: {"id": "sha256:" + "0" * 64}
+                    for role in ("backend", "gateway")
+                },
+            }
+            (root / "state.json").write_text(json.dumps(state))
+            runtime = object.__new__(Runtime)
+            runtime.root = root
+            runtime.environment = {}
+            runtime.command = Mock(side_effect=["container", "0", "completed"])
+            account = {
+                "email": "owner@example.test",
+                "password": "Synthetic-private-initial-password",
+            }
+            runtime.provision(SOURCE, "b" * 64, account)
+            call = runtime.command.call_args
+            self.assertEqual(call.kwargs, {"input": account["password"] + "\n"})
+            self.assertNotIn(account["password"], call.args)
+            self.assertIn("provision", call.args)
+            runtime.command = Mock(return_value="1")
+            with self.assertRaisesRegex(ValueError, "preserved"):
+                runtime.provision(SOURCE, "b" * 64, account)
+            self.assertEqual(runtime.command.call_count, 2)
+            runtime.command.reset_mock()
+            with self.assertRaisesRegex(ValueError, "active"):
+                runtime.provision("c" * 40, "b" * 64, account)
+            runtime.command.assert_not_called()
+            execute_mock.return_value = "sha256:" + "1" * 64
+            with self.assertRaisesRegex(ValueError, "differs"):
+                runtime.provision(SOURCE, "b" * 64, account)
+            self.assertEqual(runtime.command.call_count, 1)
 
     def test_failed_attempt_does_not_replace_successful_release_record(self):
         with tempfile.TemporaryDirectory() as directory:

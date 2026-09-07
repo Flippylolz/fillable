@@ -12,7 +12,7 @@ from uuid import uuid4
 
 from release_artifact import MAX_ARCHIVE_BYTES, unpack
 
-COMMAND = re.compile(r"(receive|apply) ([0-9a-f]{40}) ([0-9a-f]{64})")
+COMMAND = re.compile(r"(receive|apply|provision) ([0-9a-f]{40}) ([0-9a-f]{64})")
 
 
 def parse_command(command):
@@ -85,6 +85,12 @@ def main():
         _, source, digest = command
         if command[0] == "receive":
             return receive(root, source, digest, sys.stdin.buffer)
+        if command[0] == "provision":
+            payload = sys.stdin.buffer.read(4097)
+            if len(payload) > 4096:
+                raise ValueError("Initial account input exceeds bound")
+            runtime.provision(source, digest, json.loads(payload))
+            return {"source_sha": source, "provisioned": True}
         runtime.apply(source, digest)
         return {"source_sha": source, "status": "succeeded"}
 

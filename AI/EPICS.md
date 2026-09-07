@@ -2199,3 +2199,11 @@ members. The actual saved amd64 archive passes both metadata paths. Eight releas
 contracts and nine runtime contracts pass; final-head required CI restarts for this
 necessary receiver-boundary correction. Private bootstrap guards must use the updated
 PR head/run and still wait for verified MERGED.
+
+E08.3 also prepares source-bound initial administrator provisioning so the first
+Actions rollout can complete authenticated verification without deploying public
+fixture credentials. The restricted provision command accepts bounded private stdin,
+requires the last successful source/digest and matching running API image, and calls
+the existing account CLI only when the user table is empty. It cannot reset/delete
+accounts. Ten runtime contracts and eight release contracts pass; application code
+and its coverage gates remain unchanged. Final-head CI must pass again before bootstrap.

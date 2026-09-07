@@ -9,7 +9,7 @@ No shared service is restarted or recreated, and no certificate or TLS policy ch
 
 A newly generated dedicated SSH key is authorized with `restrict` and a forced Python
 receiver command. Existing authorized keys are retained. The receiver accepts only
-`check`, `receive <40-character commit> <SHA-256>` and `apply` with those same arguments.
+`check`, `receive <40-character commit> <SHA-256>` and `apply` with those same arguments. A source-bound `provision` command also accepts bounded private initial-account input after a successful release, and refuses to run when any users exist. It delegates to the existing account CLI with password stdin; there is no reset or deletion command.
 It cannot select a shell, project, filesystem path, arbitrary Compose file or command.
 A process lock serializes receiver operations. Installation preserves an existing
 matching configuration on retry and refuses to overwrite another installation.

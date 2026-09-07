@@ -195,8 +195,66 @@ class Runtime:
             self.compose += ["-f", str(self.root / "ops" / name)]
         self.edge = SharedEdge(Path.home() / "wef-shared-edge", self.configuration)
 
-    def command(self, *arguments):
-        return execute([*self.compose, *arguments], environment=self.environment)
+    def command(self, *arguments, input=None):
+        return execute(
+            [*self.compose, *arguments], environment=self.environment, input=input
+        )
+
+    def provision(self, source, digest, account):
+        state = json.loads((self.root / "state.json").read_text())
+        if (
+            state.get("source_sha") != source
+            or state.get("sha256") != digest
+            or state.get("status") != "succeeded"
+        ):
+            raise ValueError("Initial account requires the active verified release")
+        if set(account) != {"email", "password"} or any(
+            not isinstance(value, str) for value in account.values()
+        ):
+            raise ValueError("Invalid initial account input")
+        for role in ("backend", "gateway"):
+            self.environment[f"FILLABLE_{role.upper()}_IMAGE"] = state["images"][role][
+                "id"
+            ]
+        active = self.command("ps", "-q", "api")
+        if (
+            execute(["docker", "inspect", "--format", "{{.Image}}", active])
+            != state["images"]["backend"]["id"]
+        ):
+            raise ValueError("Running application differs from the verified release")
+        count = self.command(
+            "exec",
+            "-T",
+            "db",
+            "psql",
+            "-U",
+            "fillable",
+            "-d",
+            "fillable",
+            "-Atqc",
+            "SELECT count(*) FROM users",
+        )
+        if count != "0":
+            raise ValueError("Existing accounts must be preserved")
+        self.command(
+            "exec",
+            "-T",
+            "api",
+            "python",
+            "-m",
+            "app.accounts.cli",
+            "provision",
+            "--email",
+            account["email"],
+            "--display-name",
+            "Адміністратор Fillable",
+            "--role",
+            "admin",
+            "--language",
+            "uk",
+            "--password-stdin",
+            input=account["password"] + "\n",
+        )
 
     def preflight(self):
         fingerprints = json.loads((self.root / "installed-files.json").read_text())
@@ -435,6 +493,7 @@ class Runtime:
             "schema": SCHEMA,
             "status": "succeeded",
             "existing_services_preserved": True,
+            "images": images,
         }
         path = self.root / "state.json"
         temporary = path.with_name("state-" + uuid4().hex + ".json")
