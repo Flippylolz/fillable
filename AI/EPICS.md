@@ -25,8 +25,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | done: E07.1a–E07.6 verified and merged, through PR #68 |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1 shared-server preflight |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.1c corrective browser selection after main CI failure |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting: E08.1 merged; E08.2 paused for corrective browser CI |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -219,6 +219,7 @@ Work:
 
 - E07.1a: Correct expired-session recovery before final acceptance: keep same-owner drafts mounted through fresh CSRF/sign-in, pause editing and autosave, fence late session responses, and require explicit discard before switching accounts. Deliver in its own PR.
 - E07.1b: Verify login, library, profile, and workspace navigation and states in Ukrainian and English, including the history panel, localized errors/accessibility text, and long Ukrainian labels. Verify default language, profile preference persistence/failure, and unchanged document data/drafts when switching. Check account/quota operator commands and user-facing storage meters. Confirm the version badge appears once on each page without blocking controls on desktop/mobile or changing its specified colors with theme.
+- E07.1c: Correct the manual-save browser journey's timing-dependent heading selection after the main-branch CI failure. Preserve field creation/save/history assertions, verify repeated desktop/mobile journeys and full required CI, and deliver separately before resuming E08.2.
 - E07.2: Add content-free job/capacity diagnostics and audit events through logs or operator commands. Do not create a diagnostics dashboard for MVP.
 - E07.3: Implement scheduled cleanup/reconciliation with bounded retries and clear failure state.
 - E07.4: Verify full-application restart, non-destructive upgrade, and crash reconciliation using synthetic data in local/CI Docker. Check matching PostgreSQL/files state and retained version history. Do not implement backups or a backup/restore drill.
@@ -2066,3 +2067,37 @@ secrets and deployment environments are currently empty (names-only inspection).
 Next: verify final required CI/protection, exact-head squash auto-merge and MERGED;
 then E08.2 creates the protected immutable-artifact workflow. The HTTP decision and
 port access are settled; do not ask again. No external dependency is outstanding.
+
+
+Verified E08.1 completion: [PR #69](https://github.com/Flippylolz/fillable/pull/69)
+merged as `0b38ea67f729ce9f37f36c3c296106b6e0cdfde4`, exact head
+`08341c7fe502b8facf7262143559768ed208293a`. Required CI `34146598548` passed
+both jobs and ci-required, with baseline backend416/frontend229 independent coverage
+and both negative probes. The local relay proof also passed: validated graceful
+reload introduced a listener while the existing route, container ID/start time and
+zero restart count were preserved. Public HTTP 3200 and strict SSH access work.
+
+The user reported subsequent main push CI `34147985255` failed on merge revision
+`0b38ea6`: desktop manual-save heading selection returned `КЛІЄНТА` plus the next
+paragraph instead of `АНКЕТА КЛІЄНТА`. The other 47 browser cases and upgrade job
+passed; ci-required correctly failed. No deployment was attempted. E08.2's unfinished
+workflow/artifact files remain preserved on its original branch/workspace. E07.1c
+runs in an isolated worktree on current main, branch `task/e07-1c-browser-selection`.
+
+The correction selects the complete first paragraph through the native DOM Selection
+API and waits for the actual selectionchange event observed by the editor. This save
+journey no longer assumes that a global Control+Home followed immediately by arrow
+keys established the intended starting caret. The exact heading assertion and all
+real field creation, save, history, download/reopen assertions remain. Full fresh
+browser checks and repeated focused desktop/mobile journeys must pass before PR
+readiness; required CI/90% gates and actual merge are still mandatory. Port and HTTP
+choices are settled; no external dependency is outstanding.
+
+E07.1c is in_review in [PR #70](https://github.com/Flippylolz/fillable/pull/70),
+candidate `4ac12ba`. A frozen source/driver runs full fresh verification plus ten
+repetitions per viewport of the affected manual-save journey; source is isolated from
+E08.2's uncommitted deployment files. The initial run has passed service startup,
+account provisioning and persisted storage/document checks. Required PR CI and
+repeated browser results remain pending. Before readiness, inspect results, verify
+strict protection, enable exact-head squash auto-merge and confirm MERGED. Then
+synchronize the E08.2 branch without discarding its preserved work.

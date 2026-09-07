@@ -35,10 +35,19 @@ test("manual saves acknowledge exact edits, retain title and history, and reopen
   const { resource, endpoint } = await open(page, "template");
   const editor = page.getByRole("textbox", { name: "Редагований документ", exact: true });
   const retained = await editor.elementHandle();
-  await editor.locator("p").first().click();
-  // Select the whole heading even when it wraps into multiple visual lines.
-  await page.keyboard.press("Control+Home", { delay: 30 });
-  for (const _character of "АНКЕТА КЛІЄНТА") await page.keyboard.press("Shift+ArrowRight", { delay: 30 });
+  const heading = editor.locator("p").first();
+  await expect(heading).toHaveText("АНКЕТА КЛІЄНТА");
+  await heading.click();
+  // This save journey needs a native selection, not a timing-dependent global
+  // Control+Home shortcut. Select the paragraph across all its source text runs
+  // and wait for the browser event that the editor observes before blurring it.
+  await heading.evaluate(async node => {
+    const selectionChanged = new Promise<void>(resolve => {
+      document.addEventListener("selectionchange", () => resolve(), { once: true });
+    });
+    window.getSelection()!.selectAllChildren(node);
+    await selectionChanged;
+  });
   await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("АНКЕТА КЛІЄНТА");
   await page.getByRole("textbox", { name: "Назва нового поля", exact: true }).fill("Заголовок Ґанни");
   await page.getByRole("button", { name: "Створити поле з виділення", exact: true }).click();
