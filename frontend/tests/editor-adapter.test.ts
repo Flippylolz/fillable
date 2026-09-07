@@ -99,6 +99,11 @@ test("identical sidebar echoes terminate without revisions or history and meanin
   expect(updated).toHaveBeenCalledTimes(1);
   expect(editor.updateField(first.key, "Ґанна Їжак")).toBe(true);
   expect(changed).toHaveBeenCalledTimes(1); expect(updated).toHaveBeenCalledTimes(2);
+  const working = editor.exportSnapshot();
+  expect(editor.attachDiscovery(snapshot, snapshot.source_version_id)).toBe(false);
+  expect(editor.attachDiscovery(snapshot, snapshot.source_version_id, true)).toBe(true);
+  expect(editor.exportSnapshot()).toEqual(working);
+  expect(changed).toHaveBeenCalledTimes(1);
   expect(presentation!.fields.filter(field => field.key === first.key).map(field => field.value)).toEqual(["Ґанна Їжак", "Ґанна Їжак"]);
   expect(editor.undo()).toBe(true);
   expect(editor.exportSnapshot().document).toEqual(initial.document);

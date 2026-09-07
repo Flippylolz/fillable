@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
 import type { Resource } from "../library/useLibrary";
 
-export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, onHighlight, onResource, onDirty, onBusy, onReopen }: {
+export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, onHighlight, onResource, onDirty, onBusy, onReopen, disabled = false }: {
   item: Resource; csrfToken: string; zoom: number; highlight: boolean;
   onZoom: (zoom: number) => void; onHighlight: (highlight: boolean) => void;
   onResource: (resource: Resource) => void; onDirty: (dirty: boolean) => void;
   onBusy?: (busy: boolean) => void; onReopen: () => void;
+  disabled?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [title, setTitle] = useState(item.title);
@@ -24,7 +25,7 @@ export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, on
     return () => { controller.abort(); busyChange.current?.(false); };
   }, []);
   async function submit(action: "rename" | "reload") {
-    if (busy) return;
+    if (busy || disabled) return;
     setError(""); setStatus("");
     const clean = title.trim();
     if (action === "rename" && (!clean || [...clean].length > 160 || [...clean].some(char => char.codePointAt(0)! < 32 || (char.codePointAt(0)! >= 0xd800 && char.codePointAt(0)! <= 0xdfff)))) {
@@ -57,11 +58,11 @@ export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, on
         <label>{t("workspace.name")}<input value={title} aria-invalid={error === "invalid_title" || undefined} aria-describedby={error ? errorId : undefined}
           onChange={event => { setTitle(event.target.value); setError(""); setStatus(""); }} disabled={busy} /></label>
         <p>{t("workspace.currentTitle", { title: item.title })}</p>
-        <button type="submit" disabled={busy}>{t(busy ? "workspace.working" : "workspace.rename")}</button>
+        <button type="submit" disabled={busy || disabled}>{t(busy ? "workspace.working" : "workspace.rename")}</button>
         {error && <p role="alert" id={errorId}>{error === "invalid_title" ? t("workspace.renameInvalid", { limit: new Intl.NumberFormat(i18n.resolvedLanguage).format(160) })
           : error === "title_conflict" ? t("workspace.renameConflict") : error === "revision_conflict" ? t("workspace.renameStale") : apiErrorMessage(error)}</p>}
-        {error === "title_conflict" && <button type="button" disabled={busy} onClick={() => void submit("reload")}>{t("workspace.reloadTitle")}</button>}
-        {error === "revision_conflict" && <button type="button" disabled={busy} onClick={onReopen}>{t("review.reopen")}</button>}
+        {error === "title_conflict" && <button type="button" disabled={busy || disabled} onClick={() => void submit("reload")}>{t("workspace.reloadTitle")}</button>}
+        {error === "revision_conflict" && <button type="button" disabled={busy || disabled} onClick={onReopen}>{t("review.reopen")}</button>}
         {status && <p role="status">{t(`workspace.${status}`)}</p>}
       </form>
       <div className="workspace-view-settings">

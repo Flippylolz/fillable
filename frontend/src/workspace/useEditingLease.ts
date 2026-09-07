@@ -4,11 +4,14 @@ import { newKey } from "../library/operationKey";
 import type { Resource } from "../library/useLibrary";
 
 type Access = { status: "checking" | "active" | "paused"; error: string };
+export type EditingCredentials = { client_id: string; lease_id: string; source_version_id: string };
 export function useEditingLease(resource: Resource | null, csrfToken: string) {
   const identity = resource?.id, version = resource?.current_version_id;
   const key = `${identity}:${version}:${csrfToken}`;
-  const held = useRef({ key: "", deadline: 0 });
+  const held = useRef<{ key: string; deadline: number; credentials?: EditingCredentials }>({ key: "", deadline: 0 });
+  const clientId = useRef<string | null>(null);
   const retry = useRef(() => {});
+  const invalidate = useRef<(error: string) => void>(() => {});
   const release = useRef<Promise<unknown>>(Promise.resolve());
   const [access, setAccess] = useState<Access>({ status: "checking", error: "" });
   const canEdit = useCallback(() => held.current.key === key && performance.now() < held.current.deadline, [key]);
@@ -16,7 +19,7 @@ export function useEditingLease(resource: Resource | null, csrfToken: string) {
     held.current = { key, deadline: 0 };
     setAccess({ status: "checking", error: "" });
     if (!identity || !version) { retry.current = () => {}; return; }
-    const client = newKey();
+    const client = clientId.current ??= newKey();
     let alive = true, busy = false, generation: string | undefined;
     let renewal: ReturnType<typeof setTimeout>, expiry: ReturnType<typeof setTimeout>;
     let controller: AbortController | undefined;
@@ -26,6 +29,7 @@ export function useEditingLease(resource: Resource | null, csrfToken: string) {
       stopTimers(); held.current.deadline = 0;
       setAccess({ status: "paused", error });
     }
+    invalidate.current = pause;
     function relinquish() {
       if (!generation) return Promise.resolve();
       return api.POST("/api/documents/{identity}/editing-lease", {
@@ -53,6 +57,7 @@ export function useEditingLease(resource: Resource | null, csrfToken: string) {
         if (next.status !== "active" || next.source_version_id !== version || !next.lease_id || !Number.isFinite(deadline) || deadline <= performance.now()
           || (action === "renew" && (!held.current.deadline || performance.now() >= priorDeadline))) { pause("lease_lost"); return; }
         generation = next.lease_id; held.current.deadline = deadline;
+        held.current.credentials = { client_id: client, lease_id: generation, source_version_id: version! };
         stopTimers(); setAccess({ status: "active", error: "" });
         renewal = setTimeout(() => void run("renew"), 20000);
         expiry = setTimeout(() => pause("lease_lost"), Math.max(0, deadline - performance.now()));
@@ -68,9 +73,11 @@ export function useEditingLease(resource: Resource | null, csrfToken: string) {
     window.addEventListener("pagehide", leave);
     return () => {
       alive = false; held.current.deadline = 0; clearTimeout(initial); stopTimers(); controller?.abort();
+      invalidate.current = () => {};
       window.removeEventListener("focus", check); document.removeEventListener("visibilitychange", check); window.removeEventListener("pagehide", leave);
       release.current = relinquish();
     };
   }, [identity, version, csrfToken, key, canEdit]);
-  return { ...access, canEdit, retry: () => retry.current() };
+  return { ...access, canEdit, retry: () => retry.current(), invalidate: (error: string) => invalidate.current(error),
+    credentials: () => canEdit() ? held.current.credentials : undefined };
 }

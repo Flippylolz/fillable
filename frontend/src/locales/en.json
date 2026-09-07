@@ -215,5 +215,18 @@
   "lease.lease_lost": "Editing access expired or changed. Try again to continue with this draft.",
   "lease.revision": "A newer revision is saved. Reopen it to continue; your current draft stays here until you choose to discard it.",
   "lease.retry": "Try editing again",
-  "editor.creation.read_only": "Editing is paused. Restore editing access before changing fields."
+  "editor.creation.read_only": "Editing is paused. Restore editing access before changing fields.",
+  "save.action": "Save document",
+  "save.saving": "Saving…",
+  "save.saved": "All document changes saved.",
+  "save.retry": "Retry save",
+  "save.uncertain": "The save result is not confirmed. Retrying checks the same revision without creating a duplicate. Newer edits remain in your draft.",
+  "save.discardPending": "The save result is not confirmed. Open the latest saved revision and discard the current draft?",
+  "save.revision": "The saved revision changed. Your draft is kept in this window. Reopen the latest revision to continue.",
+  "save.lease_lost": "Restore editing access before saving new changes. Your draft remains here.",
+  "save.composing": "Finish the current text composition before saving.",
+  "save.invalid_fields": "Correct the marked field values before saving.",
+  "save.file_too_large": "The document or editing data exceeds the save limit. Your draft remains here.",
+  "save.upload_timeout": "Sending changes timed out. Your draft remains here; try saving again.",
+  "save.upload_busy": "The server is processing other documents. Try saving again."
 }

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
-import { mountEditor, type EditorAdapter, type EditorPresentation } from "./adapter";
+import { mountEditor, type EditorAdapter, type EditorPresentation, type EditorSnapshot } from "./adapter";
 import { ReviewPanel } from "./ReviewPanel";
 import { FieldSidebar } from "./FieldSidebar";
 import { FIELD_LABEL_LIMIT, FIELD_RECORD_LIMIT } from "./fieldProperties";
@@ -11,6 +11,9 @@ import "./editor.css";
 export function DocumentEditor({
   initialDocument,
   onDocumentChange,
+  onSnapshot,
+  onReader,
+  reviewSaved = false,
   onFieldValidityChange,
   onCompositionChange,
   discoverySnapshot,
@@ -23,6 +26,9 @@ export function DocumentEditor({
 }: {
   initialDocument: object;
   onDocumentChange?: (document: object) => void;
+  onSnapshot?: (snapshot: EditorSnapshot) => void;
+  onReader?: (read: (() => EditorSnapshot) | null) => void;
+  reviewSaved?: boolean;
   onFieldValidityChange?: (valid: boolean) => void;
   onCompositionChange?: (composing: boolean) => void;
   discoverySnapshot?: components["schemas"]["FieldSnapshot"] | null;
@@ -40,6 +46,7 @@ export function DocumentEditor({
   const access = useRef({ canEdit, readOnly }); access.current = { canEdit, readOnly };
   const change = useRef(onDocumentChange);
   change.current = onDocumentChange;
+  const snapshots = useRef({ onSnapshot, onReader }); snapshots.current = { onSnapshot, onReader };
   const validity = useRef(onFieldValidityChange);
   validity.current = onFieldValidityChange;
   const composition = useRef(onCompositionChange);
@@ -53,17 +60,18 @@ export function DocumentEditor({
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
       canEdit: () => !access.current.readOnly && access.current.canEdit?.() !== false,
-      onChange: snapshot => change.current?.(snapshot.document),
+      onChange: snapshot => { change.current?.(snapshot.document); snapshots.current.onSnapshot?.(snapshot); },
       onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); composition.current?.(presentation.composing); },
     });
     view.current = editor;
-    return () => { editor.destroy(); view.current = null; };
+    snapshots.current.onReader?.(editor.exportSnapshot);
+    return () => { snapshots.current.onReader?.(null); editor.destroy(); view.current = null; };
   }, []);
   useEffect(() => { view.current!.refreshAccess(); }, [readOnly, canEdit]);
   useEffect(() => { view.current!.setDocumentLabel(t("editor.document")); }, [t]);
   useEffect(() => {
-    if (discoverySnapshot && sourceVersion) setReviewStale(!view.current!.attachDiscovery(discoverySnapshot, sourceVersion));
-  }, [discoverySnapshot, sourceVersion]);
+    if (discoverySnapshot && sourceVersion) setReviewStale(!view.current!.attachDiscovery(discoverySnapshot, sourceVersion, reviewSaved));
+  }, [discoverySnapshot, sourceVersion, reviewSaved]);
 
   return (
     <div className="document-workbench" data-highlight-fields={highlight} style={{ "--document-zoom": zoom } as CSSProperties}>
