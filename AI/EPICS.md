@@ -1987,3 +1987,10 @@ zsh comparison had a colon-modifier syntax error and the corrected byte comparis
 passed. Final drivers also isolate synthetic environment settings, retain source-tree
 reports, and use `development` for uncommitted snapshot badge metadata. Final full
 fresh/recovery repeats and both CI jobs are required before readiness.
+
+E07.5 is in_review in [PR #67](https://github.com/Flippylolz/fillable/pull/67),
+branch `task/e07-5-runtime-isolation`, candidate `f2f32ec`. Utility lint, shell syntax
+and the first complete bounded-runtime browser run pass. Final committed fresh and
+previous-image recovery proofs run in separate unique projects with immutable drivers.
+Review their results and required CI, then enable exact-head squash auto-merge under
+verified strict protection and confirm MERGED before E07.6. Deployment remains last.
