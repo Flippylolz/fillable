@@ -2190,3 +2190,12 @@ environment exists yet. Final-head required CI and verified merge must precede
 private bootstrap. Prepare a new dedicated key locally while CI runs; install only
 verified merged files, retain private settings, constrain the environment to main,
 and confirm receiver check plus unchanged server baselines before E08.4.
+
+E08.3 receiver review also identified Docker's OCI index as an alternate image/tag
+source beside the legacy manifest. The archive verifier now checks that index's
+manifest bytes/digests, exact two image configurations and Fillable-only aliases;
+it rejects nested indices, extra images, mismatched configs and unsafe outer Docker
+members. The actual saved amd64 archive passes both metadata paths. Eight release
+contracts and nine runtime contracts pass; final-head required CI restarts for this
+necessary receiver-boundary correction. Private bootstrap guards must use the updated
+PR head/run and still wait for verified MERGED.

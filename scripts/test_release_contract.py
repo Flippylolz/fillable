@@ -154,12 +154,13 @@ def add(archive, name, content):
     archive.addfile(member, io.BytesIO(content))
 
 
-def fixture(root):
+def fixture(root, *, oci=False):
     with tarfile.open(
         root / "source.tar.gz", "w:gz", pax_headers={"comment": SOURCE}
     ) as archive:
         add(archive, "app/source.py", b"value = 1\n")
     rows = []
+    descriptors = []
     with tarfile.open(root / "images.tar.gz", "w:gz") as archive:
         for role in ("backend", "gateway"):
             config = {
@@ -175,6 +176,31 @@ def fixture(root):
             filename = f"blobs/sha256/{digest}"
             add(archive, filename, data)
             rows.append({"Config": filename, "RepoTags": [f"fillable-{role}:{SOURCE}"]})
+            if oci:
+                media_type = "application/vnd.oci.image.manifest.v1+json"
+                image = json.dumps(
+                    {
+                        "schemaVersion": 2,
+                        "mediaType": media_type,
+                        "config": {"digest": "sha256:" + digest},
+                        "layers": [],
+                    }
+                ).encode()
+                image_digest = hashlib.sha256(image).hexdigest()
+                add(archive, "blobs/sha256/" + image_digest, image)
+                descriptors.append(
+                    {
+                        "mediaType": media_type,
+                        "digest": "sha256:" + image_digest,
+                        "size": len(image),
+                        "annotations": {
+                            "io.containerd.image.name": (
+                                f"docker.io/library/fillable-{role}:{SOURCE}"
+                            ),
+                            "org.opencontainers.image.ref.name": SOURCE,
+                        },
+                    }
+                )
             (root / f"{role}.json").write_text(
                 json.dumps(
                     {
@@ -186,9 +212,56 @@ def fixture(root):
                 )
             )
         add(archive, "manifest.json", json.dumps(rows).encode())
+        if oci:
+            add(archive, "oci-layout", b'{"imageLayoutVersion":"1.0.0"}')
+            add(
+                archive,
+                "index.json",
+                json.dumps({"schemaVersion": 2, "manifests": descriptors}).encode(),
+            )
 
 
 class ReleaseArtifactTests(unittest.TestCase):
+    def test_oci_index_cannot_load_other_tags_or_nested_images(self):
+        for corruption in (None, "tag", "nested", "extra", "config"):
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root, oci=True)
+                with tarfile.open(root / "images.tar.gz", "r:gz") as archive:
+                    members = {
+                        member.name: archive.extractfile(member).read()
+                        for member in archive
+                    }
+                index = json.loads(members["index.json"])
+                if corruption == "tag":
+                    index["manifests"][0]["annotations"]["io.containerd.image.name"] = (
+                        "other-service:latest"
+                    )
+                elif corruption == "nested":
+                    index["manifests"][0]["mediaType"] = (
+                        "application/vnd.oci.image.index.v1+json"
+                    )
+                elif corruption == "extra":
+                    index["manifests"].append(index["manifests"][0])
+                elif corruption == "config":
+                    descriptor = index["manifests"][0]
+                    old = "blobs/sha256/" + descriptor["digest"].split(":")[1]
+                    image = json.loads(members[old])
+                    image["config"]["digest"] = "sha256:" + "0" * 64
+                    data = json.dumps(image).encode()
+                    digest = hashlib.sha256(data).hexdigest()
+                    members["blobs/sha256/" + digest] = data
+                    descriptor.update(digest="sha256:" + digest, size=len(data))
+                members["index.json"] = json.dumps(index).encode()
+                with tarfile.open(root / "images.tar.gz", "w:gz") as archive:
+                    for name, data in members.items():
+                        add(archive, name, data)
+                if corruption is None:
+                    pack(root, SOURCE, 123)
+                else:
+                    with self.assertRaises(ValueError):
+                        pack(root, SOURCE, 123)
+
     def test_round_trip_and_outer_tampering_are_checked(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

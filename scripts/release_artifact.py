@@ -96,9 +96,16 @@ def validate_image_archive(path, manifest):
     with tarfile.open(path, "r:gz") as archive:
         names = set()
         for item in archive:
-            if item.name in names or len(names) >= 10000:
+            path = PurePosixPath(item.name)
+            if (
+                str(path) in names
+                or len(names) >= 10000
+                or path.is_absolute()
+                or ".." in path.parts
+                or not (item.isfile() or item.isdir())
+            ):
                 raise ValueError("Duplicate or excessive Docker archive members")
-            names.add(item.name)
+            names.add(str(path))
         member = archive.getmember("manifest.json")
         if not member.isfile() or member.size > 65536:
             raise ValueError("Invalid Docker archive manifest")
@@ -133,6 +140,67 @@ def validate_image_archive(path, manifest):
             ):
                 raise ValueError("Docker archive image identity mismatch")
             found.add(role)
+        validate_oci_index(archive, names, manifest)
+
+
+def validate_oci_index(archive, names, manifest):
+    """Docker may load OCI metadata instead of the legacy manifest."""
+
+    def read_json(name, limit=1024**2):
+        member = archive.getmember(name)
+        if not member.isfile() or not 0 < member.size <= limit:
+            raise ValueError("Invalid OCI metadata member")
+        data = archive.extractfile(member).read()
+        return data, json.loads(data)
+
+    if "repositories" in names:
+        _, repositories = read_json("repositories")
+        if set(repositories) != {"fillable-backend", "fillable-gateway"} or any(
+            set(tags) != {manifest["source_sha"]} for tags in repositories.values()
+        ):
+            raise ValueError("Unexpected Docker repository alias")
+    if "index.json" not in names and "oci-layout" not in names:
+        return  # Older Docker archives use only the checked legacy manifest.
+    _, layout = read_json("oci-layout")
+    _, index = read_json("index.json")
+    if layout != {"imageLayoutVersion": "1.0.0"} or index.get("schemaVersion") != 2:
+        raise ValueError("Unexpected OCI layout")
+    descriptors = index.get("manifests", [])
+    if len(descriptors) != 2:
+        raise ValueError("Unexpected OCI image count")
+    found = set()
+    for descriptor in descriptors:
+        if descriptor.get("mediaType") not in {
+            "application/vnd.oci.image.manifest.v1+json",
+            "application/vnd.docker.distribution.manifest.v2+json",
+        }:
+            raise ValueError("Unexpected nested OCI index")
+        digest = descriptor.get("digest", "")
+        if not DIGEST.fullmatch(digest):
+            raise ValueError("Invalid OCI manifest digest")
+        data, image = read_json("blobs/sha256/" + digest.removeprefix("sha256:"))
+        if (
+            "sha256:" + hashlib.sha256(data).hexdigest() != digest
+            or len(data) != descriptor.get("size")
+            or image.get("schemaVersion") != 2
+            or image.get("mediaType") != descriptor["mediaType"]
+        ):
+            raise ValueError("OCI manifest bytes mismatch")
+        matches = [
+            role
+            for role, expected in manifest["images"].items()
+            if image.get("config", {}).get("digest") == expected["id"]
+        ]
+        if len(matches) != 1 or matches[0] in found:
+            raise ValueError("Unexpected OCI image config")
+        role = matches[0]
+        tag = f"docker.io/library/fillable-{role}:{manifest['source_sha']}"
+        if descriptor.get("annotations") != {
+            "io.containerd.image.name": tag,
+            "org.opencontainers.image.ref.name": manifest["source_sha"],
+        }:
+            raise ValueError("Unexpected OCI repository alias")
+        found.add(role)
 
 
 def pack(root, source, ci_run_id):

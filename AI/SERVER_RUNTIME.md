@@ -118,3 +118,9 @@ It must verify the externally reachable exact origin with authenticated syntheti
 E08.5 verifies the broader deployed MVP and persistence. Existing-service container
 identity/start/restart/health and existing route/HSTS results are compared before/after
 apply; production reports expose only safe source/digest/status evidence.
+
+The Docker archive check covers both legacy and OCI metadata paths. An OCI index
+must reference exactly the two expected image configurations with only their Fillable
+source tags, verified manifest bytes and no nested indices. Legacy repository aliases
+are likewise restricted. The real Docker-produced archive passed these checks;
+controlled alternate-tag/config/index mutations are rejected before image loading.
