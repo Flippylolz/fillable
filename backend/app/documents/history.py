@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.documents.history_schema import VersionContent, VersionInfo, VersionList
 from app.documents.package import ARCHIVE_BYTES
+from app.documents.retention import policy
 from app.documents.schema import resources, versions
 from app.documents.service import working_model
 from app.errors import AppError
@@ -57,6 +58,7 @@ def listing(owner, identity, limit, before):
         ).scalar_one_or_none()
         if current is None:
             raise AppError(404, "not_found")
+        retention = policy(connection)
         statement = query(owner, identity)
         if before is not None:
             statement = statement.where(versions.c.number < before)
@@ -71,6 +73,7 @@ def listing(owner, identity, limit, before):
     return VersionList(
         current_version_id=current,
         items=items,
+        retention=retention,
         next_before=items[-1].number if len(rows) > limit else None,
     )
 

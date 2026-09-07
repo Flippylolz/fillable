@@ -714,6 +714,13 @@ export interface components {
              */
             source_version_id: string;
         };
+        /** RetentionInfo */
+        RetentionInfo: {
+            /** Keep Latest */
+            keep_latest: number | null;
+            /** Revision */
+            revision: number;
+        };
         /** ReviewDecision */
         ReviewDecision: {
             /** Candidate Id */
@@ -853,6 +860,7 @@ export interface components {
             items: components["schemas"]["VersionInfo"][];
             /** Next Before */
             next_before?: number | null;
+            retention: components["schemas"]["RetentionInfo"];
         };
     };
     responses: never;

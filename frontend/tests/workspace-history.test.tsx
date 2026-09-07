@@ -13,7 +13,7 @@ const resource = { id, kind: "document", title: "Заява Їжака", origina
   created_at: "2026-09-07", updated_at: "2026-09-07", size_bytes: 1536000, digest: "digest", unsupported_count: 1, deletion_pending: false, processing_status: "not_started" };
 const failure = (code = "internal_error", status = 503) => Response.json({ error: { code } }, { status });
 function setup() {
-  const server = { resource: { ...resource }, versions: [version(v2, 2), version(v1, 1)],
+  const server = { retention: { keep_latest: null as number | null, revision: 0 }, resource: { ...resource }, versions: [version(v2, 2), version(v1, 1)],
     documents: new Map<string, object>([[v1, structuredClone(corpus)], [v2, structuredClone(corpus)]]),
     listError: false, previewError: false, restoreError: false, restoreCode: "quota_exceeded", loadRestoredError: false, wrongPreview: false };
   const changed = vi.fn();
@@ -23,7 +23,7 @@ function setup() {
     const path = new URL(request.url).pathname;
     if (path.endsWith("/editing-lease")) return leaseResponse(request);
     if (path.endsWith("/fields")) return Response.json({ source_version_id: server.resource.current_version_id, status: "not_started", snapshot: null });
-    if (path.endsWith("/versions")) return server.listError ? failure() : Response.json({ items: server.versions, current_version_id: server.resource.current_version_id, next_before: null });
+    if (path.endsWith("/versions")) return server.listError ? failure() : Response.json({ retention: server.retention, items: server.versions, current_version_id: server.resource.current_version_id, next_before: null });
     if (path.endsWith("/restore")) {
       writes.push(request);
       if (server.restoreError) return failure(server.restoreCode, 409);
@@ -75,6 +75,7 @@ test("history preserves live draft, proposed title and undo across read-only pre
   expect(within(history).getByText(/Your unsaved draft remains/)).toBeVisible();
   expect(within(history).getAllByText("1.54 MB")).toHaveLength(2);
   fireEvent.click(within(history).getByRole("button", { name: /^Version 1/ }));
+  await screen.findByRole("heading", { name: /^Version 1$/ });
   const preview = await screen.findByRole("textbox", { name: "Read-only historical document" });
   expect(preview).toHaveAttribute("contenteditable", "false"); expect(preview).toHaveAttribute("aria-readonly", "true");
   expect(preview).not.toHaveTextContent("Незбережена Ґанна");
@@ -170,4 +171,24 @@ test.each(["operation_in_progress", "operation_aborted", "upload_busy", "file_to
   expect(screen.queryByText(i18n.t(`errors.${code}`))).not.toBeInTheDocument();
   await act(() => setLanguage("uk"));
   expect(screen.getByText(i18n.t(`history.${code}`))).toBeVisible();
+});
+
+
+test.each([1, 2, 5, 1000])("retention policy refresh shows localized limits %s without changing the live draft", async count => {
+  const state = setup(), editor = await ready();
+  fireEvent.change(field(), { target: { value: "Чернетка Ґанни" } });
+  await open();
+  await screen.findByText("All saved revisions are retained and count toward storage usage.");
+  state.server.retention = { keep_latest: count, revision: 1 };
+  fireEvent.click(screen.getByRole("button", { name: "Refresh history" }));
+  const number = new Intl.NumberFormat("en").format(count);
+  await screen.findByText(`The original and the latest ${number} ${count === 1 ? "revision" : "revisions"} are kept. Older revisions may be permanently removed. Retained files count toward storage usage.`);
+  await act(() => setLanguage("uk"));
+  const amount = new Intl.NumberFormat("uk-UA").format(count);
+  const phrase = count === 1 ? `остання ${amount} версія` : count === 2 ? `останні ${amount} версії` : `останні ${amount} версій`;
+  expect(screen.getByText(`Зберігаються оригінал і ${phrase}. Старіші версії можуть бути видалені назавжди. Збережені файли враховуються у використаному сховищі.`, { normalizer: text => text })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Повернутися до редагування" }));
+  expect(screen.getByRole("textbox", { name: "Редагований документ" })).toBe(editor);
+  expect(editor).toHaveTextContent("Чернетка Ґанни");
+  expect(state.writes).toHaveLength(0);
 });

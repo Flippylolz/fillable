@@ -363,4 +363,15 @@ Quota reduction, disk failure, stale authority or a removed selection cannot pub
 a partial current revision. A lost response replays the exact committed version
 without allocating again, even when current has advanced. Deleted results are never
 recreated by replay. Parent/restored-from metadata is retained separately from bytes;
-E06.5 pruning must preserve provenance and charge pending physical cleanup.
+E06.5 pruning preserves provenance and charges pending physical cleanup.
+
+
+### Explicit history retention
+
+The [history policy](HISTORY.md#operator-retention-e065) defaults to keep-all. Only an
+explicit operator limit enables eligibility for bounded pruning; quota changes and
+failed saves do not call it. Originals/current files remain protected. Each removal
+rechecks policy and resource state under locks and uses `delete_file`, so bytes remain
+charged through pending deletion and are credited only after unlink. Failed cleanup
+uses existing reconciliation. Pruning clears saved content/review/job snapshots while
+retaining opaque provenance metadata. Scheduling follows in E07.3.

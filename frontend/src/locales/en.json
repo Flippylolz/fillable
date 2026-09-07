@@ -268,5 +268,7 @@
   "history.operation_aborted": "This restore attempt did not complete. Your draft is preserved; choose Restore as a new revision to try again.",
   "history.upload_busy": "The server is processing other documents. Try restoring again shortly.",
   "history.file_too_large": "The saved revision exceeds the restore size limit. Your draft is preserved.",
-  "history.operation_conflict": "The selected saved revision could not be verified. Refresh history and retry the preview."
+  "history.operation_conflict": "The selected saved revision could not be verified. Refresh history and retry the preview.",
+  "history.keepLatest_one": "The original and the latest {{number}} revision are kept. Older revisions may be permanently removed. Retained files count toward storage usage.",
+  "history.keepLatest_other": "The original and the latest {{number}} revisions are kept. Older revisions may be permanently removed. Retained files count toward storage usage."
 }

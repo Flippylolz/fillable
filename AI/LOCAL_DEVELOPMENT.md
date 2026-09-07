@@ -308,3 +308,24 @@ require rebuilding/recreating those services; only the API has the existing deve
 reload watcher. `scripts/verify-development.sh` explicitly verifies actual job completion
 and preserved saved bytes/quota through the isolated dispatcher/worker stack. See
 [Processing](PROCESSING.md) for retry and source-revision guarantees.
+
+
+## History retention operator commands
+
+Retention defaults to keeping every revision. Run these commands only against the
+intended Fillable Compose project; `set` changes policy, and `prune` permanently
+removes eligible old content. The original and current revision remain protected.
+For the development project (use its existing environment/Compose options):
+
+```sh
+docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.documents.retention_cli show
+docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.documents.retention_cli set --keep-latest 20
+docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.documents.retention_cli prune --batch 100
+docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.documents.retention_cli set --keep-latest all
+```
+
+Continue a bounded pass with `--after` and its returned `next_cursor`; retry busy items
+in a fresh later pass. Changing to keep-all stops future pruning but cannot recover
+already removed files. See [History](HISTORY.md#operator-retention-e065) for locking,
+cleanup, migration and accounting behavior. No recurring retention job is enabled by
+this task; scheduling is E07.3.
