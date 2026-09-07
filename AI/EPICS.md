@@ -25,7 +25,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.3 scheduled maintenance in_review (PR #65) |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.4 full-application restart and upgrade verification |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -1919,3 +1919,40 @@ so an old persisted success cannot satisfy the new-process check; that full repe
 and required GitHub CI are running. Changed Markdown links and shell syntax pass.
 Next: inspect final results, verify actual strict required rules, enable exact-head
 squash auto-merge, confirm MERGED, then begin E07.4. Deployment remains last.
+
+
+Verified E07.3 completion: [PR #65](https://github.com/Flippylolz/fillable/pull/65)
+merged as `e16fb5adbc63449ee96090c01e3af85bc9d31398`, exact head
+`38831e232df3ca36fcd98728267f2da35d632978`. CI `34135615841` passed `checks`
+and `ci-required`: backend 416 tests, 3969/3998 lines (99.27%), 1174/1206 branches
+(97.35%); frontend 229 tests, 1292/1303 lines (99.16%), 1500/1569 branches (95.60%).
+Both negative probes passed. Fresh `Xz6P2i` passed 7 development/48 production cases.
+The final stricter scheduler probe passed separately after controlled service restart,
+requiring a distinct completed successful run. Its initial docker-cp attempt was
+rejected by the container's read-only root filesystem; streaming the read-only Python
+probe through exec succeeded without changing that protection. Volumes were preserved.
+
+Main synchronized before `task/e07-4-restart-upgrade-proof`. E07.4 is in progress:
+verify previous merged application/schema0012 to current/schema0013 using one isolated
+synthetic data set, preserving reviewed/copy/restored version bytes and metadata.
+Prove a real post-unlink child-process crash remains charged until the actual scheduler
+reconciles it after full-stack restart. Add a separate mandatory upgrade CI job and
+require both job results in ci-required. No backup or live-server work is introduced.
+
+E07.4's complete isolated `0usKoE` run passed: previous PR64 images/schema0012,
+reviewed template plus edited independent copy, original/reviewed restorations,
+current images/schema0013, and a real post-unlink exit74 followed by full-stack
+restart and actual daemon reconciliation. API, SQL, file hashes, paired review,
+provenance and exact quota match. Six desktop/mobile badge cases passed across
+previous/upgraded/restarted images. The first run found a helper-only httpx client
+lifecycle mistake before document creation; it was corrected. Final formatting and
+both-job aggregation failure coverage are included before the final repeat/PR.
+Application source is unchanged from PR65's backend416/frontend229 coverage baseline;
+required CI reruns both gates. All synthetic volumes and evidence are retained.
+
+E07.4 is in_review in [PR #66](https://github.com/Flippylolz/fillable/pull/66),
+branch `task/e07-4-restart-upgrade-proof`. The completed local proof used candidate
+`20aa056`; final probe lint and both-job aggregation combinations were added in
+`a198389`. The final frozen repeat and both required CI jobs are running. Before
+readiness, inspect those results and actual strict main protection, enable exact-head
+squash auto-merge, and verify MERGED before E07.5. No product decision is outstanding.
