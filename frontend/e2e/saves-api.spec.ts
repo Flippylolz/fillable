@@ -53,6 +53,19 @@ test("saved API revision reopens matching review through the real gateway", asyn
   const downloaded = await page.request.get(`${endpoint}/download`);
   expect(downloaded.headers()["x-fillable-version"]).toBe(saved.saved_version_id);
   await writeFile(testInfo.outputPath("saved-api.docx"), await downloaded.body());
+  const history = await (await page.request.get(`${endpoint}/versions`)).json();
+  expect(history.items.map((item: { number: number }) => item.number)).toEqual([2, 1]);
+  const historical = await page.request.get(`${endpoint}/versions/${resource.current_version_id}/download`);
+  expect(historical.status()).toBe(200);
+  expect(historical.headers()["x-fillable-version"]).toBe(resource.current_version_id);
+  expect(historical.headers()["cache-control"]).toBe("no-store");
+  expect(await historical.body()).toEqual(await readFile("/fixtures/upload.docx"));
+  expect(await historical.body()).not.toEqual(await downloaded.body());
+  const exactSaved = await page.request.get(`${endpoint}/versions/${saved.saved_version_id}/download`);
+  expect(exactSaved.headers()["x-fillable-version"]).toBe(saved.saved_version_id);
+  expect(await exactSaved.body()).toEqual(await downloaded.body());
+  await writeFile(testInfo.outputPath("historical-original.docx"), await historical.body());
+
   const released = await page.request.post(`${endpoint}/editing-lease`, {
     headers, data: { action: "release", client_id: client, source_version_id: saved.saved_version_id, lease_id: lease.lease_id },
   });
