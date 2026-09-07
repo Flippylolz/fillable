@@ -57,3 +57,23 @@ Keep the expected outcomes independent of the detector implementation. When the 
 - `w:updateFields=true` requests field refresh on opening. Microsoft Word was not used, and no selected browser editor or application save/reopen flow has been tested. LibreOffice visual QA and structural checks are the evidence available at this stage.
 
 This task delivers fixture data and documentation, not application code or an automated test suite. The authoring/QA helpers and image/PDF intermediates are task-local tools, not application runtime dependencies. E01 still establishes Docker test commands and the mandatory 90% coverage gate before application PRs merge.
+
+## Working-review persistence fixture (E06.2a)
+
+[`working-review.json`](../fixtures/docx/v1/working-review.json) is a synthetic working
+revision of the existing intake baseline, not a user document. The deterministic
+recipe in `frontend/tests/working-review.test.ts` accepts and fills a placeholder,
+dismisses a blank suggestion, invalidates another span, adds a manual heading field,
+removes a native occurrence, and inserts an astral prefix. Accepted reasons, two
+missing records, source marks and Ukrainian/multiline values remain in the artifact.
+Normal frontend CI compares the actual transaction result to the committed JSON;
+backend tests validate and export the same file. The frontend Docker build copies
+this test fixture into `/fixtures`; it is not imported into the application bundle.
+
+To deliberately regenerate after a reviewed recipe change, build `frontend-test`, run
+its single working-review test with `FILLABLE_WRITE_WORKING_FIXTURE=1` in a named
+container, and copy `/fixtures/docx/v1/working-review.json` back to the canonical path.
+Then rebuild and run normal checks without that variable. Generation is an explicit
+local artifact update; required CI never updates its expected result. This fixture
+proves matching editor/server representation and source-based export, not Microsoft
+Word compatibility or a completed persisted-save API.

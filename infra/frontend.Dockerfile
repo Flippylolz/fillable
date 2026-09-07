@@ -3,6 +3,7 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci && chown node:node /app
 COPY --chown=node:node frontend/ ./
+COPY --chown=node:node fixtures/docx/v1/working-review.json /fixtures/docx/v1/working-review.json
 USER node
 CMD ["npm", "run", "dev"]
 
