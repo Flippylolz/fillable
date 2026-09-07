@@ -15,8 +15,9 @@ import { useRestore } from "./useRestore";
 import { useAutosave } from "./useAutosave";
 import { HistoryPanel } from "./HistoryPanel";
 
-export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy }: {
+export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy, operationsPaused = false }: {
   identity: string; dirty: boolean; onDirty: (dirty: boolean) => void; csrfToken: string;
+  operationsPaused?: boolean;
   onBack?: () => void; onChanged?: () => void; onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
     } });
   const mutating = settingsBusy || saving.busy || restoring.busy;
   const unsaved = revision !== saving.acknowledged || titleDirty || saving.pending || saving.conflict || !!restoring.pending || restoring.conflict;
-  const autosavePaused = historyOpen || mutating || saving.pending || saving.conflict || !!saving.error
+  const autosavePaused = operationsPaused || historyOpen || mutating || saving.pending || saving.conflict || !!saving.error
     || !!restoring.pending || restoring.conflict || !valid || composing || access.status !== "active";
   useAutosave({ enabled: autosave, revision, acknowledged: saving.acknowledged, paused: autosavePaused,
     save: () => {

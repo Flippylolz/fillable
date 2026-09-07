@@ -344,7 +344,7 @@ autosaves; its value survives profile/language changes and explicit reopen/resto
 within the same mounted workspace, but is not an account preference.
 
 Autosave pauses for a historical panel, unavailable editing authority, native
-composition, invalid field values, active mutations, uncertain operations or a save
+composition, invalid field values, active mutations (including profile/library operations), uncertain operations or a save
 error. The timer also rechecks the synchronous editor snapshot and live credentials
 before submitting. Historical preview has no save callback; returning to editing
 resumes the same draft and schedules eligible live changes. Turning the setting off

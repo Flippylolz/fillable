@@ -1741,3 +1741,18 @@ repeat the complete backend/frontend/renderer and failure-gate checks before mer
 Next: open the individual E06.7 PR,
 verify strict required checks and exact-head squash auto-merge, then verify MERGED
 before E07. Deployment remains last and no server work has begun.
+
+
+E06.7 review follow-up on PR #61: initial head
+`c0544ca3a37468dc8c39485f31da29099f6c6d3c`, CI `34119480377`. Auto-merge was
+held after finding that a hidden workspace could start autosave during another
+page's active profile/library mutation. SessionPages now passes its shared busy
+state into autosave eligibility; document editing/drafts remain intact and the
+timer resumes after that mutation finishes. A component test verifies the pause
+and later save. New-head verification/auto-merge must complete before E07 starts.
+
+The coordination correction passed all 204 frontend tests and the real unimported-source
+negative probe: lines 1231/1242 (99.11%), branches 1405/1472 (95.45%); the probe
+blocked 1231/4007 lines and 1405/7000 branches with every test passing. The final
+fresh repeat passed 7 development and 40 production cases in `1eW6sJ`, project
+`fillable-verify-1534`, before updating PR61 and rearming exact-head auto-merge. Backend application source remains unchanged.

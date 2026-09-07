@@ -35,12 +35,14 @@ function setup(write?: (request: Request) => Promise<Response>) {
     if (request.method === "PATCH") { server.resource.title = (await request.json()).title; return Response.json(server.resource); }
     return Response.json(server.resource);
   }));
+  let pause!: (value: boolean) => void;
   function Host() {
+    const [operationsPaused, setOperationsPaused] = useState(false); pause = setOperationsPaused;
     const [dirty, setDirty] = useState(false);
-    return <Workspace identity={id} csrfToken="csrf" dirty={dirty} onDirty={setDirty} onChanged={changed} onBusy={busy} />;
+    return <Workspace identity={id} csrfToken="csrf" dirty={dirty} onDirty={setDirty} onChanged={changed} onBusy={busy} operationsPaused={operationsPaused} />;
   }
   const view = render(<StrictMode><I18nextProvider i18n={i18n}><Host /></I18nextProvider></StrictMode>);
-  return { ...view, server, writes, commit, leases, changed, busy };
+  return { ...view, server, writes, commit, leases, changed, busy, pause: (value: boolean) => pause(value) };
 }
 async function ready() { await screen.findByText("Editing enabled."); return screen.getByRole("textbox", { name: "Editable document" }); }
 const field = () => screen.getAllByRole("textbox", { name: "Field value: ПІБ клієнта" })[0];
@@ -185,3 +187,15 @@ test("autosave pauses after a quota failure, keeps newer edits and resumes after
   await screen.findByText("All document changes saved.");
   expect(editor).toHaveTextContent("Після виправлення Їжак");
 }, 15000);
+
+
+test("another page's active mutation defers autosave until it completes", async () => {
+  const state = setup(); await ready(); change("Чернетка перед зміною профілю");
+  await act(() => state.pause(true));
+  await act(() => new Promise(resolve => setTimeout(resolve, 2300)));
+  expect(state.writes).not.toHaveBeenCalled();
+  expect(field()).toHaveValue("Чернетка перед зміною профілю");
+  await act(() => state.pause(false));
+  await waitFor(() => expect(state.writes).toHaveBeenCalledTimes(1), { timeout: 4000 });
+  await screen.findByText("All document changes saved.");
+}, 10000);
