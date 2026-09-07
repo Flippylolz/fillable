@@ -1312,3 +1312,15 @@ and five multiline pages with repeated Ukrainian/astral text. Microsoft Word was
 run. Actual main protection still requires strict Actions `ci-required`, including
 administrators. Next: protected task PR and verified merge, then E06.1 editing leases;
 E05.6b waits for real save/history operations. Deployment remains E08, last.
+
+E05.6a [PR #49](https://github.com/Flippylolz/fillable/pull/49) is in review with
+protected squash auto-merge. Initial Actions 34069010601 passed browser/persistence
+and backend checks but caught a frontend test mounting race: the settings summary
+rendered before the editor effect. The helper now awaits the actual editable textbox
+before interacting. No application behavior or coverage policy was changed. Revalidate
+frontend and its negative probe, push the correction, then follow the new exact head
+through required CI and actual merge before E06 implementation.
+The corrected helper passed all 123 frontend tests, lint/catalog/build and raw coverage
+at unchanged 953/959 lines and 1005/1045 branches. The real unimported-source probe
+also passed with 123 tests and correctly rejected 953/3192 lines, 1005/5509 branches.
+Existing full fresh/browser/DOCX evidence remains applicable to unchanged app code.

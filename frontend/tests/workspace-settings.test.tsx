@@ -30,7 +30,10 @@ function setup(patch?: (request: Request) => Promise<Response>) {
   const view = render(<StrictMode><I18nextProvider i18n={i18n}><Harness /></I18nextProvider></StrictMode>);
   return { ...view, server, writes, changed, back, busy, fetcher };
 }
-async function open() { fireEvent.click(await screen.findByText("Workspace settings")); }
+async function open() {
+  await screen.findByRole("textbox", { name: "Editable document" });
+  fireEvent.click(await screen.findByText("Workspace settings"));
+}
 beforeEach(async () => {
   await setLanguage("en");
   Object.defineProperty(Range.prototype, "getClientRects", { configurable: true, value: () => [] });
