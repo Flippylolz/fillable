@@ -1949,3 +1949,10 @@ lifecycle mistake before document creation; it was corrected. Final formatting a
 both-job aggregation failure coverage are included before the final repeat/PR.
 Application source is unchanged from PR65's backend416/frontend229 coverage baseline;
 required CI reruns both gates. All synthetic volumes and evidence are retained.
+
+E07.4 is in_review in [PR #66](https://github.com/Flippylolz/fillable/pull/66),
+branch `task/e07-4-restart-upgrade-proof`. The completed local proof used candidate
+`20aa056`; final probe lint and both-job aggregation combinations were added in
+`a198389`. The final frozen repeat and both required CI jobs are running. Before
+readiness, inspect those results and actual strict main protection, enable exact-head
+squash auto-merge, and verify MERGED before E07.5. No product decision is outstanding.
