@@ -45,7 +45,7 @@ STATE_FORMAT = (
     '"project":"{{index .Config.Labels "com.docker.compose.project"}}",'
     '"status":"{{.State.Status}}","started":"{{.State.StartedAt}}",'
     '"restarts":{{.RestartCount}},'
-    '"health":"{{if .State.Health}}{{.State.Health.Status}}{{end}}"}'
+    '"health":"{{with index .State "Health"}}{{.Status}}{{end}}"}'
 )
 
 
