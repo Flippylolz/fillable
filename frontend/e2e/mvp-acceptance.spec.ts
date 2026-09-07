@@ -1,7 +1,33 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { manualSaving } from "./autosave-setting";
+
+const email = process.env.FILLABLE_INITIAL_EMAIL ?? "library@example.test";
+const password = process.env.FILLABLE_INITIAL_PASSWORD ?? "Synthetic-browser-Їжак-2026";
+
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") return `{${Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+
+async function retained(page: Page, identities: string[]) {
+  const result = [];
+  for (const id of identities) {
+    const endpoint = `/api/documents/${id}`;
+    const current = await (await page.request.get(`${endpoint}/content`)).json();
+    const history = await (await page.request.get(`${endpoint}/versions`)).json();
+    const versions = [];
+    for (const entry of history.items) {
+      const selected = `${endpoint}/versions/${entry.id}`;
+      const document = (await (await page.request.get(`${selected}/content`)).json()).document;
+      versions.push({ id: entry.id, number: entry.number, sha256: hash(await (await page.request.get(`${selected}/download`)).body()), model_sha256: hash(Buffer.from(canonical(document))) });
+    }
+    result.push({ id, current_version_id: current.resource.current_version_id, sha256: hash(await (await page.request.get(`${endpoint}/download`)).body()), model_sha256: hash(Buffer.from(canonical(current.document))), versions });
+  }
+  return result;
+}
 
 async function badge(page: Page, language: "uk" | "en") {
   const version = process.env.EXPECTED_APP_VERSION ?? "development";
@@ -27,8 +53,8 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
   await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible(); await badge(page, "uk");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill("library@example.test");
-  await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
+  await page.getByLabel("Електронна пошта", { exact: true }).fill(email);
+  await page.getByLabel("Пароль", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/); await badge(page, "uk");
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "Заява-Ґанни.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: original });
@@ -110,12 +136,13 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   expect((await (await page.request.get(`/api/documents/${copyId}`)).json()).current_version_id).toBe(copy.resource.current_version_id);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByLabel("Password", { exact: true })).toBeVisible(); await badge(page, "en");
-  await page.getByLabel("Email", { exact: true }).fill("library@example.test");
-  await page.getByLabel("Password", { exact: true }).fill("Synthetic-browser-Їжак-2026");
+  await page.getByLabel("Email", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.getByRole("link", { name: "Profile", exact: true }).click(); await badge(page, "en");
   await page.getByRole("combobox", { name: "Interface language", exact: true }).selectOption("uk");
   await page.getByRole("button", { name: "Save language", exact: true }).click();
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
   expect(errors).toEqual([]);
+  await writeFile(info.outputPath("acceptance-state.json"), JSON.stringify({ version: process.env.EXPECTED_APP_VERSION ?? "development", resources: await retained(page, [templateId, copyId]) }));
 });

@@ -139,6 +139,22 @@ checks fail Actions and cannot leave stale success evidence. Public evidence con
 only the source, synthetic digests, version count and status. Synthetic documents remain
 retained and quota-charged. The browser badge and broader deployed acceptance remain E08.5.
 
+E08.5 acceptance tooling can run independently against the isolated local topology
+while target access is pending. The existing bilingual desktop/mobile journey accepts
+private credentials through environment, retaining its local synthetic defaults. It
+verifies the visible artifact badge on all four pages, readable decimal storage units,
+saved edits/downloads, template-copy independence and history restoration. Each run
+writes a synthetic identity/digest manifest without document text, URLs or credentials.
+`verify_public_persistence.py` checks those exact current and historical bytes/models
+through authenticated public GETs after a scoped Fillable restart. Missing/reordered
+history, changed bytes/models/current revision and a mismatched recorded version fail.
+
+Production browser output must remain in the private operator directory because browser
+failure reports may contain connection details or credentials. Do not publish those
+traces/screenshots as CI artifacts. Local CI uses only synthetic accounts. Actual
+deployed acceptance, a controlled wrong-badge rejection and existing-service comparisons
+are still required before E08.5 is complete; isolated local evidence does not substitute.
+
 The Docker archive check covers both legacy and OCI metadata paths. An OCI index
 must reference exactly the two expected image configurations with only their Fillable
 source tags, verified manifest bytes and no nested indices. Legacy repository aliases

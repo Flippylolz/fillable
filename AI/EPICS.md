@@ -2280,3 +2280,38 @@ owner edits and the shared container baseline. Own probes were stopped; data ret
 Proof root `fillable-e084-real.timgnz3s`, project `fillable-e084-timgnz3s`.
 Next: task PR, required CI/verified merge, configure two private initial-account
 environment secrets, wait successful exact-main CI and run the Actions workflow.
+
+Live E08.4 checkpoint: [PR #74](https://github.com/Flippylolz/fillable/pull/74),
+head `2819601f9de390ad4484f76fc5b693ac5c814a8f`, CI `34160681711`
+running, exact-head squash auto-merge enabled under verified strict protection.
+Main CI `34160031264` for E08.3a merge is being followed. Private account-secret
+preparation is guarded on PR #74 MERGED; two additional secrets are not installed yet.
+Next: complete CI/merge, configure those secrets, wait successful exact-main push CI,
+recheck target reservations/capacity, dispatch deployment, verify public smoke and
+unchanged existing services/routes, then begin E08.5. No application deployed yet.
+
+E08.4 code PR #74 is verified MERGED as `fdfe53bb5f739fe8c72ff905785c753f260e7780`,
+head `2819601f9de390ad4484f76fc5b693ac5c814a8f`; CI `34160681711` passed
+all required jobs and unchanged raw coverage (backend 3969/3998,1174/1206; frontend
+1292/1303,1500/1569) plus both negative probes. Main CI `34161861411` is running.
+Automatic approval review rejected configuring the two newly generated initial-account
+secrets in GitHub production, requiring explicit approval of that payload/destination.
+A concise approval request is pending; no retry or workaround has run, and no app has
+been deployed. Existing four transport secrets/receiver are ready.
+
+E08.5 independent tooling preparation starts from the merged E08.4 source on
+`task/e08-5-deployed-acceptance` while that credential dependency waits. Parameterize
+the existing real bilingual four-page journey with private credentials, retain only
+synthetic identity/digest manifests, and add read-only post-restart verification.
+Exercise locally through real app/relay; actual deployed acceptance and task completion
+still depend on successful E08.4 rollout. This does not advance or bypass deployment.
+
+E08.5 local tooling verification passed: desktop/mobile four-page bilingual journey
+(2 cases, 25.8s), inspected local screenshots, actual shared-manager/relay path, full
+Fillable restart with identical stored bytes/digests/quota counters, and public checks
+of retained document models/downloads/full version history for both manifests.
+Corruption contracts reject changed bytes/models/current/history and wrong version.
+Proof root `fillable-e085-real.uvw0vu9t`; own containers stopped, volumes retained.
+The task will be a draft PR while actual target rollout/acceptance is blocked on the
+pending explicit credential-secret approval. It must not auto-merge or be marked done
+until that acceptance is verified; deployment must use current-main source.
