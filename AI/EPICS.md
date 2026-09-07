@@ -1392,3 +1392,13 @@ both astral characters and Ukrainian text; pages two and three are pixel-identic
 to the original. Microsoft Word was not run. Actual strict Actions `ci-required` and
 administrator enforcement were verified. Next: individual E06.2a PR and verified
 merge, then E06.2b edited-copy rebasing. No save API or deployment is claimed yet.
+
+E06.2a PR #52 review corrected native fields with empty aliases: discovery's fallback
+display label must not become working control metadata. The new regression passed
+with all 132 frontend tests and unchanged raw coverage (1018/1026 lines, 1087/1141
+branches); the real unimported-source probe also passed. Fresh index
+`/private/tmp/fillable-verify.k3EPB4` passed 7 development and 18 production browser
+checks, persistence invariants and LibreOffice/Poppler regressions. Backend code and
+shared fixture are unchanged from the verified 271-test run above. Auto-merge was
+disabled before this correction; re-arm only for the updated head after pushing.
+Next: verify required CI and actual PR #52 merge, then E06.2b.

@@ -89,14 +89,14 @@ export function attachReview(doc: EditorNode, snapshot: Snapshot, sourceVersion:
     const paragraph = indexed.get(JSON.stringify([anchor.part, anchor.paragraph_id]));
     if (!paragraph) throw new Error("invalid_review");
     let location: ReviewItem["location"];
-    let key = candidate.source_key ?? "";
+    let key = candidate.source_key ?? "", label = candidate.label;
     if (anchor.kind === "control") {
       const field = native.get(anchor.control_id);
       if (!field || field.value !== occurrence.value || doc.resolve(field.pos).before() !== paragraph.pos
         || decisions.get(candidate.id) === "dismissed")
         throw new Error("invalid_review");
       location = { kind: "control", id: field.id };
-      key = field.key;
+      key = field.key; label = field.label;
     } else {
       const { start, end } = anchor;
       if (decisions.get(candidate.id) === "accepted" || !Number.isInteger(start) || !Number.isInteger(end)
@@ -109,7 +109,7 @@ export function attachReview(doc: EditorNode, snapshot: Snapshot, sourceVersion:
       location = { kind: "span", from, to, text: occurrence.value };
     }
     return { id: candidate.id, occurrenceId: occurrence.id, reason: candidate.reason,
-      sourceKey: candidate.source_key ?? null, context: candidate.context, label: candidate.label,
+      sourceKey: candidate.source_key ?? null, context: candidate.context, label,
       key, type: "text", decision: location.kind === "control" ? "accepted" : decisions.get(candidate.id) ?? "proposed", missing: false, location };
   });
   return doc.type.create({ ...doc.attrs, review: { sourceVersion, items } }, doc.content, doc.marks);
