@@ -1471,3 +1471,14 @@ bytes/pages identical, three edited pages with unchanged page two, five multilin
 pages with exact Ukrainian/astral text. Microsoft Word was not run. Next: push the
 correction, reverify strict protection, arm exact-head auto-merge and verify actual
 merge before E06.2d. No deployment has started.
+
+PR #54 Actions 34093550128 correctly blocked merge: the fresh mobile library test
+matched two alerts because its injected processing failure could target another
+retained document from earlier browser cases. The correction captures its own
+uploaded template before fulfilling the response, scopes the processing failure to
+that exact resource and checks the upload form's alert. Required assertions and
+zero retries remain unchanged. Final fresh index `fillable-verify.k0Fd9w` passed
+7 development and 22 production tests with persistence/worker/recreation checks.
+Application source and measured coverage are unchanged from the preceding run;
+DOCX render verification remains the passed q6vaJu evidence. Next: verified CI and
+actual merge for this corrected PR head, then E06.2d.
