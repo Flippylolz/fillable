@@ -1,4 +1,4 @@
-"""One-shot, bounded maintenance; periodic scheduling is E07.3."""
+"""Bounded maintenance primitives shared by operator commands and the scheduler."""
 
 import argparse
 import json
@@ -160,6 +160,14 @@ def reconcile_account(store, owner):
         return "repair_required" if repair_required else "repaired"
 
 
+def account_result(store, owner):
+    try:
+        status = reconcile_account(store, owner)
+    except (SQLAlchemyError, StorageError, OSError):
+        status = "storage_failure"
+    return {"owner_id": str(owner), "status": status}
+
+
 def reconcile(store, *, after=None, batch=100):
     if type(batch) is not int or not 1 <= batch <= 500:
         raise ValueError("invalid reconciliation batch")
@@ -208,13 +216,19 @@ def reconcile(store, *, after=None, batch=100):
             status = (
                 error.code if isinstance(error, StorageError) else "storage_failure"
             )
-            with store.engine.begin() as connection:
-                audit(connection, "reconciliation_failed", owner, operation_id=op["id"])
+            try:
+                with store.engine.begin() as connection:
+                    audit(
+                        connection,
+                        "reconciliation_failed",
+                        owner,
+                        operation_id=op["id"],
+                    )
+            except SQLAlchemyError:
+                # Preserve the failure result/cursor even when its audit cannot write.
+                pass
         results.append({"operation_id": str(op["id"]), "status": status})
-    account_results = [
-        {"owner_id": str(owner), "status": reconcile_account(store, owner)}
-        for owner in sorted(owners)
-    ]
+    account_results = [account_result(store, owner) for owner in sorted(owners)]
     return {
         "operations": results,
         "accounts": account_results,
@@ -257,10 +271,7 @@ def reconcile_accounts(store, *, after=None, batch=100):
     with store.engine.connect() as connection:
         owners = connection.execute(query).scalars().all()
     return {
-        "accounts": [
-            {"owner_id": str(owner), "status": reconcile_account(store, owner)}
-            for owner in owners[:batch]
-        ],
+        "accounts": [account_result(store, owner) for owner in owners[:batch]],
         "next_cursor": str(owners[batch - 1]) if len(owners) > batch else None,
     }
 

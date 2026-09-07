@@ -22,6 +22,7 @@ cleanup() {
 trap cleanup EXIT
 
 dev up --build --wait --wait-timeout 120
+dev exec -T maintenance python /checks/verify_maintenance.py
 dev exec -T api python /checks/verify_gateway_logs.py probe development
 dev logs --no-color --no-log-prefix gateway > "$verification_root/gateway-dev.log"
 dev exec -T api python /checks/verify_gateway_logs.py check development < "$verification_root/gateway-dev.log"
@@ -47,9 +48,15 @@ docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f
 
 dev exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c "CREATE TABLE development_probe (value text); INSERT INTO development_probe VALUES ('retained');"
 dev exec -T redis redis-cli SET development_probe retained
+dev stop maintenance
+verification_maintenance_run="$(dev exec -T api python /checks/verify_maintenance.py identity)"
 dev exec -T api python -m app.documents.retention_cli set --keep-latest 2
 dev down
-prod up --build --wait --wait-timeout 120
+prod up --build --wait --wait-timeout 120 --scale maintenance=0
+prod exec -T api python -m app.documents.retention_cli show
+prod exec -T api python -m app.documents.retention_cli set --keep-latest all
+prod up --wait --wait-timeout 120 --no-deps maintenance
+prod exec -T maintenance python /checks/verify_maintenance.py "$verification_maintenance_run"
 prod exec -T api python /checks/verify_gateway_logs.py probe
 prod logs --no-color --no-log-prefix gateway > "$verification_root/gateway-prod.log"
 prod exec -T api python /checks/verify_gateway_logs.py check < "$verification_root/gateway-prod.log"
@@ -69,6 +76,5 @@ prod exec -T worker python -m app.documents.retention_cli show
 prod exec -T api python -m app.diagnostics status
 prod exec -T api python -m app.diagnostics audit --limit 2
 docker compose -p "$verification_project" -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp -e PLAYWRIGHT_OUTPUT_DIR=/tmp/fillable-prod-results/run -e PLAYWRIGHT_HTML_OUTPUT_DIR=/tmp/fillable-prod-results/html --workdir /tmp -v "$verification_reports/production:/tmp/fillable-prod-results" browser /app/node_modules/.bin/playwright test --config /app/playwright.config.ts
-prod exec -T worker python -m app.documents.retention_cli set --keep-latest all
 prod exec -T gateway sh -c 'test "$(id -u)" != 0 && ! command -v node'
 echo 'PASS: fresh staged checkout, hot reload, persistent recreation, production browser/static assets.'

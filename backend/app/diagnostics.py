@@ -9,6 +9,7 @@ from sqlalchemy import case, func, select, tuple_
 
 from app.infrastructure import database
 from app.jobs.schema import jobs
+from app.maintenance_schema import report as maintenance_report
 from app.storage.configuration import configured
 from app.storage.maintenance import capacity
 from app.storage.schema import audit_events
@@ -93,7 +94,8 @@ def status():
                 "expired_leases": int(expired),
             }
         available = capacity(store, connection=connection)
-    return {"jobs": result, "capacity": available}
+        maintenance = maintenance_report(connection)
+    return {"jobs": result, "capacity": available, "maintenance": maintenance}
 
 
 def safe_details(value):
@@ -185,7 +187,10 @@ def main(argv=None):
         print(json.dumps({"error": "diagnostics_unavailable"}))
         return 1
     print(json.dumps(result))
-    if args.command == "status" and not result["capacity"]["writable"]:
+    if args.command == "status" and (
+        not result["capacity"]["writable"]
+        or result["maintenance"]["status"] == "failed"
+    ):
         return 1
     return 0
 

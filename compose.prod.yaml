@@ -23,6 +23,8 @@ services:
     tmpfs: [/tmp]
     mem_limit: 256m
     cpus: 0.5
+  maintenance:
+    restart: unless-stopped
   gateway:
     restart: unless-stopped
     ports:
