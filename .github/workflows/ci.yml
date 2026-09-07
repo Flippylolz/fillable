@@ -72,6 +72,7 @@ jobs:
         run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-frontend-check frontend-test
       - name: Verify coverage and aggregation failure gates
         run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_release_contract.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_coverage_provenance.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/test_gate_contract.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/probe_backend_coverage.py

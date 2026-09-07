@@ -25,8 +25,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.1c corrective browser selection after main CI failure |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting: E08.1 merged; E08.2 paused for corrective browser CI |
+| E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1 merged; E08.2 verified artifact workflow |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -2101,3 +2101,37 @@ account provisioning and persisted storage/document checks. Required PR CI and
 repeated browser results remain pending. Before readiness, inspect results, verify
 strict protection, enable exact-head squash auto-merge and confirm MERGED. Then
 synchronize the E08.2 branch without discarding its preserved work.
+
+
+Verified E07.1c completion: [PR #70](https://github.com/Flippylolz/fillable/pull/70)
+merged as `1bc9fb95549abfb25810aa5d40cc1d2933dbbf35`, exact head
+`72df9824a37eb317d5ca5b5e399d5a98d51a5301`. Required CI `34149117891` passed
+checks, upgrade-checks and ci-required. Backend 416 tests: 3969/3998 lines and
+1174/1206 branches; frontend 229 tests: 1292/1303 lines and 1500/1569 branches.
+Both real uncovered-source probes failed their gates as required. Frozen local
+verification passed all 7 development and 48 production browser cases, plus 20
+repeated desktop/mobile manual-save journeys and effective runtime isolation checks.
+The historical failed main run remains failed; replacement main CI `34150436861`
+is being followed separately. E08.2 resumed without discarding its preserved files.
+
+E08.2 is in progress on `task/e08-2-gated-artifact-workflow`. The
+[release contract](RELEASE_ARTIFACTS.md) implements exact-main successful CI evidence,
+serialized manual deployment, source-bound amd64 image archives and strict SSH receipt/
+apply validation. Seven Docker contract tests pass; actual image packaging and required
+PR CI remain pending. The receiver is intentionally absent until E08.3, so the workflow
+cannot claim rollout success. No production runtime or shared nginx has been changed.
+Next: validate real Docker archives and badge, open this task's PR, verify required
+CI and exact-head auto-merge, then confirm MERGED before E08.3 implementation.
+
+E08.2 is in_review in [PR #71](https://github.com/Flippylolz/fillable/pull/71).
+Candidate `c450f3712e634677b03cd2d400084ebb18d318b0` passed seven Docker contract
+tests, Ruff, shell syntax and diff checks. A real Linux amd64 build from that exact
+Git archive produced a 129,914,880-byte release archive with SHA-256
+`83b8f079e028e212e000d700f32c5f35bc35cae4c6d596df149df6c39abae246`.
+Strict unpack and Docker load passed; the loaded gateway served `version: c450f37`
+on desktop/mobile with click-through CSS intact. This isolated badge check stubbed
+API responses and does not claim a production MVP smoke test. Its temporary gateway
+and network were removed; artifact and screenshot evidence is retained locally.
+The artifact records its actual candidate PR run `34151276606` for local QA only;
+that run is not eligible main deployment evidence. The production gate independently
+requires successful current-main push CI. Required final-head PR CI remains pending.

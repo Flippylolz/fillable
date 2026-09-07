@@ -1,0 +1,73 @@
+name: Deploy verified release
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact current main commit with successful required CI
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: fillable-production-deployment
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      source_sha: ${{ steps.gate.outputs.source_sha }}
+      ci_run_id: ${{ steps.gate.outputs.ci_run_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Require latest exact-main CI and every mandatory job
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          sh scripts/verify-release-ci.sh "$SOURCE_SHA" > proof.json
+          jq -er '"source_sha=" + .source_sha, "ci_run_id=" + (.ci_run_id|tostring)' proof.json >> "$GITHUB_OUTPUT"
+  release:
+    needs: verify
+    environment: production
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SOURCE_SHA: ${{ needs.verify.outputs.source_sha }}
+      CI_RUN_ID: ${{ needs.verify.outputs.ci_run_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.verify.outputs.source_sha }}
+          persist-credentials: false
+      - name: Build source-bound Linux amd64 image archives
+        run: sh scripts/build-release.sh "$SOURCE_SHA" "$CI_RUN_ID" "$RUNNER_TEMP/fillable-release"
+      - name: Recheck CI and current main immediately before rollout
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sh scripts/verify-release-ci.sh "$SOURCE_SHA" > "$RUNNER_TEMP/fillable-release/proof.json"
+          jq -e --argjson id "$CI_RUN_ID" '.ci_run_id == $id' "$RUNNER_TEMP/fillable-release/proof.json" >/dev/null
+      - name: Deliver exact artifacts to the restricted Fillable receiver
+        env:
+          FILLABLE_DEPLOY_HOST: ${{ secrets.FILLABLE_DEPLOY_HOST }}
+          FILLABLE_DEPLOY_USER: ${{ secrets.FILLABLE_DEPLOY_USER }}
+          FILLABLE_DEPLOY_KEY: ${{ secrets.FILLABLE_DEPLOY_KEY }}
+          FILLABLE_KNOWN_HOSTS: ${{ secrets.FILLABLE_KNOWN_HOSTS }}
+        run: sh scripts/ship-release.sh "$SOURCE_SHA" "$RUNNER_TEMP/fillable-release"
+      - name: Publish only content-free release evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: release-evidence
+          path: |
+            ${{ runner.temp }}/fillable-release/manifest.json
+            ${{ runner.temp }}/fillable-release/artifact.json
+            ${{ runner.temp }}/fillable-release/proof.json
+            ${{ runner.temp }}/fillable-release/deployment.json
+          if-no-files-found: error
