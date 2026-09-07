@@ -10,10 +10,11 @@ import { DeleteResource } from "./DeleteResource";
 import { UseTemplate } from "./UseTemplate";
 import { newKey } from "./operationKey";
 
-export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen }: {
+export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen, refreshRevision = 0 }: {
   csrfToken: string; disabled: boolean; onBusy: (value: boolean) => void;
   onDirty: (value: boolean) => void; onSaved: () => void;
   onOpen?: (identity: string) => void;
+  refreshRevision?: number;
 }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Kind>("template");
@@ -28,7 +29,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen 
   const input = useRef<HTMLInputElement>(null);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const lifetime = useRef(new AbortController());
-  const data = useLibrary(tab, revision);
+  const data = useLibrary(tab, revision + refreshRevision);
   const blocked = busy || disabled;
 
   useEffect(() => {

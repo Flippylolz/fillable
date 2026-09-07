@@ -22,9 +22,9 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.4 merged; E04.5 review integration |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.4 merged; E05.5 in verification; E05.6 pending |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05 | waiting |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a in progress; E05.6b awaits E06 persistence/history |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | waiting |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -167,7 +167,8 @@ Work:
 - E05.3: Apply sidebar values through editor transactions and read direct document changes back into the sidebar.
 - E05.4: Allow manual field creation from a selection and handle moved/deleted controls explicitly.
 - E05.5: Handle repeated occurrences, undo/redo, keyboard navigation, focus, input composition, and event-loop prevention.
-- E05.6: Add back navigation, title, save/download/history entry points, and save status. Keep rename, zoom, and field-highlighting settings inside this page.
+- E05.6a: Add in-workspace back navigation, owned title rename, zoom and field highlighting; preserve draft state and current saved downloads. Depends on E05.5.
+- E05.6b: Integrate working save/history entry points and save status after the corresponding E06 persistence/history operations exist. Do not substitute inactive controls for those operations.
 
 Acceptance:
 
@@ -1290,3 +1291,24 @@ exports with both expected Ukrainian values; the fast-commit first page was insp
 This verifies Chromium's native IME protocol, not every physical OS input method or
 Microsoft Word. All volumes preserved. Next: protected E05.5 PR/verified merge, then
 E05.6 workspace controls and the remaining E06 persistence integration.
+
+2026-09-07: E05.5 verified merged through [PR #48](https://github.com/Flippylolz/fillable/pull/48),
+commit `ce0bd2afda9e7cc21d140d46fdad9acaa1140c29`; Actions 34067380184 passed required
+checks for exact head `93eb061b53ed0a8224168342e70b1c7693a6ae09`. Main synchronized.
+E05.6 is split above to keep settings delivery bounded while save/history controls depend
+on real E06 operations. E05.6a starts on `task/e05-6a-workspace-settings`: rename updates
+owned resource metadata only, with revision/title conflict checks and idempotent retry;
+zoom/highlight remain presentation state. Back/locale navigation preserves editor drafts.
+
+E05.6a local verification passed: 253 backend tests, raw 2819/2837 lines (99.37%)
+and 853/872 branches (97.82%); 123 frontend tests, 953/959 lines (99.37%) and
+1005/1045 branches (96.17%). Lint, typing, catalogs/build, generated API, raw gates
+and both actual unimported-source negative probes passed. Fresh index
+`/private/tmp/fillable-verify.ha3XLs` passed 7 development and 16 production browser
+checks, including a committed rename with a lost response, safe retry, retained
+editor/upload drafts and both-language desktop/mobile settings. Settings screenshots
+were inspected. LibreOffice/Poppler passed identical no-edit pages, three edited pages
+and five multiline pages with repeated Ukrainian/astral text. Microsoft Word was not
+run. Actual main protection still requires strict Actions `ci-required`, including
+administrators. Next: protected task PR and verified merge, then E06.1 editing leases;
+E05.6b waits for real save/history operations. Deployment remains E08, last.

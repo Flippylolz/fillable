@@ -12,12 +12,13 @@ from starlette.concurrency import run_in_threadpool
 from app.accounts.routes import current_user, mutation_session
 from app.accounts.schema import UserInfo
 from app.accounts.service import SessionState
-from app.documents import copies, deletion, service
+from app.documents import copies, deletion, service, titles
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.schema import (
     ContentInfo,
     CopyRequest,
     DeletionResult,
+    RenameRequest,
     ResourceInfo,
     ResourceList,
     UploadMetadata,
@@ -30,6 +31,21 @@ UPLOAD_SLOTS = BoundedSemaphore(2)
 DOWNLOAD_SLOTS = BoundedSemaphore(2)
 BODY_SECONDS = 30
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+@router.patch("/{identity}/title", response_model=ResourceInfo)
+def rename_document(
+    identity: UUID,
+    payload: RenameRequest,
+    response: Response,
+    state: SessionState = Depends(mutation_session),
+) -> ResourceInfo:
+    try:
+        result = titles.rename(state, identity, payload)
+    except SQLAlchemyError:
+        raise AppError(503, "dependencies_unavailable") from None
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 @router.post("/{identity}/copies", response_model=ResourceInfo, status_code=201)
