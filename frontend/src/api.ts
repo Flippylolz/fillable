@@ -1,11 +1,12 @@
 import createClient from 'openapi-fetch';
 import type { paths } from '../generated/api';
 import { i18n } from './i18n';
+import { sessionFetch } from './accounts/requestBoundary';
 
 export const api = createClient<paths>({
   baseUrl: window.location.origin,
   credentials: 'same-origin',
-  fetch: request => fetch(request),
+  fetch: sessionFetch,
 });
 
 export function apiErrorMessage(code: string) {

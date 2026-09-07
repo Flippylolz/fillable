@@ -36,9 +36,9 @@ export function App() {
       <p className="app-description">{t('app.description')}</p>
       <p className={`app-connection app-connection-${status}`} role="status">{t(`health.${status}`)}</p>
     </header>
-    <Authentication>{(session, actions) => session.user && <SessionPages
+    <Authentication>{(session, actions) => session.user && <SessionPages key={session.user.id}
       session={session} accept={actions.accept}
-      setAuthBusy={actions.setBusy} authBusy={actions.busy}
+      setAuthBusy={actions.setBusy} authBusy={actions.busy} authPaused={actions.paused}
       setLeaveGuard={actions.setLeaveGuard}
     />}</Authentication>
     {status === 'error' && <button onClick={() => setAttempt(value => value + 1)}>{t('health.retry')}</button>}

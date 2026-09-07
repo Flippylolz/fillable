@@ -22,10 +22,10 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E01 | Docker foundation and application skeleton | Accepted stack | done: E01.1–E01.8 verified and merged, PRs #6–#13 |
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
-| E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
+| E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a, E06.4 and E06.6 merged; E06.3b merged; E06.5 merged; E06.7 autosave in progress |
-| E07 | MVP acceptance and CI verification | E03–E06 | waiting |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.1a session recovery |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -217,7 +217,8 @@ Outcome: the four-page MVP passes its acceptance criteria in local/CI Docker, in
 
 Work:
 
-- E07.1: Verify login, library, profile, and workspace navigation and states in Ukrainian and English, including the history panel, localized errors/accessibility text, and long Ukrainian labels. Verify default language, profile preference persistence/failure, and unchanged document data/drafts when switching. Check account/quota operator commands and user-facing storage meters. Confirm the version badge appears once on each page without blocking controls on desktop/mobile or changing its specified colors with theme.
+- E07.1a: Correct expired-session recovery before final acceptance: keep same-owner drafts mounted through fresh CSRF/sign-in, pause editing and autosave, fence late session responses, and require explicit discard before switching accounts. Deliver in its own PR.
+- E07.1b: Verify login, library, profile, and workspace navigation and states in Ukrainian and English, including the history panel, localized errors/accessibility text, and long Ukrainian labels. Verify default language, profile preference persistence/failure, and unchanged document data/drafts when switching. Check account/quota operator commands and user-facing storage meters. Confirm the version badge appears once on each page without blocking controls on desktop/mobile or changing its specified colors with theme.
 - E07.2: Add content-free job/capacity diagnostics and audit events through logs or operator commands. Do not create a diagnostics dashboard for MVP.
 - E07.3: Implement scheduled cleanup/reconciliation with bounded retries and clear failure state.
 - E07.4: Verify full-application restart, non-destructive upgrade, and crash reconciliation using synthetic data in local/CI Docker. Check matching PostgreSQL/files state and retained version history. Do not implement backups or a backup/restore drill.
@@ -1756,3 +1757,47 @@ negative probe: lines 1231/1242 (99.11%), branches 1405/1472 (95.45%); the probe
 blocked 1231/4007 lines and 1405/7000 branches with every test passing. The final
 fresh repeat passed 7 development and 40 production cases in `1eW6sJ`, project
 `fillable-verify-1534`, before updating PR61 and rearming exact-head auto-merge. Backend application source remains unchanged.
+
+
+Verified E06.7 completion: [PR #61](https://github.com/Flippylolz/fillable/pull/61)
+merged as `d42a463a64eddc9aff5a23290951f406251a402e`, exact head
+`28d4692d1fb6a06cc34f823590ecf9dfa1d1dec9`. CI `34120934728` succeeded;
+`checks` and `ci-required` both SUCCESS. This closes E06. E04's previously deferred
+retained-review/copy acceptance is verified by the merged E06.2a–E06.2c reviewed
+snapshot/rebase/save tests and E06.6 restore/reopen evidence; the whole UI acceptance
+flow remains an E07.1b verification, not an unimplemented detector feature.
+
+Main synchronized before `task/e07-1a-session-recovery`. E07.1 is split into the
+bounded correction E07.1a and acceptance E07.1b above, each delivered separately.
+Current gap: an expired session pauses editing but cannot reauthenticate while
+retaining the mounted editor. Implement same-owner recovery, a paused API boundary
+that treats obsolete write results as uncertain, explicit account-switch discard,
+and session identity remounting. Verify actual cookie/CSRF rotation, draft/undo
+preservation, old-request fencing and isolation. E07.2–E07.6 and E08 remain later;
+no deployment or server access has occurred.
+
+E07.1a implementation retains the hidden/inert same-owner workspace across recovery,
+pauses protected requests and lease/autosave activity, and treats obsolete write
+responses as uncertain. Account switching requires the existing discard guard and
+uses an account UUID page key. Fresh session/login calls have bounded cancellation.
+Local Docker frontend lint/catalog/type/build and 228 tests pass: raw lines
+1290/1301 (99.15%), branches 1496/1565 (95.59%). The real unimported-source negative
+probe fails at 1290/4173 lines and 1496/7307 branches with all 228 tests passing.
+The first fresh attempt exposed a typed test-call omission, corrected before the
+successful frontend run. A subsequent fresh desktop run verified actual missing
+cookies with a still-live old lease, same DOM/draft after sign-in, cancelled discard,
+and exact committed-write retry without another revision. Final full browser/locale
+verification is running before PR readiness. Backend source is unchanged from the
+merged 377-test baseline; this task's required CI will rerun it independently.
+
+Final request-boundary review also cancels in-flight response bodies when their
+session generation ends, preserving uncertain write retries. Docker checks now pass
+229 frontend tests with 1292/1303 raw lines (99.16%) and 1500/1569 branches (95.60%).
+The real negative probe blocks 1292/4178 lines and 1500/7317 branches with all tests
+passing. Fresh `18pwmF` passed 7 development/44 production browser cases, including
+actual missing-cookie recovery after the old lease expires on both viewports.
+English desktop and Ukrainian mobile recovery screenshots were visually inspected.
+The final browser suite adds explicit cross-account discard/ownership isolation and
+preserved undo/redo; its full repeat and required CI must pass before auto-merge.
+Actual main protection remains strict `ci-required` from Actions app 15368, enforced
+for administrators; repository squash auto-merge remains enabled. No server actions.

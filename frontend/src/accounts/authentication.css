@@ -31,3 +31,7 @@
   max-width: 32rem;
   color: #a22020;
 }
+
+.reauthentication { max-width: 34rem; padding: 1rem; border: 1px solid #dadce0; border-radius: 0.75rem; background: #fff; }
+.reauthentication h2 { font-size: 1.2rem; font-weight: 500; }
+.reauthentication > button { margin-top: 1rem; }

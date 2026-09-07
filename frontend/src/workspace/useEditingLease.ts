@@ -5,9 +5,9 @@ import type { Resource } from "../library/useLibrary";
 
 type Access = { status: "checking" | "active" | "paused"; error: string };
 export type EditingCredentials = { client_id: string; lease_id: string; source_version_id: string };
-export function useEditingLease(resource: Resource | null, csrfToken: string) {
+export function useEditingLease(resource: Resource | null, csrfToken: string, enabled = true) {
   const identity = resource?.id, version = resource?.current_version_id;
-  const key = `${identity}:${version}:${csrfToken}`;
+  const key = `${identity}:${version}:${csrfToken}:${enabled}`;
   const held = useRef<{ key: string; deadline: number; credentials?: EditingCredentials }>({ key: "", deadline: 0 });
   const clientId = useRef<string | null>(null);
   const retry = useRef(() => {});
@@ -18,7 +18,7 @@ export function useEditingLease(resource: Resource | null, csrfToken: string) {
   useEffect(() => {
     held.current = { key, deadline: 0 };
     setAccess({ status: "checking", error: "" });
-    if (!identity || !version) { retry.current = () => {}; return; }
+    if (!identity || !version || !enabled) { retry.current = () => {}; return; }
     const client = clientId.current ??= newKey();
     let alive = true, busy = false, generation: string | undefined;
     let renewal: ReturnType<typeof setTimeout>, expiry: ReturnType<typeof setTimeout>;
@@ -77,7 +77,7 @@ export function useEditingLease(resource: Resource | null, csrfToken: string) {
       window.removeEventListener("focus", check); document.removeEventListener("visibilitychange", check); window.removeEventListener("pagehide", leave);
       release.current = relinquish();
     };
-  }, [identity, version, csrfToken, key, canEdit]);
+  }, [identity, version, csrfToken, key, canEdit, enabled]);
   return { ...access, canEdit, retry: () => retry.current(), invalidate: (error: string) => invalidate.current(error),
     credentials: () => canEdit() ? held.current.credentials : undefined };
 }

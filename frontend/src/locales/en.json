@@ -275,5 +275,11 @@
   "autosave.storage": "Autosave creates retained revisions that count toward storage usage. Title changes are saved separately.",
   "autosave.on": "Autosave is on. Changes save after a short pause in editing.",
   "autosave.off": "Autosave is off. Use Save document to keep your changes.",
-  "autosave.paused": "Autosave is paused. Your unsaved changes are kept in this workspace."
+  "autosave.paused": "Autosave is paused. Your unsaved changes are kept in this workspace.",
+  "reauth.title": "Restore your session",
+  "reauth.kept": "Your workspace and unsaved changes are kept. Sign in to the same account to continue.",
+  "reauth.different": "Another account is active in this browser. Sign in to your original account to keep this workspace, or explicitly switch accounts.",
+  "reauth.action": "Sign in again",
+  "reauth.other": "Switch to {{email}}",
+  "reauth.switch": "Leave this workspace and use another account"
 }

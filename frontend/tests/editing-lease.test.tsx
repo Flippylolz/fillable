@@ -6,8 +6,8 @@ import { leaseResponse } from "./lease-response";
 
 const resource = { id: "11111111-1111-4111-8111-111111111111", current_version_id: "22222222-2222-4222-8222-222222222222" } as Resource;
 const failed = (reason: string) => Response.json({ error: { code: "operation_conflict", parameters: { reason } } }, { status: 409 });
-function Host({ item = resource }: { item?: Resource | null }) {
-  const access = useEditingLease(item, "csrf");
+function Host({ item = resource, enabled = true, csrf = "csrf" }: { item?: Resource | null; enabled?: boolean; csrf?: string }) {
+  const access = useEditingLease(item, csrf, enabled);
   return <><p role="status">{access.status}:{access.error}</p><button onClick={access.retry}>Retry</button>
     <button onClick={event => { event.currentTarget.textContent = access.canEdit() ? "allowed" : "blocked"; }}>Check</button></>;
 }
@@ -83,4 +83,19 @@ test("malformed/stale responses never enable editing; unmount cancels pending ac
   expect(screen.queryByRole("status")).toBeNull();
   render(<Host item={null} />); fireEvent.click(screen.getByText("Retry")); await advance();
   expect(fetcher).toHaveBeenCalledTimes(4);
+});
+
+
+test("recovery pause releases the lease and fresh credentials resume with the same tab identity", async () => {
+  const fetcher = vi.fn(leaseResponse); vi.stubGlobal("fetch", fetcher);
+  const view = render(<Host />); await advance();
+  const first = await fetcher.mock.calls[0][0].clone().json();
+  view.rerender(<Host enabled={false} />); await advance();
+  fireEvent.click(screen.getByText("Check")); expect(screen.getByText("blocked")).toBeVisible();
+  expect(await fetcher.mock.calls[1][0].clone().json()).toMatchObject({ action: "release", client_id: first.client_id });
+  await advance(60000); fireEvent.click(screen.getByText("Retry")); await advance(); expect(fetcher).toHaveBeenCalledTimes(2);
+  view.rerender(<Host csrf="fresh" />); await advance();
+  expect(fetcher.mock.calls[2][0].headers.get("X-CSRF-Token")).toBe("fresh");
+  expect(await fetcher.mock.calls[2][0].clone().json()).toMatchObject({ action: "acquire", client_id: first.client_id });
+  expect(screen.getByRole("status")).toHaveTextContent("active:");
 });
