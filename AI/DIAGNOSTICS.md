@@ -15,7 +15,7 @@ docker compose -f compose.yaml -f compose.prod.yaml exec -T api python -m app.di
 job status, plus physical storage capacity, outstanding reservations, headroom and
 whether new writes fit. It never returns job summaries, field snapshots, document
 text or file paths. Historical failed jobs remain visible as counts; they do not by
-themselves make the command fail. An unwritable capacity result exits 1 while still
+themselves make the command fail. An unwritable capacity result or failed latest maintenance tick exits 1 while still
 printing its counters. Successful reads exit 0, unavailable diagnostics exit 1 with
 a fixed error code, and invalid arguments exit 2 without echoing argument values.
 
@@ -54,4 +54,8 @@ stdout/stderr in fresh development and production-style Docker. Synthetic probes
 include private-looking URI/query/header/method values and an oversized request.
 Development uses Vite's asset fallback; production verifies missing assets return
 404. No supplied-server access or deployment is part of this task. Scheduled
-reconciliation remains [E07.3](EPICS.md).
+reconciliation is described in [Maintenance](MAINTENANCE.md).
+
+`status` also includes the bounded [maintenance state](MAINTENANCE.md), safe per-task
+counters and progress timestamps. A failed latest maintenance tick exits 1; stale
+`running` records and last-success timestamps remain visible after a process crash.

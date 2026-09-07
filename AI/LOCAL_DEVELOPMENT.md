@@ -333,3 +333,7 @@ this task; scheduling is E07.3.
 Operator job/capacity status and bounded audit pages are documented in
 [Diagnostics](DIAGNOSTICS.md). They read metadata and capacity without changing
 document files; use the configured application Compose namespace.
+
+The Compose maintenance service runs bounded reconciliation and configured retention
+with preserved cursors. See [Scheduled maintenance](MAINTENANCE.md) for intervals,
+limits and operator failure-state checks. All-history retention remains the default.

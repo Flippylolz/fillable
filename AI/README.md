@@ -57,3 +57,5 @@ Read the decisions and the relevant epic before changing code. E01 establishes t
 Use the epic status table as the implementation ledger. Record completed work and evidence there; do not infer implementation from the existence of these planning documents.
 
 E01 establishes coverage-enforced CI early. E08 deploys last, after E00–E07 pass and access/routing on the supplied server are verified. Server inspection and deployment have not begun; no live server is needed to start development.
+
+- [Scheduled maintenance](MAINTENANCE.md): bounded reconciliation, retention and failure state.
