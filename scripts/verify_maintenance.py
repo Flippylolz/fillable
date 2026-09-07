@@ -17,8 +17,11 @@ for _ in range(40):
         assert connection.exec_driver_sql("SHOW statement_timeout").scalar_one() == "5s"
         assert connection.exec_driver_sql("SHOW lock_timeout").scalar_one() == "2s"
         result = report(connection)
-    if result["last_success_at"] is not None and result["run_id"] != previous:
-        assert result["status"] in ("succeeded", "running")
+    if (
+        result["last_success_at"] is not None
+        and result["run_id"] != previous
+        and result["status"] == "succeeded"
+    ):
         print("PASS: scheduled maintenance completed with scoped SQL timeouts")
         break
     if result["status"] == "failed":
