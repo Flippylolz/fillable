@@ -1513,3 +1513,12 @@ no-edit/edited/multiline regression also passed. Microsoft Word was not run.
 Next: individual E06.2d PR, actual strict gate verification, exact-head auto-merge and
 verified merge. Then split history API/download/restore/UI dependencies before their
 implementation. Autosave/history remain unfinished; E08 deployment stays last.
+
+PR #55 initial Actions 34097000657 blocked merge at browser setup. Trace inspection
+confirmed overlapping initial session GETs (both set cookies) before the new test's
+API login returned 403. Its helper now waits for the login form, matching established
+API-assisted test setup and preserving the real CSRF checks. Final fresh index
+`fillable-verify.5uLD76` passed all 7 development and 26 production browser tests with
+worker/persistence/recreation. Application code/coverage and inspected DOCX render
+artifacts remain unchanged. Next: push this test correction and verify exact-head
+required CI and actual PR #55 merge before E06.3a.

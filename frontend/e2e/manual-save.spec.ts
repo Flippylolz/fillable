@@ -4,6 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function open(page: Page, kind: "template" | "document") {
   await page.goto("/");
+  await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible();
   const anonymous = await (await page.request.get("/api/auth/session")).json();
   const login = await page.request.post("/api/auth/login", {
     headers: { Origin: new URL(page.url()).origin, "X-CSRF-Token": anonymous.csrf_token },
