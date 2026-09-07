@@ -61,3 +61,38 @@ verified structural correspondence and the immutable-original exporter. Real gat
 browser tests download original and newer revisions separately and reopen the saved
 workspace. Historical panel preview/download controls follow in E06.3b. These checks
 do not claim Microsoft Word validation.
+
+## Restore as a new revision
+
+E06.6 adds `POST /api/documents/{identity}/versions/{version}/restore` with the
+current `source_version_id`, tab `client_id`, server `lease_id`, CSRF token and
+required `Idempotency-Key`. The selected revision must belong to this active owned
+document. The server verifies its saved bytes and matching document/review pair,
+then writes a separately charged copy through the shared storage service. The
+selected bytes are unchanged and source anchors remain tied to this document's
+immutable original; this is not an independent-document rebase.
+
+Save and restore share the same final transaction: recheck active session, current
+revision, live lease and quota; insert a new version; advance the current pointer
+and the same lease; retire old processing and enqueue new work. Restore additionally
+rechecks that the selected file is still retained. Failure leaves the previous
+current version intact; quota/disk failure never removes history to make room.
+
+A committed retry returns the exact `saved_version_id` and metadata alongside the
+current resource, which may have advanced since that operation. It does not reopen
+the selected source or allocate another copy. Clients must compare exact saved and
+current identities before adopting a restore result. Unknown outcomes retry the
+same key and request; definite aborted operations require a fresh key.
+
+Migration `0010_revision_provenance` adds same-owner, same-document parent and
+restored-from references, backfills parents by existing revision number and refuses
+a downgrade while provenance exists. All new saves record their previous current
+revision. Restores also record the selected revision, exposed in history metadata
+as `restored_from_version_id` and `restored_from_number`. Original uploads and initial
+independent copies have no parent. Future retention keeps metadata tombstones so
+removing an old file cannot erase these references. Use a forward-compatible recovery
+image when populated provenance prevents an older schema downgrade; preserve data.
+
+The restore API does not know browser drafts. E06.3b supplies explicit unsaved-work
+confirmation and retains the live draft until an exact-current restore acknowledgment.
+This API task does not yet claim completed history controls or draft-restoration UX.

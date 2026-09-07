@@ -16,6 +16,9 @@ class VersionInfo(BaseModel):
     digest: str
     unsupported_count: int
     is_current: bool
+    parent_version_id: UUID | None
+    restored_from_version_id: UUID | None
+    restored_from_number: int | None
 
 
 class VersionList(BaseModel):

@@ -14,10 +14,14 @@ from app.storage.service import StorageError
 
 
 def query(owner, identity):
+    restored = versions.alias("restored_version")
     return (
         select(
             versions.c.id,
             versions.c.number,
+            versions.c.parent_version_id,
+            versions.c.restored_from_version_id,
+            restored.c.number.label("restored_from_number"),
             versions.c.created_at,
             versions.c.unsupported_count,
             files.c.size_bytes,
@@ -26,6 +30,7 @@ def query(owner, identity):
         )
         .join(resources, resources.c.id == versions.c.document_id)
         .join(files, files.c.id == versions.c.file_id)
+        .outerjoin(restored, restored.c.id == versions.c.restored_from_version_id)
         .where(
             resources.c.id == identity,
             resources.c.owner_id == owner,

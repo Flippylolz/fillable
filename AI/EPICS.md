@@ -1586,3 +1586,37 @@ No new DOCX transform or layout change; Microsoft Word is not claimed. Actual st
 Actions `ci-required` protection including administrators was rechecked. Next:
 individual PR/auto-merge and actual merged-state verification, then E06.6 restore.
 E06.3b history UI and E06.5/E06.7 remain unfinished. E08 deployment stays last.
+
+
+2026-09-07: E06.4 verified merged through [PR #57](https://github.com/Flippylolz/fillable/pull/57),
+merge `017d6599f10bb03caf1aad8df81a2f345996262b`; Actions 34102641718 passed
+`checks` and `ci-required` for exact head `9a8c98756e3aad133e3f229d98910be2bbd24c47`.
+E06.6 starts on `task/e06-6-restore-revisions`: selected immutable bytes and matching
+review as a new quota-enforced revision; shared save/restore final transaction fences,
+exact retry identity and parent/restored-from provenance. Migration backfills parents
+and guards destructive downgrade. Unsaved draft confirmation/recovery UI follows in
+E06.3b after this API merges; no premature discard or history pruning is introduced.
+
+E06.6 local verification passed: 353 backend tests, raw 3559/3582 lines (99.36%)
+and 1074/1098 branches (97.81%); Ruff, mypy and gate contracts passed. Frontend
+154 tests, lint/catalog/type/build and raw source gate passed: 1083/1091 lines
+(99.27%) and 1190/1243 branches (95.74%). Both real unimported-source negative
+probes passed their behavior suites and blocked below 90%. OpenAPI/TypeScript regenerated.
+Fresh staged application checkout `fillable-verify.wBPYqa`, project `fillable-verify-87057`,
+passed 7 development and 28 production browser tests, hot reload, worker, static
+assets and persistence/recreation; all volumes preserved. The final two backend-only
+race/deletion regression tests were added afterward and passed in the 353-test suite.
+Both desktop/mobile actual restored downloads are 595214 bytes, SHA-256
+`e6dbca45b21efbc2c83536f8a6832d9074ea656edf59a68bf0fedf276a4d9fed`, identical to the
+previously independently rendered reviewed DOCX. Browser reopening and captured
+workspace views were inspected. The standard independent renderer also passed
+no-edit byte/pixel equality, edited three-page/unchanged-page checks and five-page
+multiline Ukrainian/astral checks. Microsoft Word itself is not claimed.
+Real PostgreSQL checks cover original/reviewed/review-only restore, exact late replay,
+concurrent restore/restore and save/restore, stale authority, late quota/selection
+removal, corrupt data, disk failure, deleted-result replay, worker correspondence,
+copy independence, parent backfill, scoped FKs and guarded downgrade.
+Actual strict `ci-required` protection including administrators was verified. Next:
+individual E06.6 PR, exact-head auto-merge and verified merge, then E06.3b complete
+history UI with explicit draft handling. Retention/autosave and E07 remain; deployment
+is E08, last, preserving unrelated services.
