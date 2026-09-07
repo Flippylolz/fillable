@@ -2280,3 +2280,23 @@ owner edits and the shared container baseline. Own probes were stopped; data ret
 Proof root `fillable-e084-real.timgnz3s`, project `fillable-e084-timgnz3s`.
 Next: task PR, required CI/verified merge, configure two private initial-account
 environment secrets, wait successful exact-main CI and run the Actions workflow.
+
+E08.4 code PR #74 merged as `fdfe53bb5f739fe8c72ff905785c753f260e7780`;
+PR CI `34160681711` and main CI `34161861411` passed. Actual deployment waits
+for explicit approval requested by automatic review for the two generated initial
+account secrets. Independent E08.5 tooling is in draft PR #75.
+
+E08.5a corrective task: draft #75 CI `34162407970` exposed an existing editing-lease
+test race in the fresh production suite (47 cases passed, one failed). The synthetic
+trace shows its initial `/content` API request returned HTTP 409, but the test parsed
+that error as its baseline and compared later document content to undefined. Make
+both saved-state reads require HTTP 200, retry only the documented temporary busy
+response, and preserve the exact document/resource/quota comparisons. Deliver in its
+own PR from merged main with repeated real browser verification and required CI;
+then refresh the draft acceptance PR. Do not retry credential upload without approval.
+
+E08.5a local verification passed all 20 real two-tab browser scenarios (10 desktop,
+10 mobile, 48.5s) through the isolated actual app/shared-manager/relay. Full scoped
+restart retained stored bytes/digests/quota counters; shared service/route remained
+unchanged and own containers stopped with volumes preserved. Proof project
+`fillable-e085a-fpcvr2vg`. Required final-head CI and merge remain pending.
