@@ -35,12 +35,14 @@ function setup(write?: (request: Request) => Promise<Response>) {
     if (request.method === "PATCH") { server.resource.title = (await request.json()).title; return Response.json(server.resource); }
     return Response.json(server.resource);
   }));
+  let pause!: (value: boolean) => void;
   function Host() {
+    const [operationsPaused, setOperationsPaused] = useState(false); pause = setOperationsPaused;
     const [dirty, setDirty] = useState(false);
-    return <Workspace identity={id} csrfToken="csrf" dirty={dirty} onDirty={setDirty} onChanged={changed} onBusy={busy} />;
+    return <Workspace identity={id} csrfToken="csrf" dirty={dirty} onDirty={setDirty} onChanged={changed} onBusy={busy} operationsPaused={operationsPaused} />;
   }
   const view = render(<StrictMode><I18nextProvider i18n={i18n}><Host /></I18nextProvider></StrictMode>);
-  return { ...view, server, writes, commit, leases, changed, busy };
+  return { ...view, server, writes, commit, leases, changed, busy, pause: (value: boolean) => pause(value) };
 }
 async function ready() { await screen.findByText("Editing enabled."); return screen.getByRole("textbox", { name: "Editable document" }); }
 const field = () => screen.getAllByRole("textbox", { name: "Field value: ПІБ клієнта" })[0];
@@ -150,3 +152,50 @@ test("an in-progress save explains the same-attempt retry in both languages", as
   expect(screen.getByText("Це збереження ще триває. Повторіть запит згодом, щоб перевірити результат.")).toBeVisible();
   expect(state.writes).toHaveBeenCalledTimes(1);
 });
+
+test("default autosave preserves newer typing after a delayed acknowledgment and saves it against the new version", async () => {
+  let finish!: (response: Response) => void;
+  const state = setup(request => state.writes.mock.calls.length === 1 ? new Promise(resolve => { finish = resolve; }) : state.commit(request));
+  const editor = await ready();
+  change("Перша автоматична Ґанна");
+  await waitFor(() => expect(state.writes).toHaveBeenCalledTimes(1), { timeout: 4000 });
+  const first = state.writes.mock.calls[0][0];
+  change("Новіша Єва 🙂");
+  await act(async () => finish(await state.commit(first)));
+  await waitFor(() => expect(state.writes).toHaveBeenCalledTimes(2), { timeout: 4000 });
+  await screen.findByText("All document changes saved.");
+  expect(screen.getByRole("textbox", { name: "Editable document" })).toBe(editor);
+  expect(editor).toHaveTextContent("Новіша Єва 🙂");
+  expect((await state.writes.mock.calls[1][0].clone().json()).source_version_id).toBe(v2);
+}, 15000);
+
+test("autosave pauses after a quota failure, keeps newer edits and resumes after explicit save succeeds", async () => {
+  const state = setup(request => state.writes.mock.calls.length === 1 ? Promise.resolve(failure("quota_exceeded")) : state.commit(request));
+  const editor = await ready(); change("Залишити при помилці");
+  await screen.findByText("There is not enough storage allowance to save this file.", {}, { timeout: 4000 });
+  expect(screen.getByText("Autosave is paused. Your unsaved changes are kept in this workspace.")).toBeVisible();
+  change("Новіша чернетка Ґанни");
+  await act(() => new Promise(resolve => setTimeout(resolve, 2300)));
+  expect(state.writes).toHaveBeenCalledTimes(1); expect(editor).toHaveTextContent("Новіша чернетка Ґанни");
+  fireEvent.click(save()); await screen.findByText("All document changes saved.");
+  await waitFor(() => expect(state.leases.at(-1)).toMatchObject({ action: "acquire", source_version_id: v2 }));
+  await screen.findByText("Editing enabled.");
+  await waitFor(() => expect(field()).toBeEnabled());
+  change("Після виправлення Їжак");
+  expect(editor).toHaveTextContent("Після виправлення Їжак");
+  await waitFor(() => expect(state.writes).toHaveBeenCalledTimes(3), { timeout: 4000 });
+  await screen.findByText("All document changes saved.");
+  expect(editor).toHaveTextContent("Після виправлення Їжак");
+}, 15000);
+
+
+test("another page's active mutation defers autosave until it completes", async () => {
+  const state = setup(); await ready(); change("Чернетка перед зміною профілю");
+  await act(() => state.pause(true));
+  await act(() => new Promise(resolve => setTimeout(resolve, 2300)));
+  expect(state.writes).not.toHaveBeenCalled();
+  expect(field()).toHaveValue("Чернетка перед зміною профілю");
+  await act(() => state.pause(false));
+  await waitFor(() => expect(state.writes).toHaveBeenCalledTimes(1), { timeout: 4000 });
+  await screen.findByText("All document changes saved.");
+}, 10000);

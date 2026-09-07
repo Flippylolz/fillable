@@ -12,10 +12,12 @@ import { useEditingLease } from "./useEditingLease";
 import { WorkspaceSettings } from "./WorkspaceSettings";
 import { useDocumentSave } from "./useDocumentSave";
 import { useRestore } from "./useRestore";
+import { useAutosave } from "./useAutosave";
 import { HistoryPanel } from "./HistoryPanel";
 
-export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy }: {
+export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy, operationsPaused = false }: {
   identity: string; dirty: boolean; onDirty: (dirty: boolean) => void; csrfToken: string;
+  operationsPaused?: boolean;
   onBack?: () => void; onChanged?: () => void; onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -23,6 +25,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [zoom, setZoom] = useState(1), [highlight, setHighlight] = useState(true);
+  const [autosave, setAutosave] = useState(true);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false), [editorEpoch, setEditorEpoch] = useState(0);
   const [revision, setRevision] = useState(0), [titleDirty, setTitleDirty] = useState(false);
@@ -41,6 +44,13 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
     } });
   const mutating = settingsBusy || saving.busy || restoring.busy;
   const unsaved = revision !== saving.acknowledged || titleDirty || saving.pending || saving.conflict || !!restoring.pending || restoring.conflict;
+  const autosavePaused = operationsPaused || historyOpen || mutating || saving.pending || saving.conflict || !!saving.error
+    || !!restoring.pending || restoring.conflict || !valid || composing || access.status !== "active";
+  useAutosave({ enabled: autosave, revision, acknowledged: saving.acknowledged, paused: autosavePaused,
+    save: () => {
+      const snapshot = reader.current?.();
+      if (snapshot && !snapshot.composing && snapshot.fieldValuesValid && access.credentials()) void saving.save();
+    } });
   function restoreSelected(version: components["schemas"]["VersionInfo"]) {
     if (mutating || saving.pending || saving.conflict || restoring.conflict || composing) return;
     if ((dirty || unsaved) && !window.confirm(t(restoring.pending ? "history.retryConfirm" : "history.confirm", { number: formatNumber((restoring.pending ?? version).number) }))) return;
@@ -86,6 +96,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         ? <button type="button" onClick={reopen}>{t("review.reopen")}</button>
         : <button type="button" onClick={access.retry}>{t("lease.retry")}</button>)}
     </div><p role="status" className="workspace-save-state">{t(saving.busy ? "save.saving" : unsaved ? "workspace.unsaved" : saving.acknowledged ? "save.saved" : "workspace.saved")}</p>
+      <p className="workspace-autosave-state">{t(!autosave ? "autosave.off" : saving.busy ? "save.saving" : autosavePaused ? "autosave.paused" : "autosave.on")}</p>
       {saving.error && <div className="workspace-save-error" role="alert">
         <p>{["revision", "lease_lost", "composing", "invalid_fields", "file_too_large", "upload_timeout", "upload_busy", "operation_in_progress", "operation_aborted", "invalid_document"].includes(saving.error)
           ? t(`save.${saving.error}`) : apiErrorMessage(saving.error)}</p>
@@ -104,7 +115,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         dirty={dirty || unsaved} blocked={saving.pending || saving.conflict || !!restoring.pending || restoring.conflict || access.status !== "active"}
         busy={mutating} onRestore={restoreSelected} onReopen={reopen} />}
       <div style={{ display: historyOpen ? "none" : undefined }}>
-      <WorkspaceSettings key={editorEpoch} item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight}
+      <WorkspaceSettings key={editorEpoch} item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight} autosave={autosave} onAutosave={setAutosave}
         disabled={saving.pending || mutating || saving.conflict || !!restoring.pending || restoring.conflict} onDirty={setTitleDirty} onBusy={setSettingsBusy} onReopen={reopen}
         onResource={resource => { setSaved(current => current ? { ...current, resource } : current); onChanged?.(); }} />
       <div className="workspace-discovery">

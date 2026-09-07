@@ -163,3 +163,9 @@ active readers, restore races in both orders, shared-file protection, original/c
 preservation, quota accounting, failed unlink/reconciliation, provenance after pruning,
 strict settings, CLI execution and guarded migration. UI tests cover localized limits
 and policy refresh with the same live editor and draft.
+
+
+E06.7 pauses the live autosave timer while this panel is open. Neither selecting a
+historical revision nor receiving its model can schedule a save. Closing history
+resumes the same editor and schedules only its own unacknowledged user changes when
+autosave is enabled and no save/restore conflict or uncertain operation remains.

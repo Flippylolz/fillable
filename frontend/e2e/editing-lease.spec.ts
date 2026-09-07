@@ -1,3 +1,4 @@
+import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
@@ -18,6 +19,7 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   const holder = granted.request().postDataJSON(), generation = (await granted.json()).lease_id;
   const url = page.url(), identity = url.split("/").pop();
   await expect(page.getByText("Редагування дозволено.", { exact: true })).toBeVisible();
+  await manualSaving(page);
   const values = page.getByRole("textbox", { name: "Значення поля: ПІБ клієнта", exact: true });
   await values.first().fill("Чернетка до паузи");
   const editor = page.getByRole("textbox", { name: "Редагований документ", exact: true });

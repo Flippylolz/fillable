@@ -331,3 +331,38 @@ and request across history/profile/language changes; retries cannot switch to an
 selected revision. Explicit reopen offers a separate discard decision. The full
 contract and retention boundary are in [Saved history](HISTORY.md). Autosave remains
 E06.7 and must not save a historical preview.
+
+
+## Autosave (E06.7)
+
+A newly opened workspace enables document autosave. After two seconds without a new
+editor revision, the workspace uses the same immutable snapshot, quota, editing-lease
+and idempotency protocol as manual Save. Polling, selection and initial detector
+attachment do not create revisions or restart the timer. Title changes remain an
+explicit separate operation. The workspace settings checkbox can disable future
+autosaves; its value survives profile/language changes and explicit reopen/restore
+within the same mounted workspace, but is not an account preference.
+
+Autosave pauses for a historical panel, unavailable editing authority, native
+composition, invalid field values, active mutations (including profile/library operations), uncertain operations or a save
+error. The timer also rechecks the synchronous editor snapshot and live credentials
+before submitting. Historical preview has no save callback; returning to editing
+resumes the same draft and schedules eligible live changes. Turning the setting off
+does not cancel an already submitted operation or discard its unknown outcome.
+
+Saving/saved status acknowledges only the submitted editor revision. Newer typing
+stays dirty through a delayed acknowledgment and receives a separate later save
+against the newly acquired current-version lease. A failure keeps the draft and
+pauses automatic retries, including after later edits. The explicit Save/Retry action
+resolves the problem; uncertain retries keep their original key/body, then a newer
+draft can autosave separately. Stale current conflicts continue to require explicit
+reopen/discard handling. Retained autosaves count toward the displayed storage policy
+and allowance; no failed save invokes retention to make room.
+
+Browser acceptance covers default-on debounce, no writes for detector attachment or
+title edits, the real settings toggle and locale preservation, native composition,
+historical pause/return, lost committed responses and exact retry, quota failure,
+manual recovery and reopening the saved pair. Manual editing/review regression flows
+explicitly disable autosave through settings when asserting an intentionally unsaved
+draft. Hook/component tests cover cancellation, polling renders, delayed acknowledgment
+and the save-error pause. See the epic record for measured validation.
