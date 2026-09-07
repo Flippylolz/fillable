@@ -2092,3 +2092,12 @@ real field creation, save, history, download/reopen assertions remain. Full fres
 browser checks and repeated focused desktop/mobile journeys must pass before PR
 readiness; required CI/90% gates and actual merge are still mandatory. Port and HTTP
 choices are settled; no external dependency is outstanding.
+
+E07.1c is in_review in [PR #70](https://github.com/Flippylolz/fillable/pull/70),
+candidate `4ac12ba`. A frozen source/driver runs full fresh verification plus ten
+repetitions per viewport of the affected manual-save journey; source is isolated from
+E08.2's uncommitted deployment files. The initial run has passed service startup,
+account provisioning and persisted storage/document checks. Required PR CI and
+repeated browser results remain pending. Before readiness, inspect results, verify
+strict protection, enable exact-head squash auto-merge and confirm MERGED. Then
+synchronize the E08.2 branch without discarding its preserved work.
