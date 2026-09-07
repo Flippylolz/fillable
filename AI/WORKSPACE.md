@@ -235,3 +235,49 @@ See [Test corpus](TEST_CORPUS.md) for the artifact and generation procedure.
 Native discovery may use the grouping key as a display label when the OOXML alias
 is empty. Attaching working review takes the actual control label/key from the editor,
 so that fallback is never mistaken for an applied alias change during persistence.
+
+## Atomic saved revisions (E06.2c)
+
+`POST /api/documents/{identity}/versions` accepts a typed JSON working document,
+expected source revision, tab/client identity and lease generation, with exact-origin
+CSRF and an idempotency key. A save is admitted through the shared two-request upload
+bound, reads at most 64 MiB of JSON within 30 seconds, and retains the existing model,
+OOXML and 10 MiB output bounds. Only this save route has the matching 64 MiB gateway
+limit; other API routes keep 24 MiB. Parsing/export remains in the Python thread pool.
+
+A new operation checks the active owner, current revision and live session/tab/lease,
+validates working review against the current or trusted persisted origin, and exports
+against the verified immutable original. Storage reserves and charges each retained
+revision file, including a review-only revision with identical DOCX bytes. Finalization
+rechecks owner, revision and lease using database time, commits DOCX/model/review as
+one version, advances current and the same editing lease to that version, retires old
+pending processing and records the new processing intent. Failures leave the previous
+saved version intact; uncertain commit responses are resolved by the same operation key.
+
+The response distinguishes `saved_version_id`, number/time/bytes/digest from current
+`resource`. A committed retry returns its exact saved revision even if another save
+has since advanced current, without reopening or exporting a new source. Deleted
+results are not recreated. Every retry still requires an active authenticated owner.
+The next UI task must acknowledge the exact local snapshot it sent, retain later
+edits, distinguish a stale replay from current, and keep one tab identity across a
+successful revision transition. Old-source lease release cannot remove the updated
+lease. No manual-save button or autosave is claimed by this backend task.
+
+Migration `0009_saved_review` stores nullable `document_versions.field_review` beside
+the matching model; existing embedded review is moved without loss and stripped from
+the model. Owned content reads combine the pair, copies rebase and split it, and
+permanent deletion clears both. A populated-review downgrade is refused. Older app
+images that only read embedded review are not compatible after this migration; keep
+the migrated data and use a compatible forward application release.
+
+Processing verifies saved bytes against the exact stored source-anchored model and
+runs detection against that model. It does not replace its identities with positions
+from reparsing the exported XML. Discovery remains proposals, separate from retained
+working review; accepted origins and missing/dismissed records survive reopen/copy.
+
+When native/manual review still has a local null origin, a save binds its persisted
+copy to the trusted prior origin or first save's expected source revision. Subsequent
+null-origin snapshots from the same mounted editor retain that binding. The request
+and undo history are not mutated; reopening loads a bound review and does not enter
+a repeating stale-discovery/reopen prompt. This changes provenance only, not DOCX
+bytes, locations, labels, values or user decisions.

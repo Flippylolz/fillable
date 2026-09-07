@@ -12,9 +12,10 @@ from starlette.concurrency import run_in_threadpool
 from app.accounts.routes import current_user, mutation_session
 from app.accounts.schema import UserInfo
 from app.accounts.service import SessionState
-from app.documents import copies, deletion, leases, service, titles
+from app.documents import copies, deletion, leases, saves, service, titles
 from app.documents.lease_schema import LeaseInfo, LeaseRequest
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
+from app.documents.save_schema import SaveInfo, SaveRequest
 from app.documents.schema import (
     ContentInfo,
     CopyRequest,
@@ -31,6 +32,7 @@ router = APIRouter(prefix="/api/documents")
 UPLOAD_SLOTS = BoundedSemaphore(2)
 DOWNLOAD_SLOTS = BoundedSemaphore(2)
 BODY_SECONDS = 30
+SAVE_BODY_BYTES = 64 * 1024 * 1024
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 
@@ -105,24 +107,23 @@ def parse_metadata(value):
         raise AppError(422, "invalid_request") from None
 
 
-async def read_body(request):
-    if request.headers.get("content-type", "").split(";", 1)[0] not in {
-        MIME,
-        "application/octet-stream",
-    }:
+async def read_body(
+    request, limit=ARCHIVE_BYTES, types=(MIME, "application/octet-stream")
+):
+    if request.headers.get("content-type", "").split(";", 1)[0] not in types:
         raise AppError(415, "unsupported_document")
     declared = request.headers.get("content-length")
     if declared is not None and (
         not declared.isascii() or not declared.isdecimal() or len(declared) > 10
     ):
         raise AppError(400, "invalid_request")
-    if declared is not None and int(declared) > ARCHIVE_BYTES:
+    if declared is not None and int(declared) > limit:
         raise AppError(413, "file_too_large")
     body = bytearray()
     try:
         async with asyncio.timeout(BODY_SECONDS):
             async for chunk in request.stream():
-                if len(body) + len(chunk) > ARCHIVE_BYTES:
+                if len(body) + len(chunk) > limit:
                     raise AppError(413, "file_too_large")
                 body.extend(chunk)
     except TimeoutError:
@@ -282,5 +283,61 @@ def content(
         raise AppError(503, "storage_unavailable") from None
     finally:
         DOWNLOAD_SLOTS.release()
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+@router.post(
+    "/{identity}/versions",
+    response_model=SaveInfo,
+    status_code=201,
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "application/json": {"schema": SaveRequest.model_json_schema()},
+            },
+        }
+    },
+)
+async def save_version(
+    identity: UUID,
+    request: Request,
+    response: Response,
+    idempotency_key: Annotated[
+        str, Header(min_length=1, max_length=120, pattern=r"^[A-Za-z0-9._:-]+$")
+    ],
+    state: SessionState = Depends(mutation_session),
+) -> SaveInfo:
+    if state.user is None:
+        raise AppError(401, "authentication_required")
+    if not UPLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(429, "upload_busy")
+    try:
+        data = await read_body(request, SAVE_BODY_BYTES, ("application/json",))
+        try:
+            payload = await run_in_threadpool(SaveRequest.model_validate_json, data)
+        except ValueError:
+            raise AppError(422, "invalid_request") from None
+        result = await run_in_threadpool(
+            saves.save, state, identity, payload, idempotency_key
+        )
+    except StorageError as error:
+        failures: dict[str, tuple[int, ErrorCode]] = {
+            "not_found": (404, "not_found"),
+            "quota_exceeded": (409, "quota_exceeded"),
+            "file_too_large": (413, "file_too_large"),
+            "idempotency_conflict": (409, "operation_conflict"),
+            "operation_in_progress": (409, "operation_in_progress"),
+            "operation_aborted": (409, "operation_aborted"),
+        }
+        status, code = failures.get(error.code, (503, "storage_unavailable"))
+        raise AppError(status, code) from None
+    except ValueError:
+        raise AppError(422, "invalid_document") from None
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    finally:
+        UPLOAD_SLOTS.release()
     response.headers["Cache-Control"] = "no-store"
     return result

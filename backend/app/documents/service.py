@@ -31,7 +31,11 @@ def saved_row(owner, identity):
         row = (
             connection.execute(
                 query(owner)
-                .add_columns(versions.c.file_id, versions.c.document_model)
+                .add_columns(
+                    versions.c.file_id,
+                    versions.c.document_model,
+                    versions.c.field_review,
+                )
                 .where(resources.c.id == identity)
             )
             .mappings()
@@ -44,12 +48,19 @@ def saved_row(owner, identity):
     return row
 
 
+def working_model(row):
+    model = row["document_model"]
+    if row["field_review"] is not None:
+        return {**model, "attrs": {"review": row["field_review"]}}
+    return model
+
+
 def content(owner, identity):
     row = saved_row(owner, identity)
     with configured().read(owner, row["file_id"]):
         return ContentInfo(
             resource=ResourceInfo.model_validate(dict(row)),
-            document=row["document_model"],
+            document=working_model(row),
         )
 
 

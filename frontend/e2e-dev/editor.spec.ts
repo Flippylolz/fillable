@@ -33,9 +33,9 @@ test("corpus fields synchronize, navigate and survive locale changes", async ({
     .locator(".document-canvas td p")
     .filter({ hasText: "{{ЕЛЕКТРОННА_ПОШТА}}" });
   await email.click();
-  await page.keyboard.press("Home");
-  await page.keyboard.press("Shift+End");
-  expect(await page.evaluate(() => window.getSelection()?.toString())).toBe(
+  await page.keyboard.press("Home", { delay: 30 });
+  await page.keyboard.press("Shift+End", { delay: 30 });
+  await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe(
     "{{ЕЛЕКТРОННА_ПОШТА}}",
   );
   await page

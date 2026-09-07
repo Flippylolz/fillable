@@ -14,8 +14,11 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page).toHaveURL(/\/documents$/);
   await expect(page.getByRole("heading", { name: "Бібліотека документів" })).toBeVisible();
   let pollFailure = true;
+  let uploadedTemplate = "";
   await page.route("**/api/documents/*/processing", async route => {
-    if (pollFailure) { pollFailure = false; await route.abort(); return; }
+    if (pollFailure && new URL(route.request().url()).pathname === `/api/documents/${uploadedTemplate}/processing`) {
+      pollFailure = false; await route.abort(); return;
+    }
     await route.continue();
   });
   let fail = true;
@@ -24,13 +27,19 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
     if (route.request().method() === "POST") {
       keys.push(route.request().headers()["idempotency-key"]);
       if (fail) { fail = false; await route.abort(); return; }
+      if (!uploadedTemplate) {
+        const response = await route.fetch();
+        expect(response.status()).toBe(201);
+        uploadedTemplate = (await response.json()).id;
+        await route.fulfill({ response }); return;
+      }
     }
     await route.continue();
   });
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles(file);
   await page.getByLabel("Назва документа", { exact: true }).fill(templateTitle);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("form", { name: "Завантажити файл DOCX", exact: true }).getByRole("alert")).toBeVisible();
   await expect(page.getByLabel("Назва документа", { exact: true })).toHaveValue(templateTitle);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
   await expect(page.getByRole("article", { name: templateTitle })).toBeVisible();
