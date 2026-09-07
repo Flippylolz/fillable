@@ -17,25 +17,32 @@ export type EditorSnapshot = { document: object; revision: number; fieldValuesVa
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
 export function mountEditor(host: HTMLElement, initialDocument: object, callbacks: {
+  canEdit?: () => boolean;
   onChange: (snapshot: EditorSnapshot) => void;
   onUpdate: (presentation: EditorPresentation) => void;
 }) {
   const source = editorSchema.nodeFromJSON(structuredClone(initialDocument));
-  let revision = 0, unsupported = false;
+  let revision = 0, unsupported = false, settling = false;
+  const allowed = () => callbacks.canEdit?.() !== false;
   let compositionSource: EditorState | null = null;
   let compositionChanges: Transaction | null = null;
   let compositionId: number | undefined;
   let compositionTimer: ReturnType<typeof setTimeout> | undefined;
   source.descendants(node => { if (node.type.name.startsWith("locked")) unsupported = true; });
   const editor = new EditorView(host, {
+    editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
       plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
         ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
     }),
-    handleTextInput: fieldTextInput,
+    handleTextInput: (view, from, to, value) => !allowed() && !compositionSource || fieldTextInput(view, from, to, value),
     handleDOMEvents: {
-      beforeinput: fieldBeforeInput,
-      compositionstart() {
+      beforeinput(view, event) {
+        if (!allowed() && !compositionSource) { event.preventDefault(); return true; }
+        return fieldBeforeInput(view, event);
+      },
+      compositionstart(_view, event) {
+        if (!allowed()) { event.preventDefault(); return true; }
         finishComposition();
         compositionSource = editor.state;
         compositionChanges = editor.state.tr;
@@ -50,8 +57,9 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
         return false;
       },
     },
-    handlePaste: fieldPaste,
+    handlePaste: (view, event) => !allowed() || fieldPaste(view, event),
     dispatchTransaction(transaction: Transaction) {
+      if (transaction.docChanged && !transaction.getMeta("review-initial") && !allowed() && !compositionSource && !settling) { editor.updateState(editor.state); return; }
       if (compositionSource && typeof transaction.getMeta("composition") === "number") compositionId = transaction.getMeta("composition");
       const transformed = paragraphIdentities(compositionSource ? transaction : linkedChanges(editor.state, transaction));
       if (compositionChanges) for (const step of transformed.steps) compositionChanges.step(step);
@@ -71,15 +79,17 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     compositionSource = null;
     compositionChanges = null;
     if (!source) return;
-    if (source.doc.eq(editor.state.doc)) { publish(); return; }
+    if (source.doc.eq(editor.state.doc)) { editor.setProps({}); publish(); return; }
     const transaction = linkedChanges(source, retainComposedField(source, editor.state.tr, changes!.mapping), true);
     for (const step of transaction.steps) changes!.step(step);
     const review = reviewState(reviewChanges(source, changes!).doc);
     if (review !== reviewState(editor.state.doc)) transaction.setDocAttribute("review", review);
     if (transaction.docChanged) {
       if (compositionId !== undefined) transaction.setMeta("composition", compositionId);
-      editor.dispatch(transaction);
+      settling = true;
+      try { editor.dispatch(transaction); } finally { settling = false; }
     } else publish();
+    editor.setProps({});
   }
   function exportSnapshot(): EditorSnapshot {
     return { document: structuredClone(editor.state.doc.toJSON()), revision, composing: compositionSource !== null,
@@ -93,7 +103,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {
-    if (!transaction) return false;
+    if (!transaction || (transaction.docChanged && !allowed())) return false;
     editor.dispatch(transaction);
     if (focus) editor.focus();
     return true;
@@ -101,6 +111,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
   publish();
   return {
     exportSnapshot,
+    refreshAccess() { editor.setProps({}); },
     setDocumentLabel(label: string) {
       editor.setProps({ attributes: { "aria-label": label, role: "textbox", "aria-multiline": "true" } });
     },
@@ -123,6 +134,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       return dispatch(transaction, action === "focus" || action === "accept");
     },
     createField(label: string) {
+      if (!allowed()) return "read_only" as const;
       const issue = manualFieldIssue(editor.state, label);
       if (!issue) dispatch(createField(editor.state, label, newFieldId()), true);
       return issue;
@@ -133,8 +145,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     },
     focusField(id: string) { return dispatch(focusField(editor.state, id), true); },
     removeField(id: string) { return dispatch(removeField(editor.state, id)); },
-    undo() { const changed = undo(editor.state, editor.dispatch); editor.focus(); return changed; },
-    redo() { const changed = redo(editor.state, editor.dispatch); editor.focus(); return changed; },
+    undo() { if (!allowed()) return false; const changed = undo(editor.state, editor.dispatch); editor.focus(); return changed; },
+    redo() { if (!allowed()) return false; const changed = redo(editor.state, editor.dispatch); editor.focus(); return changed; },
     destroy() { clearTimeout(compositionTimer); editor.destroy(); },
   };
 }

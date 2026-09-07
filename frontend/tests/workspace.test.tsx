@@ -1,3 +1,4 @@
+import { leaseResponse } from "./lease-response";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import { App } from "../src/App";
@@ -11,6 +12,7 @@ const resource = { id, kind: "template", title: "Заява Ґанни", origina
 const session = { csrf_token: "csrf", user: { id: "owner", email: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
 function defaults(request: Request | string) {
   const path = new URL(typeof request === "string" ? request : request.url, window.location.origin).pathname;
+  if (path.endsWith("/editing-lease")) return leaseResponse(request as Request);
   if (path.endsWith("/content")) return Response.json({ resource, document: corpus });
   if (path.endsWith("/session")) return Response.json(session);
   if (path === "/api/documents") return Response.json({ items: [resource, { ...resource, id: second, title: "Інша заява" }], next_cursor: null });
@@ -27,6 +29,7 @@ test("direct workspace opens a verified model, preserves the live editor across 
   show();
   await screen.findByRole("heading", { name: resource.title });
   const editor = await screen.findByRole("textbox", { name: "Редагований документ" });
+  await screen.findByText("Редагування дозволено.");
   const field = (await screen.findAllByRole("textbox", { name: /^Значення поля:/ }))[0];
   fireEvent.change(field, { target: { value: "Незбережений Їжак" } });
   expect(await screen.findByText(/Є незбережені зміни/)).toBeVisible();
@@ -37,7 +40,7 @@ test("direct workspace opens a verified model, preserves the live editor across 
   expect(editor).toHaveTextContent("Незбережений Їжак");
   fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
   expect(confirm).toHaveBeenCalled();
-  expect(fetcher.mock.calls.some(([request]) => typeof request !== "string" && request.method === "POST")).toBe(false);
+  expect(fetcher.mock.calls.some(([request]) => typeof request !== "string" && new URL(request.url).pathname === "/api/auth/logout")).toBe(false);
   fireEvent.click(screen.getByRole("link", { name: "Document library" }));
   const links = screen.getAllByRole("link", { name: "Open" });
   fireEvent.click(links[1]);
@@ -53,6 +56,7 @@ test("history cannot replace a dirty workspace without consent", async () => {
   vi.stubGlobal("fetch", vi.fn(async (request: Request | string) => defaults(request)));
   vi.spyOn(window, "confirm").mockReturnValue(false); show();
   await screen.findByRole("heading", { name: resource.title });
+  await screen.findByText("Редагування дозволено.");
   const field = (await screen.findAllByRole("textbox", { name: /^Значення поля:/ }))[0];
   fireEvent.change(field, { target: { value: "Чернетка" } });
   act(() => { window.history.pushState(null, "", `/editor/${second}`); window.dispatchEvent(new PopStateEvent("popstate")); });

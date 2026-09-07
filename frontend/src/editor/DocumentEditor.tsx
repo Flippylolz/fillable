@@ -16,6 +16,8 @@ export function DocumentEditor({
   discoverySnapshot,
   sourceVersion,
   onReopen,
+  canEdit,
+  readOnly = false,
   zoom = 1,
   highlight = true,
 }: {
@@ -26,6 +28,8 @@ export function DocumentEditor({
   discoverySnapshot?: components["schemas"]["FieldSnapshot"] | null;
   sourceVersion?: string;
   onReopen?: () => void;
+  canEdit?: () => boolean;
+  readOnly?: boolean;
   zoom?: number;
   highlight?: boolean;
 }) {
@@ -33,6 +37,7 @@ export function DocumentEditor({
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorAdapter | null>(null);
   const initial = useRef(initialDocument);
+  const access = useRef({ canEdit, readOnly }); access.current = { canEdit, readOnly };
   const change = useRef(onDocumentChange);
   change.current = onDocumentChange;
   const validity = useRef(onFieldValidityChange);
@@ -47,12 +52,14 @@ export function DocumentEditor({
   const [reviewStale, setReviewStale] = useState(false);
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
+      canEdit: () => !access.current.readOnly && access.current.canEdit?.() !== false,
       onChange: snapshot => change.current?.(snapshot.document),
       onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); composition.current?.(presentation.composing); },
     });
     view.current = editor;
     return () => { editor.destroy(); view.current = null; };
   }, []);
+  useEffect(() => { view.current!.refreshAccess(); }, [readOnly, canEdit]);
   useEffect(() => { view.current!.setDocumentLabel(t("editor.document")); }, [t]);
   useEffect(() => {
     if (discoverySnapshot && sourceVersion) setReviewStale(!view.current!.attachDiscovery(discoverySnapshot, sourceVersion));
@@ -66,21 +73,22 @@ export function DocumentEditor({
           <input
             aria-invalid={creationIssue === "invalid_label" || undefined}
             aria-describedby={creationIssue === "invalid_label" ? creationErrorId : undefined}
+            disabled={readOnly}
             value={label}
             onChange={(event) => setLabel(event.target.value)}
           />
         </label>
-        <button
+        <button disabled={readOnly}
           onClick={() => setCreationIssue(view.current!.createField(label))}
         >
           {t("editor.createField")}
         </button>
-        <button
+        <button disabled={readOnly}
           onClick={() => view.current!.undo()}
         >
           {t("editor.undo")}
         </button>
-        <button
+        <button disabled={readOnly}
           onClick={() => view.current!.redo()}
         >
           {t("editor.redo")}
@@ -92,9 +100,9 @@ export function DocumentEditor({
       <aside aria-label={t("editor.fields")}>
         {reviewStale && <div role="alert"><p>{t("review.stale")}</p>{onReopen && <button type="button" onClick={onReopen}>{t("review.reopen")}</button>}</div>}
         {review && <details className="review-section"><summary>{t("review.title")}</summary>
-          <ReviewPanel review={review} occurrences={occurrences} act={(id, action, options) => view.current!.review(id, action, options)} />
+          <ReviewPanel readOnly={readOnly} review={review} occurrences={occurrences} act={(id, action, options) => view.current!.review(id, action, options)} />
         </details>}
-        <FieldSidebar fields={occurrences} active={active}
+        <FieldSidebar readOnly={readOnly} fields={occurrences} active={active}
           update={(key, value) => { view.current!.updateField(key, value); }}
           focus={id => { view.current!.focusField(id); }} remove={id => { view.current!.removeField(id); }} />
       </aside>

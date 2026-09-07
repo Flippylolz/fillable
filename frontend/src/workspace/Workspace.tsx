@@ -6,6 +6,7 @@ import { DocumentEditor } from "../editor/DocumentEditor";
 import { DownloadSaved } from "../library/DownloadSaved";
 import "./workspace.css";
 import { useDiscovery } from "./useDiscovery";
+import { useEditingLease } from "./useEditingLease";
 import { WorkspaceSettings } from "./WorkspaceSettings";
 
 export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy }: {
@@ -22,6 +23,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
   const markDocument = useCallback(() => { documentDirty.current = true; onDirty(true); }, [onDirty]);
   const markTitle = useCallback((value: boolean) => { onDirty(documentDirty.current || value); }, [onDirty]);
   const settingsActivity = useCallback((value: boolean) => { setSettingsBusy(value); onBusy?.(value); }, [onBusy]);
+  const access = useEditingLease(saved?.resource ?? null, csrfToken);
   const discovery = useDiscovery(saved?.resource ?? null, csrfToken);
   function reopen() {
     if (dirty && !window.confirm(t("workspace.discard"))) return;
@@ -47,7 +49,13 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
     </div>{saved && <DownloadSaved item={saved.resource} disabled={false} />}</div>
     {error && <div role="alert"><p>{apiErrorMessage(error)}</p><button onClick={() => setAttempt(value => value + 1)}>{t("workspace.retry")}</button></div>}
     {!saved && !error && <p role="status">{t("workspace.loading")}</p>}
-    {saved && <><p role="status" className="workspace-save-state">{t(dirty ? "workspace.unsaved" : "workspace.saved")}</p>
+    {saved && <><div className="workspace-access">
+      <p role="status">{t(`lease.${access.status}`)}</p>
+      {access.error && <p role="alert">{["lease_busy", "lease_lost", "revision"].includes(access.error) ? t(`lease.${access.error}`) : apiErrorMessage(access.error)}</p>}
+      {access.status === "paused" && (access.error === "revision"
+        ? <button type="button" onClick={reopen}>{t("review.reopen")}</button>
+        : <button type="button" onClick={access.retry}>{t("lease.retry")}</button>)}
+    </div><p role="status" className="workspace-save-state">{t(dirty ? "workspace.unsaved" : "workspace.saved")}</p>
       <WorkspaceSettings item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight}
         onDirty={markTitle} onBusy={settingsActivity} onReopen={reopen} onResource={resource => { setSaved(current => current ? { ...current, resource } : current); onChanged?.(); }} />
       <div className="workspace-discovery">
@@ -58,6 +66,6 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         {!discovery.error && (discovery.status === "failed" || discovery.status === "not_started") && <button type="button" disabled={discovery.busy} onClick={() => discovery.reload(true)}>{t(discovery.status === "failed" ? "processing.retry" : "processing.start")}</button>}
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
-      <DocumentEditor initialDocument={saved.document} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen} onDocumentChange={markDocument} zoom={zoom} highlight={highlight} /></>}
+      <DocumentEditor initialDocument={saved.document} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen} onDocumentChange={markDocument} canEdit={access.canEdit} readOnly={access.status !== "active"} zoom={zoom} highlight={highlight} /></>}
   </section>;
 }
