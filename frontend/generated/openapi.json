@@ -819,6 +819,33 @@
         "title": "RestoreRequest",
         "type": "object"
       },
+      "RetentionInfo": {
+        "properties": {
+          "keep_latest": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keep Latest"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "keep_latest",
+          "revision"
+        ],
+        "title": "RetentionInfo",
+        "type": "object"
+      },
       "ReviewDecision": {
         "additionalProperties": false,
         "properties": {
@@ -1174,11 +1201,15 @@
               }
             ],
             "title": "Next Before"
+          },
+          "retention": {
+            "$ref": "#/components/schemas/RetentionInfo"
           }
         },
         "required": [
           "current_version_id",
-          "items"
+          "items",
+          "retention"
         ],
         "title": "VersionList",
         "type": "object"

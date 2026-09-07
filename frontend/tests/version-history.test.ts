@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { useVersionHistory } from "../src/workspace/useVersionHistory";
 
 const version = (id: string, number: number) => ({ id, number, is_current: number === 2 });
-const page = (items = [version("two", 2)], before: number | null = 2, current = "two") => Response.json({ items, next_before: before, current_version_id: current });
+const page = (items = [version("two", 2)], before: number | null = 2, current = "two") => Response.json({ retention: { keep_latest: null, revision: 0 }, items, next_before: before, current_version_id: current });
 const failure = () => Response.json({ error: { code: "not_found" } }, { status: 404 });
 
 test("history pages are bounded, deduplicated and show a consistent current marker after concurrent saves", async () => {

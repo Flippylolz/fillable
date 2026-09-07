@@ -44,6 +44,7 @@ docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f
 
 dev exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c "CREATE TABLE development_probe (value text); INSERT INTO development_probe VALUES ('retained');"
 dev exec -T redis redis-cli SET development_probe retained
+dev exec -T api python -m app.documents.retention_cli set --keep-latest 2
 dev down
 prod up --build --wait --wait-timeout 120
 test "$(prod exec -T db psql -U fillable -d fillable -At -c 'SELECT value FROM development_probe')" = retained
@@ -58,6 +59,8 @@ prod exec -T -e FILLABLE_PUBLIC_ORIGIN="$FILLABLE_PUBLIC_ORIGIN" worker python /
 prod exec -T worker python -m app.storage.maintenance reconcile
 prod exec -T worker python -m app.storage.maintenance inventory
 prod exec -T worker python -m app.storage.maintenance capacity
+prod exec -T worker python -m app.documents.retention_cli show
 docker compose -p "$verification_project" -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp -e PLAYWRIGHT_OUTPUT_DIR=/tmp/fillable-prod-results/run -e PLAYWRIGHT_HTML_OUTPUT_DIR=/tmp/fillable-prod-results/html --workdir /tmp -v "$verification_reports/production:/tmp/fillable-prod-results" browser /app/node_modules/.bin/playwright test --config /app/playwright.config.ts
+prod exec -T worker python -m app.documents.retention_cli set --keep-latest all
 prod exec -T gateway sh -c 'test "$(id -u)" != 0 && ! command -v node'
 echo 'PASS: fresh staged checkout, hot reload, persistent recreation, production browser/static assets.'

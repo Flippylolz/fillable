@@ -23,8 +23,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b save merged; history awaits E06.3b |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a, E06.4 and E06.6 merged; E06.3b history panel in progress |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a, E06.4 and E06.6 merged; E06.3b merged; E06.5 retention in progress |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1655,3 +1655,39 @@ Actual strict `ci-required` protection including administrators was verified. Ne
 individual E06.3b PR, exact-head auto-merge and actual merge verification; then E06.5
 operator retention. E05.6b history completion awaits this PR's merge. E06.7 autosave,
 E07 acceptance and final E08 deployment remain; unrelated services are untouched.
+
+
+2026-09-07: E06.3b verified merged through [PR #59](https://github.com/Flippylolz/fillable/pull/59),
+merge `0ce5e945abe1ff7f31cb1ee95d135d1983f64c63`; Actions 34108570911 passed
+`checks` and `ci-required` for exact head `ad1d2e01719a8cacea466fb39fb6cec4f5a7a27f`.
+This completes E05.6b and E05's delivered workspace/history requirements. E06.5
+starts on `task/e06-5-version-retention`: explicit operator policy (all by default),
+bounded one-shot pruning, retained provenance, reader/restore coordination and
+visible localized policy. Configuration alone never deletes history. Scheduling
+remains E07.3, autosave E06.7 and deployment E08, last.
+
+
+E06.5 implementation checkpoint: explicit keep-all/default operator policy and bounded
+one-shot pruning now protect original/current/shared files, coordinate readers and
+restore commits, clear pruned content while retaining provenance, and keep failed
+unlink charged for reconciliation. History exposes policy in its read snapshot and
+shows localized limits without replacing the live draft. Migration 0011 removes no
+data and guards configured-policy downgrade. Scheduling remains E07.3.
+
+Docker backend checks passed: 377 tests, lines 3680/3706 (99.30%), branches 1099/1126
+(97.60%). The real unimported-source negative probe passed (377 tests; line gate
+blocked 3680/11438). Frontend initial successful checks: 195 tests, lines 1221/1231
+(99.19%), branches 1374/1439 (95.48%); final repeat passed after
+fixing an existing preview-selection test race; the negative probe passed with all
+195 tests (1221/3969 lines and 1374/6913 branches blocked). Fresh staged verification
+passed 7 development and 34 production browser cases in copy `nGgVlH`, project
+`fillable-verify-95304`, with a configured policy of two retained latest revisions; no pruning runs in that
+browser environment. Actual deletion/races are covered by isolated PostgreSQL/storage
+tests. An automatic approval review rejected adding pruning to the production-style
+browser verification; that step was removed and the safer verification was approved.
+The policy persisted across recreation and both-language desktop/mobile browser checks
+passed; desktop English and mobile Ukrainian policy screenshots were visually inspected.
+Exact historical downloads and live draft preservation passed. No DOCX transformation
+changed here; these checks do not claim Microsoft Word validation. Next: open the
+individual E06.5 PR and verify required CI/auto-merge through actual merge.
+Then E06.7 autosave; E07 and E08 remain unfinished. No server changes were made.

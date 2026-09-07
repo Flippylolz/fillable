@@ -5,6 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.documents.retention_schema import RetentionInfo
 from app.storage.schema import ByteCount
 
 
@@ -25,6 +26,7 @@ class VersionList(BaseModel):
     current_version_id: UUID
     items: list[VersionInfo]
     next_before: int | None = None
+    retention: RetentionInfo
 
 
 class VersionContent(BaseModel):

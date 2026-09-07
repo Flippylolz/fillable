@@ -34,7 +34,8 @@ export function HistoryPanel({ identity, current, filename, dirty, blocked, busy
   return <section className="workspace-history" aria-label={t("history.title")}>
     <h3>{t("history.title")}</h3>
     <p role="status">{t(dirty ? "history.draftKept" : "history.readOnly")}</p>
-    <p className="history-policy">{t("history.retained")}</p>
+    {history.page && <p className="history-policy">{history.page.retention.keep_latest === null
+      ? t("history.retained") : t("history.keepLatest", { count: history.page.retention.keep_latest, number: formatNumber(history.page.retention.keep_latest) })}</p>}
     {stale && <div role="alert"><p>{t("history.stale")}</p><button type="button" disabled={busy} onClick={onReopen}>{t("review.reopen")}</button></div>}
     <div className="history-layout"><aside className="history-list" aria-label={t("history.versions")}>
       <button type="button" disabled={history.busy || busy} onClick={() => void history.load()}>{t("history.refresh")}</button>

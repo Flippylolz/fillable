@@ -5,7 +5,7 @@ E06.4 adds exact historical downloads; restore is E06.6 and the complete in-work
 E06.3b. The current manual-save editor remains the working-document authority.
 
 `GET /api/documents/{identity}/versions` returns `current_version_id`, newest-first
-`items` and optional `next_before`. Each item contains the selected revision ID,
+`items`, `retention` (nullable `keep_latest` plus policy `revision`) and optional `next_before`. Each item contains the selected revision ID,
 number, timestamp, exact saved byte size/digest, unsupported count and current marker.
 It does not return document text or field review in the list. `limit` defaults to 50
 and is bounded to 1–100. Pass the returned version number as `before` for the next
@@ -31,9 +31,8 @@ historical file; opening a selected revision verifies that file. Neither API cre
 retained preview files, modifies a document or lease, triggers processing, or changes
 quota usage. List and preview failures use existing localized machine-code contracts.
 
-Originals and saved history remain retained. Configurable pruning is E06.5 and must
-preserve original/current data, coordinated readers/restores, provenance and accounting
-until physical cleanup. No history is removed to make a failed save fit.
+All revisions are retained by default. E06.5 provides the explicit operator policy
+and bounded pruning described below. No history is removed to make a failed save fit.
 
 Integration tests cover both resource kinds, exact original/edited/review-only pairs,
 owner/resource/revision isolation, deleted and corrupt content, empty/bounded pages,
@@ -111,8 +110,8 @@ updates the current revision. Language changes preserve both draft and selection
 Historical downloads check the returned revision header before creating a browser
 file. A mismatched result is rejected. List/preview/download failures expose explicit
 retry paths. A newer current UUID from history prompts reopening rather than rebasing
-an unsaved draft silently. All history remains retained; E06.5 will add the visible
-operator retention policy before any automatic pruning.
+an unsaved draft silently. The panel shows the current operator retention policy in both languages with localized
+counts. Refreshing the policy preserves the live draft and editor identity.
 
 Restoring confirms replacement of an unsaved draft/title. The client first commits
 or retries the exact selected request, then loads the exact returned current pair.
@@ -124,3 +123,43 @@ revision and reconfirms replacement of any newer local draft. Old replay results
 with a newer server current revision never replace the draft. Pending save/restore
 operations coordinate mutation, navigation and dirty guards; no historical autosave
 is introduced.
+
+
+## Operator retention (E06.5)
+
+The singleton policy defaults to `keep_latest: null` (keep all). An operator may set
+1–10000: keep that many latest revision numbers plus the immutable original; the
+current file is always protected. Changing policy alone never deletes files, and
+quota reductions never invoke pruning. The history API reads the policy in the same
+snapshot as its list. The panel explains that older revisions may be permanently
+removed and retained files count toward storage usage.
+
+`python -m app.documents.retention_cli show` reads the policy; `set --keep-latest N`
+changes it (`all` disables pruning). `prune --batch 100` performs one bounded pass.
+Use its opaque `next_cursor` as `--after` to continue a pass; begin a later pass
+without a cursor to retry busy items. A null cursor ends the pass. Commands emit
+content-free JSON with policy revision, version IDs, statuses and bytes actually
+removed. Failed cleanup returns a nonzero exit status. Busy readers and versions
+protected by a concurrent policy/current-state change are skipped safely.
+
+Pruning uses the shared storage deletion path: obtain the exclusive file lock,
+lock accounting and the resource, then recheck the latest policy and eligibility
+before marking the file pending deletion. Active readers prevent deletion; a restore
+that commits first keeps its independent copy, while a restore whose selected file
+was pruned fails without advancing current or leaking reserved capacity. Unexpected
+shared file references are protected. Pending deletion remains charged until physical
+unlink succeeds; existing storage reconciliation retries failed cleanup.
+
+Pruned document models, reviews and job snapshots are cleared. Opaque revision
+metadata remains for parent/restored-from provenance, including the original restored
+revision number. Pruned files disappear from history and return 404 from preview and
+download. Increasing the limit or switching to keep-all does not recover removed
+content. Migration `0011_history_retention` installs the keep-all policy without
+removing data; downgrade refuses a policy with configuration history. Scheduling
+these bounded passes belongs to E07.3; E06.5 does not start a recurring process.
+
+Real PostgreSQL/storage tests cover policy changes between selection and deletion,
+active readers, restore races in both orders, shared-file protection, original/current
+preservation, quota accounting, failed unlink/reconciliation, provenance after pruning,
+strict settings, CLI execution and guarded migration. UI tests cover localized limits
+and policy refresh with the same live editor and draft.

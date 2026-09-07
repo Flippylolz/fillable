@@ -57,6 +57,9 @@ for (const kind of ["template", "document"] as const) test(`${kind} history pres
   await download.saveAs(testInfo.outputPath("history-original.docx"));
   expect(await readFile(testInfo.outputPath("history-original.docx"))).toEqual(await readFile("/fixtures/upload.docx"));
   expect(await (await page.request.get("/api/storage/usage")).json()).toEqual(usage);
+  const policy = (await (await page.request.get(`${endpoint}/versions`)).json()).retention;
+  await expect(panel.locator(".history-policy")).toContainText(policy.keep_latest === null
+    ? "Усі збережені версії зберігаються" : `останні ${policy.keep_latest} версії`);
   await page.screenshot({ path: testInfo.outputPath("history-uk.png"), fullPage: true });
   await page.getByRole("button", { name: "Повернутися до редагування", exact: true }).click();
   expect(await editor.evaluate((node, original) => node === original, retained)).toBe(true);
@@ -131,6 +134,9 @@ test("uncertain restore survives newer draft and locale; quota failure keeps his
   await englishPanel.getByRole("button", { name: "Restore as a new revision", exact: true }).click();
   await expect(page.getByText("There is not enough storage allowance to save this file.", { exact: true })).toBeVisible();
   expect((await (await page.request.get(endpoint)).json()).current_version_id).toBe(current.current_version_id);
+  const policy = (await (await page.request.get(`${endpoint}/versions`)).json()).retention;
+  await expect(englishPanel.locator(".history-policy")).toContainText(policy.keep_latest === null
+    ? "All saved revisions are retained" : `the latest ${policy.keep_latest} revisions are kept`);
   await page.screenshot({ path: testInfo.outputPath("history-quota-en.png"), fullPage: true });
   await page.getByRole("button", { name: "Return to editing", exact: true }).click();
   await expect(englishEditor).toContainText("Чернетка після відновлення");
