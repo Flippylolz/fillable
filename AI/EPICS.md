@@ -2182,3 +2182,11 @@ Next: finish final checks/documentation, deliver E08.3 through its own required-
 and verified auto-merge, then privately install the receiver and main-only environment,
 verify strict-key readiness and unchanged service baselines before E08.4. Actual
 application release and deployed acceptance remain unfinished.
+
+E08.3 is in_review in [PR #72](https://github.com/Flippylolz/fillable/pull/72),
+initial candidate `da0e51b`. All local evidence above passed. Actual strict
+ci-required protection with administrator enforcement was reread; no production
+environment exists yet. Final-head required CI and verified merge must precede
+private bootstrap. Prepare a new dedicated key locally while CI runs; install only
+verified merged files, retain private settings, constrain the environment to main,
+and confirm receiver check plus unchanged server baselines before E08.4.
