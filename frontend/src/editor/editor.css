@@ -68,3 +68,6 @@
     padding: 0.75rem;
   }
 }
+.document-canvas { overflow: auto; }
+.document-canvas .ProseMirror { zoom: var(--document-zoom, 1); }
+.document-workbench[data-highlight-fields="false"] .document-field { background: transparent; outline-color: transparent; }

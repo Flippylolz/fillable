@@ -12,3 +12,13 @@
 @media (max-width: 48rem) { .workspace .document-canvas { padding: 0.65rem; } }
 .workspace-discovery { margin-bottom: 0.75rem; font-size: 0.85rem; color: #5f6368; }
 .workspace-discovery p { margin: 0.3rem 0; }
+.workspace-toolbar > div > button { margin-bottom: 0.65rem; }
+.workspace-settings { margin: 0.8rem 0; padding: 0.8rem 1rem; background: #fff; border: 1px solid #e3e7ed; border-radius: 0.75rem; }
+.workspace-settings summary { cursor: pointer; color: #1a73e8; font-size: 0.9rem; }
+.workspace-settings-body { display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding-top: 1rem; }
+.workspace-settings form { flex: 1 1 18rem; min-width: 0; }
+.workspace-settings label { display: grid; gap: 0.35rem; font-size: 0.85rem; color: #3c4043; }
+.workspace-settings input:not([type="checkbox"]), .workspace-settings select { box-sizing: border-box; width: 100%; padding: 0.5rem; border: 1px solid #bdc1c6; border-radius: 0.35rem; background: #fff; color: #202124; font: inherit; }
+.workspace-settings p { font-size: 0.85rem; overflow-wrap: anywhere; }
+.workspace-view-settings { display: flex; flex-wrap: wrap; align-items: start; gap: 1rem; }
+.workspace-settings .workspace-highlight { display: flex; align-items: center; padding-top: 1.7rem; }

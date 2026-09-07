@@ -193,5 +193,19 @@
   "editor.value.invalid_text": "This value contains characters that DOCX cannot store. It remains in your draft; remove them before exporting or saving.",
   "editor.creation.invalid_label": "Enter a nonblank label of up to {{labelLimit}} characters, without control characters or characters DOCX cannot store.",
   "editor.creation.invalid_selection": "Select nonempty editable text within one paragraph, outside existing fields and protected content.",
-  "editor.creation.field_limit": "This document has reached the limit of {{fieldLimit}} fields and suggestions."
+  "editor.creation.field_limit": "This document has reached the limit of {{fieldLimit}} fields and suggestions.",
+  "workspace.settings": "Workspace settings",
+  "workspace.back": "Back to library",
+  "workspace.name": "Title",
+  "workspace.currentTitle": "Current title: {{title}}",
+  "workspace.rename": "Rename",
+  "workspace.working": "Working…",
+  "workspace.renamed": "Title saved.",
+  "workspace.titleReloaded": "Current title reloaded. Your proposed title is still here.",
+  "workspace.renameInvalid": "Enter a nonblank title of up to {{limit}} characters, without control characters or invalid Unicode.",
+  "workspace.renameConflict": "The title changed elsewhere. Reload the current title, then apply your proposed name.",
+  "workspace.renameStale": "The saved revision changed. Reopen the saved document before renaming; your draft remains here until you choose to discard it.",
+  "workspace.reloadTitle": "Reload current title",
+  "workspace.zoom": "Zoom",
+  "workspace.highlight": "Highlight fields"
 }

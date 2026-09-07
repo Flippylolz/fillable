@@ -124,3 +124,26 @@ ProseMirror view flushes queued composition mutations after 20 ms; the adapter c
 linked/review changes afterward and cancels its pending callback on destruction. Browser
 verification uses Chromium's native IME protocol, including cancellation and an unchanged
 final candidate. This is not a claim of testing every physical keyboard/OS input method.
+
+## Workspace settings and display titles
+
+E05.6a adds a back-to-library action and a collapsible settings panel inside the workspace.
+Zoom (50–200%) and field highlighting are view preferences; they do not alter the working
+model, source formatting, review metadata or saved bytes. Settings and the mounted editor
+survive profile/language/back navigation. The sidebar keeps its normal size while the
+canvas scrolls within the available width. Unsupported content retains its warning color.
+
+`PATCH /api/documents/{identity}/title` requires the current owner session and CSRF token.
+It checks the opened revision and expected previous title under a resource lock, then
+updates only the title/timestamp. An already completed identical rename returns the same
+result without another update. Competing names cannot overwrite each other silently.
+Title validation retains the existing 160-code-point metadata bound and rejects invalid
+Unicode. Original filename, immutable originals, working/saved models, field results,
+revision identity and quota accounting remain unchanged, including for an over-quota owner.
+
+The proposed title stays in the form through failures and language changes. A title-only
+conflict can reload current metadata while retaining the proposed name; a changed saved
+revision uses the existing explicit reopen/discard flow. Pending title edits participate in
+leave guards. A successful rename refreshes library metadata without losing upload/editor
+drafts and never reports document edits as saved. Save/history toolbar integration remains
+E05.6b after the corresponding E06 operations are implemented.

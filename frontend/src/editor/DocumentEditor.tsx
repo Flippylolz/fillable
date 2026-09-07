@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { mountEditor, type EditorAdapter, type EditorPresentation } from "./adapter";
@@ -16,6 +16,8 @@ export function DocumentEditor({
   discoverySnapshot,
   sourceVersion,
   onReopen,
+  zoom = 1,
+  highlight = true,
 }: {
   initialDocument: object;
   onDocumentChange?: (document: object) => void;
@@ -24,6 +26,8 @@ export function DocumentEditor({
   discoverySnapshot?: components["schemas"]["FieldSnapshot"] | null;
   sourceVersion?: string;
   onReopen?: () => void;
+  zoom?: number;
+  highlight?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const host = useRef<HTMLDivElement>(null);
@@ -55,7 +59,7 @@ export function DocumentEditor({
   }, [discoverySnapshot, sourceVersion]);
 
   return (
-    <div className="document-workbench">
+    <div className="document-workbench" data-highlight-fields={highlight} style={{ "--document-zoom": zoom } as CSSProperties}>
       <div className="document-tools">
         <label>
           {t("editor.fieldLabel")}

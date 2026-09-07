@@ -117,6 +117,20 @@ class CopyRequest(BaseModel):
         return UploadMetadata.title_present(value)
 
 
+class RenameRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_version_id: UUID
+    previous_title: str = Field(min_length=1, max_length=160)
+    title: str = Field(min_length=1, max_length=160)
+
+    @field_validator("title", "previous_title")
+    @classmethod
+    def title_present(cls, value):
+        value = UploadMetadata.title_present(value)
+        value.encode("utf-8")
+        return value
+
+
 class ResourceInfo(BaseModel):
     id: UUID
     kind: Literal["template", "document"]
