@@ -426,3 +426,55 @@ def test_plain_native_document_and_invalid_request_or_protected_content():
             ).scalar_one()
             is None
         )
+
+
+def test_local_manual_review_binds_once_without_mutating_request_or_history():
+    owner, web, saved, payload = start()
+    model = DocxPackage(DATA).model
+    manual = {
+        "type": "field",
+        "attrs": {"id": "a" * 32, "key": "a" * 32, "label": "Раннє поле Їжака"},
+        "content": [{"type": "text", "text": "Їжак"}],
+    }
+    model["content"][0]["content"][0]["content"].append(manual)
+    fields = [node for node in walk(model) if node["type"] == "field"]
+    model["attrs"] = {
+        "review": {
+            "sourceVersion": None,
+            "items": [
+                dict(
+                    id="candidate:" + node["attrs"]["id"],
+                    occurrenceId=node["attrs"]["id"],
+                    reason="manual" if node is manual else "native_control",
+                    sourceKey=None,
+                    context="",
+                    label=node["attrs"]["label"],
+                    key=node["attrs"]["key"],
+                    type="text",
+                    decision="accepted",
+                    missing=False,
+                    location={"kind": "control", "id": node["attrs"]["id"]},
+                )
+                for node in fields
+            ],
+        }
+    }
+    payload["document"] = model
+    before = deepcopy(payload)
+    first = save(web, saved, payload)
+    assert first.status_code == 201, first.text
+    endpoint = f"/api/documents/{saved['id']}/content"
+    persisted = web.get(endpoint).json()["document"]
+    assert persisted["attrs"]["review"]["sourceVersion"] == saved["current_version_id"]
+    assert persisted["attrs"]["review"]["items"] == model["attrs"]["review"]["items"]
+    assert payload == before
+    # A still-mounted editor may retain a null-origin undo state after acknowledgment.
+    payload["source_version_id"] = first.json()["saved_version_id"]
+    second = save(web, first.json()["resource"], payload, "local-again")
+    assert second.status_code == 201, second.text
+    assert (
+        web.get(endpoint).json()["document"]["attrs"]["review"]["sourceVersion"]
+        == saved["current_version_id"]
+    )
+    assert payload["document"]["attrs"]["review"]["sourceVersion"] is None
+    assert amounts(owner)[1] == 0

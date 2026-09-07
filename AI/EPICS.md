@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c atomic saves |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c in_review (PR #54) |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1450,3 +1450,24 @@ were inspected. Microsoft Word was not run. Actual strict Actions ci-required an
 administrator enforcement were verified. Next: E06.2c individual PR/auto-merge and
 verified merge, then E06.2d manual-save UI with exact local-revision acknowledgment.
 Deployment remains E08, last; existing services and volumes are preserved.
+
+E06.2c PR #54 final review binds null-origin native/manual review to its first saved
+source, retaining that origin on subsequent saves without mutating the request or
+editor undo history. A real two-save manual-field regression and desktop/mobile
+reopen checks cover it. Final backend verification: 311 tests, raw 3355/3377 lines
+(99.35%) and 1035/1058 branches (97.83%); the real unimported-source probe passed
+by blocking 3355/10353 lines. Frontend application coverage remains the measured
+132 tests, 1018/1026 lines (99.22%), 1087/1141 branches (95.27%).
+Fresh final index `fillable-verify.q6vaJu` passed 7 development and 22 production
+browser checks plus worker/persistence/recreation. The new test scopes processing
+status to the visible workspace and waits for the real worker; an earlier locator
+incorrectly matched the hidden library. The development selection assertion retains
+its exact selected text, uses normal key intervals and waits for browser selection;
+five isolated repeats and the full fresh suite passed. Both downloaded saved DOCX
+artifacts exactly match the previously inspected working fixture. Initial PR head
+`e7a4b81d2222026653bb876963afffa0344db20c` passed Actions 34090517903; auto-merge was
+disabled for this correction. Final LibreOffice/Poppler regression passed: no-edit
+bytes/pages identical, three edited pages with unchanged page two, five multiline
+pages with exact Ukrainian/astral text. Microsoft Word was not run. Next: push the
+correction, reverify strict protection, arm exact-head auto-merge and verify actual
+merge before E06.2d. No deployment has started.

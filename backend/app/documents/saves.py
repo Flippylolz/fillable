@@ -89,6 +89,9 @@ def save(state, identity, payload, key):
             payload.source_version_id,
             UUID(origin) if origin else None,
         )
+        if review is not None and review["sourceVersion"] is None:
+            # Bind local native/manual review once, without rewriting editor history.
+            review["sourceVersion"] = origin or str(payload.source_version_id)
         with store.read(owner, row["original_file_id"]) as stream:
             original = stream.read(ARCHIVE_BYTES + 1)
         package = validate_upload(original, row["original_filename"])

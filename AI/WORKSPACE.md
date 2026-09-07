@@ -274,3 +274,10 @@ Processing verifies saved bytes against the exact stored source-anchored model a
 runs detection against that model. It does not replace its identities with positions
 from reparsing the exported XML. Discovery remains proposals, separate from retained
 working review; accepted origins and missing/dismissed records survive reopen/copy.
+
+When native/manual review still has a local null origin, a save binds its persisted
+copy to the trusted prior origin or first save's expected source revision. Subsequent
+null-origin snapshots from the same mounted editor retain that binding. The request
+and undo history are not mutated; reopening loads a bound review and does not enter
+a repeating stale-discovery/reopen prompt. This changes provenance only, not DOCX
+bytes, locations, labels, values or user decisions.
