@@ -25,8 +25,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.6 coverage provenance and final gate audit |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
+| E07 | MVP acceptance and CI verification | E03–E06 | done: E07.1a–E07.6 verified and merged, through PR #68 |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1 shared-server preflight |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -2024,3 +2024,45 @@ also exercises the actual producer and verifies failed coverage removes an old s
 Full backend suite/probe and final frontend producer repeat are running. Required CI
 must pass for the final head; verify protection and exact-head auto-merge, then actual
 MERGED before E08 preflight. There is no external blocker or server access yet.
+
+
+Verified E07.6 completion: [PR #68](https://github.com/Flippylolz/fillable/pull/68)
+merged as `5e645f731f486772d8eee302c486957093251557`, exact head
+`4479288c82a6b6c19fe423892e8366496efdc556`. CI `34144215382` passed `checks`,
+`upgrade-checks` and `ci-required`, both real negative probes, source provenance
+contracts, fresh/runtime/browser/persistence checks and independent DOCX rendering.
+Backend416: 3969/3998 lines (99.27%), 1174/1206 branches (97.35%); frontend229:
+1292/1303 lines (99.16%), 1500/1569 branches (95.60%). E00–E07 are complete.
+
+Main synchronized before `task/e08-1-server-preflight`. Strict trusted-host SSH works;
+read-only preflight verified Linux amd64, Docker/Compose, remaining capacity, fifteen
+existing containers and WEF's authoritative shared-nginx manager snapshot. The
+candidate edge was already unhealthy; other baseline states are preserved. Initial
+nginx -t used the image default, then the actual custom config was identified and
+explicitly validated successfully. The shared container publishes only 80/443; a
+Fillable-owned TCP relay can expose a new port without recreating shared nginx, with
+HTTP routing still handled by the existing manager. E08.3 must prove this topology.
+
+The live existing HTTPS response has HSTS max-age=31536000. After that conflict was
+explained, the user explicitly reaffirmed HTTP, requested a new port like 3200, and
+excluded TLS/HTTPS. D019 records the resulting browser limitation; existing TLS stays
+untouched. Port 3200 is unused and absent from checked managed Compose allocations.
+An isolated, resource-limited temporary Docker HTTP probe worked locally but failed
+publicly; it was stopped and removed automatically. The user then reported TCP 3200
+opened/forwarded and the public retry is running. No application deployment, shared
+reload, manager edit, data deletion or unrelated service restart has occurred.
+
+E08.1 public retry succeeded after the user's network update: exact fixed HTTP probe
+response at port 3200, followed by successful stop/automatic removal. Access is no
+longer blocked. The user explicitly kept HTTP after HSTS disclosure. Preflight
+documentation is ready for its own PR; no application source or new coverage
+measurement is introduced. Required CI must pass and the PR must merge before E08.2.
+
+E08.1 is in_review in [PR #69](https://github.com/Flippylolz/fillable/pull/69),
+branch `task/e08-1-server-preflight`, candidate `53dd9e1`. Documentation links,
+private-identity scan and whitespace passed. The successful public 3200 probe was
+stopped/removed; no server application/configuration change remains. Repository
+secrets and deployment environments are currently empty (names-only inspection).
+Next: verify final required CI/protection, exact-head squash auto-merge and MERGED;
+then E08.2 creates the protected immutable-artifact workflow. The HTTP decision and
+port access are settled; do not ask again. No external dependency is outstanding.

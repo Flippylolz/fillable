@@ -1,6 +1,6 @@
 # Deployment target and shared-service constraints
 
-Status: user-provided target recorded; server access, running services, ports, and nginx ownership have not been inspected. Deployment remains final epic E08 through GitHub Actions.
+Status: E08.1 verified SSH access, capacity, existing services and WEF shared-nginx ownership. Public HTTP port 3200 is selected; external reachability passed after the user opened/forwarded the port. No application deployment has occurred.
 
 This public document uses `<DEPLOY_HOST>` and `<DEPLOY_USER>` placeholders. The supplied values are retained in the ignored local `AI/DEPLOYMENT.local.md`; use deployment environment configuration during E08. Do not commit endpoint/account values, credentials, or private keys. Missing local configuration on another checkout is an environment handoff need, not a reason to publish it here.
 
@@ -14,7 +14,7 @@ This public document uses `<DEPLOY_HOST>` and `<DEPLOY_USER>` placeholders. The 
 | Existing workloads | Other services run on this server and must be preserved |
 | Public ingress | Use the existing shared nginx |
 | Possible nginx source repository | `WEF` — user-suggested location, not verified |
-| Public nginx port | Unassigned numeric value; select a new unused HTTP listener as `FILLABLE_PUBLIC_PORT` |
+| Public nginx port | 3200, selected and checked unused during E08.1; recheck before binding |
 | Private gateway port/network | Separate upstream, discovered for the actual host/container nginx topology |
 | Public application URL | `http://<DEPLOY_HOST>:<PORT>`; `<PORT>` is the new public nginx listener |
 | Environments | Local development and production; disposable CI test stacks only |
@@ -48,7 +48,7 @@ Browser → http://<DEPLOY_HOST>:<PUBLIC_PORT>
 - Do not bind Fillable to the host's public ports 80/443, take over the default virtual host, or start a competing TLS/certificate manager.
 - Add a narrowly scoped server include for `<DEPLOY_HOST>` listening on `FILLABLE_PUBLIC_PORT`, serving the application at `/`. If shared nginx is containerized, its new port publication must be managed by the existing owner; do not recreate or reconfigure that service independently. Preserve existing upstreams, certificates, and unrelated settings.
 - Match upload-size limits, forwarded headers, and editor connection requirements at the app route without changing global defaults for other services. Verify static assets, APIs, cookies, downloads, and editor connections at the exact public origin including its port.
-- HTTP does not encrypt credentials, cookies, or documents. Set `APP_PUBLIC_URL` explicitly and use the HTTP cookie configuration in D019: distinct cookie name, HttpOnly, SameSite, Secure=false, CSRF, and exact-origin validation including the port. Cookies are not isolated by port; changing the listener does not isolate sessions from other services on the hostname.
+- HTTP does not encrypt credentials, cookies, or documents. Set `FILLABLE_PUBLIC_ORIGIN` explicitly and use the HTTP cookie configuration in D019: distinct cookie name, HttpOnly, SameSite, Secure=false, CSRF, and exact-origin validation including the port. Cookies are not isolated by port; changing the listener does not isolate sessions from other services on the hostname.
 
 This supersedes the earlier Caddy proposal. Local development uses a project-owned nginx gateway to provide the same application routing without requiring the production server.
 
@@ -71,3 +71,59 @@ References: [nginx configuration reload behavior](https://nginx.org/en/docs/cont
 Every Compose operation must identify Fillable's verified project name and configuration files. Preserve other projects' containers, volumes, networks, ports, routes, and persistent data. Do not use host-wide pruning, blanket container stop/remove commands, Docker daemon restart, broad firewall changes, or whole-server upgrades to complete this deployment.
 
 If an unavoidable conflict requires changing an unrelated service, first finish the safe independent work, then describe the concrete conflict and obtain the user's direction for that additional scope.
+
+
+## E08.1 observed baseline and scoped topology
+
+Preflight followed E07's verified merge. SSH succeeded using existing authentication
+and strict host-key checking. The host is Linux amd64 with eight CPUs, approximately
+7.3 GiB RAM (5.4 GiB available at the sample) and 807 GiB free on the root filesystem.
+Docker 29.5.1 and Compose 5.1.3 are available. Noninteractive sudo is unavailable;
+Docker access is already authorized. These are observations, not peak-load promises.
+
+Fifteen existing containers belong to WEF production/candidate/shared-edge, Forecast,
+DDNS and VPN projects. All existing container identities/states were preserved during
+preflight. The WEF candidate edge was already unhealthy while its HTTP root answered
+200; this is baseline, not a Fillable regression or an authorization to repair it.
+Other sampled roots: shared HTTP 404, WEF production 200, Forecast web 200, Forecast
+API root 404. Existing public HTTPS answered 200 with its unchanged HSTS header.
+The shared nginx container's restart count is zero; its identity/start time remained
+unchanged. No application configuration, volume or existing route was modified.
+
+WEF owns the containerized shared edge. The authoritative installed manager is an
+operator-owned snapshot, not a Git checkout: `ops/scripts/deploy/shared_edge_release.py`
+and its `ops/infra/nginx` templates. Its managed root has versioned releases and
+atomic current/previous pointers. Activation validates a complete candidate as the
+serving UID, verifies upstreams, switches the pointer and can gracefully reload.
+Renewal separately validates the actual current config before signaling HUP. Actual
+private roots and connection identity remain in ignored deployment configuration.
+The serving command uses `/etc/nginx-edge/current/active.conf`; testing only nginx's
+image-default config is insufficient. The actual serving configuration passed nginx -t.
+
+Shared nginx currently publishes only host 80/443 on the existing private `wef-edge`
+network. Adding a Docker port binding would recreate that shared container. Instead,
+E08.3 will verify a Fillable-owned TCP relay: host 3200 → shared nginx's new internal
+HTTP listener → Fillable's private gateway. The relay transports bytes only; shared
+nginx continues to own HTTP routing. The existing pinned nginx supports its stream
+module, so this needs no competing TLS manager or shared-container recreation. Only
+the relay and gateway join the existing ingress network; database/Redis remain private.
+The existing manager must own the additive route and its regeneration path, validate
+all effective configuration, preserve concurrent unrelated edits and gracefully reload.
+
+Choose the unused Compose namespace `fillable-production` and a dedicated operator
+home subtree, with document/database/Redis persistence scoped to that namespace.
+No such project or directory existed during discovery. Keep actual private paths in
+runtime configuration. Port 3200 was absent from running listeners and checked
+managed Compose files, then successfully bound by a temporary isolated HTTP probe.
+The probe used a cached pinned image, read-only root, nonroot UID, 64 MiB/0.25 CPU,
+no persistent mount and automatic removal. Initial public reachability failed; the
+user reported opening/forwarding TCP 3200, and the retry reached the expected fixed HTTP probe response publicly. The probe
+was stopped and automatically removed after both attempts.
+Recheck allocations and existing-service baselines immediately before rollout.
+
+D019 was explicitly reaffirmed after discovering hostname-wide HSTS: HTTP on the new
+port, no Fillable TLS/HTTPS work. Browsers with learned HSTS may upgrade this URL and
+fail. Preserve existing TLS/HSTS routes and state; record this compatibility limit
+rather than silently changing the scheme. Port forwarding, immutable artifact/CI
+wiring, managed ingress activation and full deployed MVP verification remain separate
+E08 tasks. These preflight observations do not claim the application is deployed.
