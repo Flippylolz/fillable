@@ -92,13 +92,29 @@ jobs:
           name: coverage
           path: reports/
           if-no-files-found: error
+  upgrade-checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Verify previous-image upgrade and full-application crash recovery
+        run: FILLABLE_RECOVERY_REPORTS="$PWD/reports/recovery" scripts/verify-application-recovery.sh
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: application-recovery
+          path: reports/recovery/
+          if-no-files-found: error
   ci-required:
     if: always()
-    needs: [checks]
+    needs: [checks, upgrade-checks]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Require every check to succeed
         env:
           RESULT: ${{ needs.checks.result }}
-        run: scripts/require-ci-success.sh "$RESULT"
+          UPGRADE_RESULT: ${{ needs.upgrade-checks.result }}
+        run: scripts/require-ci-success.sh "$RESULT" "$UPGRADE_RESULT"

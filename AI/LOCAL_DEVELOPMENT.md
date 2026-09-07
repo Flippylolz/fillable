@@ -337,3 +337,8 @@ document files; use the configured application Compose namespace.
 The Compose maintenance service runs bounded reconciliation and configured retention
 with preserved cursors. See [Scheduled maintenance](MAINTENANCE.md) for intervals,
 limits and operator failure-state checks. All-history retention remains the default.
+
+Run the separate [application recovery proof](APPLICATION_RECOVERY.md) with
+`sh scripts/verify-application-recovery.sh` after staging the intended source. It
+builds a pinned previous application and the current index in a fresh isolated
+Compose namespace, preserves all volumes and checks edited/copy/restored history.

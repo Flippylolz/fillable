@@ -187,3 +187,9 @@ future deployment workflow must never provision that fixture. Required browser
 checks cover failed/successful login, cookie rotation, restored account locale,
 refresh, origin rejection and logout on desktop/mobile. Fresh-checkout production
 screenshots/traces and HTML reports are retained alongside editor QA artifacts.
+
+E07.4 adds mandatory `upgrade-checks` for the [previous-image upgrade and full-stack
+crash proof](APPLICATION_RECOVERY.md). The `ci-required` aggregator requires both
+`checks` and `upgrade-checks` to succeed; each job keeps a 20-minute timeout. The
+upgrade job fetches the pinned baseline history and publishes synthetic recovery
+evidence. The independent backend/frontend raw 90% gates remain in `checks`.
