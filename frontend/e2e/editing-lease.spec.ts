@@ -1,6 +1,25 @@
 import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
-import { expect, test } from "@playwright/test";
+import { randomUUID } from "node:crypto";
+import { expect, test, type Page } from "@playwright/test";
+
+async function savedContent(page: Page, identity: string) {
+  let content: { document: unknown; resource: Record<string, unknown> } | undefined;
+  await expect.poll(async () => {
+    const response = await page.request.get(`/api/documents/${identity}/content`);
+    if (response.status() === 409) {
+      expect((await response.json()).error.code).toBe("operation_in_progress");
+      return false;
+    }
+    expect(response.status()).toBe(200);
+    const result = await response.json();
+    expect(result.document).toBeDefined();
+    expect(result.resource).toBeDefined();
+    content = result;
+    return true;
+  }).toBe(true);
+  return content!;
+}
 
 test("two tabs fence editing and preserve an IME draft, history and locale after lost access", async ({ page, context }, testInfo) => {
   await page.clock.install();
@@ -8,7 +27,7 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await page.getByLabel("Електронна пошта", { exact: true }).fill(`lease-${testInfo.project.name}@example.test`);
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
-  const title = `Доступ Їжака ${testInfo.project.name}`;
+  const title = `Доступ Їжака ${testInfo.project.name} ${randomUUID().slice(0, 8)}`;
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "Їжак.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: await readFile("/fixtures/upload.docx") });
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
@@ -24,7 +43,7 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await values.first().fill("Чернетка до паузи");
   const editor = page.getByRole("textbox", { name: "Редагований документ", exact: true });
   const sameEditor = await editor.elementHandle();
-  const before = await (await page.request.get(`/api/documents/${identity}/content`)).json();
+  const before = await savedContent(page, identity!);
   const usage = await (await page.request.get("/api/storage/usage")).json();
   const peer = await context.newPage();
   await peer.goto(url);
@@ -72,7 +91,7 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await expect(page.getByRole("textbox", { name: "Field value: ПІБ клієнта", exact: true }).first()).toHaveValue(draft);
   await page.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Field value: ПІБ клієнта", exact: true }).first()).toHaveValue("Чернетка до паузи");
-  const after = await (await page.request.get(`/api/documents/${identity}/content`)).json();
+  const after = await savedContent(page, identity!);
   expect(after.document).toEqual(before.document);
   expect(after.resource).toEqual({ ...before.resource, processing_status: after.resource.processing_status });
   expect(await (await page.request.get("/api/storage/usage")).json()).toEqual(usage);
