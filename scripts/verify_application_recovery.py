@@ -338,7 +338,7 @@ def main():
             == os.environ["RECOVERY_PROOF_NONCE"]
         )
     client, owner = authenticate()
-    with client:
+    try:
         if sys.argv[1] == "write":
             write(client, owner)
         elif sys.argv[1] == "crash":
@@ -386,6 +386,8 @@ def main():
                     "ownership and exact quota survived"
                 )
         request(client, "POST", "/api/auth/logout")
+    finally:
+        client.close()
 
 
 if __name__ == "__main__":
