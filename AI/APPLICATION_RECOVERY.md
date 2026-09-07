@@ -3,8 +3,9 @@
 E07.4 extends initial-upload persistence checks to edited, reviewed, independently
 copied and restored documents. The executable proof is
 `scripts/verify-application-recovery.sh`; run it from the repository after staging
-all intended changes. It verifies the Git index and requires Git history containing
-the pinned previous source commit. Docker is the runtime; no host Python is required.
+all intended changes. It captures the Git index as one immutable tree and executes
+its own staged driver from a frozen launcher. Later index edits cannot change the
+running proof. Git history must contain the pinned previous source commit. Docker is the runtime; no host Python is required.
 
 The baseline is merged PR #64, commit
 `191282ce485d6f562be0cd8d0a8b183b7e2ebb1d`, with schema `0012_audit_chronology`.
@@ -30,6 +31,9 @@ not a backup or an application-data recovery mechanism.
 
 After the image/schema upgrade, the probe compares the entire manifest. Exact source
 badges are checked in desktop/mobile browsers against both old and new artifacts.
+The current artifact uses its commit when the captured tree matches HEAD; an
+uncommitted staged snapshot uses the specified `development` fallback. Both the
+source tree and commit/fallback are retained in the reports.
 Originals, paired field review, later retained versions, source/copy independence,
 owner IDs and quota totals must remain unchanged.
 

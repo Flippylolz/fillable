@@ -39,7 +39,7 @@ References: [coverage.py configuration](https://coverage.readthedocs.io/en/lates
 
 ## GitHub Actions CI contract
 
-Planned workflow: `.github/workflows/ci.yml`. Tests and coverage use the same containerized commands locally and on Actions runners.
+Implemented workflow: `.github/workflows/ci.yml`. Tests and coverage use the same containerized commands locally and on Actions runners.
 
 1. Run on pull requests and pushes to `main`; add merge-queue events if a merge queue is enabled later.
 2. Check out the exact source revision and install/build from pinned dependencies and images.
@@ -193,3 +193,9 @@ crash proof](APPLICATION_RECOVERY.md). The `ci-required` aggregator requires bot
 `checks` and `upgrade-checks` to succeed; each job keeps a 20-minute timeout. The
 upgrade job fetches the pinned baseline history and publishes synthetic recovery
 evidence. The independent backend/frontend raw 90% gates remain in `checks`.
+
+E07.5's fresh verifier captures a single staged tree and runs an immutable driver.
+Its runtime evidence checks effective CPU/memory/logging settings, users, mounts,
+loopback publications and absence of OOM/container restarts before and after flows.
+The sanitized reports and point-in-time Docker samples are included in the existing
+browser artifacts; no container environment or shared-daemon configuration is logged.

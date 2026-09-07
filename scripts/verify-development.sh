@@ -1,14 +1,33 @@
 #!/bin/sh
 # Verify the Git index in an isolated copy; never mutate the working checkout.
 set -eu
+# Execute an immutable staged driver and use its captured tree for all source.
+if [ "${FILLABLE_FROZEN_DRIVER:-}" != "$0" ]; then
+  FILLABLE_VERIFICATION_TREE=$(git write-tree)
+  FILLABLE_VERIFICATION_COMMIT=$(git rev-parse HEAD)
+  if [ "$(git rev-parse "$FILLABLE_VERIFICATION_COMMIT^{tree}")" != "$FILLABLE_VERIFICATION_TREE" ]; then
+    FILLABLE_VERIFICATION_COMMIT=
+  fi
+  verification_launcher=$(mktemp -d "${TMPDIR:-/tmp}/fillable-driver.XXXXXX")
+  git show "$FILLABLE_VERIFICATION_TREE:scripts/verify-development.sh" > "$verification_launcher/driver.sh"
+  export FILLABLE_VERIFICATION_TREE FILLABLE_VERIFICATION_COMMIT
+  export FILLABLE_FROZEN_DRIVER="$verification_launcher/driver.sh"
+  exec sh "$FILLABLE_FROZEN_DRIVER"
+fi
+# These settings belong only to the fresh synthetic child process.
+export POSTGRES_PASSWORD=fillable-verification-only
+export STORAGE_FILE_BYTES=10485760 STORAGE_STAGING_BYTES=67108864
+export STORAGE_DISK_HEADROOM_BYTES=67108864 STORAGE_LEASE_SECONDS=60
+export MAINTENANCE_BATCH=20 MAINTENANCE_INTERVAL_SECONDS=60
 verification_root=$(mktemp -d "${TMPDIR:-/tmp}/fillable-verify.XXXXXX")
-verification_project="fillable-verify-$$"
+verification_project=$(basename "$verification_root" | tr '[:upper:].' '[:lower:]-')
 verification_reports="${FILLABLE_BROWSER_REPORTS:-$verification_root/browser-results}"
-mkdir -p "$verification_reports/production"
-git checkout-index --all --prefix="$verification_root/"
+mkdir -p "$verification_reports/production" "$verification_reports/runtime"
+printf '%s\n' "$FILLABLE_VERIFICATION_TREE" > "$verification_reports/source-tree.txt"
+git archive "$FILLABLE_VERIFICATION_TREE" | tar -x -C "$verification_root"
 cd "$verification_root"
 cp .env.example .env
-export FILLABLE_DEV_PORT=0 FILLABLE_UPSTREAM_PORT=0
+export FILLABLE_DEV_PORT=0 FILLABLE_UPSTREAM_PORT=0 VITE_APP_COMMIT_SHA=
 export FILLABLE_PUBLIC_ORIGIN=http://gateway:8080
 export DOCUMENTS_HOST_PATH="$verification_root/var/storage"
 dev() { docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.editor-proof.yaml "$@"; }
@@ -21,8 +40,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
+test -z "$(docker volume ls -q --filter "label=com.docker.compose.project=$verification_project")"
+test -z "$(docker ps -aq --filter "label=com.docker.compose.project=$verification_project")"
 dev up --build --wait --wait-timeout 120
 dev exec -T maintenance python /checks/verify_maintenance.py
+sh scripts/inspect-runtime.sh dev "$verification_project" "$DOCUMENTS_HOST_PATH" > "$verification_reports/runtime/dev-before.log"
 dev exec -T api python /checks/verify_gateway_logs.py probe development
 dev logs --no-color --no-log-prefix gateway > "$verification_root/gateway-dev.log"
 dev exec -T api python /checks/verify_gateway_logs.py check development < "$verification_root/gateway-dev.log"
@@ -46,6 +68,7 @@ dev exec -T worker python -m app.storage.quota_cli show --email browser@example.
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml build browser
 docker compose -p "$verification_project" -f compose.yaml -f compose.dev.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp --workdir /tmp -v "$verification_reports:/tmp/fillable-dev-results" -v "$verification_root/frontend/src:/workspace/frontend" -v "$verification_root/backend/app:/workspace/backend" browser /app/node_modules/.bin/playwright test --config /app/playwright.dev.config.ts
 
+sh scripts/inspect-runtime.sh dev "$verification_project" "$DOCUMENTS_HOST_PATH" > "$verification_reports/runtime/dev-after.log"
 dev exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c "CREATE TABLE development_probe (value text); INSERT INTO development_probe VALUES ('retained');"
 dev exec -T redis redis-cli SET development_probe retained
 dev stop maintenance
@@ -57,6 +80,7 @@ prod exec -T api python -m app.documents.retention_cli show
 prod exec -T api python -m app.documents.retention_cli set --keep-latest all
 prod up --wait --wait-timeout 120 --no-deps maintenance
 prod exec -T maintenance python /checks/verify_maintenance.py "$verification_maintenance_run"
+sh scripts/inspect-runtime.sh prod "$verification_project" "$DOCUMENTS_HOST_PATH" > "$verification_reports/runtime/prod-before.log"
 prod exec -T api python /checks/verify_gateway_logs.py probe
 prod logs --no-color --no-log-prefix gateway > "$verification_root/gateway-prod.log"
 prod exec -T api python /checks/verify_gateway_logs.py check < "$verification_root/gateway-prod.log"
@@ -77,4 +101,5 @@ prod exec -T api python -m app.diagnostics status
 prod exec -T api python -m app.diagnostics audit --limit 2
 docker compose -p "$verification_project" -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp -e PLAYWRIGHT_OUTPUT_DIR=/tmp/fillable-prod-results/run -e PLAYWRIGHT_HTML_OUTPUT_DIR=/tmp/fillable-prod-results/html --workdir /tmp -v "$verification_reports/production:/tmp/fillable-prod-results" browser /app/node_modules/.bin/playwright test --config /app/playwright.config.ts
 prod exec -T gateway sh -c 'test "$(id -u)" != 0 && ! command -v node'
+sh scripts/inspect-runtime.sh prod "$verification_project" "$DOCUMENTS_HOST_PATH" > "$verification_reports/runtime/prod-after.log"
 echo 'PASS: fresh staged checkout, hot reload, persistent recreation, production browser/static assets.'

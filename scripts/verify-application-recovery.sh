@@ -1,15 +1,39 @@
 #!/bin/sh
 # Build a reviewed previous source and the Git index against one synthetic data set.
 set -eu
+# Execute an immutable staged driver and use its captured tree for all source.
+if [ "${FILLABLE_FROZEN_DRIVER:-}" != "$0" ]; then
+  FILLABLE_VERIFICATION_TREE=$(git write-tree)
+  FILLABLE_VERIFICATION_COMMIT=$(git rev-parse HEAD)
+  if [ "$(git rev-parse "$FILLABLE_VERIFICATION_COMMIT^{tree}")" != "$FILLABLE_VERIFICATION_TREE" ]; then
+    FILLABLE_VERIFICATION_COMMIT=
+  fi
+  verification_launcher=$(mktemp -d "${TMPDIR:-/tmp}/fillable-driver.XXXXXX")
+  git show "$FILLABLE_VERIFICATION_TREE:scripts/verify-application-recovery.sh" > "$verification_launcher/driver.sh"
+  export FILLABLE_VERIFICATION_TREE FILLABLE_VERIFICATION_COMMIT
+  export FILLABLE_FROZEN_DRIVER="$verification_launcher/driver.sh"
+  exec sh "$FILLABLE_FROZEN_DRIVER"
+fi
+# These settings belong only to the fresh synthetic child process.
+export POSTGRES_PASSWORD=fillable-verification-only
+export STORAGE_FILE_BYTES=10485760 STORAGE_STAGING_BYTES=67108864
+export STORAGE_DISK_HEADROOM_BYTES=67108864 STORAGE_LEASE_SECONDS=60
+export MAINTENANCE_BATCH=20 MAINTENANCE_INTERVAL_SECONDS=60
 verification_root=$(mktemp -d "${TMPDIR:-/tmp}/fillable-recovery.XXXXXX")
 verification_project=$(basename "$verification_root" | tr '[:upper:].' '[:lower:]-')
 verification_reports="${FILLABLE_RECOVERY_REPORTS:-$verification_root/reports}"
 verification_baseline=191282ce485d6f562be0cd8d0a8b183b7e2ebb1d
-verification_head=$(git rev-parse HEAD)
+verification_head=${FILLABLE_VERIFICATION_COMMIT:-}
+verification_version=development
+if [ -n "$verification_head" ]; then
+  verification_version=$(printf %s "$verification_head" | cut -c 1-7)
+fi
 mkdir -p "$verification_root/previous" "$verification_root/current" "$verification_reports"
+printf '%s\n' "$FILLABLE_VERIFICATION_TREE" > "$verification_reports/source-tree.txt"
+printf '%s\n' "${verification_head:-development}" > "$verification_reports/source-commit.txt"
 git cat-file -e "$verification_baseline^{commit}"
 git archive "$verification_baseline" | tar -x -C "$verification_root/previous"
-git checkout-index --all --prefix="$verification_root/current/"
+git archive "$FILLABLE_VERIFICATION_TREE" | tar -x -C "$verification_root/current"
 cp "$verification_root/current/.env.example" "$verification_root/current/.env"
 cp "$verification_root/previous/.env.example" "$verification_root/previous/.env"
 export FILLABLE_PUBLIC_ORIGIN=http://gateway:8080 FILLABLE_UPSTREAM_PORT=0
@@ -55,7 +79,7 @@ install_probe current
 test "$(current exec -T db psql -U fillable -d fillable -At -c 'SELECT version_num FROM alembic_version')" = 0013_maintenance_state
 probe current read < "$verification_reports/manifest.json"
 current exec -T maintenance python /checks/verify_maintenance.py
-badge upgraded "$(printf %s "$verification_head" | cut -c 1-7)"
+badge upgraded "$verification_version"
 # Stop only this synthetic project's scheduler while observing the crash boundary.
 current stop maintenance
 verification_run="$(current exec -T api python /checks/verify_maintenance.py identity)"
@@ -68,5 +92,5 @@ current up --wait --wait-timeout 120
 install_probe current
 current exec -T maintenance python /checks/verify_maintenance.py "$verification_run"
 probe current read < "$verification_reports/manifest.json"
-badge restarted "$(printf %s "$verification_head" | cut -c 1-7)"
+badge restarted "$verification_version"
 echo 'PASS: previous-image upgrade, full-stack restart, reviewed/copy/restored DOCX history and real post-unlink crash reconciliation.'
