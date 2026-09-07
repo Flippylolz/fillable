@@ -60,7 +60,7 @@ References: [GitHub Actions job dependencies](https://docs.github.com/en/actions
 
 ## E08 deployment workflow
 
-Planned workflow: `.github/workflows/deploy.yml`, implemented in the final epic. The initial proposed trigger is manual `workflow_dispatch` for a commit on the protected default branch; automatic deployment on push is not assumed.
+Implemented E08.2 workflow: `.github/workflows/deploy.yml`; rollout remains pending E08.3–E08.5. See [release artifacts](RELEASE_ARTIFACTS.md) for the exact gate and transport contract. The initial proposed trigger is manual `workflow_dispatch` for a commit on the protected default branch; automatic deployment on push is not assumed.
 
 Before rollout, complete the shared-server preflight in [Deployment target](DEPLOYMENT_TARGET.md). The Actions deployment must use the supplied SSH target, isolated Fillable resources, a verified unused public HTTP port, a private app upstream, and the existing nginx owner's configuration/apply process. The public origin is `http://<DEPLOY_HOST>:<PORT>`. Local and production are the only persistent environments; no staging environment or backup system is required.
 
