@@ -1522,3 +1522,12 @@ API-assisted test setup and preserving the real CSRF checks. Final fresh index
 worker/persistence/recreation. Application code/coverage and inspected DOCX render
 artifacts remain unchanged. Next: push this test correction and verify exact-head
 required CI and actual PR #55 merge before E06.3a.
+
+Final PR #55 review corrected inherited upload wording for in-progress, aborted and
+invalid-document save failures. Both catalogs now describe the save/draft action;
+real frontend checks passed 154 tests and the raw gate remains 1083/1091 lines
+(99.27%), 1190/1243 branches (95.74%). The actual uncovered-source probe again
+blocked 1083/3553 lines and 1190/6165 branches with all 154 tests passing. The change
+is message presentation only; existing fresh browser and rendered DOCX evidence
+remains applicable. Auto-merge was disabled while verifying the correction and will
+be rearmed for its exact commit under the strict required gate.

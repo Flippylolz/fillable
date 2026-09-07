@@ -71,7 +71,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         : <button type="button" onClick={access.retry}>{t("lease.retry")}</button>)}
     </div><p role="status" className="workspace-save-state">{t(saving.busy ? "save.saving" : unsaved ? "workspace.unsaved" : saving.acknowledged ? "save.saved" : "workspace.saved")}</p>
       {saving.error && <div className="workspace-save-error" role="alert">
-        <p>{["revision", "lease_lost", "composing", "invalid_fields", "file_too_large", "upload_timeout", "upload_busy"].includes(saving.error)
+        <p>{["revision", "lease_lost", "composing", "invalid_fields", "file_too_large", "upload_timeout", "upload_busy", "operation_in_progress", "operation_aborted", "invalid_document"].includes(saving.error)
           ? t(`save.${saving.error}`) : apiErrorMessage(saving.error)}</p>
         {saving.pending && <p>{t("save.uncertain")}</p>}
         {(saving.pending || saving.conflict) && <button type="button" disabled={saving.busy || settingsBusy} onClick={reopen}>{t("review.reopen")}</button>}

@@ -228,5 +228,8 @@
   "save.invalid_fields": "Correct the marked field values before saving.",
   "save.file_too_large": "The document or editing data exceeds the save limit. Your draft remains here.",
   "save.upload_timeout": "Sending changes timed out. Your draft remains here; try saving again.",
-  "save.upload_busy": "The server is processing other documents. Try saving again."
+  "save.upload_busy": "The server is processing other documents. Try saving again.",
+  "save.operation_in_progress": "This save is still in progress. Retry shortly to check its result.",
+  "save.operation_aborted": "This save attempt did not complete. Your draft remains here; choose Save document to start a new attempt.",
+  "save.invalid_document": "These changes could not be safely saved to DOCX. Your draft remains here."
 }

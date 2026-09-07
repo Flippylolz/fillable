@@ -121,6 +121,7 @@ test.each(["quota_exceeded", "operation_aborted", "file_too_large", "upload_time
   const state = setup(async () => failure(code)); const editor = await ready();
   change("Чернетка Ґанни"); fireEvent.click(save());
   await waitFor(() => expect(state.container.querySelector(".workspace-save-error")).not.toBeNull());
+  expect(state.container.querySelector(".workspace-save-error")).not.toHaveTextContent(/upload/i);
   expect(editor).toHaveTextContent("Чернетка Ґанни"); expect(save()).toBeEnabled();
   expect(screen.queryByText("All document changes saved.")).toBeNull();
   state.writes.mockImplementation(state.commit); fireEvent.click(save());
@@ -138,4 +139,14 @@ test("invalid values and native composition disable new saves, while uncertain r
   fireEvent.click(within(state.container.querySelector(".workspace-save-error") as HTMLElement).getByRole("button", { name: "Reopen saved document" }));
   expect(confirm).toHaveBeenCalledWith("The save result is not confirmed. Open the latest saved revision and discard the current draft?");
   expect(editor.isConnected).toBe(true);
+});
+
+test("an in-progress save explains the same-attempt retry in both languages", async () => {
+  const state = setup(async () => failure("operation_in_progress")); await ready();
+  change("Чернетка"); fireEvent.click(save());
+  await screen.findByText("This save is still in progress. Retry shortly to check its result.");
+  expect(screen.getByRole("button", { name: "Retry save" })).toBeEnabled();
+  await act(() => setLanguage("uk"));
+  expect(screen.getByText("Це збереження ще триває. Повторіть запит згодом, щоб перевірити результат.")).toBeVisible();
+  expect(state.writes).toHaveBeenCalledTimes(1);
 });
