@@ -34,8 +34,9 @@ test("manual saves acknowledge exact edits, retain title and history, and reopen
   const editor = page.getByRole("textbox", { name: "Редагований документ", exact: true });
   const retained = await editor.elementHandle();
   await editor.locator("p").first().click();
-  await page.keyboard.press("Home", { delay: 30 });
-  await page.keyboard.press("Shift+End", { delay: 30 });
+  // Select the whole heading even when it wraps into multiple visual lines.
+  await page.keyboard.press("Control+Home", { delay: 30 });
+  for (const _character of "АНКЕТА КЛІЄНТА") await page.keyboard.press("Shift+ArrowRight", { delay: 30 });
   await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe("АНКЕТА КЛІЄНТА");
   await page.getByRole("textbox", { name: "Назва нового поля", exact: true }).fill("Заголовок Ґанни");
   await page.getByRole("button", { name: "Створити поле з виділення", exact: true }).click();

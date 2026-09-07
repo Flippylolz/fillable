@@ -1691,3 +1691,19 @@ Exact historical downloads and live draft preservation passed. No DOCX transform
 changed here; these checks do not claim Microsoft Word validation. Next: open the
 individual E06.5 PR and verify required CI/auto-merge through actual merge.
 Then E06.7 autosave; E07 and E08 remain unfinished. No server changes were made.
+
+
+E06.5 PR #60 is in review with squash auto-merge. Initial head
+`8ce1adfd37f15dbdaa199621b87a9d539e8793f8`, CI `34115861870`, failed the
+fresh production browser repeat (33/34): the existing mobile manual-save test used
+Home/Shift+End to select a heading, which selects only the last visual line when
+wrapped. All retention cases passed. The test now selects from document start by
+character, preserving actual native keyboard selection and its exact-text assertion.
+Required `ci-required` correctly failed and prevented merge. Next: verify this
+correction, update the same PR and follow its new exact head through CI/merge.
+
+The corrected selection passed the fresh staged repeat: 7 development and 34
+production cases, including both mobile manual-save cases, in copy `3h0NNO`, project
+`fillable-verify-96770`. This correction changes only browser selection; application
+coverage remains the measured 377 backend/195 frontend test result above. The PR's
+new head must pass the complete required CI before E06.7 implementation starts.
