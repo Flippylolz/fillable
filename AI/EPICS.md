@@ -2122,3 +2122,16 @@ PR CI remain pending. The receiver is intentionally absent until E08.3, so the w
 cannot claim rollout success. No production runtime or shared nginx has been changed.
 Next: validate real Docker archives and badge, open this task's PR, verify required
 CI and exact-head auto-merge, then confirm MERGED before E08.3 implementation.
+
+E08.2 is in_review in [PR #71](https://github.com/Flippylolz/fillable/pull/71).
+Candidate `c450f3712e634677b03cd2d400084ebb18d318b0` passed seven Docker contract
+tests, Ruff, shell syntax and diff checks. A real Linux amd64 build from that exact
+Git archive produced a 129,914,880-byte release archive with SHA-256
+`83b8f079e028e212e000d700f32c5f35bc35cae4c6d596df149df6c39abae246`.
+Strict unpack and Docker load passed; the loaded gateway served `version: c450f37`
+on desktop/mobile with click-through CSS intact. This isolated badge check stubbed
+API responses and does not claim a production MVP smoke test. Its temporary gateway
+and network were removed; artifact and screenshot evidence is retained locally.
+The artifact records its actual candidate PR run `34151276606` for local QA only;
+that run is not eligible main deployment evidence. The production gate independently
+requires successful current-main push CI. Required final-head PR CI remains pending.
