@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
 import type { Resource } from "../library/useLibrary";
 
-export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, onHighlight, onResource, onDirty, onBusy, onReopen, disabled = false }: {
+export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, onHighlight, autosave, onAutosave, onResource, onDirty, onBusy, onReopen, disabled = false }: {
+  autosave?: boolean; onAutosave?: (enabled: boolean) => void;
   item: Resource; csrfToken: string; zoom: number; highlight: boolean;
   onZoom: (zoom: number) => void; onHighlight: (highlight: boolean) => void;
   onResource: (resource: Resource) => void; onDirty: (dirty: boolean) => void;
@@ -65,6 +66,7 @@ export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, on
         {error === "revision_conflict" && <button type="button" disabled={busy || disabled} onClick={onReopen}>{t("review.reopen")}</button>}
         {status && <p role="status">{t(`workspace.${status}`)}</p>}
       </form>
+      {onAutosave && <div className="workspace-autosave-option"><label className="workspace-highlight"><input type="checkbox" checked={autosave} onChange={event => onAutosave(event.target.checked)} />{t("autosave.enable")}</label><p>{t("autosave.storage")}</p></div>}
       <div className="workspace-view-settings">
         <label>{t("workspace.zoom")}<select value={zoom} onChange={event => onZoom(Number(event.target.value))}>
           {[0.5, 0.75, 1, 1.25, 1.5, 2].map(value => <option key={value} value={value}>{new Intl.NumberFormat(i18n.resolvedLanguage, { style: "percent", maximumFractionDigits: 0 }).format(value)}</option>)}

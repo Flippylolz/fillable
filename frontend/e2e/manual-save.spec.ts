@@ -1,3 +1,4 @@
+import { manualSaving } from "./autosave-setting";
 import { randomUUID } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
@@ -22,6 +23,7 @@ async function open(page: Page, kind: "template" | "document") {
   const resource = await uploaded.json();
   await page.goto(`/editor/${resource.id}`);
   await expect(page.getByText("Редагування дозволено.", { exact: true })).toBeVisible();
+  await manualSaving(page);
   return { resource, endpoint: `/api/documents/${resource.id}` };
 }
 

@@ -375,3 +375,11 @@ rechecks policy and resource state under locks and uses `delete_file`, so bytes 
 charged through pending deletion and are credited only after unlink. Failed cleanup
 uses existing reconciliation. Pruning clears saved content/review/job snapshots while
 retaining opaque provenance metadata. Scheduling follows in E07.3.
+
+
+E06.7 autosaves use the identical revision-save storage transaction as manual saves.
+Each retained autosave reserves and charges the full new file. The local workspace
+toggle explains this usage, and a quota/disk/save error keeps the draft and stops
+automatic retry until explicit recovery. No autosave calls retention or silently
+replaces older charged files. Lost-response retries reuse the exact operation;
+newer edits are saved separately only after that outcome is acknowledged.

@@ -49,3 +49,8 @@
   .history-list ol { max-height: 15rem; }
   .history-preview .ProseMirror { padding: 0.75rem; }
 }
+
+.workspace-autosave-state { margin: 0.35rem 0; color: #5f6368; font-size: 0.85rem; }
+.workspace-autosave-option { flex: 1 1 16rem; max-width: 26rem; }
+.workspace-settings .workspace-autosave-option .workspace-highlight { padding-top: 0; }
+.workspace-settings input[type="checkbox"] { width: auto; flex: 0 0 auto; margin: 0; }

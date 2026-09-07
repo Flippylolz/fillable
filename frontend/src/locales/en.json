@@ -270,5 +270,10 @@
   "history.file_too_large": "The saved revision exceeds the restore size limit. Your draft is preserved.",
   "history.operation_conflict": "The selected saved revision could not be verified. Refresh history and retry the preview.",
   "history.keepLatest_one": "The original and the latest {{number}} revision are kept. Older revisions may be permanently removed. Retained files count toward storage usage.",
-  "history.keepLatest_other": "The original and the latest {{number}} revisions are kept. Older revisions may be permanently removed. Retained files count toward storage usage."
+  "history.keepLatest_other": "The original and the latest {{number}} revisions are kept. Older revisions may be permanently removed. Retained files count toward storage usage.",
+  "autosave.enable": "Autosave document",
+  "autosave.storage": "Autosave creates retained revisions that count toward storage usage. Title changes are saved separately.",
+  "autosave.on": "Autosave is on. Changes save after a short pause in editing.",
+  "autosave.off": "Autosave is off. Use Save document to keep your changes.",
+  "autosave.paused": "Autosave is paused. Your unsaved changes are kept in this workspace."
 }

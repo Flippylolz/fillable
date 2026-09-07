@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a, E06.4 and E06.6 merged; E06.3b merged; E06.5 retention in progress |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a, E06.4 and E06.6 merged; E06.3b merged; E06.5 merged; E06.7 autosave in progress |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1707,3 +1707,37 @@ production cases, including both mobile manual-save cases, in copy `3h0NNO`, pro
 `fillable-verify-96770`. This correction changes only browser selection; application
 coverage remains the measured 377 backend/195 frontend test result above. The PR's
 new head must pass the complete required CI before E06.7 implementation starts.
+
+
+Verified E06.5 completion: [PR #60](https://github.com/Flippylolz/fillable/pull/60)
+merged as `cf9faecd21e8a6c87b2a31410b3326457fb61437`, exact head
+`98fe5b13d58a0e6f0aa9fdf332fda49a0dd1322d`. CI `34116978818` succeeded;
+`checks` and `ci-required` both SUCCESS. The browser-selection correction and all
+local checks above passed; originals/current files, accounting and provenance remain
+protected. Main was synchronized before starting `task/e06-7-autosave`.
+
+E06.7 bounded scope: default-on two-second document autosave using the existing
+immutable save/retry protocol, local workspace toggle, localized status, synchronous
+composition/validity/lease preflight, and pauses for history, mutations and errors.
+No automatic retry of uncertain outcomes and no title-only/document writes. Preserve
+newer drafts across acknowledgments and let explicit retry resolve the original
+attempt. Verify default-on browser flows, history/IME/error/toggle behavior and both
+coverage gates. E07 acceptance/recovery/diagnostics and E08 deployment remain later.
+
+
+E06.7 local checkpoint: the timer, workspace setting and both-language status/cost
+copy are implemented. Docker frontend lint/catalog/type/build and all 203 tests
+passed: lines 1231/1242 (99.11%), branches 1401/1468 (95.44%). The real unimported
+source probe passed with all 203 tests, blocking 1231/4006 lines and 1401/6994 branches.
+The new component tests wait for the new-version lease before simulating further
+input; real browser input already waits for editable controls. Initial fresh Docker
+verification passed 7 development and 40 production browser cases in `y8EMzG`, project
+`fillable-verify-98945`. The final repeat passed 7 development and 40 production cases in `eE6kP3`, project
+`fillable-verify-99719`, after tightening checkbox layout and making the manual-save
+browser helper explicitly disable autosave. Desktop English settings and mobile
+Ukrainian quota-error layouts were visually inspected. Backend source is unchanged from verified
+PR60 (377 tests; lines 3680/3706, branches 1099/1126); this task's required CI will
+repeat the complete backend/frontend/renderer and failure-gate checks before merge.
+Next: open the individual E06.7 PR,
+verify strict required checks and exact-head squash auto-merge, then verify MERGED
+before E07. Deployment remains last and no server work has begun.

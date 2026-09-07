@@ -1,3 +1,4 @@
+import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
@@ -58,6 +59,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("article", { name: templateTitle }).getByRole("link", { name: "Відкрити", exact: true }).click();
   await expect(page).toHaveURL(/\/editor\/[0-9a-f-]+$/);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
+  await manualSaving(page);
   const draft = `Незбережений Їжак ${testInfo.project.name}`;
   await page.getByRole("textbox", { name: /^Значення поля:/ }).first().fill(draft);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toContainText(draft);
@@ -211,6 +213,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   const afterCopy = await (await page.request.get("/api/storage/usage")).json();
   expect(afterCopy.used_bytes).toBe(beforeCopy.used_bytes + bytes.length);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
+  await manualSaving(page);
   await page.screenshot({ path: testInfo.outputPath("template-copy-workspace-uk.png"), fullPage: true });
   await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
   await page.getByRole("tab", { name: "Шаблони", exact: true }).click();

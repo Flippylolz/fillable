@@ -1,3 +1,4 @@
+import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 
@@ -23,6 +24,7 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   });
   await libraryCard.getByRole("link", { name: "Відкрити", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
+  await manualSaving(page);
   await page.getByRole("button", { name: "Повторити запит стану", exact: true }).click();
   await page.getByRole("button", { name: "Наступне поле", exact: true }).click();
   await expect(page.getByRole("article", { name: "Розташування поля 1: ПІБ клієнта", exact: true })).toHaveAttribute("aria-current", "true");
