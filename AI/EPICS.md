@@ -25,7 +25,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.1b UI acceptance |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.2 content-free diagnostics |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -1826,3 +1826,58 @@ will verify long Ukrainian labels. Application source is unchanged from PR62's
 backend 377/frontend 229 tests and measured 99.30%/97.60% backend,
 99.16%/95.60% frontend line/branch coverage. Required CI reruns both independently.
 Documentation links resolve. Final browser/visual verification precedes readiness.
+
+
+Verified E07.1b completion: [PR #63](https://github.com/Flippylolz/fillable/pull/63)
+merged as `71f6250dbe7b7fe8516187f689068a49abc031c3`, exact head
+`4a49b3f6c4870c06575e3d81ebecc828b31ac15b`. CI `34127671210` succeeded with
+`checks` and `ci-required` SUCCESS. Final fresh `lyl9j9` passed 7 development and
+48 production cases, plus 2 focused final-file journey/visual cases. Long Ukrainian
+mobile labels and desktop history were inspected. Both raw coverage gates passed.
+
+Main synchronized before `task/e07-2-content-free-diagnostics`. Implement bounded
+operator job/capacity/audit diagnostics, content-free API and gateway failure logs,
+and atomic revision audit events. Existing unexpected exceptions can reach Uvicorn
+with their raw message; nginx currently logs raw URI and native request context.
+Verify actual logs with synthetic markers. Preserve all data; any audit index is
+additive. Scheduling remains E07.3, and no server access/deployment has occurred.
+
+E07.2 Docker backend lint/mypy and 401 tests pass: 3799/3826 raw lines (99.29%)
+and 1132/1160 branches (97.59%). Real Uvicorn tests verify ordinary, streaming and
+background failure logs without original exception messages/chains. Real PostgreSQL
+checks cover counters, redacted chronological audit pagination, index upgrade/
+downgrade without event loss, failed transaction rollback and exact replay without
+duplicate save/restore audits. The negative unimported-source probe blocks 3799/11816
+lines with all 401 tests passing. The initial audit test used dictionary access on
+its typed UserInfo fixture; the assertion is corrected.
+
+Fresh gateway verification initially expected a production 404 from Vite's development
+asset fallback (which returns 200); the probe now checks each configured mode explicitly.
+Actual development and production gateway stdout/stderr pass content-marker redaction,
+including unknown methods and oversized requests. Docker `app.diagnostics status`
+and `audit --limit 2` ran successfully against the isolated production-style project
+and returned only counters/opaque event identities. The complete browser suite is
+finishing before PR readiness. Frontend application source remains unchanged from
+PR63's 229-test, 99.16% line/95.60% branch baseline; required CI reruns it.
+
+Final CLI review distinguishes invalid arguments from runtime configuration ValueErrors:
+unavailable runtime state now exits 1, while invalid input exits 2. Docker lint/mypy
+and 402 tests pass with 3800/3827 lines (99.29%) and 1132/1160 branches (97.59%).
+Fresh `eQtDzn` passed all 7 development/48 production browser cases and both actual
+log probes, but its still-reading shell wrapper was edited during the run and
+failed afterward; it is not recorded as a successful complete verification.
+The final repeat runs a frozen staged script. Test-project cleanup preserved volumes.
+
+The final backend unimported-source probe rejects 3800/11821 lines with all 402
+tests passing. The frozen fresh run has passed development, production migration/
+persistence and both log probes; final production browser cases are running before
+PR readiness. Documented operator status/audit commands are included in that run.
+
+Frozen `dFtiIa` passed 7 development/47 production cases; the mobile uncertain-autosave
+proof encountered a legitimate 409 `operation_in_progress` on its exact retry after
+the first request had committed 201. Trace and worker timing show the saved revision
+was being inspected under its shared read lock; the UI correctly kept the pending
+snapshot and did not claim success. The browser proof now waits for actual worker
+completion before its single-success retry assertion, still asserting no automatic
+retry, identical key/body, a separate newer save and no duplicate history. Application
+save behavior is unchanged. Repeat the full frozen verification before readiness.

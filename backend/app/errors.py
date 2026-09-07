@@ -1,5 +1,6 @@
 """Stable, content-free API error contracts; clients own presentation."""
 
+import logging
 from typing import Literal
 
 from fastapi import FastAPI, Request
@@ -7,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 ErrorCode = Literal[
     "invalid_document",
@@ -62,7 +64,43 @@ def error_response(status: int, detail: ErrorDetail) -> JSONResponse:
     )
 
 
+class SanitizedErrors:
+    """Do not pass untrusted exception messages/chains to the server logger."""
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        started = False
+
+        async def outgoing(message: Message) -> None:
+            nonlocal started
+            if message["type"] == "http.response.start":
+                started = True
+            await send(message)
+
+        try:
+            await self.app(scope, receive, outgoing)
+        except Exception:
+            pass
+        else:
+            return
+        # Leave the exception context before sending or raising: even a transport
+        # failure must not acquire the original exception as an implicit chain.
+        logging.getLogger("fillable.errors").error("request_failed")
+        if started:
+            raise RuntimeError("request_failed") from None
+        await error_response(500, ErrorDetail(code="internal_error"))(
+            scope, receive, send
+        )
+
+
 def register_errors(app: FastAPI) -> None:
+    app.add_middleware(SanitizedErrors)
+
     @app.exception_handler(AppError)
     async def application_error(_request: Request, exc: AppError):
         return error_response(exc.status, exc.detail)
@@ -76,7 +114,3 @@ def register_errors(app: FastAPI) -> None:
     @app.exception_handler(RequestValidationError)
     async def validation_error(_request: Request, _exc: RequestValidationError):
         return error_response(422, ErrorDetail(code="invalid_request"))
-
-    @app.exception_handler(Exception)
-    async def unexpected_error(_request: Request, _exc: Exception):
-        return error_response(500, ErrorDetail(code="internal_error"))

@@ -1,7 +1,8 @@
 # MVP acceptance evidence
 
 E07.1b verifies the four-page user workflow on the synthetic Ukrainian corpus.
-Its browser run and PR must pass before this record is marked complete. E07.2–E07.6
+[PR #63](https://github.com/Flippylolz/fillable/pull/63) is verified merged, with
+7 development and 48 production browser cases passing and required CI successful. E07.2–E07.6
 and final deployment remain separate, unfinished tasks in [Epics](EPICS.md).
 
 | Contract | Executable evidence |

@@ -22,6 +22,9 @@ cleanup() {
 trap cleanup EXIT
 
 dev up --build --wait --wait-timeout 120
+dev exec -T api python /checks/verify_gateway_logs.py probe development
+dev logs --no-color --no-log-prefix gateway > "$verification_root/gateway-dev.log"
+dev exec -T api python /checks/verify_gateway_logs.py check development < "$verification_root/gateway-dev.log"
 # Explicit synthetic fixture only; normal startup never provisions an account.
 dev exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python -m app.accounts.cli provision --email profile@example.test --display-name "Тест профілю" --language uk --password-stdin < fixtures/auth/browser-password.txt
@@ -47,6 +50,9 @@ dev exec -T redis redis-cli SET development_probe retained
 dev exec -T api python -m app.documents.retention_cli set --keep-latest 2
 dev down
 prod up --build --wait --wait-timeout 120
+prod exec -T api python /checks/verify_gateway_logs.py probe
+prod logs --no-color --no-log-prefix gateway > "$verification_root/gateway-prod.log"
+prod exec -T api python /checks/verify_gateway_logs.py check < "$verification_root/gateway-prod.log"
 test "$(prod exec -T db psql -U fillable -d fillable -At -c 'SELECT value FROM development_probe')" = retained
 test "$(prod exec -T redis redis-cli GET development_probe)" = retained
 prod exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c 'DROP TABLE development_probe'
@@ -60,6 +66,8 @@ prod exec -T worker python -m app.storage.maintenance reconcile
 prod exec -T worker python -m app.storage.maintenance inventory
 prod exec -T worker python -m app.storage.maintenance capacity
 prod exec -T worker python -m app.documents.retention_cli show
+prod exec -T api python -m app.diagnostics status
+prod exec -T api python -m app.diagnostics audit --limit 2
 docker compose -p "$verification_project" -f compose.yaml -f compose.prod.yaml -f compose.browser.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -e HOME=/tmp -e PLAYWRIGHT_OUTPUT_DIR=/tmp/fillable-prod-results/run -e PLAYWRIGHT_HTML_OUTPUT_DIR=/tmp/fillable-prod-results/html --workdir /tmp -v "$verification_reports/production:/tmp/fillable-prod-results" browser /app/node_modules/.bin/playwright test --config /app/playwright.config.ts
 prod exec -T worker python -m app.documents.retention_cli set --keep-latest all
 prod exec -T gateway sh -c 'test "$(id -u)" != 0 && ! command -v node'
