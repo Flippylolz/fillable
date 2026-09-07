@@ -2315,3 +2315,65 @@ Proof root `fillable-e085-real.uvw0vu9t`; own containers stopped, volumes retain
 The task will be a draft PR while actual target rollout/acceptance is blocked on the
 pending explicit credential-secret approval. It must not auto-merge or be marked done
 until that acceptance is verified; deployment must use current-main source.
+
+E08.4 code PR #74 merged as `fdfe53bb5f739fe8c72ff905785c753f260e7780`;
+PR CI `34160681711` and main CI `34161861411` passed. Actual deployment waits
+for explicit approval requested by automatic review for the two generated initial
+account secrets. Independent E08.5 tooling is in draft PR #75.
+
+E08.5a corrective task: draft #75 CI `34162407970` exposed an existing editing-lease
+test race in the fresh production suite (47 cases passed, one failed). The synthetic
+trace shows its initial `/content` API request returned HTTP 409, but the test parsed
+that error as its baseline and compared later document content to undefined. Make
+both saved-state reads require HTTP 200, retry only the documented temporary busy
+response, and preserve the exact document/resource/quota comparisons. Deliver in its
+own PR from merged main with repeated real browser verification and required CI;
+then refresh the draft acceptance PR. Do not retry credential upload without approval.
+
+E08.5a local verification passed all 20 real two-tab browser scenarios (10 desktop,
+10 mobile, 48.5s) through the isolated actual app/shared-manager/relay. Full scoped
+restart retained stored bytes/digests/quota counters; shared service/route remained
+unchanged and own containers stopped with volumes preserved. Proof project
+`fillable-e085a-fpcvr2vg`. Required final-head CI and merge remain pending.
+
+Live E08.5 checkpoint: draft [PR #75](https://github.com/Flippylolz/fillable/pull/75),
+head `05c44db2dd6d120c426e3cfb383f44bb8907256d`, required CI `34162407970` running.
+PR stays draft without auto-merge because actual deployed acceptance is still pending.
+E08.4 main CI `34161861411` for `fdfe53bb5f739fe8c72ff905785c753f260e7780`
+is also running. Local acceptance proof and corruption tests passed; no target app
+rollout has run. Automatic-review credential approval question remains pending.
+On approval, run guarded private initial-account secret preparation, verify exact-main
+CI success/current main, recheck capacity/reservations, dispatch E08.4 Actions, verify
+existing services, then run E08.5 private browser/restart/negative-badge acceptance.
+Record actual results and only then ready/auto-merge PR #75 behind its required CI.
+
+E08.4 exact merged-main CI `34161861411` is verified SUCCESS for all required jobs
+on `fdfe53bb5f739fe8c72ff905785c753f260e7780`. Current rollout source is eligible
+subject to rechecking main/CI at dispatch. Explicit credential-secret approval remains
+pending, so no deployment dispatch or secret-upload retry has run. Draft #75 CI
+`34162407970` remains in progress; upgrade and browser jobs/stages passed.
+
+Draft #75 CI `34162407970` failed in an existing editing-lease test during the fresh
+production run: 47 passed, initial `/content` API baseline was HTTP 409 (trace verified),
+so the test compared later document content to undefined. Actual new acceptance cases
+passed. Corrective E08.5a is isolated in `/private/tmp/fillable-ci-content-fix`, branch
+`task/e08-5a-lease-snapshot-read`, based on verified merged main. It requires HTTP 200
+for baseline/final reads, retries only operation_in_progress, retains every exact
+comparison, and uses a unique synthetic title for repeated verification. Twenty real
+browser cases are running (10 per viewport). Deliver corrective PR/CI/merge, then
+refresh draft #75; actual deployment still waits on the credential approval.
+
+Corrective E08.5a is in [PR #76](https://github.com/Flippylolz/fillable/pull/76),
+head `bc5abee` (full head in corrective worktree), CI `34163615157` running with
+exact-head auto-merge enabled and actual strict/admin-enforced protection verified.
+Twenty local real browser repetitions passed in 48.5s. Next verify required CI/merge,
+merge origin/main into draft #75 preserving its checkpoint, rerun required CI, and
+retain draft status until actual deployment acceptance. Credential approval still pending.
+
+E08.5a PR #76 is verified MERGED as `3a8d5f8e1c906839ce379571cd8626609fd6a700`,
+head `bc5abee79961088e40340d9b8589c800676b9a98`, CI `34163615157` SUCCESS.
+Draft #75 is refreshed with that merged correction and retains its local acceptance
+proof. Required CI must pass on the refreshed head. Current-main deployment source
+is now the E08.5a merge and requires its successful push CI before dispatch; the
+credential-secret approval remains pending. Actual target rollout/acceptance remains
+unperformed, so #75 stays draft without auto-merge.
