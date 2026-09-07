@@ -237,3 +237,17 @@ test("actions revalidate live spans and reject missing or duplicate control iden
   const updated = duplicated.apply(reviewChanges(duplicated, duplicated.tr.insertText("prefix ", 2)));
   expect(item(updated.doc, candidate.id).missing).toBe(true);
 });
+
+test("native review preserves an empty alias instead of adopting a discovery display label", () => {
+  const control = editorSchema.nodes.field.create({ id: "native", key: "Стала група", label: "" }, text("Їжак"));
+  const original = small([control]);
+  const detected: Snapshot = { schema_version: 1, source_version_id: version,
+    occurrences: [{ id: "native", value: "Їжак", anchor: { kind: "control", part: "word/document.xml", paragraph_id: "p", control_id: "native" } }],
+    candidates: [{ id: "candidate", occurrence_id: "native", label: "Стала група", source_key: "Стала група", context: "Їжак", reason: "native_control" }],
+    fields: [{ id: "group", type: "text", label: "Стала група", occurrence_ids: ["native"] }],
+    decisions: [{ candidate_id: "candidate", status: "accepted", field_id: "group" }],
+  };
+  const reviewed = attachReview(original, detected, version);
+  expect(reviewState(reviewed)!.items[0]).toMatchObject({ label: "", key: "Стала група", sourceKey: "Стала група", decision: "accepted" });
+  expect(reviewed.content.eq(original.content)).toBe(true);
+});
