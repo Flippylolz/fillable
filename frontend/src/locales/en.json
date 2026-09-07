@@ -207,5 +207,13 @@
   "workspace.renameStale": "The saved revision changed. Reopen the saved document before renaming; your draft remains here until you choose to discard it.",
   "workspace.reloadTitle": "Reload current title",
   "workspace.zoom": "Zoom",
-  "workspace.highlight": "Highlight fields"
+  "workspace.highlight": "Highlight fields",
+  "lease.checking": "Checking editing access…",
+  "lease.active": "Editing enabled.",
+  "lease.paused": "Editing is paused. Your draft is kept in this workspace.",
+  "lease.lease_busy": "This document is being edited in another tab or session.",
+  "lease.lease_lost": "Editing access expired or changed. Try again to continue with this draft.",
+  "lease.revision": "A newer revision is saved. Reopen it to continue; your current draft stays here until you choose to discard it.",
+  "lease.retry": "Try editing again",
+  "editor.creation.read_only": "Editing is paused. Restore editing access before changing fields."
 }

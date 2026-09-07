@@ -1,3 +1,4 @@
+import { leaseResponse } from "./lease-response";
 import { StrictMode, useCallback, useState } from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
@@ -17,6 +18,7 @@ function setup(patch?: (request: Request) => Promise<Response>) {
   const fetcher = vi.fn(async (request: Request) => {
     if (request.method === "PATCH") return writes(request);
     const path = new URL(request.url).pathname;
+    if (path.endsWith("/editing-lease")) return leaseResponse(request);
     if (path.endsWith("/content")) return Response.json({ resource: server.current, document: corpus });
     if (path.endsWith("/fields")) return Response.json({ source_version_id: server.current.current_version_id, status: "not_started", snapshot: null });
     return Response.json(server.current);
@@ -31,6 +33,7 @@ function setup(patch?: (request: Request) => Promise<Response>) {
   return { ...view, server, writes, changed, back, busy, fetcher };
 }
 async function open() {
+  await screen.findByText("Editing enabled.");
   await screen.findByRole("textbox", { name: "Editable document" });
   fireEvent.click(await screen.findByText("Workspace settings"));
 }

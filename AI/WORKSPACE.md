@@ -174,3 +174,27 @@ commit transaction; this API alone does not implement persistence. E06.1b adds t
 workspace acquisition/expiry and retained-draft flow; E06.2 adds fenced saves. Clients
 must conservatively subtract request elapsed time from the returned validity period
 and never persist an editor snapshot while composition is pending.
+
+## E06.1b mounted workspace access
+
+The workspace acquires a lease before enabling document edits, renews every 20
+seconds, and checks its conservative monotonic deadline at each mutation boundary.
+A suspended timer cannot authorize the next edit. Requests time out after 10 seconds;
+conflicts, network/authentication failures and local expiry pause editing and retain
+the mounted draft. Retry explicitly reacquires against the same saved source; a newer
+revision offers the existing discard-confirmed reopen flow. No forced takeover or
+save is implied. Title settings retain their independent metadata conflict checks.
+
+Typing, field changes, review mutations and undo/redo are guarded in the adapter,
+as well as disabled in the UI. Selection/copy, field navigation and review browsing
+remain available. Existing IME composition may settle its already-started draft and
+linked fields after access is lost, then the document becomes read-only; a new
+composition cannot start. A future save must require both valid access and a settled
+snapshot. Reacquisition retains the document instance, review state and undo history.
+
+The initial effect defers acquisition one event-loop turn so React StrictMode cleanup
+cancels its test mount before sending a request. Resource changes/unmount cancel
+pending work and release only a known server generation; page exit makes a best-effort
+keepalive release. Expiry is the fallback for an unknown committed/lost response.
+Late results after unmount cannot enable editing. Mounted library/profile navigation
+and language changes preserve the holder and draft; paused-state messages are localized.

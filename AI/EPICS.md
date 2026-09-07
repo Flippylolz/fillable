@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a editing lease API |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a merged; E06.1b workspace lease integration |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1344,3 +1344,25 @@ quota preservation after recreation. Independent LibreOffice/Poppler regression
 checks passed; no Microsoft Word run or new workspace lease UI is claimed.
 Main protection verified strict Actions `ci-required` with administrator enforcement.
 Next: individual E06.1a PR and verified merge, then E06.1b mounted-editor lease flow.
+
+2026-09-07: E06.1a verified merged through [PR #50](https://github.com/Flippylolz/fillable/pull/50),
+commit `e2038f3aea05156fc2d851fe1dee293ac956de53`; Actions 34070595270 passed both
+required checks for exact head `856ca4f2c290df6a30153642853311e7969013d9`. Main synchronized.
+E06.1b starts on `task/e06-1b-workspace-lease`: acquire/renew, synchronous expiry
+checks at mutation boundaries, retained-draft pause/retry and two-tab browser checks.
+
+E06.1b local verification passed: 130 frontend tests, raw 1018/1026 lines (99.22%)
+and 1087/1141 branches (95.27%); 263 backend tests, 2909/2927 lines (99.39%) and
+873/892 branches (97.87%). Lint, typing, catalogs/build, raw gates and both actual
+unimported-source probes passed. Fresh HTTP checks exposed unavailable randomUUID;
+client identity now uses the existing getRandomValues helper and a unit regression
+omits randomUUID. The browser invariant assertion excludes only changing processing
+status; desktop/mobile use independent synthetic accounts to isolate language state.
+Final fresh index `/private/tmp/fillable-verify.2MQmoW` passed 7 development and 18
+production browser checks, including two-tab exclusion, lost access during native
+IME composition, retained draft/history, same editor after reacquisition and language
+change, plus saved-content/quota invariants. Desktop/mobile Ukrainian/English paused
+screenshots were inspected. LibreOffice/Poppler regression checks passed; Microsoft
+Word was not run. Strict main Actions `ci-required` and administrator enforcement
+were verified. Next: individual E06.1b protected PR and verified merge, then the bounded
+E06.2 save contract/storage/UI work. Deployment remains E08, last.

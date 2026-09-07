@@ -1,3 +1,4 @@
+import { leaseResponse } from "./lease-response";
 import { useState } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
@@ -19,6 +20,7 @@ test("workspace starts legacy detection, retries failures and guards reopening a
   let reads = 0, starts = 0, opens = 0;
   const fetcher = vi.fn(async (request: Request) => {
     const path = new URL(request.url).pathname;
+    if (path.endsWith("/editing-lease")) return leaseResponse(request);
     if (path.endsWith("/content")) { opens++; return Response.json({ resource, document: corpus }); }
     if (request.method === "POST") {
       expect(request.headers.get("X-CSRF-Token")).toBe("csrf");
@@ -33,6 +35,7 @@ test("workspace starts legacy detection, retries failures and guards reopening a
   const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
   render(<Host />);
   await screen.findByRole("button", { name: "Inspect document" });
+  await screen.findByText("Editing enabled.");
   const value = (await screen.findAllByRole("textbox", { name: "Field value: ПІБ клієнта" }))[0];
   fireEvent.change(value, { target: { value: "Keep my draft" } });
   fireEvent.click(screen.getByRole("button", { name: "Inspect document" }));
