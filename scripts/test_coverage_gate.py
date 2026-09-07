@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from coverage_provenance import record, snapshot
 from check_coverage import check, require_metric
 
 
@@ -10,7 +11,14 @@ class CoverageGateTests(unittest.TestCase):
     def test_raw_boundary_and_invalid_counts(self):
         for covered, total in [(90, 100), (0, 0), (100, 100)]:
             require_metric(covered, total)
-        for covered, total in [(8999, 10000), (89, 100), (-1, 100), (101, 100), (90.0, 100), (True, 1)]:
+        for covered, total in [
+            (8999, 10000),
+            (89, 100),
+            (-1, 100),
+            (101, 100),
+            (90.0, 100),
+            (True, 1),
+        ]:
             with self.assertRaises(ValueError):
                 require_metric(covered, total)
 
@@ -24,17 +32,29 @@ class CoverageGateTests(unittest.TestCase):
             (root / "coverage").mkdir()
             report = root / "coverage/coverage.json"
             report.write_text("invalid")
+            record("backend", root, snapshot("backend", root))
             with self.assertRaises(ValueError):
                 check("backend", root)
-            payload = {"files": {}, "totals": {"covered_lines": 90, "num_statements": 100, "covered_branches": 9, "num_branches": 10}}
+            payload = {
+                "files": {},
+                "totals": {
+                    "covered_lines": 90,
+                    "num_statements": 100,
+                    "covered_branches": 9,
+                    "num_branches": 10,
+                },
+            }
             report.write_text(json.dumps(payload))
+            record("backend", root, snapshot("backend", root))
             with self.assertRaises(ValueError):
                 check("backend", root)
             payload["files"] = {"app/main.py": {}}
             report.write_text(json.dumps(payload))
+            record("backend", root, snapshot("backend", root))
             check("backend", root)
             payload["totals"]["covered_branches"] = 8
             report.write_text(json.dumps(payload))
+            record("backend", root, snapshot("backend", root))
             with self.assertRaises(ValueError):
                 check("backend", root)
 

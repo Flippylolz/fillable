@@ -25,7 +25,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.5 runtime isolation and Docker documentation |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.6 coverage provenance and final gate audit |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -1994,3 +1994,24 @@ and the first complete bounded-runtime browser run pass. Final committed fresh a
 previous-image recovery proofs run in separate unique projects with immutable drivers.
 Review their results and required CI, then enable exact-head squash auto-merge under
 verified strict protection and confirm MERGED before E07.6. Deployment remains last.
+
+
+Verified E07.5 completion: [PR #67](https://github.com/Flippylolz/fillable/pull/67)
+merged as `5b18bd53f09f8bf55d1668f0032c018119206279`, exact head
+`009e8314f7d1650af046277cb2a4717a9d7263e2`. CI `34141793505` passed `checks`,
+`upgrade-checks` and `ci-required`. Backend416: 3969/3998 lines (99.27%),
+1174/1206 branches (97.35%); frontend229: 1292/1303 lines (99.16%), 1500/1569
+branches (95.60%). Final local fresh `GhkrgQ` passed 7 development/48 production
+browser cases and four runtime probes; recovery `OSkwd1` passed upgrade, restart,
+post-unlink reconciliation and six badge cases. All synthetic volumes preserved.
+
+Main synchronized before `task/e07-6-coverage-provenance-audit`. E07.6 adds source
+fingerprints captured before tests and verified unchanged afterward, plus report
+byte digests checked by the independent raw coverage gate. A real coverage.py
+scratch reproduction showed the previous filename-only check accepted a stale
+report after a same-name source edit. Previous CI used fresh reports; those recorded
+measurements remain valid. New producer wrappers remove old reports/stamps and only
+record successful runs. No threshold, application exclusion or dependency changes.
+Both real negative probes, complete local suites and required CI must pass. Actual
+GitHub protection was reread: strict `ci-required`, Actions app 15368, administrators
+enforced. No deployment workflow or server access exists yet; E08 remains last.

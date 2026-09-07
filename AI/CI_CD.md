@@ -199,3 +199,47 @@ Its runtime evidence checks effective CPU/memory/logging settings, users, mounts
 loopback publications and absence of OOM/container restarts before and after flows.
 The sanitized reports and point-in-time Docker samples are included in the existing
 browser artifacts; no container environment or shared-daemon configuration is logged.
+
+
+## E07.6 coverage provenance and final gate audit
+
+The Docker test commands now capture SHA-256 fingerprints of every eligible source
+file before running pytest or Vitest, verify the same bytes afterward, and record
+`coverage/provenance.json` only after the test command succeeds. Old reports and
+stamps are removed before execution. Python checks both languages' manifests against
+current source bytes and the exact report bytes before checking inclusion and raw
+independent line/branch counts. Missing stamps, wrong scopes/versions, changed source,
+changed report bytes, symlinks and empty application roots fail closed. File paths
+are relative, so copying a report from its container does not weaken verification.
+
+Application measurement remains all `backend/app/**/*.py` (including workers,
+maintenance and authored Alembic migrations) and `frontend/src/**/*.{ts,tsx}`. There
+are no added exclusions. Python has branch measurement and empty `exclude_lines`;
+Vitest includes unimported source and requires both 90% metrics. Test, fixture,
+build/configuration and verification tooling remains outside application roots;
+controlled tooling contract tests and actual uncovered-file probes exercise the gate.
+This provenance binds application/report bytes; the required workflow supplies the
+trusted execution, pinned dependencies and exact checked-out revision. A digest is
+not an attestation against malicious rewriting of the producer and its manifest.
+
+`checks` builds fresh test containers, runs suites through their producer wrappers,
+and checks backend counts there. It copies both normal report directories (including
+manifests) into the coverage artifact and independently checks frontend counts
+against the checkout. Separate disposable negative-probe containers cannot overwrite
+normal reports. The backend probe binds its real report before expecting a below-90
+error. The frontend probe requires all tests to pass and Vitest to reject actual
+below-90 line and branch counts with an included unimported file.
+
+Required contract tests also reproduce a real stale coverage.py report, failed-run
+stamp invalidation, source mutation during execution, tampering, missing reports,
+exactly-90 boundaries and source-set mismatches. `ci-required` requires successful
+`checks` AND `upgrade-checks`; all 36 success/non-success result combinations are
+checked. Neither missing diagnostic artifacts nor a high coverage score can make a
+failed test job pass. Actual `main` protection was reread during this task: strict
+up-to-date `ci-required`, GitHub Actions app 15368, administrator enforcement.
+
+No deployment workflow exists at this audit: there is no pipeline route from a
+failing coverage result to a rollout. E08 must introduce only a path bound to an
+exact successful required-CI revision and immutable artifacts, then verify its
+rejection behavior before production use. Current measured counts and final PR/CI
+evidence are recorded in [Epics](EPICS.md), without claiming deployment complete.
