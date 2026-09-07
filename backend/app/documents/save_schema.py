@@ -22,3 +22,10 @@ class SaveInfo(BaseModel):
     saved_at: datetime
     saved_size_bytes: ByteCount
     saved_digest: str
+
+
+class RestoreRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_version_id: UUID
+    client_id: UUID
+    lease_id: UUID

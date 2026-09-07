@@ -351,3 +351,16 @@ JSON/export preparation is not a retained file allocation; its request/model/pac
 limits and two-request admission are explicit. Quota, physical capacity, owner,
 current revision and editing lease are checked again at the final commit boundary.
 A lost commit response replays the exact committed revision without a second charge.
+
+## E06.6 historical restore accounting
+
+A restore copies the exact selected retained file into a separately charged immutable
+version through `Storage.store`, using the `restore:` operation namespace. It does
+not reuse an existing file reference to evade the new-version allowance. Preparation
+verifies the selected file/model pair; the final transaction shares save's active
+session/lease/current checks and rechecks selected retention under the account lock.
+Quota reduction, disk failure, stale authority or a removed selection cannot publish
+a partial current revision. A lost response replays the exact committed version
+without allocating again, even when current has advanced. Deleted results are never
+recreated by replay. Parent/restored-from metadata is retained separately from bytes;
+E06.5 pruning must preserve provenance and charge pending physical cleanup.

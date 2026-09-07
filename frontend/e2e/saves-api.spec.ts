@@ -107,3 +107,55 @@ test("local unbound review is bound on save and reopens without stale detection"
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
   await expect(page.getByText("Ці пропозиції стосуються збереженого документа. Чернетку змінено; відкрийте збережений документ знову, щоб перевірити їх.", { exact: true })).toHaveCount(0);
 });
+
+test("historical restore creates new exact revisions and reopens reviewed fields", async ({ page }, testInfo) => {
+  const { headers, resource, client, endpoint, lease } = await start(page, testInfo);
+  const document = JSON.parse(await readFile("/fixtures/working-review.json", "utf8"));
+  document.attrs.review.sourceVersion = resource.current_version_id;
+  const savedResponse = await page.request.post(`${endpoint}/versions`, {
+    headers: { ...headers, "Idempotency-Key": randomUUID() },
+    data: { document, source_version_id: resource.current_version_id, client_id: client, lease_id: lease.lease_id },
+  });
+  expect(savedResponse.status()).toBe(201);
+  const saved = await savedResponse.json();
+  const edited = await (await page.request.get(`${endpoint}/download`)).body();
+  const restoreHeaders = { ...headers, "Idempotency-Key": randomUUID() };
+  const firstBody = { source_version_id: saved.saved_version_id, client_id: client, lease_id: lease.lease_id };
+  const originalRestore = await page.request.post(`${endpoint}/versions/${resource.current_version_id}/restore`, {
+    headers: restoreHeaders, data: firstBody,
+  });
+  expect(originalRestore.status()).toBe(201);
+  const original = await originalRestore.json();
+  expect(original.saved_number).toBe(3);
+  expect(await (await page.request.get(`${endpoint}/download`)).body()).toEqual(await readFile("/fixtures/upload.docx"));
+  const reviewedRestore = await page.request.post(`${endpoint}/versions/${saved.saved_version_id}/restore`, {
+    headers: { ...headers, "Idempotency-Key": randomUUID() },
+    data: { ...firstBody, source_version_id: original.saved_version_id },
+  });
+  expect(reviewedRestore.status()).toBe(201);
+  const restored = await reviewedRestore.json();
+  expect(restored.saved_number).toBe(4);
+  const replay = await page.request.post(`${endpoint}/versions/${resource.current_version_id}/restore`, {
+    headers: restoreHeaders, data: firstBody,
+  });
+  expect(replay.status()).toBe(201);
+  expect((await replay.json()).saved_version_id).toBe(original.saved_version_id);
+  expect((await replay.json()).resource.current_version_id).toBe(restored.saved_version_id);
+  const history = await (await page.request.get(`${endpoint}/versions`)).json();
+  expect(history.items.map((item: { number: number }) => item.number)).toEqual([4, 3, 2, 1]);
+  expect(history.items[0]).toMatchObject({ parent_version_id: original.saved_version_id,
+    restored_from_version_id: saved.saved_version_id, restored_from_number: 2 });
+  expect((await (await page.request.get(`${endpoint}/content`)).json()).document).toEqual(document);
+  const downloaded = await page.request.get(`${endpoint}/download`);
+  expect(downloaded.headers()["x-fillable-version"]).toBe(restored.saved_version_id);
+  expect(await downloaded.body()).toEqual(edited);
+  await writeFile(testInfo.outputPath("restored-reviewed.docx"), await downloaded.body());
+  await page.request.post(`${endpoint}/editing-lease`, {
+    headers, data: { action: "release", client_id: client, source_version_id: restored.saved_version_id, lease_id: lease.lease_id },
+  });
+  await page.goto(`/editor/${resource.id}`);
+  await expect(page.getByText("Редагування дозволено.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Значення поля: Заголовок Ґанни", exact: true })).toHaveValue("АНКЕТА");
+  await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toContainText("Ґанна Їжак 🙂");
+  await page.screenshot({ path: testInfo.outputPath("restored-reviewed.png"), fullPage: true });
+});

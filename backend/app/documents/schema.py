@@ -70,6 +70,8 @@ versions = Table(
     Column("number", Integer, nullable=False),
     Column("document_model", JSONB, nullable=False),
     Column("field_review", JSONB(none_as_null=True)),
+    Column("parent_version_id", Uuid),
+    Column("restored_from_version_id", Uuid),
     Column("unsupported_count", Integer, nullable=False),
     Column(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
@@ -87,6 +89,26 @@ versions = Table(
         ["stored_files.id", "stored_files.owner_id"],
         ondelete="RESTRICT",
         name="version_file_owner",
+    ),
+    ForeignKeyConstraint(
+        ["parent_version_id", "document_id", "owner_id"],
+        [
+            "document_versions.id",
+            "document_versions.document_id",
+            "document_versions.owner_id",
+        ],
+        ondelete="RESTRICT",
+        name="version_parent_owner",
+    ),
+    ForeignKeyConstraint(
+        ["restored_from_version_id", "document_id", "owner_id"],
+        [
+            "document_versions.id",
+            "document_versions.document_id",
+            "document_versions.owner_id",
+        ],
+        ondelete="RESTRICT",
+        name="version_restore_owner",
     ),
     CheckConstraint("number > 0 AND unsupported_count >= 0", name="version_bounds"),
 )

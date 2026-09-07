@@ -331,6 +331,9 @@ def test_migration_preserves_embedded_review_and_refuses_destructive_downgrade()
         )
         assert "attrs" not in row["document_model"]
         assert row["field_review"] == FIXTURE["attrs"]["review"]
+    # Isolate 0009's review guard from the newer provenance migration guard.
+    with database().begin() as connection:
+        connection.execute(update(versions).values(parent_version_id=None))
     with pytest.raises(RuntimeError, match="refusing destructive downgrade"):
         command.downgrade(config, "0008_editing_leases")
     with database().begin() as connection:
