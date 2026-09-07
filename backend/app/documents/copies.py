@@ -2,13 +2,15 @@
 
 import hashlib
 import json
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from sqlalchemy import insert, select
 
 from app.accounts.profile import active_user
+from app.documents.rebase import prepare
 from app.documents.schema import resources, versions
 from app.documents.service import detail, saved_row
+from app.documents.validation import validate_upload
 from app.errors import AppError
 from app.infrastructure import database
 from app.jobs.service import copy_intent
@@ -37,7 +39,17 @@ def create(state, identity, payload, key):
             raise AppError(409, "operation_conflict")
         snapshot.update(row)
         with store.read(owner, row["file_id"]) as stream:
-            yield stream.read(row["size_bytes"])
+            data = stream.read(row["size_bytes"])
+        package = validate_upload(data, row["original_filename"])
+        review = row["document_model"].get("attrs", {}).get("review")
+        origin = review.get("sourceVersion") if review else None
+        snapshot["prepared"] = prepare(
+            row["document_model"],
+            package,
+            payload.source_version_id,
+            UUID(origin) if origin else None,
+        )
+        yield data
 
     def finalize(connection, result):
         active_user(connection, state)
@@ -56,6 +68,7 @@ def create(state, identity, payload, key):
             raise AppError(409, "operation_conflict")
         target = uuid5(NAMESPACE_URL, "fillable:document:" + str(result.id))
         version = uuid5(NAMESPACE_URL, "fillable:initial-version:" + str(result.id))
+        model = snapshot["prepared"].bind(version)
         connection.execute(
             insert(resources).values(
                 id=target,
@@ -74,7 +87,7 @@ def create(state, identity, payload, key):
                 owner_id=owner,
                 file_id=result.id,
                 number=1,
-                document_model=snapshot["document_model"],
+                document_model=model,
                 unsupported_count=snapshot["unsupported_count"],
             )
         )
@@ -84,6 +97,8 @@ def create(state, identity, payload, key):
             payload.source_version_id,
             {"id": target, "current_version_id": version},
             snapshot["document_model"],
+            model,
+            snapshot["prepared"].identities,
         )
 
     result = store.store(

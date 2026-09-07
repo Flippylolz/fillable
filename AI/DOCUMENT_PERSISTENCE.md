@@ -139,3 +139,31 @@ retries and shared-reference rejection. Browser checks exercise cancel/confirm a
 both resource kinds, verify a deleted download returns 404 and exact quota reduction,
 and reload the library. The jsdom unit test supplies only the missing native dialog
 methods; modal behavior is tested in the real browser.
+
+## Edited template copy identities (E06.2b)
+
+A new independent copy parses its verified saved DOCX and checks semantic structural
+correspondence with the saved working model before storage finalization. Node order,
+text, supported formatting and non-identity properties must match. Adjacent equal-
+format text runs may have different segmentation; this never searches for matching
+text elsewhere. Structural/control identities map one-to-one to the copied package.
+The copied DOCX remains byte-identical and becomes that document's own immutable
+original. Subsequent exports use its canonical source locations.
+
+Working review retains candidate/occurrence identity, accepted origin, dismissal,
+missing state and source context. Live controls receive matching canonical locations
+and properties. A grouping key changes only when it was an untagged control's implicit
+source-location fallback; explicit tags remain unchanged. Missing controls receive
+scoped tombstone locations so an obsolete source position cannot attach them to a
+new live control. Span positions remain valid because the verified document has the
+same text and ProseMirror structure. The review origin binds to the new initial
+revision. Completed discovery snapshots are validated against the source model,
+rebound through the same structural map and validated against the copy.
+
+Parsing and tree correspondence occur outside the final SQL transaction, under the
+existing bounded copy admission. Finalization still fences the active owner/source
+revision and commits through quota storage; it binds prepared review identities, validates completed discovery
+metadata and writes the new records. Committed retries do not reopen or parse the source, including
+after deletion. A mismatch fails without a partial target or retained reservation.
+No save API or new schema is introduced here; the paired version-review column and
+actual save writes follow in E06.2c.
