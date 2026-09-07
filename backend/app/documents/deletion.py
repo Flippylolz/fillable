@@ -1,8 +1,9 @@
 """Durable deletion intent; filesystem cleanup keeps accounting until unlink."""
 
-from sqlalchemy import exists, or_, select, update
+from sqlalchemy import delete, exists, or_, select, update
 
 from app.accounts.profile import active_user
+from app.documents.lease_schema import leases
 from app.documents.schema import DeletionResult, resources, versions
 from app.errors import AppError
 from app.infrastructure import database
@@ -87,6 +88,7 @@ def remove(state, identity):
         if shared_original or shared_version:
             raise AppError(409, "operation_conflict")
         if resource["state"] == "active":
+            connection.execute(delete(leases).where(leases.c.document_id == identity))
             connection.execute(
                 update(jobs)
                 .where(jobs.c.document_id == identity)

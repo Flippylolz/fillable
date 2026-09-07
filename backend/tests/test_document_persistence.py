@@ -18,6 +18,7 @@ from test_accounts import account_database as account_database
 from app.accounts import service as accounts_service
 from app.accounts.schema import AccountInput, sessions
 from app.documents import routes, service
+from app.documents.lease_schema import leases
 from app.documents.schema import resources, versions
 from app.errors import AppError
 from app.infrastructure import database
@@ -38,7 +39,15 @@ def document_store(account_database, tmp_path, monkeypatch):
     monkeypatch.setenv("STORAGE_DISK_HEADROOM_BYTES", "0")
     yield tmp_path
     with database().begin() as connection:
-        for table in (jobs, versions, resources, audit_events, files, reservations):
+        for table in (
+            leases,
+            jobs,
+            versions,
+            resources,
+            audit_events,
+            files,
+            reservations,
+        ):
             connection.execute(delete(table))
 
 

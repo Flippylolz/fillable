@@ -12,7 +12,8 @@ from starlette.concurrency import run_in_threadpool
 from app.accounts.routes import current_user, mutation_session
 from app.accounts.schema import UserInfo
 from app.accounts.service import SessionState
-from app.documents import copies, deletion, service, titles
+from app.documents import copies, deletion, leases, service, titles
+from app.documents.lease_schema import LeaseInfo, LeaseRequest
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.schema import (
     ContentInfo,
@@ -31,6 +32,21 @@ UPLOAD_SLOTS = BoundedSemaphore(2)
 DOWNLOAD_SLOTS = BoundedSemaphore(2)
 BODY_SECONDS = 30
 MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+@router.post("/{identity}/editing-lease", response_model=LeaseInfo)
+def editing_lease(
+    identity: UUID,
+    payload: LeaseRequest,
+    response: Response,
+    state: SessionState = Depends(mutation_session),
+) -> LeaseInfo:
+    try:
+        result = leases.change(state, identity, payload)
+    except SQLAlchemyError:
+        raise AppError(503, "dependencies_unavailable") from None
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 @router.patch("/{identity}/title", response_model=ResourceInfo)
