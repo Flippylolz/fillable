@@ -14,6 +14,12 @@ class GateContractTests(unittest.TestCase):
                           ['pending'], ['success', 'failure']]:
             self.assertNotEqual(subprocess.run([script, *arguments]).returncode, 0)
         self.assertEqual(subprocess.run([script, 'success', 'success']).returncode, 0)
+        # Both mandatory jobs must succeed, regardless of which position fails.
+        states = ('success', '', 'failure', 'skipped', 'cancelled', 'pending')
+        for checks in states:
+            for upgrade in states:
+                result = subprocess.run([script, checks, upgrade]).returncode
+                self.assertEqual(result == 0, checks == upgrade == 'success')
 
     def test_each_scope_metric_and_missing_source(self):
         for scope in ('backend', 'frontend'):

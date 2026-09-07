@@ -1938,3 +1938,14 @@ synthetic data set, preserving reviewed/copy/restored version bytes and metadata
 Prove a real post-unlink child-process crash remains charged until the actual scheduler
 reconciles it after full-stack restart. Add a separate mandatory upgrade CI job and
 require both job results in ci-required. No backup or live-server work is introduced.
+
+E07.4's complete isolated `0usKoE` run passed: previous PR64 images/schema0012,
+reviewed template plus edited independent copy, original/reviewed restorations,
+current images/schema0013, and a real post-unlink exit74 followed by full-stack
+restart and actual daemon reconciliation. API, SQL, file hashes, paired review,
+provenance and exact quota match. Six desktop/mobile badge cases passed across
+previous/upgraded/restarted images. The first run found a helper-only httpx client
+lifecycle mistake before document creation; it was corrected. Final formatting and
+both-job aggregation failure coverage are included before the final repeat/PR.
+Application source is unchanged from PR65's backend416/frontend229 coverage baseline;
+required CI reruns both gates. All synthetic volumes and evidence are retained.

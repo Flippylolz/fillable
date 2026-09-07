@@ -1,4 +1,4 @@
-"""Explicit synthetic QA only: saved history, image upgrade, and crash reconciliation."""
+"""Synthetic QA only: saved history, image upgrade and crash reconciliation."""
 
 import base64
 import hashlib
@@ -60,7 +60,9 @@ def upload(client, key, title):
         "/api/documents",
         content=data,
         headers={
-            "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "Content-Type": (
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ),
             "Idempotency-Key": key,
             "X-Upload-Metadata": base64.b64encode(
                 json.dumps(

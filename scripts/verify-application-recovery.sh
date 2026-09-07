@@ -43,6 +43,7 @@ old exec -T db psql -U fillable -d fillable -v ON_ERROR_STOP=1 -c "CREATE TABLE 
 test "$(old exec -T db psql -U fillable -d fillable -At -c 'SELECT version_num FROM alembic_version')" = 0012_audit_chronology
 old exec -T api python -m app.accounts.cli provision --email upgrade-proof@example.test --display-name 'Синтетична перевірка Їжака' --language uk --password-stdin < "$verification_root/current/fixtures/auth/browser-password.txt"
 install_probe old
+old exec -T api ruff check --no-cache /tmp/verify_application_recovery.py
 probe old write > "$verification_reports/manifest.json"
 probe old read < "$verification_reports/manifest.json"
 browser build browser
