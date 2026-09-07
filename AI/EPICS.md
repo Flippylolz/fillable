@@ -25,7 +25,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.1a session recovery |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.1b UI acceptance |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -1801,3 +1801,28 @@ The final browser suite adds explicit cross-account discard/ownership isolation 
 preserved undo/redo; its full repeat and required CI must pass before auto-merge.
 Actual main protection remains strict `ci-required` from Actions app 15368, enforced
 for administrators; repository squash auto-merge remains enabled. No server actions.
+
+
+Verified E07.1a completion: [PR #62](https://github.com/Flippylolz/fillable/pull/62)
+merged as `b60ba4185407ba38a478f9a9f87ad310a3bbd479`, exact head
+`4fcd54080f8b8f263ac486bd967311cb2700fe03`. Required CI `34125040520` succeeded,
+including `checks` and `ci-required`. Final fresh `aubF6k` passed 7 development and
+46 production browser cases with response-body cancellation enabled. CI independently
+passed backend 377 tests and frontend 229 tests, with unchanged raw 90% gates.
+
+Main synchronized before `task/e07-1b-mvp-acceptance`. Add the full reviewed-template
+UI journey through independent copy edits/download/reopen and source restoration;
+verify the exact shared badge on all four pages in both languages and viewports.
+Existing browser suites cover field navigation, quota/errors, profile persistence,
+localization failures, autosave, history conflicts and recovery. Record the combined
+acceptance evidence without claiming E07.2–E07.6 or deployment complete.
+
+E07.1b's first full Docker run passed 7 development and 48 production browser cases
+in `gmzvMr`, project `fillable-verify-9102`. The new journey passes both viewports:
+real upload/review/save/copy/edit/download/reopen, source restoration with unchanged
+copy bytes/current revision, and both-language badge checks on all four pages.
+The final run adds readable remaining-GB assertions; targeted field-card screenshots
+will verify long Ukrainian labels. Application source is unchanged from PR62's
+backend 377/frontend 229 tests and measured 99.30%/97.60% backend,
+99.16%/95.60% frontend line/branch coverage. Required CI reruns both independently.
+Documentation links resolve. Final browser/visual verification precedes readiness.

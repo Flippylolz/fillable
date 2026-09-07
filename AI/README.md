@@ -26,6 +26,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 
 | Document | Purpose |
 | --- | --- |
+| [MVP acceptance](MVP_ACCEPTANCE.md) | Four-page workflow and verification evidence |
 | [Product](PRODUCT.md) | Four MVP pages, templates/results, version history, and success criteria |
 | [Decisions](DECISIONS.md) | Accepted choices, proposed defaults, and open decisions |
 | [Architecture](ARCHITECTURE.md) | Components, data ownership, editing, and processing |
