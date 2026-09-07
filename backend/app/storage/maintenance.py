@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+from contextlib import nullcontext
 from itertools import islice
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
@@ -221,9 +222,11 @@ def reconcile(store, *, after=None, batch=100):
     }
 
 
-def capacity(store):
-    with store.engine.connect() as connection:
-        allocated, promised = connection.execute(
+def capacity(store, *, connection=None):
+    with (
+        store.engine.connect() if connection is None else nullcontext(connection)
+    ) as active:
+        allocated, promised = active.execute(
             select(
                 func.coalesce(func.sum(reservations.c.allocated_bytes), 0),
                 func.coalesce(

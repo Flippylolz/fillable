@@ -1,6 +1,6 @@
 """Shared save/restore transaction fences and exact immutable result identity."""
 
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from sqlalchemy import func, insert, select, update
 
@@ -14,6 +14,7 @@ from app.errors import AppError
 from app.infrastructure import database
 from app.jobs.schema import jobs
 from app.jobs.service import intent
+from app.storage.maintenance import audit
 from app.storage.schema import files
 
 
@@ -118,6 +119,18 @@ def commit(
         .values(status="stale", lease_until=None, updated_at=func.now())
     )
     intent(connection, owner, {"id": identity, "current_version_id": version})
+    audit(
+        connection,
+        "revision_restored" if restored_from else "revision_saved",
+        owner,
+        event_id=uuid5(NAMESPACE_URL, "fillable:revision-audit:" + str(version)),
+        actor=owner,
+        document_id=identity,
+        version_id=version,
+        version_number=previous + 1,
+        parent_version_id=UUID(str(payload.source_version_id)),
+        restored_from_version_id=restored_from,
+    )
 
 
 def saved_info(state, owner, identity, result):

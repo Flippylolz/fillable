@@ -329,3 +329,7 @@ in a fresh later pass. Changing to keep-all stops future pruning but cannot reco
 already removed files. See [History](HISTORY.md#operator-retention-e065) for locking,
 cleanup, migration and accounting behavior. No recurring retention job is enabled by
 this task; scheduling is E07.3.
+
+Operator job/capacity status and bounded audit pages are documented in
+[Diagnostics](DIAGNOSTICS.md). They read metadata and capacity without changing
+document files; use the configured application Compose namespace.

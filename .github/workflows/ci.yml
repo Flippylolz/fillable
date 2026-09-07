@@ -48,6 +48,10 @@ jobs:
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email review@example.test --display-name "Перевірка полів" --language uk --password-stdin < fixtures/auth/browser-password.txt
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email lease-desktop@example.test --display-name "Перевірка доступу" --language uk --password-stdin < fixtures/auth/browser-password.txt
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email lease-mobile@example.test --display-name "Перевірка доступу" --language uk --password-stdin < fixtures/auth/browser-password.txt
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python /checks/verify_gateway_logs.py probe
+          mkdir -p reports
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml logs --no-color --no-log-prefix gateway > reports/gateway.log
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python /checks/verify_gateway_logs.py check < reports/gateway.log
           curl --fail http://127.0.0.1:8181/api/health
           curl --fail http://127.0.0.1:8181/ | grep '/assets/'
       - name: Browser smoke tests

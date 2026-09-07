@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Integer,
     String,
     Table,
@@ -165,6 +166,7 @@ audit_events = Table(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
     CheckConstraint("length(btrim(action)) > 0", name="storage_audit_action"),
+    Index("storage_audit_chronology", "created_at", "id"),
 )
 
 
