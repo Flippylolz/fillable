@@ -12,7 +12,8 @@ from starlette.concurrency import run_in_threadpool
 from app.accounts.routes import current_user, mutation_session
 from app.accounts.schema import UserInfo
 from app.accounts.service import SessionState
-from app.documents import copies, deletion, leases, saves, service, titles
+from app.documents import copies, deletion, history, leases, saves, service, titles
+from app.documents.history_schema import VersionContent, VersionList
 from app.documents.lease_schema import LeaseInfo, LeaseRequest
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
 from app.documents.save_schema import SaveInfo, SaveRequest
@@ -281,6 +282,47 @@ def content(
         raise AppError(503, "storage_unavailable") from None
     except SQLAlchemyError:
         raise AppError(503, "storage_unavailable") from None
+    finally:
+        DOWNLOAD_SLOTS.release()
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+@router.get("/{identity}/versions", response_model=VersionList)
+def list_versions(
+    identity: UUID,
+    response: Response,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    before: Annotated[int | None, Query(ge=1)] = None,
+    user: UserInfo = Depends(current_user),
+) -> VersionList:
+    try:
+        result = history.listing(user.id, identity, limit, before)
+    except SQLAlchemyError:
+        raise AppError(503, "dependencies_unavailable") from None
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+@router.get("/{identity}/versions/{version}/content", response_model=VersionContent)
+def version_content(
+    identity: UUID,
+    version: UUID,
+    response: Response,
+    user: UserInfo = Depends(current_user),
+) -> VersionContent:
+    if not DOWNLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(409, "operation_in_progress")
+    try:
+        result = history.content(user.id, identity, version)
+    except StorageError as error:
+        if error.code == "not_found":
+            raise AppError(404, "not_found") from None
+        if error.code == "operation_in_progress":
+            raise AppError(409, "operation_in_progress") from None
+        raise AppError(503, "storage_unavailable") from None
+    except SQLAlchemyError:
+        raise AppError(503, "dependencies_unavailable") from None
     finally:
         DOWNLOAD_SLOTS.release()
     response.headers["Cache-Control"] = "no-store"
