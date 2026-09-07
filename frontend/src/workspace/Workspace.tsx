@@ -15,9 +15,9 @@ import { useRestore } from "./useRestore";
 import { useAutosave } from "./useAutosave";
 import { HistoryPanel } from "./HistoryPanel";
 
-export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy, operationsPaused = false }: {
+export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy, operationsPaused = false, authPaused = false }: {
   identity: string; dirty: boolean; onDirty: (dirty: boolean) => void; csrfToken: string;
-  operationsPaused?: boolean;
+  operationsPaused?: boolean; authPaused?: boolean;
   onBack?: () => void; onChanged?: () => void; onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -33,7 +33,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
   const reader = useRef<(() => EditorSnapshot) | null>(null);
   const registerReader = useCallback((read: (() => EditorSnapshot) | null) => { reader.current = read; }, []);
   const markDocument = useCallback((snapshot: EditorSnapshot) => setRevision(snapshot.revision), []);
-  const access = useEditingLease(saved?.resource ?? null, csrfToken);
+  const access = useEditingLease(saved?.resource ?? null, csrfToken, !authPaused);
   const discovery = useDiscovery(saved?.resource ?? null, csrfToken);
   const saving = useDocumentSave({ identity, csrfToken, read: () => reader.current?.() ?? null, credentials: access.credentials,
     onAccessLost: access.invalidate, onSaved: resource => { setSaved(current => current ? { ...current, resource } : current); onChanged?.(); } });

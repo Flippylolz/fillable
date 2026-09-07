@@ -9,7 +9,8 @@ function route(path: string) {
   const match = /^\/editor\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(path);
   return { page: match ? "editor" : path === "/profile" ? "profile" : "documents", identity: match?.[1] ?? null };
 }
-export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveGuard }: {
+export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveGuard, authPaused = false }: {
+  authPaused?: boolean;
   session: Session; accept: (session: Session) => void; authBusy: boolean;
   setAuthBusy: (busy: boolean) => void; setLeaveGuard?: (guard: () => boolean) => void;
 }) {
@@ -25,7 +26,7 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
   const saved = useCallback(() => setUsageRevision(value => value + 1), []);
   const go = useCallback((path: string, fromHistory = false) => {
     const next = route(path);
-    if (busy || authBusy || (next.identity && next.identity !== opened && editorDirty && !window.confirm(t("workspace.discard")))) {
+    if (busy || authBusy || authPaused || (next.identity && next.identity !== opened && editorDirty && !window.confirm(t("workspace.discard")))) {
       if (fromHistory) window.history.replaceState(null, "", lastPath.current);
       return;
     }
@@ -34,7 +35,7 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
     if (!fromHistory) window.history.pushState(null, "", canonical);
     else if (path !== canonical) window.history.replaceState(null, "", canonical);
     lastPath.current = canonical; setPage(next.page);
-  }, [busy, authBusy, opened, editorDirty, t]);
+  }, [busy, authBusy, opened, editorDirty, t, authPaused]);
   useEffect(() => {
     const initial = route(window.location.pathname);
     const canonical = initial.identity ? `/editor/${initial.identity}` : `/${initial.page}`;
@@ -62,12 +63,12 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
   if (!session.user) return null;
   return <>
     <nav className="page-nav" aria-label={t("navigation.label")}>
-      <a href="/documents" aria-current={page === "documents" ? "page" : undefined} aria-disabled={busy || authBusy} onClick={event => navigate(event, "/documents")}>{t("library.title")}</a>
-      {opened && <a href={`/editor/${opened}`} aria-current={page === "editor" ? "page" : undefined} aria-disabled={busy || authBusy} onClick={event => navigate(event, `/editor/${opened}`)}>{t("workspace.title")}</a>}
-      <a href="/profile" aria-current={page === "profile" ? "page" : undefined} aria-disabled={busy || authBusy} onClick={event => navigate(event, "/profile")}>{t("profile.title")}</a>
+      <a href="/documents" aria-current={page === "documents" ? "page" : undefined} aria-disabled={busy || authBusy || authPaused} onClick={event => navigate(event, "/documents")}>{t("library.title")}</a>
+      {opened && <a href={`/editor/${opened}`} aria-current={page === "editor" ? "page" : undefined} aria-disabled={busy || authBusy || authPaused} onClick={event => navigate(event, `/editor/${opened}`)}>{t("workspace.title")}</a>}
+      <a href="/profile" aria-current={page === "profile" ? "page" : undefined} aria-disabled={busy || authBusy || authPaused} onClick={event => navigate(event, "/profile")}>{t("profile.title")}</a>
     </nav>
-    <div hidden={page !== "documents"}><Library csrfToken={session.csrf_token} disabled={busy || authBusy} onBusy={updateBusy} onDirty={setFileDirty} onSaved={saved} onOpen={identity => go(`/editor/${identity}`)} refreshRevision={usageRevision} /></div>
-    {opened && <div hidden={page !== "editor"}><Workspace key={opened} identity={opened} dirty={editorDirty} onDirty={setEditorDirty} operationsPaused={busy || authBusy} csrfToken={session.csrf_token} onBack={() => go("/documents")} onChanged={saved} onBusy={updateBusy} /></div>}
-    <div hidden={page !== "profile"}><Profile user={session.user} csrfToken={session.csrf_token} onSession={accept} onBusy={updateBusy} disabled={busy || authBusy} usageRevision={usageRevision} /></div>
+    <div hidden={page !== "documents"}><Library csrfToken={session.csrf_token} disabled={busy || authBusy || authPaused} onBusy={updateBusy} onDirty={setFileDirty} onSaved={saved} onOpen={identity => go(`/editor/${identity}`)} refreshRevision={usageRevision} /></div>
+    {opened && <div hidden={page !== "editor"}><Workspace key={opened} identity={opened} dirty={editorDirty} onDirty={setEditorDirty} operationsPaused={busy || authBusy || authPaused} authPaused={authPaused} csrfToken={session.csrf_token} onBack={() => go("/documents")} onChanged={saved} onBusy={updateBusy} /></div>}
+    <div hidden={page !== "profile"}><Profile user={session.user} csrfToken={session.csrf_token} onSession={accept} onBusy={updateBusy} disabled={busy || authBusy || authPaused} usageRevision={usageRevision} /></div>
   </>;
 }

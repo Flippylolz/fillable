@@ -74,3 +74,22 @@ Primary references inspected on 2026-09-06: [argon2-cffi API](https://argon2-cff
 [OWASP session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html),
 [CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html),
 and [password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
+
+## Expired-session recovery
+
+A protected API 401 opens an inline recovery form. The authenticated workspace
+stays mounted, hidden and inert; editing, autosave and new protected requests pause.
+Recovery fetches a fresh session/CSRF token. The same account UUID resumes its draft
+and undo history; otherwise the form fixes the original account email and requests
+its password. Failed login retains the form. Bootstrap and login requests abort on
+unmount and time out after ten seconds. The account strip also offers sign-in again
+for stale-CSRF errors or session changes in another tab.
+
+Switching to a different account or leaving for the login page requires the existing
+unsaved-work discard guard. A different account UUID remounts the page tree so it
+cannot inherit the prior account's workspace. A locale/name update alone does not
+replace the request generation. Recovery and CSRF/identity changes fence old protected
+responses: they cannot apply old data, and discarded write responses remain uncertain
+so the original idempotency key and snapshot can be retried explicitly. Fresh-session
+editing still obeys server lease expiry and ownership; recovery does not steal a live
+lease or silently reload a newer saved revision.

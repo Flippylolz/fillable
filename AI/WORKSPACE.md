@@ -366,3 +366,10 @@ manual recovery and reopening the saved pair. Manual editing/review regression f
 explicitly disable autosave through settings when asserting an intentionally unsaved
 draft. Hook/component tests cover cancellation, polling renders, delayed acknowledgment
 and the save-error pause. See the epic record for measured validation.
+
+Session recovery retains the mounted draft, undo history, settings and pending save
+snapshot while the page is hidden and paused. Same-account sign-in updates CSRF and
+reacquires editing authority; a still-live lease may require an explicit retry after
+expiry. Switching accounts uses the unsaved-work discard guard and remounts account
+pages. Obsolete write responses remain uncertain and use the existing exact retry
+protocol. See [Authentication](AUTHENTICATION.md).

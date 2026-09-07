@@ -152,3 +152,45 @@ test.each([true, false])(
     expect(i18n.language).toBe("uk");
   },
 );
+
+test("protected expiry hides but retains the draft and resumes it with fresh same-owner credentials", async () => {
+  const { api } = await import("../src/api");
+  const fresh = { ...signedIn, csrf_token: "recovered-csrf" };
+  const fetcher = vi.fn().mockResolvedValueOnce(Response.json(signedIn))
+    .mockResolvedValueOnce(failure("authentication_required"))
+    .mockResolvedValueOnce(Response.json(anonymous))
+    .mockResolvedValueOnce(Response.json(fresh));
+  vi.stubGlobal("fetch", fetcher);
+  render(<I18nextProvider i18n={i18n}><Authentication>{(session, actions) =>
+    <div><input aria-label="draft" defaultValue="Ґанна 🙂" /><span data-testid="csrf">{session.csrf_token}</span>
+      <button disabled={actions.paused} onClick={() => void api.GET("/api/documents", { params: { query: { kind: "document" } } })}>Load documents</button></div>
+  }</Authentication></I18nextProvider>);
+  const draft = await screen.findByLabelText("draft");
+  fireEvent.change(draft, { target: { value: "Unsaved Їжак" } });
+  fireEvent.click(screen.getByRole("button", { name: "Load documents" }));
+  const password = await screen.findByLabelText("Password");
+  expect(draft).not.toBeVisible(); expect(draft).toHaveValue("Unsaved Їжак");
+  expect(screen.getByText("Load documents")).toBeDisabled();
+  fireEvent.change(password, { target: { value: "Synthetic-їжак-2026" } });
+  fireEvent.click(screen.getByRole("button", { name: "Sign in again" }));
+  await waitFor(() => expect(draft).toBeVisible());
+  expect(screen.getByLabelText("draft")).toBe(draft);
+  expect(draft).toHaveValue("Unsaved Їжак"); expect(screen.getByTestId("csrf")).toHaveTextContent("recovered-csrf");
+});
+
+test("explicit recovery discards the old workspace only after its leave guard allows an account switch", async () => {
+  const guard = vi.fn(() => false);
+  const fetcher = vi.fn().mockResolvedValueOnce(Response.json(signedIn)).mockResolvedValueOnce(Response.json(anonymous));
+  vi.stubGlobal("fetch", fetcher);
+  render(<I18nextProvider i18n={i18n}><Authentication>{(_session, actions) =>
+    <button onClick={() => actions.setLeaveGuard(guard)}>Protect draft</button>
+  }</Authentication></I18nextProvider>);
+  fireEvent.click(await screen.findByRole("button", { name: "Protect draft" }));
+  fireEvent.click(screen.getByRole("button", { name: "Sign in again" }));
+  const leave = await screen.findByRole("button", { name: "Leave this workspace and use another account" });
+  fireEvent.click(leave); expect(guard).toHaveBeenCalledTimes(1);
+  expect(screen.getByText("Protect draft")).toBeInTheDocument();
+  guard.mockReturnValue(true); fireEvent.click(leave);
+  await screen.findByRole("button", { name: "Sign in" });
+  expect(screen.queryByText("Protect draft")).not.toBeInTheDocument(); expect(window.location.pathname).toBe("/login");
+});
