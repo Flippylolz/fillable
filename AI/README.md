@@ -34,6 +34,7 @@ Fillable is a self-hosted application for editing Word documents with a synchron
 | [Document persistence](DOCUMENT_PERSISTENCE.md) | Owned originals, revisions, saved downloads and durable deletion |
 | [Processing](PROCESSING.md) | Durable job intent, bounded dispatch/worker and recovery |
 | [Workspace](WORKSPACE.md) | Persisted editor entry, local drafts and navigation guards |
+| [Saved history](HISTORY.md) | Owned revision list/preview APIs and history delivery boundaries |
 | [Localization](I18N.md) | Ukrainian/English catalogs, saved profile language, formatting, and acceptance checks |
 | [Version badge](VERSION_BADGE.md) | Supplied desktop/mobile styling, build commit metadata, fallback, and click-through behavior |
 | [Editor feasibility](EDITOR_FEASIBILITY.md) | Free-component research, custom-editor fallback, and required DOCX proof |

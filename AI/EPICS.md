@@ -23,8 +23,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c merged; E06.2d manual-save UI |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b save merged; history awaits E06.3b |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a history API |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -192,7 +192,8 @@ Work:
 - E06.2b: Rebase independent copies of edited exports by verified structural correspondence, retaining matching review and source identities. Depends on E06.2a.
 - E06.2c: Implement atomic revision/lease-checked, quota-enforced saves with matching document/review snapshots and exact idempotent results. Depends on E06.2a–E06.2b.
 - E06.2d: Integrate real manual saves, exact local-revision acknowledgment and recoverable failure/reopen behavior into the workspace. Depends on E06.2c; satisfies the save portion of E05.6b, while history controls await E06.3.
-- E06.3: Build a version-history panel for templates and documents with revision timestamps, current-version marker, read-only preview, historical download, and restore action.
+- E06.3a: Add owner-scoped, bounded revision listing and exact read-only model/review preview APIs for templates and documents. Depends on E06.2d.
+- E06.3b: Build the complete in-workspace history panel with timestamps, current marker, read-only preview, exact historical download and restore. Depends on E06.3a, E06.4 and E06.6; completes E05.6b. Deliver after those APIs, before E06.5 retention and E06.7 autosave.
 - E06.4: Export/download current and historical DOCX files and verify them by reopening. Route retained outputs and restored copies through quota enforcement.
 - E06.5: Implement configurable operator retention before automatic history pruning, communicate it in the history panel, and handle quota/disk/save errors recoverably.
 - E06.6: Restore the selected DOCX and matching field schema as a new current revision, preserving later retained revisions and restored-from provenance. Check the base revision and handle unsaved work explicitly.
@@ -1531,3 +1532,30 @@ blocked 1083/3553 lines and 1190/6165 branches with all 154 tests passing. The c
 is message presentation only; existing fresh browser and rendered DOCX evidence
 remains applicable. Auto-merge was disabled while verifying the correction and will
 be rearmed for its exact commit under the strict required gate.
+
+2026-09-07: E06.2d verified merged through [PR #55](https://github.com/Flippylolz/fillable/pull/55),
+commit `1602ea40382d9261892cbcf755b78cd6ad4a6258`; Actions 34098604978 passed checks
+and ci-required for exact head `620848ed6b9fb1ac2d3f24c5e085d0dc4b9a6542`. Main synchronized.
+E06.3 is split above before implementation: E06.3a list/preview API, then E06.4
+historical download, E06.6 restore API, and E06.3b complete history UI. Each receives
+its own PR and verified merge. E06.3a begins on `task/e06-3a-history-api`. Preview
+reads the selected saved model/review pair through the verified file reader, consumes
+no retained space and never changes the current revision or editing lease.
+Read-only acceptance review also identified two later E07 items: in-place expired
+session reauthentication must preserve same-owner drafts and isolate different
+accounts; unexpected server logging needs content-free handling beyond sanitized
+API response bodies. Record bounded E07 task splits before implementing those fixes.
+
+E06.3a local verification passed: 322 backend tests, raw 3435/3457 lines (99.36%)
+and 1049/1072 branches (97.85%); 154 frontend tests, 1083/1091 lines (99.27%) and
+1190/1243 branches (95.74%). Lint/type/catalog/build/generated contracts/raw gates
+passed. Actual unimported-source probes blocked backend 3435/10605 lines and frontend
+1083/3553 lines, 1190/6165 branches with all tests passing. Real PostgreSQL tests
+cover coherent listing during a committed save, exact original/edited/review-only
+pairs, owner/resource/version isolation, bounded/empty pages, corruption/admission,
+content-free failures and unchanged quota/current/lease state.
+Fresh index `fillable-verify.qXgcsj` passed 7 development and 26 production browser
+tests, hot reload and worker/persistence/recreation. This task changes read-only APIs;
+no new historical UI, export transformation or Word compatibility is claimed. Next:
+individual E06.3a PR, actual strict gate verification and exact-head auto-merge,
+verified merge, then E06.4 exact historical downloads. Deployment remains E08, last.
