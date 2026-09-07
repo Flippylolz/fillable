@@ -2207,3 +2207,37 @@ requires the last successful source/digest and matching running API image, and c
 the existing account CLI only when the user table is empty. It cannot reset/delete
 accounts. Ten runtime contracts and eight release contracts pass; application code
 and its coverage gates remain unchanged. Final-head CI must pass again before bootstrap.
+
+Live E08.3 checkpoint: PR #72 final candidate
+`851feafc7db2522d8d29ea71a54111030503fa1e`, required CI `34156895196` running,
+exact-head squash auto-merge enabled. The superseded checkpoint/OCI-only runs were
+cancelled by the newer head. This checkpoint is carried forward without restarting
+CI for a metadata-only commit. Dedicated key/trusted-host/private initial-account
+inputs are prepared only in ignored local operator files; no production environment,
+receiver installation, account provisioning or server configuration change has run.
+The private bootstrap guards require this exact head/run to succeed and PR #72 to
+be MERGED. Next: inspect CI, confirm merge, run guarded private bootstrap and main-only
+environment preparation, verify unchanged containers and restricted receiver readiness,
+then begin E08.4's authenticated Actions rollout task.
+
+E08.3 code PR #72 is verified MERGED as
+`c086a1f58d2e8fec483b7684e557bfda233ff1c3`, exact head
+`851feafc7db2522d8d29ea71a54111030503fa1e`; CI `34156895196` passed all jobs,
+backend416/frontend229 raw coverage and both negative probes. Guarded bootstrap
+stopped in its first read-only container inventory before any server mutation:
+Docker 29 rejects direct `.State.Health` access for four of the 15 existing containers
+without a healthcheck. Private files/keys remain local; no receiver/environment/account
+was installed. The failure also affects the receiver's shared-service snapshot format.
+
+E08.3a corrective task: make missing health state valid through safe map lookup,
+verify actual Docker inspection of a newly created container without a healthcheck,
+and verify the supplied server's mixed health/no-health inventory read-only. Deliver
+in its own PR with required CI/auto-merge before retrying private bootstrap from the
+corrected merged source. E08.4 remains blocked only on completing this routine fix.
+
+E08.3a local verification passes: ten runtime contracts, eight release contracts,
+scoped Ruff, actual Compose rejection probes, and real Docker inspection of an owned
+stopped container without a healthcheck. The probe was removed. Read-only server
+inventory now parses all 15 containers (10 healthy, one pre-existing unhealthy, four
+without healthchecks). No server state changed. Required final-head CI and merge
+remain pending before corrected private bootstrap.

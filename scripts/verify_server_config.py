@@ -9,6 +9,9 @@ from fillable_runtime import validate_compose
 
 configuration = json.loads(Path(sys.argv[1]).read_text())
 images = json.loads(Path(sys.argv[2]).read_text())
+unstarted = json.loads(Path(sys.argv[3]).read_text())
+assert unstarted["health"] == ""
+assert unstarted["status"] == "created"
 root = Path("/fillable-runtime-proof")
 validate_compose(configuration, root, images)
 for service, key, value in (
@@ -34,5 +37,5 @@ for service, key, value in (
         continue
     raise AssertionError("Unsafe runtime mutation was accepted")
 print(
-    "Actual Compose scope, immutable images, private mounts and rejection probes: PASS"
+    "Actual Docker optional health, Compose scope and rejection probes: PASS"
 )
