@@ -26,7 +26,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1 merged; E08.2 verified artifact workflow |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1–E08.2 merged; E08.3 isolated runtime |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -2135,3 +2135,75 @@ and network were removed; artifact and screenshot evidence is retained locally.
 The artifact records its actual candidate PR run `34151276606` for local QA only;
 that run is not eligible main deployment evidence. The production gate independently
 requires successful current-main push CI. Required final-head PR CI remains pending.
+
+Verified E08.2 completion: [PR #71](https://github.com/Flippylolz/fillable/pull/71)
+merged as `fe0170278382e0aec7cb4524f42c68a839ab409e`, exact head
+`a2ea1ecff80e8dfdf41456b773a5db06f39a3dd5`. Required CI `34151518784` passed all
+three jobs. Backend416: 3969/3998 lines, 1174/1206 branches; frontend229:
+1292/1303 lines, 1500/1569 branches. Both real negative coverage probes blocked.
+The live Docker release gate accepted corrected-main CI `34150436861` and rejected
+wrong source identity. Six isolated transport success/failure scenarios passed.
+A deliberately invalid-revision dispatch `34152780582` is verifying the actual
+workflow rejects deployment before any production job; it is an intentional gate
+probe, not an application CI failure. No application deployment has occurred.
+
+E08.3 begins on `task/e08-3-isolated-runtime` from verified E08.2 merge. Scope:
+fixed namespaced runtime configuration, bounded restricted artifact receiver,
+reviewed same-schema/forward recovery, authoritative shared-nginx include and
+coordinated activation, isolated local lifecycle checks, and private server/bootstrap
+configuration. Actual Actions application rollout remains E08.4; deployed MVP and
+persistence proof remain E08.5. Only Fillable resources may be mutated. HTTP 3200,
+existing TLS/services, independent coverage gates and keep-all history remain fixed.
+
+The deliberate invalid-source workflow `34152780582` failed in verify and skipped
+release, as required. It performed no server action. The prior application main CI
+`34150436861` is fully successful after PR #70's correction.
+
+E08.3 local implementation now includes the [fixed server runtime](SERVER_RUNTIME.md),
+restricted receiver, source-fingerprinted private installer and coordinated shared
+manager extension. Nine Docker receiver/runtime contracts plus seven release contracts
+pass with Ruff. Real Compose configuration and nine unsafe mutation probes pass. The
+first real-manager local attempt stopped because host Python 3.9 cannot load the
+existing manager's evaluated union type; its own stack shut down with volumes retained.
+Rerunning with the available compatible Python succeeded using frozen helper/config
+copies and actual amd64 application images from E08.2's candidate.
+
+The successful isolated proof (`fillable-e083-npyj_wem`) passed six desktop/mobile
+manual-save/badge cases through relay → real shared-manager nginx → private app.
+Stored ready-file bytes/digests and quota counters matched after restarting every
+Fillable long-running service. Shared container ID/start time/restart count and its
+existing route remained unchanged. Scoped removal preserved injected owner edits in
+current configuration and templates. All own proof services/network were removed;
+volumes, source copies and reports are retained. No server application or shared
+configuration has been changed. The supplied server's Python 3.12 is compatible;
+its inspected manager/template fingerprints are retained privately for bootstrap.
+
+Next: finish final checks/documentation, deliver E08.3 through its own required-CI PR
+and verified auto-merge, then privately install the receiver and main-only environment,
+verify strict-key readiness and unchanged service baselines before E08.4. Actual
+application release and deployed acceptance remain unfinished.
+
+E08.3 is in_review in [PR #72](https://github.com/Flippylolz/fillable/pull/72),
+initial candidate `da0e51b`. All local evidence above passed. Actual strict
+ci-required protection with administrator enforcement was reread; no production
+environment exists yet. Final-head required CI and verified merge must precede
+private bootstrap. Prepare a new dedicated key locally while CI runs; install only
+verified merged files, retain private settings, constrain the environment to main,
+and confirm receiver check plus unchanged server baselines before E08.4.
+
+E08.3 receiver review also identified Docker's OCI index as an alternate image/tag
+source beside the legacy manifest. The archive verifier now checks that index's
+manifest bytes/digests, exact two image configurations and Fillable-only aliases;
+it rejects nested indices, extra images, mismatched configs and unsafe outer Docker
+members. The actual saved amd64 archive passes both metadata paths. Eight release
+contracts and nine runtime contracts pass; final-head required CI restarts for this
+necessary receiver-boundary correction. Private bootstrap guards must use the updated
+PR head/run and still wait for verified MERGED.
+
+E08.3 also prepares source-bound initial administrator provisioning so the first
+Actions rollout can complete authenticated verification without deploying public
+fixture credentials. The restricted provision command accepts bounded private stdin,
+requires the last successful source/digest and matching running API image, and calls
+the existing account CLI only when the user table is empty. It cannot reset/delete
+accounts. Ten runtime contracts and eight release contracts pass; application code
+and its coverage gates remain unchanged. Final-head CI must pass again before bootstrap.
