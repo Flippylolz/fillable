@@ -1559,3 +1559,30 @@ tests, hot reload and worker/persistence/recreation. This task changes read-only
 no new historical UI, export transformation or Word compatibility is claimed. Next:
 individual E06.3a PR, actual strict gate verification and exact-head auto-merge,
 verified merge, then E06.4 exact historical downloads. Deployment remains E08, last.
+
+
+2026-09-07: E06.3a verified merged through [PR #56](https://github.com/Flippylolz/fillable/pull/56),
+merge `a470a2a4f5f91e0ff8fe0045cda4f3e9368c27b5`; Actions 34100793853 passed
+`checks` and `ci-required` for exact head `fcca84036cd22d40a77bf0b08f9bcb7c3972fc4b`.
+E06.4 begins on `task/e06-4-historical-downloads`: exact retained revision bytes,
+owned bounded verified reads and reopening evidence. Current downloads stay current;
+selected downloads never resolve to a newer revision. No new retained output is
+created by a download; existing quota-enforced saves supply the immutable bytes.
+Restore allocation remains the separately planned E06.6 task, followed by E06.3b UI.
+
+E06.4 local verification passed: 328 backend tests; raw 3463/3485 lines (99.37%)
+and 1059/1082 branches (97.87%); Ruff, mypy and gate contracts passed. Frontend
+154 tests, lint/catalog/type/build and raw source gate passed: 1083/1091 lines
+(99.27%) and 1190/1243 branches (95.74%). Real unimported-source negative probes
+passed their tests and blocked both stacks below 90%. OpenAPI/TypeScript regenerated.
+Fresh staged checkout `fillable-verify.ITc6zu`, project `fillable-verify-84175`,
+passed 7 development and 26 production browser tests, reload, worker processing,
+persistence/recreation and production static serving; all volumes preserved.
+Desktop/mobile gateway tests fetched exact original bytes after a newer save,
+compared selected saved bytes with current and reopened matching reviewed content.
+Backend reopening also verifies original equality, edited/review-only correspondence,
+owner/admin isolation, bounded/corrupt reads and unchanged lease/current/quota state.
+No new DOCX transform or layout change; Microsoft Word is not claimed. Actual strict
+Actions `ci-required` protection including administrators was rechecked. Next:
+individual PR/auto-merge and actual merged-state verification, then E06.6 restore.
+E06.3b history UI and E06.5/E06.7 remain unfinished. E08 deployment stays last.

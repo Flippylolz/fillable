@@ -231,6 +231,20 @@ def remove(
     return result
 
 
+def download_response(version, filename, data):
+    return Response(
+        data,
+        media_type=MIME,
+        headers={
+            "Cache-Control": "no-store",
+            "X-Content-Type-Options": "nosniff",
+            "X-Fillable-Version": str(version),
+            "Content-Disposition": 'attachment; filename="document.docx"; '
+            "filename*=UTF-8''" + quote(filename, safe=""),
+        },
+    )
+
+
 @router.get(
     "/{identity}/download",
     response_class=Response,
@@ -243,16 +257,8 @@ def download(identity: UUID, user: UserInfo = Depends(current_user)) -> Response
         raise AppError(409, "operation_in_progress")
     try:
         resource, data = service.download(user.id, identity)
-        return Response(
-            data,
-            media_type=MIME,
-            headers={
-                "Cache-Control": "no-store",
-                "X-Content-Type-Options": "nosniff",
-                "X-Fillable-Version": str(resource.current_version_id),
-                "Content-Disposition": 'attachment; filename="document.docx"; '
-                "filename*=UTF-8''" + quote(resource.original_filename, safe=""),
-            },
+        return download_response(
+            resource.current_version_id, resource.original_filename, data
         )
     except StorageError as error:
         if error.code == "not_found":
@@ -383,3 +389,30 @@ async def save_version(
         UPLOAD_SLOTS.release()
     response.headers["Cache-Control"] = "no-store"
     return result
+
+
+@router.get(
+    "/{identity}/versions/{version}/download",
+    response_class=Response,
+    responses={
+        200: {"content": {MIME: {"schema": {"type": "string", "format": "binary"}}}}
+    },
+)
+def version_download(
+    identity: UUID, version: UUID, user: UserInfo = Depends(current_user)
+) -> Response:
+    if not DOWNLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(409, "operation_in_progress")
+    try:
+        selected, filename, data = history.download(user.id, identity, version)
+        return download_response(selected, filename, data)
+    except StorageError as error:
+        if error.code == "not_found":
+            raise AppError(404, "not_found") from None
+        if error.code == "operation_in_progress":
+            raise AppError(409, "operation_in_progress") from None
+        raise AppError(503, "storage_unavailable") from None
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    finally:
+        DOWNLOAD_SLOTS.release()

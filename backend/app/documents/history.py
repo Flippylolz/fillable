@@ -70,19 +70,17 @@ def listing(owner, identity, limit, before):
     )
 
 
-def saved_row(owner, identity, version):
+def saved_row(owner, identity, version, *, include_model=False):
+    statement = query(owner, identity).add_columns(
+        versions.c.file_id, resources.c.original_filename
+    )
+    if include_model:
+        statement = statement.add_columns(
+            versions.c.document_model, versions.c.field_review
+        )
     with database().connect() as connection:
         row = (
-            connection.execute(
-                query(owner, identity)
-                .add_columns(
-                    versions.c.file_id,
-                    versions.c.document_model,
-                    versions.c.field_review,
-                    resources.c.original_filename,
-                )
-                .where(versions.c.id == version)
-            )
+            connection.execute(statement.where(versions.c.id == version))
             .mappings()
             .one_or_none()
         )
@@ -94,8 +92,17 @@ def saved_row(owner, identity, version):
 
 
 def content(owner, identity, version):
-    row = saved_row(owner, identity, version)
+    row = saved_row(owner, identity, version, include_model=True)
     with configured().read(owner, row["file_id"]):
         return VersionContent(
             version=VersionInfo.model_validate(dict(row)), document=working_model(row)
         )
+
+
+def download(owner, identity, version):
+    row = saved_row(owner, identity, version)
+    with configured().read(owner, row["file_id"]) as stream:
+        data = stream.read(ARCHIVE_BYTES + 1)
+    if len(data) != row["size_bytes"]:
+        raise StorageError("storage_failure")
+    return row["id"], row["original_filename"], data

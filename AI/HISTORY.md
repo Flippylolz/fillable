@@ -1,7 +1,7 @@
 # Saved revision history
 
 E06.3a implements owner-scoped metadata and preview APIs for templates and documents.
-Historical download is E06.4, restore is E06.6, and the complete in-workspace panel is
+E06.4 adds exact historical downloads; restore is E06.6 and the complete in-workspace panel is
 E06.3b. The current manual-save editor remains the working-document authority.
 
 `GET /api/documents/{identity}/versions` returns `current_version_id`, newest-first
@@ -40,3 +40,24 @@ owner/resource/revision isolation, deleted and corrupt content, empty/bounded pa
 reader admission, content-free failures, unchanged quota/lease/current state, and a
 real save committed between list reads under the repeatable-read snapshot. This API
 is read-only; an embedded historical preview and its UI acceptance follow in E06.3b.
+
+## Exact historical downloads
+
+`GET /api/documents/{identity}/versions/{version}/download` returns the selected
+retained DOCX bytes, never a regenerated file or the latest revision as fallback.
+It shares authenticated owner checks, the two-reader admission limit, verified
+storage reads and the archive-size bound with preview/current download. Selection
+loads only file metadata, not the potentially large working document/review JSON.
+The response uses the DOCX MIME type, `Cache-Control: no-store`, `nosniff`, a safe
+UTF-8 attachment filename and `X-Fillable-Version` equal to the selected revision.
+Current download continues to identify and return the current revision.
+
+This read allocates no file, reservation or version and needs no editing lease.
+Missing/deleted/unowned or wrong-document selections return 404; corrupt or oversized
+files fail explicitly, busy readers return 409, and dependency errors expose no
+content. Administrator role does not grant access to another owner's history.
+Reopening tests compare original bytes and edited/review-only file/model pairs with
+verified structural correspondence and the immutable-original exporter. Real gateway
+browser tests download original and newer revisions separately and reopen the saved
+workspace. Historical panel preview/download controls follow in E06.3b. These checks
+do not claim Microsoft Word validation.
