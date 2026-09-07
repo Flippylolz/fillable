@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.accounts.schema import users
 from app.documents.package import ARCHIVE_BYTES, InvalidDocument
+from app.documents.rebase import correspondence
 from app.documents.schema import resources, versions
 from app.documents.validation import validate_upload
 from app.fields.blanks import discover
@@ -93,18 +94,27 @@ def inspect_file(owner, file_id, filename, source_version_id):
     if len(data) > ARCHIVE_BYTES:
         raise InvalidDocument("archive_limit")
     package = validate_upload(data, filename)
+    with database().connect() as connection:
+        model = connection.execute(
+            select(versions.c.document_model).where(
+                versions.c.id == source_version_id,
+                versions.c.owner_id == owner,
+                versions.c.file_id == file_id,
+            )
+        ).scalar_one()
+    correspondence(model, package)
     result = {
         "supported_controls": 0,
         "paragraphs": 0,
         "unsupported_features": len(package.unsupported),
     }
-    nodes = [package.model]
+    nodes = [model]
     while nodes:
         node = nodes.pop()
         result["supported_controls"] += node["type"] == "field"
         result["paragraphs"] += node["type"] == "paragraph"
         nodes.extend(node.get("content", []))
-    snapshot = discover(package.model, source_version_id)
+    snapshot = discover(model, source_version_id)
     result["field_candidates"] = len(snapshot.candidates)
     return {"summary": result, "field_snapshot": snapshot.model_dump(mode="json")}
 

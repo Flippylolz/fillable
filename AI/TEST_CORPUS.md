@@ -77,3 +77,11 @@ Then rebuild and run normal checks without that variable. Generation is an expli
 local artifact update; required CI never updates its expected result. This fixture
 proves matching editor/server representation and source-based export, not Microsoft
 Word compatibility or a completed persisted-save API.
+
+E06.2c exercises actual saves of the shared working-review fixture in PostgreSQL and
+through the development/production gateway. API tests cover paired metadata, original
+preservation, subsequent source-anchored edits, worker detection, template copies,
+review-only versions, stale leases/revisions, concurrent requests, quota/deletion/
+revocation races, lost commit response and disk failure. The production browser test
+reopens the saved fixture in the existing editor and retains an actual saved DOCX for
+byte/render comparison; this is backend save/reopen evidence, not manual-save UI.

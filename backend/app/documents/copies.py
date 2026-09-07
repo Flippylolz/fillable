@@ -9,7 +9,7 @@ from sqlalchemy import insert, select
 from app.accounts.profile import active_user
 from app.documents.rebase import prepare
 from app.documents.schema import resources, versions
-from app.documents.service import detail, saved_row
+from app.documents.service import detail, saved_row, working_model
 from app.documents.validation import validate_upload
 from app.errors import AppError
 from app.infrastructure import database
@@ -41,10 +41,12 @@ def create(state, identity, payload, key):
         with store.read(owner, row["file_id"]) as stream:
             data = stream.read(row["size_bytes"])
         package = validate_upload(data, row["original_filename"])
-        review = row["document_model"].get("attrs", {}).get("review")
+        source_model = working_model(row)
+        snapshot["source_model"] = source_model
+        review = row["field_review"]
         origin = review.get("sourceVersion") if review else None
         snapshot["prepared"] = prepare(
-            row["document_model"],
+            source_model,
             package,
             payload.source_version_id,
             UUID(origin) if origin else None,
@@ -69,6 +71,7 @@ def create(state, identity, payload, key):
         target = uuid5(NAMESPACE_URL, "fillable:document:" + str(result.id))
         version = uuid5(NAMESPACE_URL, "fillable:initial-version:" + str(result.id))
         model = snapshot["prepared"].bind(version)
+        review = model.pop("attrs", {}).get("review")
         connection.execute(
             insert(resources).values(
                 id=target,
@@ -88,6 +91,7 @@ def create(state, identity, payload, key):
                 file_id=result.id,
                 number=1,
                 document_model=model,
+                field_review=review,
                 unsupported_count=snapshot["unsupported_count"],
             )
         )
@@ -96,7 +100,7 @@ def create(state, identity, payload, key):
             owner,
             payload.source_version_id,
             {"id": target, "current_version_id": version},
-            snapshot["document_model"],
+            snapshot["source_model"],
             model,
             snapshot["prepared"].identities,
         )

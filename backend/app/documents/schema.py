@@ -69,6 +69,7 @@ versions = Table(
     Column("file_id", Uuid, nullable=False),
     Column("number", Integer, nullable=False),
     Column("document_model", JSONB, nullable=False),
+    Column("field_review", JSONB(none_as_null=True)),
     Column("unsupported_count", Integer, nullable=False),
     Column(
         "created_at", DateTime(timezone=True), nullable=False, server_default=func.now()

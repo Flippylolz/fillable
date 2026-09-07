@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a merged; E06.2b edited-copy rebasing |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c atomic saves |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1423,3 +1423,30 @@ The independent copied fixture re-export is byte-identical to the previously ins
 three-page working fixture. Microsoft Word was not run. Strict Actions ci-required
 and administrator enforcement were verified. Next: individual E06.2b PR, exact-head
 auto-merge and verified completion, then E06.2c atomic save storage. Deployment is last.
+
+2026-09-07: E06.2b verified merged through [PR #53](https://github.com/Flippylolz/fillable/pull/53),
+commit `8576bfd63d7981cab8e16918f2daa41b02222900`; Actions 34076087578 passed checks
+and ci-required for exact head `428bd944daca88317c5e4958e7dd935e3e7b3a8e`. Main synchronized.
+E06.2c starts on `task/e06-2c-atomic-saves`: paired version review, immutable-original
+export, owner/revision/lease-fenced quota writes, exact replay result and stored-model
+worker discovery. Manual save UI follows separately in E06.2d.
+
+E06.2c local verification passed: 310 backend tests, raw 3353/3375 lines (99.35%)
+and 1033/1056 branches (97.82%); 132 frontend tests, 1018/1026 lines (99.22%) and
+1087/1141 branches (95.27%). Lint, typing, generated OpenAPI/client, catalogs/build,
+raw gates and both real unimported-source failure probes passed. Integration tests
+cover atomic paired revisions, source-original preservation, subsequent edits, worker
+anchors, copies, exact replay after advancement/lost commit response, disk/quota
+failures, concurrency, lease/revision/deletion/revocation fences and migration/data
+guards. Final review added rejection of anonymous sessions before the bounded body
+read; its regression and final backend/probe runs passed.
+Fresh final index `fillable-verify.h3jB9o` under the system temporary directory passed
+7 development and 20 production browser tests, worker/persistence/quota checks and
+LibreOffice/Poppler regression. The new desktop/mobile browser tests saved through
+nginx, replayed a valid JSON body above the former 24 MiB limit, and reopened matching
+manual/review fields in the editor. Actual saved downloads are byte-identical to the
+previously inspected three-page working fixture; reopened desktop/mobile screenshots
+were inspected. Microsoft Word was not run. Actual strict Actions ci-required and
+administrator enforcement were verified. Next: E06.2c individual PR/auto-merge and
+verified merge, then E06.2d manual-save UI with exact local-revision acknowledgment.
+Deployment remains E08, last; existing services and volumes are preserved.

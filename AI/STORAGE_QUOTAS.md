@@ -343,3 +343,11 @@ mid-stream while preserving the original. Fresh Docker verification changes the
 synthetic default, sets zero override, proves a retained write is rejected without
 losing the original, restores inheritance/default, and checks the authenticated
 usage endpoint in desktop/mobile browser flows. No server access is needed.
+
+E06.2c saves each retained revision through the same storage transaction and charges
+its actual independently stored DOCX bytes, including review-only changes. It never
+overwrites the original or deletes history to make a save fit. The bounded in-memory
+JSON/export preparation is not a retained file allocation; its request/model/package
+limits and two-request admission are explicit. Quota, physical capacity, owner,
+current revision and editing lease are checked again at the final commit boundary.
+A lost commit response replays the exact committed revision without a second charge.

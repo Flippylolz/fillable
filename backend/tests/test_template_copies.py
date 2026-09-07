@@ -64,7 +64,10 @@ def revision(owner, saved, working=None):
                 owner_id=owner.id,
                 file_id=result.id,
                 number=2,
-                document_model=working if working is not None else parsed.model,
+                document_model=edited if working is not None else parsed.model,
+                field_review=working["attrs"]["review"]
+                if working is not None
+                else None,
                 unsupported_count=len(parsed.unsupported),
             )
         )

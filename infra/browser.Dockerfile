@@ -4,5 +4,6 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci && chown pwuser:pwuser /app
 COPY --chown=pwuser:pwuser frontend/ ./
 COPY --chown=pwuser:pwuser fixtures/docx/v1/client-intake-uk-v1.docx /fixtures/upload.docx
+COPY --chown=pwuser:pwuser fixtures/docx/v1/working-review.json /fixtures/working-review.json
 USER pwuser
 CMD ["npx", "playwright", "test"]

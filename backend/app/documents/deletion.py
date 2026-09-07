@@ -97,7 +97,7 @@ def remove(state, identity):
             connection.execute(
                 update(versions)
                 .where(versions.c.document_id == identity)
-                .values(document_model={}, unsupported_count=0)
+                .values(document_model={}, field_review=None, unsupported_count=0)
             )
             connection.execute(
                 update(resources)
