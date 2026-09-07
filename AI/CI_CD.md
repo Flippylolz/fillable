@@ -244,3 +244,9 @@ failing coverage result to a rollout. E08 must introduce only a path bound to an
 exact successful required-CI revision and immutable artifacts, then verify its
 rejection behavior before production use. Current measured counts and final PR/CI
 evidence are recorded in [Epics](EPICS.md), without claiming deployment complete.
+
+
+E08.3 adds mandatory receiver/runtime contracts and actual server Compose authority
+checks to the existing checks job. The [server runtime](SERVER_RUNTIME.md) consumes
+only verified artifacts through a fixed installed configuration. Application coverage
+roots, independent raw 90% gates and the three required CI job identities are unchanged.

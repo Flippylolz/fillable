@@ -1,0 +1,61 @@
+# Installed from a verified release; uploaded source cannot replace this runtime.
+x-backend: &backend
+  image: ${FILLABLE_BACKEND_IMAGE:?Verified backend image ID required}
+  pull_policy: never
+services:
+  api:
+    <<: *backend
+    build: !reset null
+  storage-init:
+    <<: *backend
+    build: !reset null
+  migrate:
+    <<: *backend
+    build: !reset null
+  worker:
+    <<: *backend
+    build: !reset null
+  dispatcher:
+    <<: *backend
+    build: !reset null
+  maintenance:
+    <<: *backend
+    build: !reset null
+  gateway:
+    image: ${FILLABLE_GATEWAY_IMAGE:?Verified gateway image ID required}
+    pull_policy: never
+    build: !reset null
+    ports: !reset []
+    networks:
+      default: {}
+      shared-edge:
+        aliases: [fillable-gateway]
+  ingress:
+    image: nginx:1.28.2-alpine@sha256:5b4900b042ccfa8b0a73df622c3a60f2322faeb2be800cbee5aa7b44d241649e
+    restart: unless-stopped
+    user: nginx
+    entrypoint: [nginx]
+    command: [-c, /etc/nginx/fillable-relay.conf, -g, 'daemon off;']
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+    volumes:
+      - ${FILLABLE_RUNTIME_ROOT:?Installed runtime root required}/infra/nginx.relay.conf:/etc/nginx/fillable-relay.conf:ro
+    ports: ['0.0.0.0:3200:3200']
+    networks: [shared-edge]
+    healthcheck:
+      test: [CMD, nc, -z, wef-shared-edge-nginx-1, '3200']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+networks:
+  shared-edge:
+    external: true
+    name: wef-edge

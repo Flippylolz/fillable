@@ -14,7 +14,7 @@ Docs-like workspace and locale-aware storage displays are verified on desktop/mo
 E00–E07 are merged. E07 has verified bilingual MVP flows, session recovery,
 content-free diagnostics, bounded scheduled maintenance and a previous-image upgrade/
 full-stack crash proof. Runtime isolation, documentation and the final gate audit are
-merged. E08.1 verified the supplied server and HTTP port 3200. E08.2 is implementing the verified artifact workflow. [Epics](EPICS.md) contains exact PR, commit and check evidence.
+merged. E08.1 verified the supplied server and HTTP port 3200. E08.2 merged the verified artifact workflow; E08.3 is preparing the isolated server runtime. [Epics](EPICS.md) contains exact PR, commit and check evidence.
 
 - The free ProseMirror/Python adapter preserves supported source DOCX structures,
   originals and revision-matched review metadata. See [Editor feasibility](EDITOR_FEASIBILITY.md)
