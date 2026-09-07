@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a working-review contract |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a merged; E06.2b edited-copy rebasing |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1402,3 +1402,24 @@ checks, persistence invariants and LibreOffice/Poppler regressions. Backend code
 shared fixture are unchanged from the verified 271-test run above. Auto-merge was
 disabled before this correction; re-arm only for the updated head after pushing.
 Next: verify required CI and actual PR #52 merge, then E06.2b.
+
+2026-09-07: E06.2a verified merged through [PR #52](https://github.com/Flippylolz/fillable/pull/52),
+commit `236a0aa8fc5499b382d115933e5cdf6ce65e9248`; Actions 34074851751 passed checks
+and ci-required for head `0b6fa53aa74e4698504c4fde579c9c35de0fdc2d`. Main synchronized.
+E06.2b starts on `task/e06-2b-edited-copy-rebase`, implementing the documented
+structural correspondence and independent-copy review contract before save writes.
+
+E06.2b local verification passed: 287 backend tests, raw 3218/3239 lines (99.35%)
+and 1018/1040 branches (97.88%); 132 frontend tests, 1018/1026 lines (99.22%) and
+1087/1141 branches (95.27%). Lint, typing, catalogs/build, raw coverage gates and
+both real unimported-source failure probes passed. Tests cover the shared real-editor
+fixture, source-location/grouping-key rebasing, sticky missing-control collisions,
+run segmentation/formatting, structural mismatch rejection and source non-mutation.
+Actual owner/storage API tests verify edited-template copy, completed discovery
+rebinding, exact quota/retry behavior and independence after source deletion.
+Fresh index `/private/tmp/fillable-verify.C1IjAq` passed 7 development and 18 production
+browser checks, worker/persistence/quota invariants and LibreOffice/Poppler regressions.
+The independent copied fixture re-export is byte-identical to the previously inspected
+three-page working fixture. Microsoft Word was not run. Strict Actions ci-required
+and administrator enforcement were verified. Next: individual E06.2b PR, exact-head
+auto-merge and verified completion, then E06.2c atomic save storage. Deployment is last.

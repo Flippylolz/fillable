@@ -3,10 +3,10 @@ from uuid import uuid4
 from sqlalchemy import and_, func, insert, select, update
 
 from app.accounts.profile import active_user
+from app.documents.rebase import rebase_discovery
 from app.documents.schema import resources
 from app.errors import AppError
 from app.fields.schema import FieldSnapshot
-from app.fields.validation import validate_snapshot
 from app.infrastructure import database
 from app.jobs.schema import FieldsResult, ProcessingInfo, jobs
 from app.storage.service import now
@@ -165,7 +165,9 @@ def fields(owner, identity):
     )
 
 
-def copy_intent(connection, owner, source_version, target, model):
+def copy_intent(
+    connection, owner, source_version, target, source_model, model, identities
+):
     source = (
         connection.execute(
             select(jobs).where(
@@ -179,9 +181,13 @@ def copy_intent(connection, owner, source_version, target, model):
     )
     if source is None or source["field_snapshot"] is None:
         return intent(connection, owner, target)
-    snapshot = validate_snapshot(source["field_snapshot"], source_version, model)
-    cloned = snapshot.model_copy(
-        update={"source_version_id": target["current_version_id"]}
+    cloned = rebase_discovery(
+        source["field_snapshot"],
+        source_version,
+        source_model,
+        target["current_version_id"],
+        model,
+        identities,
     )
     connection.execute(
         insert(jobs).values(

@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from uuid import UUID, uuid4
 
 import pytest
@@ -44,12 +45,14 @@ def amounts(owner):
         ).one()
 
 
-def revision(owner, saved):
+def revision(owner, saved, working=None):
     package = DocxPackage(DATA)
     for field in (node for node in walk(package.model) if node["type"] == "field"):
         field["content"] = [{"type": "text", "text": "Збережений Їжак"}]
     # Export against a separate immutable source model, then reopen the actual bytes.
-    data = DocxExport(DocxPackage(DATA)).render(package.model, package.digest)
+    edited = deepcopy(working) if working is not None else package.model
+    edited.pop("attrs", None)
+    data = DocxExport(DocxPackage(DATA)).render(edited, package.digest)
     parsed = DocxPackage(data)
     identity = uuid4()
 
@@ -61,7 +64,7 @@ def revision(owner, saved):
                 owner_id=owner.id,
                 file_id=result.id,
                 number=2,
-                document_model=parsed.model,
+                document_model=working if working is not None else parsed.model,
                 unsupported_count=len(parsed.unsupported),
             )
         )
@@ -217,3 +220,75 @@ def test_copy_failure_diagnostics_and_admission_release(monkeypatch):
         assert response.headers["cache-control"] == "no-store"
     assert routes.UPLOAD_SLOTS.acquire(False)
     routes.UPLOAD_SLOTS.release()
+
+
+def test_edited_template_copy_preserves_review_quota_retry_and_independent_export():
+    from test_working_review import FIXTURE
+
+    from app.fields.blanks import discover
+    from app.fields.working import validate_working
+    from app.jobs.schema import jobs
+
+    owner = account()
+    web = client()
+    initial = upload(web).json()
+    saved, data, _ = revision(owner, initial, working=FIXTURE)
+    before = deepcopy(FIXTURE)
+    detected = discover(FIXTURE, UUID(saved["current_version_id"]))
+    with database().begin() as connection:
+        connection.execute(
+            insert(jobs).values(
+                id=uuid4(),
+                owner_id=owner.id,
+                document_id=UUID(saved["id"]),
+                source_version_id=UUID(saved["current_version_id"]),
+                status="succeeded",
+                field_snapshot=detected.model_dump(mode="json"),
+                summary={"field_candidates": len(detected.candidates)},
+            )
+        )
+    copied = copy(web, saved)
+    assert copied.status_code == 201, copied.text
+    target = copied.json()
+    endpoint = f"/api/documents/{target['id']}"
+    model = web.get(endpoint + "/content").json()["document"]
+    document, review = validate_working(model, UUID(target["current_version_id"]))
+    fields = web.get(endpoint + "/fields").json()
+    assert fields["status"] == "succeeded"
+    assert fields["snapshot"]["source_version_id"] == target["current_version_id"]
+    assert (
+        fields["snapshot"]["candidates"]
+        == detected.model_dump(mode="json")["candidates"]
+    )
+    assert review["sourceVersion"] == target["current_version_id"]
+    assert sum(item["missing"] for item in review["items"]) == 2
+    assert any(item["reason"] == "manual" for item in review["items"])
+    assert any(item["decision"] == "dismissed" for item in review["items"])
+    package = DocxPackage(data)
+    assert DocxExport(package).render(document, package.digest) == data
+    assert web.get(endpoint + "/download").content == data
+    assert amounts(owner) == (len(DATA) + 2 * len(data), 0)
+    assert copy(web, saved).json() == target
+    assert web.get(f"/api/documents/{saved['id']}/content").json()["document"] == before
+    assert web.delete(f"/api/documents/{saved['id']}").status_code == 200
+    assert amounts(owner) == (len(data), 0)
+    assert copy(web, saved).json() == target
+    assert web.get(endpoint + "/content").json()["document"] == model
+    assert web.get(endpoint + "/download").content == data
+    assert FIXTURE == before
+
+
+def test_invalid_saved_correspondence_rejects_copy_and_releases_all_reserved_bytes():
+    owner = account()
+    web = client()
+    saved = upload(web).json()
+    model = DocxPackage(DATA).model
+    next(node for node in walk(model) if node["type"] == "text")["text"] = "mismatch"
+    with database().begin() as connection:
+        connection.execute(update(versions).values(document_model=model))
+    before = amounts(owner)
+    response = copy(web, saved)
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "storage_unavailable"
+    assert amounts(owner) == before
+    assert web.get("/api/documents?kind=document").json()["items"] == []
