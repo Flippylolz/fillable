@@ -119,6 +119,26 @@ E08.5 verifies the broader deployed MVP and persistence. Existing-service contai
 identity/start/restart/health and existing route/HSTS results are compared before/after
 apply; production reports expose only safe source/digest/status evidence.
 
+E08.3 bootstrap is now verified from corrective PR #73's merged source. The dedicated
+key passes receiver readiness and rejects arbitrary shell commands; every existing
+container baseline matched before/after. The production environment permits only
+main and holds the four dedicated transport secrets. Optional Docker health state is
+read safely, including containers without healthchecks.
+
+E08.4 adds a public smoke step after Actions applies the verified artifact. Two private
+environment secrets, `FILLABLE_INITIAL_EMAIL` and `FILLABLE_INITIAL_PASSWORD`, supply
+the operator's generated initial credentials. A normal login is attempted first. Only
+invalid credentials trigger the receiver's empty-database provisioning operation;
+network/server failures do not. An existing account is never reset to force success.
+The password travels through environment/stdin, never a command argument or report.
+
+The checker verifies HTTP cookie policy, exact-origin/CSRF rejection, synthetic upload,
+worker completion, a saved revision, and byte-exact original/current/history downloads.
+An unchanged idempotent write may retry a temporary file-reader conflict. Failed smoke
+checks fail Actions and cannot leave stale success evidence. Public evidence contains
+only the source, synthetic digests, version count and status. Synthetic documents remain
+retained and quota-charged. The browser badge and broader deployed acceptance remain E08.5.
+
 The Docker archive check covers both legacy and OCI metadata paths. An OCI index
 must reference exactly the two expected image configurations with only their Fillable
 source tags, verified manifest bytes and no nested indices. Legacy repository aliases
