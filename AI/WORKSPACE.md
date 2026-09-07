@@ -147,3 +147,30 @@ revision uses the existing explicit reopen/discard flow. Pending title edits par
 leave guards. A successful rename refreshes library metadata without losing upload/editor
 drafts and never reports document edits as saved. Save/history toolbar integration remains
 E05.6b after the corresponding E06 operations are implemented.
+
+## E06.1a editing lease API
+
+`POST /api/documents/{identity}/editing-lease` accepts an `acquire`, `renew` or
+`release` action with the expected source version and a random per-editor `client_id`.
+Renew/release also require the server-issued `lease_id`; acquisition forbids it.
+The authenticated session, client ID and generation must all match. Another live
+holder receives `operation_conflict` with `reason=lease_busy`; failed renewal uses
+`lease_lost`, and an outdated source uses `revision`. Responses contain no holder
+or session identity, use no-store, and require current authentication and CSRF.
+
+Resource-row locking serializes acquisition after the account/session check. Leases
+last 60 seconds according to PostgreSQL time. A same-holder live acquisition safely
+retries/renews; expiry or authentication revocation permits a new generation.
+Expired renewals cannot resurrect a lease. Release is idempotent and its old generation
+cannot remove a successor, even if the same tab reacquires. Session expiry, idle
+expiry and revocation invalidate ownership. Deleted or unavailable resources cannot
+be acquired; deletion removes the lease in the same tombstone transaction.
+
+Migration 0008 creates one bounded row per resource with owner/version foreign keys,
+without changing original files, retained revisions, models or quota. Downgrade
+refuses populated lease state. Lease generations are coordination metadata, not
+standalone authentication credentials. Future saves must check this fence in their
+commit transaction; this API alone does not implement persistence. E06.1b adds the
+workspace acquisition/expiry and retained-draft flow; E06.2 adds fenced saves. Clients
+must conservatively subtract request elapsed time from the returned validity period
+and never persist an editor snapshot while composition is pending.

@@ -23,8 +23,8 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E02 | Login/profile, accounts, local storage, and quotas | E01 | done: E02.1–E02.7 merged |
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
-| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a in progress; E05.6b awaits E06 persistence/history |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | waiting |
+| E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b awaits E06 persistence/history |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a editing lease API |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -186,7 +186,8 @@ Outcome: users can resume work, browse and restore previous versions in the work
 
 Work:
 
-- E06.1: Enforce a single active editing lease with expiry and an explicit stale-session flow.
+- E06.1a: Add the owner/session/tab-fenced editing lease API, expiry, idempotent acquisition and generation-safe renewal/release, with PostgreSQL concurrency and migration tests.
+- E06.1b: Integrate acquisition/renewal, read-only expiry and explicit stale-session recovery into the mounted workspace; retain drafts and verify browser concurrency. Depends on E06.1a. E06.2 saves must enforce the same lease fence.
 - E06.2: Implement revision-checked saves with a matching document/field snapshot and idempotent retries.
 - E06.3: Build a version-history panel for templates and documents with revision timestamps, current-version marker, read-only preview, historical download, and restore action.
 - E06.4: Export/download current and historical DOCX files and verify them by reopening. Route retained outputs and restored copies through quota enforcement.
@@ -1324,3 +1325,22 @@ The corrected helper passed all 123 frontend tests, lint/catalog/build and raw c
 at unchanged 953/959 lines and 1005/1045 branches. The real unimported-source probe
 also passed with 123 tests and correctly rejected 953/3192 lines, 1005/5509 branches.
 Existing full fresh/browser/DOCX evidence remains applicable to unchanged app code.
+
+2026-09-07: E05.6a verified merged through [PR #49](https://github.com/Flippylolz/fillable/pull/49),
+commit `2de77d51280a9b943894e94491ff1e1ecfb5271f`; Actions 34069561355 passed both
+required checks for exact head `2a4454f99bf7ad96825b86c53f0813773739a3e2`. Main synchronized.
+E06.1 is split above before implementation. E06.1a starts on `task/e06-1a-editing-leases`;
+workspace integration follows in E06.1b, and actual save enforcement in E06.2.
+
+E06.1a local verification passed: 263 backend tests, raw 2909/2927 lines (99.39%)
+and 873/892 branches (97.87%); 123 frontend tests, 953/959 lines (99.37%) and
+1005/1045 branches (96.17%). Lint, typing, catalogs/build, generated API, raw gates
+and both actual unimported-source probes passed. Real PostgreSQL tests cover tab
+competition, session identity/revocation/expiry, generation-safe delayed release,
+revision changes, ownership/CSRF, no quota/file effects, deletion, schema constraints
+and guarded downgrade/upgrade. Fresh index `/private/tmp/fillable-verify.ds4WSg`
+passed 7 development and 16 production browser checks, worker processing, byte and
+quota preservation after recreation. Independent LibreOffice/Poppler regression
+checks passed; no Microsoft Word run or new workspace lease UI is claimed.
+Main protection verified strict Actions `ci-required` with administrator enforcement.
+Next: individual E06.1a PR and verified merge, then E06.1b mounted-editor lease flow.
