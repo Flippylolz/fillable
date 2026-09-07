@@ -213,13 +213,23 @@ Persistent volumes, safe writes, crash reconciliation, restart/upgrade checks, a
 
 ## D019 — Public HTTP address on a new port
 
-Status: **Accepted — explicit user address, numeric port pending inspection.**
+Status: **Accepted — HTTP reaffirmed during E08.1; public port 3200 selected.**
 
-The production origin is `http://<DEPLOY_HOST>:<PORT>`. Keep the existing shared-nginx requirement: nginx listens on the newly allocated public port and proxies to Fillable's private gateway. Distinguish `FILLABLE_PUBLIC_PORT` from the gateway's `FILLABLE_UPSTREAM_PORT` when a host binding is needed. Neither port is selected yet. Existing ports 80/443, routes, and TLS services remain owned by their current applications.
+The production origin is `http://<DEPLOY_HOST>:<PORT>`. Keep the existing shared-nginx requirement: nginx listens on the newly allocated public port and proxies to Fillable's private gateway. Distinguish `FILLABLE_PUBLIC_PORT` from the gateway's `FILLABLE_UPSTREAM_PORT` when a host binding is needed. E08.1 selects public port 3200; the private gateway uses Docker-network reachability. Existing ports 80/443, routes, and TLS services remain owned by their current applications.
 
-Configure the exact origin, including the port, in `APP_PUBLIC_URL`. For this explicit HTTP deployment, the application session cookie cannot use `Secure`; use a Fillable-specific cookie name, HttpOnly, SameSite, CSRF tokens, and exact allowed-origin checks. Cookies are not isolated by port, so do not rely on a new port as session isolation from other applications on this hostname. Use `Secure` when an HTTPS origin is configured later; never downgrade it by inferring arbitrary forwarded headers.
+Configure the exact origin, including the port, in `FILLABLE_PUBLIC_ORIGIN`. For this explicit HTTP deployment, the application session cookie cannot use `Secure`; use a Fillable-specific cookie name, HttpOnly, SameSite, CSRF tokens, and exact allowed-origin checks. Cookies are not isolated by port, so do not rely on a new port as session isolation from other applications on this hostname. Use `Secure` when an HTTPS origin is configured later; never downgrade it by inferring arbitrary forwarded headers.
 
 HTTP does not encrypt credentials, cookies, or documents in transit. Record that limitation without introducing an HTTPS purchase or approval prerequisite. No certificate or new domain is needed for the accepted MVP route. See [Deployment target](DEPLOYMENT_TARGET.md).
+
+E08.1 clarification (2026-09-07): the existing HTTPS site on this hostname sends
+`Strict-Transport-Security: max-age=31536000`. The user was told that a browser with
+this HSTS policy upgrades HTTP on every port and explicitly reaffirmed: keep HTTP
+on a new port like 3200; TLS and HTTPS are out of scope. Preserve that choice and the
+existing site's TLS/HSTS policy. A browser profile that has learned HSTS may therefore
+upgrade Fillable's URL and fail; successful fresh-profile HTTP smoke checks do not
+prove compatibility with such profiles. Do not clear users' browser security state,
+change unrelated HSTS settings, or silently enable Fillable TLS. This limitation
+remains accepted for this release. See [HSTS port semantics](https://www.rfc-editor.org/rfc/rfc6797#section-8.3).
 
 Reference: [Browser cookie attributes and port behavior](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie).
 

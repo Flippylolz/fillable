@@ -11,10 +11,10 @@ editing, synchronized fields, settings, autosave and retained version history.
 Ukrainian is the default UI language and English is persisted per account. The
 Docs-like workspace and locale-aware storage displays are verified on desktop/mobile.
 
-E00–E06 are merged. E07 has verified bilingual MVP flows, session recovery,
+E00–E07 are merged. E07 has verified bilingual MVP flows, session recovery,
 content-free diagnostics, bounded scheduled maintenance and a previous-image upgrade/
-full-stack crash proof. Runtime isolation/documentation and the final gate audit are
-being completed before E08. [Epics](EPICS.md) contains exact PR, commit and check evidence.
+full-stack crash proof. Runtime isolation, documentation and the final gate audit are
+merged. E08.1 is inspecting the supplied server and preparing HTTP ingress on port 3200. [Epics](EPICS.md) contains exact PR, commit and check evidence.
 
 - The free ProseMirror/Python adapter preserves supported source DOCX structures,
   originals and revision-matched review metadata. See [Editor feasibility](EDITOR_FEASIBILITY.md)
@@ -32,8 +32,8 @@ being completed before E08. [Epics](EPICS.md) contains exact PR, commit and chec
 - Every task has its own PR and verified exact-head auto-merge. Actual strict main
   protection includes administrator enforcement.
 - E08 deploys through Actions to `http://<DEPLOY_HOST>:<PORT>` on new shared-nginx
-  ingress while preserving existing services. No supplied-server access or deployment
-  has occurred. Private connection values stay in ignored local configuration.
+  ingress while preserving existing services. Read-only supplied-server preflight and isolated port probes have started;
+  application deployment has not occurred. Private connection values stay in ignored local configuration.
 - Repository: [Flippylolz/fillable](https://github.com/Flippylolz/fillable).
 
 Start with [Docker development](LOCAL_DEVELOPMENT.md), including explicit account
@@ -73,7 +73,7 @@ Read the decisions and the relevant epic before changing code. E01 establishes t
 
 Use the epic status table as the implementation ledger. Record completed work and evidence there; do not infer implementation from the existence of these planning documents.
 
-E01 establishes coverage-enforced CI early. E08 deploys last, after E00–E07 pass and access/routing on the supplied server are verified. Server inspection and deployment have not begun; no live server is needed to start development.
+E01 establishes coverage-enforced CI early. E08 deploys last, after E00–E07 pass and access/routing on the supplied server are verified. Server preflight is underway in E08; application deployment is not yet complete.
 
 - [Scheduled maintenance](MAINTENANCE.md): bounded reconciliation, retention and failure state.
 

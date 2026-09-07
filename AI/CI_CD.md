@@ -11,7 +11,7 @@ Repository auto-merge was enabled on 2026-09-06. Each task is delivered through 
 - E07 verifies the complete MVP, coverage gate, and operations in local/CI Docker environments.
 - **E08 is the final task: deployment through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`.** It requires all earlier epics to pass and server access, port allocation, and shared nginx integration to be verified.
 
-Preparing and testing production images/Compose locally is foundation work. Connecting to the live server, configuring its deployment, and running the deployment workflow belong to E08. The target is now supplied; it has not been inspected or changed. See [Deployment target](DEPLOYMENT_TARGET.md), including the requirement to preserve existing services and investigate WEF as a possible nginx owner.
+Preparing and testing production images/Compose locally is foundation work. Connecting to the live server, configuring its deployment, and running the deployment workflow belong to E08. The target was inspected during E08.1; only isolated temporary port probes have run. See [Deployment target](DEPLOYMENT_TARGET.md), including the requirement to preserve existing services and investigate WEF as a possible nginx owner.
 
 ## Mandatory coverage gate
 
@@ -85,7 +85,7 @@ Rollback must also be scoped to Fillable's nginx change and resources. Never rol
 - Environment/secret configuration in the known GitHub repository `Flippylolz/fillable`, runner-to-server connectivity, and deployment identity.
 - Image delivery mechanism and the final deployment trigger preference.
 
-The server address/user are already supplied and should not be requested again. Remaining unknowns are E08 preflight dependencies; continue preceding epics without live-server changes.
+The server address/user are already supplied and should not be requested again. E08.1 records verified access, topology and resource baselines in the deployment-target runbook; later E08 tasks deliver and verify the rollout.
 
 ## E01.1 gate implementation (2026-09-06)
 
