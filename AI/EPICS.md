@@ -25,7 +25,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.4 full-application restart and upgrade verification |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.5 runtime isolation and Docker documentation |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -1956,3 +1956,34 @@ branch `task/e07-4-restart-upgrade-proof`. The completed local proof used candid
 `a198389`. The final frozen repeat and both required CI jobs are running. Before
 readiness, inspect those results and actual strict main protection, enable exact-head
 squash auto-merge, and verify MERGED before E07.5. No product decision is outstanding.
+
+
+Verified E07.4 completion: [PR #66](https://github.com/Flippylolz/fillable/pull/66)
+merged as `0750bd8eb32082692155d0292fcaeb87eabcb0b8`, exact head
+`1c53bf2d4f9f2b6226f79e1915bb9abe1b214c73`. CI `34138371739` passed `checks`,
+`upgrade-checks` and `ci-required`. Backend416: 3969/3998 lines (99.27%),
+1174/1206 branches (97.35%); frontend229: 1292/1303 lines (99.16%), 1500/1569
+branches (95.60%). Both negative probes passed. Final local `CVz0BX` independently
+passed previous-image upgrade, full restart, post-unlink crash reconciliation and
+six badge cases. No server access occurred; synthetic volumes remain preserved.
+
+Main synchronized before `task/e07-5-runtime-isolation`. E07.5 is in progress:
+align development/production runtime ceilings, scope log rotation, verify effective
+runtime isolation and freeze staged verification drivers/source trees. Refresh stale
+onboarding/architecture contracts while preserving the Docs-like UI and readable
+localized storage. Initial Compose editing hit nested dependency mappings and was
+corrected before startup. First runtime comparison hit duplicated separators in
+macOS's temporary path; normalization preserves exact path equality. The second
+fresh run passed development/runtime startup and is completing production browsers.
+Final frozen source and both mandatory CI jobs must pass before readiness/merge.
+
+E07.5 fresh `sGFuL3`, project `fillable-verify-sgful3`, passed 7 development and
+48 production browser cases. All four effective-runtime assertions passed before/
+after development and production flows: configured hard ceilings/log rotation,
+users, private shared mounts, loopback-only publication and no reported container
+OOM/restarts. Docker samples are point-in-time, not peaks. The frozen source still
+matched its captured Git tree after the working index changed; the initial ad-hoc
+zsh comparison had a colon-modifier syntax error and the corrected byte comparison
+passed. Final drivers also isolate synthetic environment settings, retain source-tree
+reports, and use `development` for uncommitted snapshot badge metadata. Final full
+fresh/recovery repeats and both CI jobs are required before readiness.

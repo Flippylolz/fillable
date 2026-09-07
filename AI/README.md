@@ -1,26 +1,43 @@
 # Project guide
 
-Last updated: 2026-09-06.
+Last updated: 2026-09-07.
 
 Fillable is a self-hosted application for editing Word documents with a synchronized sidebar of detected fields.
 
 ## Current state
 
-- Git repository initialized with empty base commit `3820bff`; [P00 planning PR](https://github.com/Flippylolz/fillable/pull/1) delivers the planning files through `task/p00-mvp-plan`. Its GitHub state and PR body record actual merge evidence.
-- Product direction, application stack, local storage, and Docker-based development agreed.
-- MVP contains four pages: login, library with templates/results, simple profile, and document workspace with settings, field sidebar, and version-history UI.
-- UI localization is required in MVP: Ukrainian by default, English as secondary, all application copy in i18n catalogs, and a saved language switcher in the profile. See [Localization](I18N.md); changing UI language preserves original document content.
-- MVP includes a fixed, translucent, noninteractive [Git version badge](VERSION_BADGE.md) showing the deployed commit's first seven characters or `development`. The supplied design is implemented and browser-verified in E01.8.
-- CI must block below 90% coverage. Deployment is final epic E08 through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`, using a new port and shared nginx while preserving existing services.
-- E00–E02 are verified and merged, including the free editor proof, Docker/CI foundation, accounts, profile, and quota-enforced storage. E03 has verified upload validation/persistence, the library, saved downloads and deletion. Persisted workspace entry, durable upload processing/status and independent template copies are merged. Field-discovery schemas are in progress; discovery/review, safe saves/history and deployment remain. See the execution ledger for exact task/PR evidence.
-- Documents are primarily Ukrainian. [Test corpus](TEST_CORPUS.md) provides an initial generated fixture and expected outcomes while real examples are unavailable.
-- D008 selects the proven free ProseMirror/Python source-package adapter. Its tested support matrix and explicit limitations are recorded in Editor feasibility. Production workspace/save integration remains later work.
-- AI is outside MVP. Detection uses rules, existing controls, review, and manual fields. A possible Groq/free-allowance feature is deferred.
-- Local and production environments only; no backups. Persistent data and version-history UI remain required.
-- Production URL: `http://<DEPLOY_HOST>:<PORT>`, served through shared nginx on a new public port; the numeric port is pending inspection. Supplied connection values are retained in ignored `AI/DEPLOYMENT.local.md` and are not published in this repository.
-- GitHub repository: [Flippylolz/fillable](https://github.com/Flippylolz/fillable), created by the user; local `origin` points to it. The public repository was empty before the documented P00 history bootstrap on 2026-09-06.
-- E01.1 implements application coverage CI. Actual `main` protection now requires up-to-date `ci-required` from GitHub Actions, including administrators, before the first application merge. No deployment or server inspection has occurred.
-- Every task must use its own branch and PR. GitHub auto-merge is enabled at repository level; agents enable it separately for each ready PR after verifying the required merge gates.
+Fillable implements login, library, profile and a document workspace with direct
+editing, synchronized fields, settings, autosave and retained version history.
+Ukrainian is the default UI language and English is persisted per account. The
+Docs-like workspace and locale-aware storage displays are verified on desktop/mobile.
+
+E00–E06 are merged. E07 has verified bilingual MVP flows, session recovery,
+content-free diagnostics, bounded scheduled maintenance and a previous-image upgrade/
+full-stack crash proof. Runtime isolation/documentation and the final gate audit are
+being completed before E08. [Epics](EPICS.md) contains exact PR, commit and check evidence.
+
+- The free ProseMirror/Python adapter preserves supported source DOCX structures,
+  originals and revision-matched review metadata. See [Editor feasibility](EDITOR_FEASIBILITY.md)
+  for tested limits; it does not promise universal Word layout fidelity.
+- Detection is deterministic, with existing controls, suggestions and manual review.
+  AI/provider integration is outside MVP.
+- All retained writes use local quota-enforced storage. Copies are independent,
+  restores create new revisions, and retention keeps everything unless configured.
+  Local and production are the only persistent environments; backups are excluded.
+- Docker is the development, verification and deployment runtime. Required CI checks
+  enforce raw >=90% lines and branches independently for frontend/backend. The
+  aggregator requires both standard checks and the separate upgrade/recovery job.
+- [The version badge](VERSION_BADGE.md) shows the built source commit or `development`
+  with its specified fixed appearance and click-through behavior.
+- Every task has its own PR and verified exact-head auto-merge. Actual strict main
+  protection includes administrator enforcement.
+- E08 deploys through Actions to `http://<DEPLOY_HOST>:<PORT>` on new shared-nginx
+  ingress while preserving existing services. No supplied-server access or deployment
+  has occurred. Private connection values stay in ignored local configuration.
+- Repository: [Flippylolz/fillable](https://github.com/Flippylolz/fillable).
+
+Start with [Docker development](LOCAL_DEVELOPMENT.md), including explicit account
+provisioning and isolated fresh/recovery verification commands.
 
 ## Documentation map
 

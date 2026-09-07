@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Docker/API/i18n foundation and the editor round-trip proof are implemented. E00.5 selects the project-owned ProseMirror/Python adapter; domain features remain target design. See the execution ledger for task-level evidence.
+Status: the four-page application, source-preserving editor, accounts, quotas, saves/history, recovery and maintenance are implemented. E07 completes operational verification before E08 deployment. See [Epics](EPICS.md) for verified task evidence.
 
 ## Components
 
@@ -10,7 +10,9 @@ Status: Docker/API/i18n foundation and the editor round-trip proof are implement
 | Embedded editor | Working document state, selection, editing transactions, undo/redo, DOCX import/export |
 | FastAPI application | Authentication, profile, templates/documents, field definitions, version history/restoration, and quota enforcement |
 | Python document package | DOCX inspection, deterministic candidates, validation, editor-independent field schemas |
-| RQ worker | Deterministic detection, retained exports, cleanup, and reconciliation |
+| RQ worker | Bounded deterministic discovery with revision-fenced results |
+| Python dispatcher | Durable PostgreSQL outbox dispatch and expired-job recovery |
+| Python maintenance | Bounded reconciliation, explicit retention, inventory and capacity checks |
 | PostgreSQL | Users, sessions, document/version records, field metadata, quota accounting, durable job state |
 | Redis | RQ transport and worker coordination; not the authoritative document or quota store |
 | Local filesystem | Immutable document versions, originals, retained outputs, bounded staging files |
@@ -21,7 +23,7 @@ Locally, the browser talks to the project-owned nginx gateway, which routes `/ap
 
 The page contract lives in [Product](PRODUCT.md). Operators provision accounts and configure quotas through containerized maintenance commands using the same Python services. The MVP has no administrator dashboard; history is a panel in the document workspace.
 
-## Planned repository layout
+## Repository layout
 
 ```text
 AI/                     Project knowledge and implementation ledger
@@ -36,7 +38,7 @@ compose.prod.yaml       Production overrides
 .env.example            Documented, non-secret configuration template
 ```
 
-The repository now contains the Docker foundation, application/test scaffold, source-package editor adapter and immutable synthetic corpus at these paths. Domain implementation should extend them; the ledger distinguishes proof code from production features.
+These paths contain the application, domain services, source-package editor adapter and synthetic corpus. Verification helpers live in `scripts/`; the prototype API is opt-in only and absent from normal production routing.
 
 ## Data model boundaries
 
@@ -49,7 +51,11 @@ The repository now contains the Docker foundation, application/test scaffold, so
 - `FieldOccurrence`: one location/control in one document version, associated with a logical field.
 - `DetectionCandidate`: source revision, location evidence, proposed type/label, review status.
 - `QuotaAccount` and `StorageReservation`: nullable per-user quota override, used/reserved bytes and durable operation-bound allocations; global defaults live in the singleton storage settings.
-- `Job`: owner, operation, source revision, status, retry state, and result reference.
+- `Job`: owner, operation, source revision, status, retry state, and validated field snapshot.
+- Retention settings: explicit keep-latest policy, disabled by default.
+- Maintenance state: run identity, persisted sweep cursors, safe counters and progress timestamps.
+
+Field definitions/occurrences are validated version-paired JSON structures, not independent mutable copies of document text.
 
 The database is the authority for permissions and committed versions. A version must not claim a field snapshot from a different DOCX revision. Original uploads are retained unchanged.
 
@@ -57,7 +63,7 @@ The database is the authority for permissions and committed versions. A version 
 
 The React application owns Ukrainian and English message catalogs and a shared translation/formatting entry point under [Localization](I18N.md). New accounts and unconfigured browsers default to Ukrainian. The profile updates the authenticated user's `ui_language`; the saved account value is authoritative after login and refresh. Apply successful changes without reloading the page or recreating editor state, and keep document language/content independent of the interface locale.
 
-The API returns stable error/status codes and typed parameters, including field-validation errors, rather than presentation strings for direct display. The frontend translates application messages and uses locale-aware interface formatting. Extracted/custom field labels, titles, filenames, and document values remain original data. Localize exposed embedded-editor UI through verified hooks or project-owned controls; E00 must include this in its selection evidence. Localization introduces no translation service or external AI dependency.
+The API returns stable error/status codes and typed parameters, including field-validation errors, rather than presentation strings for direct display. The frontend translates application messages and uses locale-aware interface formatting. Extracted/custom field labels, titles, filenames, and document values remain original data. The project-owned editor controls use the same verified catalogs. Localization introduces no translation service or external AI dependency.
 
 ## Template instantiation
 
@@ -91,7 +97,7 @@ Both templates and documents appear in the one library page with separate tabs. 
 8. Deleting or invalidating a control marks its occurrence missing. Never silently remap it by matching similar text.
 9. Save an immutable DOCX and its matching field snapshot. Reject a stale base revision instead of overwriting another save.
 
-The editor adapter should cover only operations the product needs: load, export, enumerate/create/read/update/focus controls, subscribe to changes, and expose revision state. Do not build a speculative universal editor framework.
+The editor adapter covers the product operations: load, export, enumerate/create/read/update/focus controls, subscribe to changes, and expose revision state. Do not build a speculative universal editor framework.
 
 The editor and its required import/export path must be free under D008. [Editor feasibility](EDITOR_FEASIBILITY.md) records a project-owned adapter/editor fallback using open components. Preserve the source DOCX package and untouched parts when implementing that fallback; define supported editable regions through evidence rather than silently dropping unsupported Word structures.
 
@@ -120,32 +126,49 @@ Jobs carry identifiers and revision references rather than document bytes or cre
 - Apply ownership checks to every read and mutation, including download URLs and job polling.
 - Parse DOCX as untrusted ZIP/XML with compressed-size, expanded-size, entry-count, and processing-time limits. Disable external entity resolution and external resource fetching.
 - E03.2 implements the source-preserving [DOCX admission contract](DOCX_VALIDATION.md), including package/relationship validation and shared reader limits.
-- E03.3 implements [owned resource persistence](DOCUMENT_PERSISTENCE.md), committing original bytes and the initial version through the shared storage transaction. Library UI and document actions remain subsequent tasks.
+- [Owned resource persistence](DOCUMENT_PERSISTENCE.md) commits originals and revisions through the shared storage transaction; the library supports uploads, independent copies, saved downloads and durable deletion.
 - Keep temporary files, filesystem capacity, parser resources, and job runtimes bounded.
 - Use local synthetic documents in development and tests. Do not log document contents, entered field values, or credentials.
-- Maintain isolated local and production data/configuration; CI uses disposable test stacks. Backups and persistent staging are outside MVP under D018.
+- Maintain isolated local and production data/configuration; CI uses disposable test stacks. Backups and persistent staging deployment environments are outside MVP under D018.
 - Verify restart/upgrade persistence and storage reconciliation in local/CI Docker before deployment. Redis may be rebuilt from durable job records where appropriate. Version history is application data on the same server and cannot recover server/disk loss.
 - GitHub Actions is the CI and deployment orchestrator. CI coverage gates start in E01; E08 deploys the verified images to the user's server only after the earlier epics pass. See [CI and deployment](CI_CD.md).
 - The supplied target hosts other services. Use new unused ports, isolated Compose resources, and the existing shared nginx without taking over its existing listeners or TLS. [Deployment target](DEPLOYMENT_TARGET.md) governs preflight, WEF discovery, validation, graceful reload, and checks for existing-service regressions.
 - The configured HTTP origin requires a Fillable-specific HttpOnly/SameSite session cookie without Secure, plus CSRF and exact-origin checks including the port. HTTP traffic is unencrypted and cookies are not scoped by port; D019 records this limitation. Enable Secure for a future explicitly configured HTTPS origin.
 
-## E01.1 implementation checkpoint
+## Saves, recovery and operations
 
-`backend/app/main.py` provides a typed process-health response at `/api/health`.
-This is not dependency readiness; PostgreSQL/Redis readiness arrives with E01.3.
-The React shell consumes the same-origin endpoint with bounded timeout,
-unmount cancellation, and retry. Shared i18next resources default to Ukrainian;
-formatting and page language update without remounting the shell. Product pages,
-editor, persistence, account language storage, and quota services remain pending.
+The [workspace](WORKSPACE.md) keeps the live editor mounted across profile/language
+changes and same-owner session recovery. Same-owner reauthentication refreshes CSRF,
+pauses protected work and fences late responses; changing accounts requires explicit
+discard and a new editor instance.
 
-## E01.4 API contract
+Manual save and two-second debounced autosave share the same immutable request and
+idempotency protocol. The server checks the current source revision and active
+owner/session/tab editing lease. File publication, the new revision, paired review,
+lease successor, durable job intent and audit commit together. An unknown response
+keeps its exact retry key/body; acknowledging older work cannot discard newer typing.
+
+History loads a separate read-only preview. Restore publishes the exact selected
+bytes as a new charged revision and retains parent/restored-from provenance. Copies
+rebase verified control identities against their independently stored source; later
+source changes cannot mutate them. See [Document persistence](DOCUMENT_PERSISTENCE.md),
+[Workspace](WORKSPACE.md), and [Storage quotas](STORAGE_QUOTAS.md).
+
+[Diagnostics](DIAGNOSTICS.md) exposes safe operator counters and chronological audit
+pages. [Maintenance](MAINTENANCE.md) persists bounded sweep cursors behind an advisory
+lock and run fences; failures remain visible, retries are bounded and unknown files
+are never removed. Runtime memory/CPU and log rotation are scoped in Compose.
+[Application recovery](APPLICATION_RECOVERY.md) verifies a real previous-image
+upgrade and post-unlink process crash against isolated synthetic data.
+
+## API contract
 
 The API emits `{"error":{"code":...,"parameters":...}}` for application, HTTP,
 validation, and unexpected failures. Codes are enumerated; parameters are typed
 strings/integers. Raw exception messages and submitted validation input are not
 returned. Frontend presentation maps known codes to Ukrainian/English catalogs,
-with a generic localized fallback for unknown codes. This does not yet implement
-field-specific validation UX or account/storage endpoints.
+with a generic localized fallback for unknown codes. Account, storage, field and
+editor validation use these typed contracts.
 
 FastAPI's schema is deterministically exported to `frontend/generated/openapi.json`;
 MIT-licensed `openapi-typescript` generates `frontend/generated/api.d.ts` and the
