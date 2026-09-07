@@ -2057,3 +2057,12 @@ response at port 3200, followed by successful stop/automatic removal. Access is 
 longer blocked. The user explicitly kept HTTP after HSTS disclosure. Preflight
 documentation is ready for its own PR; no application source or new coverage
 measurement is introduced. Required CI must pass and the PR must merge before E08.2.
+
+E08.1 is in_review in [PR #69](https://github.com/Flippylolz/fillable/pull/69),
+branch `task/e08-1-server-preflight`, candidate `53dd9e1`. Documentation links,
+private-identity scan and whitespace passed. The successful public 3200 probe was
+stopped/removed; no server application/configuration change remains. Repository
+secrets and deployment environments are currently empty (names-only inspection).
+Next: verify final required CI/protection, exact-head squash auto-merge and MERGED;
+then E08.2 creates the protected immutable-artifact workflow. The HTTP decision and
+port access are settled; do not ask again. No external dependency is outstanding.
