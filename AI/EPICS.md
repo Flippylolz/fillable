@@ -25,7 +25,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | done: E04.1–E04.5 merged; saved review/copy acceptance verified through E06.2a–E06.2c and E06.6 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
-| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.2 content-free diagnostics |
+| E07 | MVP acceptance and CI verification | E03–E06 | in_progress: E07.3 scheduled maintenance in_review (PR #65) |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -1907,3 +1907,15 @@ has observed an actual scheduler tick with 5-second statement/2-second lock time
 full production/browser verification and the negative coverage probe are pending.
 A frozen launcher preserves the staged verification script while review continues.
 Frontend application source is unchanged from PR64's measured 229-test baseline.
+
+E07.3 [PR #65](https://github.com/Flippylolz/fillable/pull/65) is in_review on
+`task/e07-3-scheduled-maintenance`. The real negative coverage probe passes: all
+416 tests succeed but added unimported source is rejected at 3969/12326 lines.
+The first frozen fresh run `kQs6JI`, project `fillable-verify-17887`, fully passed
+7 development and 48 production browser cases, both gateway probes, persistence
+and actual maintenance ticks. Volumes and evidence are retained. Final committed
+verification additionally requires a different maintenance run ID after recreation,
+so an old persisted success cannot satisfy the new-process check; that full repeat
+and required GitHub CI are running. Changed Markdown links and shell syntax pass.
+Next: inspect final results, verify actual strict required rules, enable exact-head
+squash auto-merge, confirm MERGED, then begin E07.4. Deployment remains last.
