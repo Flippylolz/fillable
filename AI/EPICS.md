@@ -2241,3 +2241,42 @@ stopped container without a healthcheck. The probe was removed. Read-only server
 inventory now parses all 15 containers (10 healthy, one pre-existing unhealthy, four
 without healthchecks). No server state changed. Required final-head CI and merge
 remain pending before corrected private bootstrap.
+
+Live E08.3a checkpoint: [PR #73](https://github.com/Flippylolz/fillable/pull/73),
+head `ce00405d1dbe1f9350e707231d370148d4c2dc6c`, required CI `34158778326`
+running and exact-head squash auto-merge enabled under strict administrator-enforced
+ci-required protection. Upgrade/recovery job passed. Main CI `34158010119` for PR #72
+merge is also being followed. Port 3200 remains absent from all 13 inspected managed
+Compose files. Guarded private bootstrap/environment scripts now require PR #73 and
+its exact successful head/run/merge; no receiver installation or server mutation yet.
+
+E08.3a PR #73 is verified MERGED as `beffa8a54c53cf1cadf3f923cc32775a9e774fa3`,
+head `ce00405d1dbe1f9350e707231d370148d4c2dc6c`, CI `34158778326` SUCCESS
+for all three required jobs. Backend 3969/3998 lines, 1174/1206 branches; frontend
+1292/1303 lines, 1500/1569 branches; both real unimported-source probes passed.
+The corrected merged receiver is now privately installed: restricted check passes,
+arbitrary command is rejected, and exact before/after container baselines match.
+No application or shared nginx configuration was started/changed by bootstrap.
+
+E08.3 private preparation is complete: production environment is verified main-only,
+and four dedicated deployment secret names are configured via private stdin. E08.4
+begins from `beffa8a54c53cf1cadf3f923cc32775a9e774fa3` on
+`task/e08-4-actions-rollout`. Add authenticated public HTTP smoke after artifact apply,
+private initial-account provisioning only for an empty database, and safe evidence
+for upload/save/original/current/history downloads. Exercise this checker against
+the actual isolated app and test failure handling. Deliver this task through required
+CI and verified merge, then dispatch Actions only after exact-main push CI succeeds.
+Compare existing service/routes and preserve HTTP 3200, data and shared TLS policy.
+E08.5 remains the broader deployed browser and persistence acceptance task.
+
+E08.4 local implementation verifies public authenticated rollout with generated private
+credentials and source-bound empty-database provisioning. Shared SSH setup preserves
+strict trusted-host/dedicated-key behavior. Two HTTP contract tests and six shell
+provisioning/failure scenarios pass, along with the six existing transport scenarios.
+An isolated actual amd64 app + real manager + relay proof passed login and two full
+upload/save/original/current/history smoke executions. Full Fillable restart preserved
+stored file bytes/digests/quota counters; scoped include removal preserved concurrent
+owner edits and the shared container baseline. Own probes were stopped; data retained.
+Proof root `fillable-e084-real.timgnz3s`, project `fillable-e084-timgnz3s`.
+Next: task PR, required CI/verified merge, configure two private initial-account
+environment secrets, wait successful exact-main CI and run the Actions workflow.

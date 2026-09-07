@@ -75,6 +75,8 @@ jobs:
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_release_contract.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_runtime_contract.py
           sh scripts/verify-server-runtime.sh
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_public_release.py
+          python3 scripts/test_smoke_transport.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_coverage_provenance.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/test_gate_contract.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/probe_backend_coverage.py
