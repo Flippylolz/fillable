@@ -113,7 +113,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     exportSnapshot,
     refreshAccess() { editor.setProps({}); },
     setDocumentLabel(label: string) {
-      editor.setProps({ attributes: { "aria-label": label, role: "textbox", "aria-multiline": "true" } });
+      editor.setProps({ attributes: () => ({ "aria-label": label, role: "textbox", "aria-multiline": "true", "aria-readonly": String(!allowed()) }) });
     },
     attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string, reviewSaved = false): boolean {
       if (compositionSource) return false;

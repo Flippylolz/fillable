@@ -145,8 +145,8 @@ The proposed title stays in the form through failures and language changes. A ti
 conflict can reload current metadata while retaining the proposed name; a changed saved
 revision uses the existing explicit reopen/discard flow. Pending title edits participate in
 leave guards. A successful rename refreshes library metadata without losing upload/editor
-drafts and never reports document edits as saved. Save/history toolbar integration remains
-E05.6b after the corresponding E06 operations are implemented.
+drafts and never reports document edits as saved. E06.2d/E06.3b deliver the save and
+history toolbar integration required by E05.6b.
 
 ## E06.1a editing lease API
 
@@ -312,4 +312,22 @@ review without rewriting its null origin inside undo history. This acknowledgmen
 is outside the document; actual reopened review uses the server's persisted origin.
 Proposals never replace user review. The UI provides Ukrainian/English save, pending,
 retry, failure and exact-acknowledgment states. This task adds manual save; automatic
-save and the history panel remain subsequent E06 tasks.
+save remains E06.7; the history panel is delivered in E06.3b.
+
+
+## History panel and draft-safe restore (E06.3b)
+
+The toolbar opens saved history inside the workspace. A separate read-only adapter
+previews exact persisted revisions while the original draft/editor and proposed
+title stay mounted. Return to editing keeps the same undo stack and local state.
+Localized dates, readable byte sizes, current markers, restore provenance and bounded
+paging use the saved history APIs. Exact historical downloads verify the response's
+selected revision header before producing a browser download.
+
+Restore confirms replacement of unsaved content/title and coordinates with pending
+manual saves and editing access. It adopts a new editor instance only after the exact
+restored current pair is loaded. Unknown or failed loads retain the original draft
+and request across history/profile/language changes; retries cannot switch to another
+selected revision. Explicit reopen offers a separate discard decision. The full
+contract and retention boundary are in [Saved history](HISTORY.md). Autosave remains
+E06.7 and must not save a historical preview.

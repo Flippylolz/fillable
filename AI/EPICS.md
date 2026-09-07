@@ -24,7 +24,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E03 | Upload, templates, and processed-document library | E02 | done: E03.1–E03.6 and E03.1b verified merged; later history scenarios extend E06 acceptance |
 | E04 | Field discovery and review model | E03; editor mapping work needs E00 | in_progress: E04.1–E04.5 merged; retained review/copy acceptance awaits E06 |
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | in_progress: E05.1–E05.5 merged; E05.6a merged; E05.6b save merged; history awaits E06.3b |
-| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a history API |
+| E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | in_progress: E06.1a–E06.1b merged; E06.2a–E06.2b merged; E06.2c–E06.2d merged; E06.3a, E06.4 and E06.6 merged; E06.3b history panel in progress |
 | E07 | MVP acceptance and CI verification | E03–E06 | waiting |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | waiting |
 
@@ -1620,3 +1620,38 @@ Actual strict `ci-required` protection including administrators was verified. Ne
 individual E06.6 PR, exact-head auto-merge and verified merge, then E06.3b complete
 history UI with explicit draft handling. Retention/autosave and E07 remain; deployment
 is E08, last, preserving unrelated services.
+
+2026-09-07: E06.6 verified merged through [PR #58](https://github.com/Flippylolz/fillable/pull/58),
+merge `042b5d0d35c1da5598d103fb775efde95787d1a8`; Actions 34104984875 passed
+`checks` and `ci-required` for exact head `597cf7f903273099632e0925265c444a33797575`.
+E06.3b starts on `task/e06-3b-history-panel`: complete in-workspace history, localized
+revision metadata, separate read-only preview, exact download, restore confirmation
+and recovery. The live draft stays mounted while viewing history and is replaced
+only after restore acknowledgment and loading its exact current pair. Unknown
+requests survive mode/locale changes and retry their original selected version/key.
+
+E06.3b local verification passed: 191 frontend tests, lint/catalog/type/build and raw
+coverage 1221/1231 lines (99.19%), 1370/1435 branches (95.47%). Backend 353 tests,
+Ruff/mypy/gate contracts, raw 3559/3582 lines (99.36%), 1074/1098 branches (97.81%).
+Both real unimported-source probes passed their suites and blocked below 90%.
+Fresh staged application `fillable-verify.jp82Fn`, project `fillable-verify-91337`,
+passed 7 development and 34 production browser tests, hot reload, worker, static
+assets and persistence/recreation; all volumes preserved. A final preview-conflict
+copy correction then passed all 191 frontend tests and the negative coverage probe.
+Six new desktop/mobile browser cases exercise both resource types, draft/title/DOM
+preservation through preview/back, readonly native input, exact historical download
+without quota change, restore confirmation/cancellation, new revision/current/origin
+markers, real committed lost-response retry across a newer draft and profile language
+change, and injected quota failure without draft/current loss. PostgreSQL quota and
+race behavior remains covered by the real backend suite, not claimed from injection.
+Hook/component tests additionally cover paging, independent preview/list retry,
+identity mismatch, timeout, stale result, failed post-commit content loading, explicit
+reset and localized recovery. The desktop panel uses the right-side revision list;
+mobile stacks the list above the paper. Ukrainian desktop and English mobile captures
+were visually inspected. Independent DOCX rendering passed no-edit byte/pixel equality,
+three edited/unchanged-page and five multiline-page Ukrainian/astral checks; Word is
+not claimed. No history preview can save or replace the live draft.
+Actual strict `ci-required` protection including administrators was verified. Next:
+individual E06.3b PR, exact-head auto-merge and actual merge verification; then E06.5
+operator retention. E05.6b history completion awaits this PR's merge. E06.7 autosave,
+E07 acceptance and final E08 deployment remain; unrelated services are untouched.

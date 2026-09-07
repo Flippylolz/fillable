@@ -59,7 +59,7 @@ content. Administrator role does not grant access to another owner's history.
 Reopening tests compare original bytes and edited/review-only file/model pairs with
 verified structural correspondence and the immutable-original exporter. Real gateway
 browser tests download original and newer revisions separately and reopen the saved
-workspace. Historical panel preview/download controls follow in E06.3b. These checks
+workspace. Historical panel preview/download controls are implemented in E06.3b. These checks
 do not claim Microsoft Word validation.
 
 ## Restore as a new revision
@@ -95,4 +95,32 @@ image when populated provenance prevents an older schema downgrade; preserve dat
 
 The restore API does not know browser drafts. E06.3b supplies explicit unsaved-work
 confirmation and retains the live draft until an exact-current restore acknowledgment.
-This API task does not yet claim completed history controls or draft-restoration UX.
+The E06.6 API verification is separate from the E06.3b history UI acceptance below.
+
+## Workspace history panel
+
+E06.3b adds history inside the workspace for templates and documents. The revision
+list shows localized time, readable saved size, current marker and restore origin,
+with bounded pages of 20 and explicit refresh/older-page controls. Opening history
+keeps the live editor, its undo history and proposed title mounted. A visible message
+explains that the unsaved draft is preserved; return to editing resumes that same
+state. The separate historical adapter is read-only, exposes that accessibility
+state, displays saved fields and has no editing or save callbacks. Preview never
+updates the current revision. Language changes preserve both draft and selection.
+
+Historical downloads check the returned revision header before creating a browser
+file. A mismatched result is rejected. List/preview/download failures expose explicit
+retry paths. A newer current UUID from history prompts reopening rather than rebasing
+an unsaved draft silently. All history remains retained; E06.5 will add the visible
+operator retention policy before any automatic pruning.
+
+Restoring confirms replacement of an unsaved draft/title. The client first commits
+or retries the exact selected request, then loads the exact returned current pair.
+Only successful loading replaces the live editor and resets its local undo/draft
+state. Quota failures, network errors and failed content loads preserve the original
+draft. A committed-but-unloaded result remains retryable with its original key, even
+across closing history or switching language. Retry identifies the original selected
+revision and reconfirms replacement of any newer local draft. Old replay results
+with a newer server current revision never replace the draft. Pending save/restore
+operations coordinate mutation, navigation and dirty guards; no historical autosave
+is introduced.
