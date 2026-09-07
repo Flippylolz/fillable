@@ -2015,3 +2015,12 @@ record successful runs. No threshold, application exclusion or dependency change
 Both real negative probes, complete local suites and required CI must pass. Actual
 GitHub protection was reread: strict `ci-required`, Actions app 15368, administrators
 enforced. No deployment workflow or server access exists yet; E08 remains last.
+
+E07.6 is in_review in [PR #68](https://github.com/Flippylolz/fillable/pull/68),
+source candidate `730ad7f`. Three provenance tests, raw boundary/source contracts and
+all aggregation result combinations pass. Frontend229 passes with baseline coverage;
+the real negative probe rejects both metrics with all tests passing. Its final probe
+also exercises the actual producer and verifies failed coverage removes an old stamp.
+Full backend suite/probe and final frontend producer repeat are running. Required CI
+must pass for the final head; verify protection and exact-head auto-merge, then actual
+MERGED before E08 preflight. There is no external blocker or server access yet.

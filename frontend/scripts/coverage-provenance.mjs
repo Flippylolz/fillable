@@ -19,7 +19,7 @@ rmSync('coverage/provenance.json', { force: true });
 rmSync('coverage/coverage-summary.json', { force: true });
 const before = snapshot();
 if (!Object.keys(before).length) throw new Error('Empty coverage source');
-const result = spawnSync('npm', ['test'], { stdio: 'inherit' });
+const result = spawnSync('npm', ['test', ...process.argv.slice(2)], { stdio: 'inherit' });
 if (result.error || result.status !== 0) process.exit(result.status || 1);
 if (JSON.stringify(before) !== JSON.stringify(snapshot())) {
   throw new Error('Source changed during coverage run');

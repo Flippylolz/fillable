@@ -228,7 +228,8 @@ manifests) into the coverage artifact and independently checks frontend counts
 against the checkout. Separate disposable negative-probe containers cannot overwrite
 normal reports. The backend probe binds its real report before expecting a below-90
 error. The frontend probe requires all tests to pass and Vitest to reject actual
-below-90 line and branch counts with an included unimported file.
+below-90 line and branch counts with an included unimported file. It also runs the
+real producer wrapper and verifies an old stamp is removed on coverage failure.
 
 Required contract tests also reproduce a real stale coverage.py report, failed-run
 stamp invalidation, source mutation during execution, tampering, missing reports,

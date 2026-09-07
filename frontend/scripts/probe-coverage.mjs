@@ -12,8 +12,11 @@ const sourceLines = fs.readdirSync('src', { recursive: true })
   .reduce((total, path) => total + fs.readFileSync(`src/${path}`, 'utf8').split('\n').length, 0);
 try {
   fs.writeFileSync(probe, 'export function untested(value: number) {\n' + Array.from({ length: Math.max(30, sourceLines) }, (_, i) => `  if (value === ${i}) return ${i};\n`).join('') + '  return -1;\n}\n');
-  const run = spawnSync('npm', ['test', '--', '--reporter=json', '--outputFile=/tmp/probe-results.json'], { encoding: 'utf8' });
+  fs.mkdirSync('coverage', { recursive: true });
+  fs.writeFileSync('coverage/provenance.json', 'old successful stamp');
+  const run = spawnSync(process.execPath, ['scripts/coverage-provenance.mjs', '--', '--reporter=json', '--outputFile=/tmp/probe-results.json'], { encoding: 'utf8' });
   assert.equal(run.status, 1, run.stdout + run.stderr);
+  assert.equal(fs.existsSync('coverage/provenance.json'), false);
   const results = JSON.parse(fs.readFileSync('/tmp/probe-results.json'));
   const failures = results.testResults.flatMap(suite => suite.assertionResults
     .filter(test => test.status === 'failed')
