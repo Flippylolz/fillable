@@ -24,7 +24,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 ### 1. Login
 
 - Email and password, submit/loading state, and clear invalid-credentials feedback.
-- Successful login opens the library; an expired session returns to login without silently discarding unsaved work.
+- Successful login opens the library. An expired session opens inline sign-in recovery while preserving the mounted workspace; returning to the login page or switching accounts requires explicit resolution of unsaved work.
 - Protect library, profile, workspace, and file APIs behind authentication.
 - MVP accounts are provisioned by an operator through a containerized maintenance command. Public registration and email-based password recovery are deferred.
 
