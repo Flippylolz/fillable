@@ -105,6 +105,11 @@ test("an uncertain autosave pauses retries and preserves newer typing until exac
   await values(page).first().fill("Перша збережена Ґанна");
   await expect(page.getByText(/Результат збереження ще не підтверджено/)).toBeVisible({ timeout: 10000 });
   await values(page).first().fill("Новіша чернетка Єви"); await idle(page); expect(writes).toHaveLength(1);
+  // The worker's shared read lock can legitimately make a committed retry busy.
+  // Wait for that real reader to finish; pending saves still require a manual retry.
+  await expect.poll(async () => (await (await page.request.get(`${endpoint}/processing`)).json()).status,
+    { timeout: 20000 }).toBe("succeeded");
+  expect(writes).toHaveLength(1);
   await page.getByRole("button", { name: "Повторити збереження", exact: true }).click();
   await saved(page); expect(writes).toHaveLength(3); expect(writes[1]).toEqual(writes[0]); expect(writes[2].key).not.toBe(writes[0].key);
   expect((await (await page.request.get(`${endpoint}/versions`)).json()).items).toHaveLength(3);

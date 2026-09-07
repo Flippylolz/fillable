@@ -1872,3 +1872,12 @@ The final backend unimported-source probe rejects 3800/11821 lines with all 402
 tests passing. The frozen fresh run has passed development, production migration/
 persistence and both log probes; final production browser cases are running before
 PR readiness. Documented operator status/audit commands are included in that run.
+
+Frozen `dFtiIa` passed 7 development/47 production cases; the mobile uncertain-autosave
+proof encountered a legitimate 409 `operation_in_progress` on its exact retry after
+the first request had committed 201. Trace and worker timing show the saved revision
+was being inspected under its shared read lock; the UI correctly kept the pending
+snapshot and did not claim success. The browser proof now waits for actual worker
+completion before its single-success retry assertion, still asserting no automatic
+retry, identical key/body, a separate newer save and no duplicate history. Application
+save behavior is unchanged. Repeat the full frozen verification before readiness.
