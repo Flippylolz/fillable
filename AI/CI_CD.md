@@ -303,11 +303,16 @@ Dependabot's own pull requests. Its contract:
   check refuses the merge and disables auto-merge until the next Dependabot
   push re-arms it.
 
-Backend Python dependencies are excluded from Dependabot by design: pip-compile
-output is hash-pinned `backend/requirements.lock`, not a `.txt` manifest or PEP
-621 `pyproject.toml`, so Dependabot cannot update it without leaving the
-installed lock drifting. Backend dependency updates continue through the manual
-pip-tools procedure in [Local development](LOCAL_DEVELOPMENT.md). First-run
+Backend Python dependencies are covered through the `pip` ecosystem
+(`/backend`): the hash-pinned pip-compile output lives at
+`backend/requirements.txt`, whose header Dependabot recognizes; Dependabot
+recompiles the lock with its bundled pip-compile 7.5.3 (the pip-tools version
+pinned in [Local development](LOCAL_DEVELOPMENT.md)) and updates it together
+with `requirements.in` in one pull request. Hash verification stays intact:
+the Docker build still installs with `--require-hashes`, so an unresolvable
+hash fails the build, the required gate, and the automerge. E09.10 renamed
+the compiled file from `requirements.lock` for this; the manual pip-compile
+procedure remains the operator path for full re-resolutions. First-run
 Dependabot behavior (config acceptance, ecosystem detection, grouped pull
 requests) must be verified on the repository after this lands; a config or
 parser error surfaces through Dependabot's update-error reporting rather than
