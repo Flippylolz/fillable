@@ -29,11 +29,11 @@ def checked(client, method, path, **kwargs):
     raise ValueError("Synthetic operation remained busy")
 
 
-def login(client, email, password):
+def login(client, identifier, password):
     bootstrap = checked(client, "GET", "/api/auth/session")
     client.headers["X-CSRF-Token"] = bootstrap.json()["csrf_token"]
     response = client.post(
-        "/api/auth/login", json={"email": email, "password": password}
+        "/api/auth/login", json={"login": identifier, "password": password}
     )
     if response.status_code == 401:
         return False
@@ -42,7 +42,7 @@ def login(client, email, password):
     assert "httponly" in cookie and "samesite=strict" in cookie
     assert "; secure" not in cookie
     session = response.json()
-    assert session["user"]["login"] == email
+    assert session["user"]["login"] == identifier.strip().casefold()
     client.headers["X-CSRF-Token"] = session["csrf_token"]
     return True
 
@@ -151,7 +151,7 @@ def main():
     ) as client:
         if not login(
             client,
-            os.environ["FILLABLE_INITIAL_EMAIL"],
+            os.environ["FILLABLE_INITIAL_LOGIN"],
             os.environ["FILLABLE_INITIAL_PASSWORD"],
         ):
             return 3
