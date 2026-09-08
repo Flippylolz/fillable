@@ -2401,3 +2401,48 @@ Next: verify merge, upgrade only the idle private Fillable receiver from merged 
 set the exact HTTPS origin, recheck existing-service baselines, deploy that verified
 release through Actions, privately create the requested normal user and complete
 E08.5 deployed browser/restart acceptance. Keep shared nginx untouched.
+
+E08.9 — Portable Docker image identity (in_progress, prerequisite to retry rollout).
+Actions deployment `34207568628` failed closed before any Fillable application
+containers: the build engine records config digests, while the target's containerd
+image store exposes the verified OCI manifest digest as image ID. The archive itself
+imports successfully. A retry was cancelled; do not weaken identity checks or change
+the server's Docker storage driver. Shared nginx remains unchanged.
+
+Return both config and checked OCI manifest digests from archive validation, select
+only an exact loaded immutable identity with matching platform/revision, and record
+that host's resolved IDs for Compose and subsequent account/runtime checks. Preserve
+all source/archive checks, reject alternate tags/configs/descriptors and prove both
+classic and containerd identities. Deliver this correction in its own PR with required
+CI and raw 90% gates, then upgrade only the still-undeployed receiver under its lock.
+
+WEF production containers were replaced by concurrent work before Fillable's receiver
+step; existing route observations match. Coordinate current owner activity using the
+existing shared configuration task, then establish the current stable baseline rather
+than rolling back unrelated WEF containers. The user's requested account must have
+the highest supported role, admin, with its supplied password preserved; creation and
+authenticated role verification remain pending successful rollout.
+
+E08.9 verification: 23 receiver/release contracts passed, including archive-bound
+candidate derivation, classic/containerd resolution, wrong digest/platform/revision
+rejection and existing malformed OCI/tag/index checks. Real saved local release
+images resolved by config digest. Four actual imported target images resolved by
+checked OCI manifest digest; bounded read-only-root, network-none disposable image
+processes started and their container Image fields matched the resolved IDs. Those
+probes were removed; all existing container snapshots were unchanged. No production
+app/relay/account exists and no shared ingress change was made.
+
+The shared nginx configuration task confirmed WEF's separate production workflow
+completed successfully, current production/shared nginx are healthy, expected routes
+answer 200, and no WEF workflow is queued/running at its sample. The historical
+candidate edge remains its pre-existing unhealthy baseline and must remain untouched.
+Recheck current owner/host state immediately before the later Fillable rollout.
+
+E08.9 is ready for its task PR and required CI. Application source is unchanged;
+last exact-main CI `34205708238` passed all jobs with raw backend 3970/3999 lines,
+1174/1206 branches and frontend 1292/1303 lines, 1500/1569 branches. Draft E08.5
+head `8cb2bb789a3e5405e05e5e13b198ace1fd22ed39` passed CI `34205853855`, but
+actual deployed acceptance remains pending. Next: verify this correction's merge,
+upgrade only the idle Fillable receiver from that reviewed source, wait for exact-main
+CI, then retry Actions with a fresh stable baseline and create/verify the requested
+administrator privately. Do not retry the old incompatible receiver or image-ID path.

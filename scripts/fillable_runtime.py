@@ -15,7 +15,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from uuid import uuid4
 
-from release_artifact import unpack
+from release_artifact import unpack, validate_image_archive
 
 PROJECT = "fillable-production"
 FILES = (
@@ -64,6 +64,24 @@ def execute(arguments, *, environment=None, input=None):
         # Docker/Compose errors can contain private paths and runtime configuration.
         raise RuntimeError("Scoped runtime command failed")
     return result.stdout.strip()
+
+
+def resolve_image(expected, identities):
+    """Resolve only config/OCI digests proven by the validated delivered archive."""
+    for identity in identities:
+        try:
+            actual = json.loads(
+                execute(
+                    ["docker", "image", "inspect", "--format", IMAGE_FORMAT, identity]
+                )
+            )
+        except RuntimeError:
+            continue  # This engine may expose only the other checked identity.
+        required = {**expected, "id": identity}
+        if actual != required:
+            raise ValueError("Loaded image identity mismatch")
+        return actual
+    raise ValueError("No verified image identity is available")
 
 
 def environment_file(path):
@@ -441,23 +459,13 @@ class Runtime:
         before, routes = snapshot(), self.baselines()
         self.progress("load_images")
         execute(["docker", "load", "--input", str(verified / "images.tar.gz")])
-        for role, expected in manifest["images"].items():
-            actual = json.loads(
-                execute(
-                    [
-                        "docker",
-                        "image",
-                        "inspect",
-                        "--format",
-                        IMAGE_FORMAT,
-                        expected["id"],
-                    ]
-                )
-            )
-            if actual != expected:
-                raise ValueError("Loaded image identity mismatch")
-            self.environment[f"FILLABLE_{role.upper()}_IMAGE"] = expected["id"]
-        images = manifest["images"]
+        identities = validate_image_archive(verified / "images.tar.gz", manifest)
+        images = {
+            role: resolve_image(expected, identities[role])
+            for role, expected in manifest["images"].items()
+        }
+        for role, image in images.items():
+            self.environment[f"FILLABLE_{role.upper()}_IMAGE"] = image["id"]
         configuration = json.loads(self.command("config", "--format", "json"))
         validate_compose(configuration, self.root, images)
         self.progress("verify_schema")
