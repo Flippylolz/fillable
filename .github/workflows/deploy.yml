@@ -60,15 +60,10 @@ jobs:
           FILLABLE_DEPLOY_KEY: ${{ secrets.FILLABLE_DEPLOY_KEY }}
           FILLABLE_KNOWN_HOSTS: ${{ secrets.FILLABLE_KNOWN_HOSTS }}
         run: sh scripts/ship-release.sh "$SOURCE_SHA" "$RUNNER_TEMP/fillable-release"
-      - name: Provision initial account when empty and verify public application
+      - name: Verify public readiness before private operator acceptance
         env:
           FILLABLE_DEPLOY_HOST: ${{ secrets.FILLABLE_DEPLOY_HOST }}
-          FILLABLE_DEPLOY_USER: ${{ secrets.FILLABLE_DEPLOY_USER }}
-          FILLABLE_DEPLOY_KEY: ${{ secrets.FILLABLE_DEPLOY_KEY }}
-          FILLABLE_KNOWN_HOSTS: ${{ secrets.FILLABLE_KNOWN_HOSTS }}
-          FILLABLE_INITIAL_EMAIL: ${{ secrets.FILLABLE_INITIAL_EMAIL }}
-          FILLABLE_INITIAL_PASSWORD: ${{ secrets.FILLABLE_INITIAL_PASSWORD }}
-        run: sh scripts/smoke-release.sh "$SOURCE_SHA" "$RUNNER_TEMP/fillable-release"
+        run: sh scripts/check-public-release.sh "$SOURCE_SHA" "$RUNNER_TEMP/fillable-release"
       - name: Publish only content-free release evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -79,5 +74,5 @@ jobs:
             ${{ runner.temp }}/fillable-release/artifact.json
             ${{ runner.temp }}/fillable-release/proof.json
             ${{ runner.temp }}/fillable-release/deployment.json
-            ${{ runner.temp }}/fillable-release/public-smoke.json
+            ${{ runner.temp }}/fillable-release/public-readiness.json
           if-no-files-found: error

@@ -44,3 +44,10 @@ HTTP port 3200 and the existing shared-nginx owner remain the accepted target. N
 application is deployed by introducing this workflow. Contract tests exercise rejected
 CI states and races, archive tampering, unsafe/duplicate entries and image identity
 mismatches; actual image archive and workflow evidence are recorded in the epic ledger.
+
+E08.7 adds credential-free public readiness after apply. `public-readiness.json`
+records `authenticated_acceptance: pending`; Actions never receives account
+credentials. The private operator must separately complete authenticated smoke,
+real browser/version checks and persistence before deployment acceptance is complete.
+Both check shells bind their image and evidence to the requested source and remove
+stale success reports on failure.

@@ -66,7 +66,7 @@ Before rollout, complete the shared-server preflight in [Deployment target](DEPL
 
 1. Select one exact commit and run/reuse the mandatory CI contract for that commit. A manual trigger cannot bypass tests or the 90% gates.
 2. Build production images from that verified revision and identify the delivered images by immutable digest/commit metadata. Pass the full source commit through Docker into the frontend build for the [Version badge](VERSION_BADGE.md); use the checked-out release revision, including for manual selection, and ensure build caching respects it. Deploy those artifacts; do not pull an unrelated `latest` image or rebuild arbitrary source on the server.
-3. Serialize deployments for the target environment and coordinate nginx changes with its shared configuration manager. Keep credentials in GitHub environment secrets and runtime application secrets on the server; do not embed them in images or commit them. Preserve SSH host-key verification.
+3. Serialize deployments for the target environment and coordinate nginx changes with its shared configuration manager. Keep dedicated transport credentials in GitHub environment secrets and runtime application secrets on the server; initial account credentials stay with the private operator and are never uploaded to GitHub; do not embed them in images or commit them. Preserve SSH host-key verification.
 4. Validate target capacity, configured persistent paths, runtime configuration, and the tested migration/compatibility plan before changing the running release. D018 explicitly excludes backups; do not create or require one for deployment. Use non-destructive migration steps and preserve existing data/volumes.
 5. Quiesce only Fillable's incompatible writes/workers when necessary, apply reviewed migrations once, then update only its namespaced Compose services while preserving document/database/Redis volumes and all other workloads.
 6. Check the private app upstream, stage the new public HTTP listener and focused shared-nginx route through its owner, validate the complete effective configuration, then activate it through the owner's established process. Perform an authenticated synthetic smoke flow at the exact public URL covering login cookies, upload, editing/save/download, and version history, then recheck existing service/route baselines. A running container alone is not deployment success.
@@ -255,3 +255,8 @@ The full sequential `checks` job has a 30-minute timeout. Run 34194979359 hit it
 former 20-minute limit during the final negative frontend coverage probe after
 both browser suites, rendering, and application tests passed. Keep all positive
 and negative coverage checks mandatory; cancellation still fails `ci-required`.
+
+E08.7 public Actions readiness deliberately leaves authenticated acceptance pending.
+The operator privately provisions the requested account and runs authenticated smoke
+and E08.5 browser/persistence checks. A successful workflow alone does not close E08.
+See [Server runtime](SERVER_RUNTIME.md) for private inputs and required evidence.
