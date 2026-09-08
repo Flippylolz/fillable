@@ -47,15 +47,21 @@ def checkboxes(model):
 
 
 def test_native_checkbox_imports_with_state_instead_of_locking():
-    package = DocxPackage(archive(f"<w:p>{CHECKBOX.format(checked='1', glyph='<w:t>☒</w:t>')}</w:p>"))
+    package = DocxPackage(
+        archive(f"<w:p>{CHECKBOX.format(checked='1', glyph='<w:t>☒</w:t>')}</w:p>")
+    )
     boxes = checkboxes(package.model)
     assert len(boxes) == 1
     assert boxes[0]["attrs"]["checked"] is True
     assert boxes[0]["attrs"]["id"] in package.elements
     assert package.unsupported == []
-    package = DocxPackage(archive(f"<w:p>{CHECKBOX.format(checked='0', glyph='<w:t>☐</w:t>')}</w:p>"))
+    package = DocxPackage(
+        archive(f"<w:p>{CHECKBOX.format(checked='0', glyph='<w:t>☐</w:t>')}</w:p>")
+    )
     assert checkboxes(package.model)[0]["attrs"]["checked"] is False
-    package = DocxPackage(archive(f"<w:p>{CHECKBOX.format(checked='true', glyph='<w:t>☒</w:t>')}</w:p>"))
+    package = DocxPackage(
+        archive(f"<w:p>{CHECKBOX.format(checked='true', glyph='<w:t>☒</w:t>')}</w:p>")
+    )
     assert checkboxes(package.model)[0]["attrs"]["checked"] is True
 
 
@@ -101,7 +107,11 @@ def test_toggled_checkbox_export_updates_state_and_glyph():
 
 def test_toggled_checkbox_without_state_glyphs_keeps_text():
     minimal = CHECKBOX.split("<w14:checkedState")[0] + "</w14:checkbox></w:sdtPr>"
-    data = archive(f"<w:p>{minimal.format(checked='0')}<w:sdtContent><w:r><w:t>x</w:t></w:r></w:sdtContent></w:sdt></w:p>")
+    body = (
+        f"<w:p>{minimal.format(checked='0')}"
+        "<w:sdtContent><w:r><w:t>x</w:t></w:r></w:sdtContent></w:sdt></w:p>"
+    )
+    data = archive(body)
     package = DocxPackage(data)
     model = copy.deepcopy(package.model)
     checkboxes(model)[0]["attrs"]["checked"] = True
@@ -156,21 +166,47 @@ def test_working_model_accepts_checkbox_only_inside_paragraphs():
         paragraph = {
             "type": "paragraph",
             "attrs": {"id": "word/document.xml:1", "align": "left", "numbered": False},
-            "content": [text("a", "word/document.xml:2"), *paragraph_children, text("b", "word/document.xml:3")],
+            "content": [
+                text("a", "word/document.xml:2"),
+                *paragraph_children,
+                text("b", "word/document.xml:3"),
+            ],
         }
-        section = {"type": "section", "attrs": {"part": "word/document.xml"}, "content": [paragraph]}
+        section = {
+            "type": "section",
+            "attrs": {"part": "word/document.xml"},
+            "content": [paragraph],
+        }
         return {"type": "doc", "attrs": {}, "content": [section]}
 
-    good = model([{"type": "checkbox", "attrs": {"id": "word/document.xml:7", "checked": True}}])
+    good = model(
+        [{"type": "checkbox", "attrs": {"id": "word/document.xml:7", "checked": True}}]
+    )
     document, _ = validate_working(good, source)
     kinds = [node["type"] for node in walk(document)]
     assert "checkbox" in kinds
 
     for bad in [
-        lambda: {**model([]), "content": [{"type": "section", "attrs": {"part": "word/document.xml"}, "content": [{"type": "checkbox", "attrs": {"id": "word/document.xml:7", "checked": False}}]}]},
+        lambda: {
+            **model([]),
+            "content": [
+                {
+                    "type": "section",
+                    "attrs": {"part": "word/document.xml"},
+                    "content": [
+                        {
+                            "type": "checkbox",
+                            "attrs": {"id": "word/document.xml:7", "checked": False},
+                        }
+                    ],
+                }
+            ],
+        },
         lambda: model([{"type": "checkbox", "attrs": {"id": "", "checked": False}}]),
-        lambda: model([{"type": "checkbox", "attrs": {"id": "word/document.xml:7", "checked": "no"}}]),
-        lambda: model([{"type": "checkbox", "attrs": {"id": "word/document.xml:7"}}]),
+        lambda: model(
+            [{"type": "checkbox", "attrs": {"id": "x:7", "checked": "no"}}]
+        ),
+        lambda: model([{"type": "checkbox", "attrs": {"id": "x:7"}}]),
     ]:
         with pytest.raises(ValueError):
             validate_working(bad(), source)
@@ -191,7 +227,10 @@ def test_checkbox_interior_is_protected_for_field_spans():
                         "attrs": {"id": "word/document.xml:1"},
                         "content": [
                             {"type": "text", "text": "a"},
-                            {"type": "checkbox", "attrs": {"id": "word/document.xml:2", "checked": False}},
+                            {
+                            "type": "checkbox",
+                            "attrs": {"id": "word/document.xml:2", "checked": False},
+                        },
                             {"type": "text", "text": "b"},
                         ],
                     }

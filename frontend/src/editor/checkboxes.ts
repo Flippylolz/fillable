@@ -1,8 +1,6 @@
-import type { Command } from "prosemirror-state";
-import { NodeSelection, type EditorState, type Transaction } from "prosemirror-state";
+import { NodeSelection, type Command, type EditorState } from "prosemirror-state";
 
 export type CheckboxIssue = "select_box" | "read_only";
-export type CheckboxOutcome = { issue: CheckboxIssue } | { transaction: Transaction };
 
 /** Unambiguous ballot-box pairs; symbol-font private-use codes stay out of scope. */
 const PAIRS: Record<string, string> = { "\u2610": "\u2612", "\u2612": "\u2610" };
@@ -19,9 +17,9 @@ function target(state: EditorState): { from: number; to: number; glyph: string }
 }
 
 /** One selected ballot-box character swaps to its pair, preserving formatting. */
-export function toggleGlyphCheckbox(state: EditorState): CheckboxOutcome {
+export function toggleGlyphCheckbox(state: EditorState) {
   const box = target(state);
-  if (!box) return { issue: "select_box" };
+  if (!box) return { issue: "select_box" as const };
   const marks = state.doc.resolve(box.from).marks();
   return {
     transaction: state.tr.replaceWith(

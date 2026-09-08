@@ -268,7 +268,13 @@ def test_inline_rectangles_render_in_flow_without_absolute_offsets():
     </wp:inline></w:r>'''
     result = display(etree.fromstring(xml))
     assert result["shapes"] == [
-        {"width": 10.5, "height": 10.5, "fill": "transparent", "border": "0.5pt solid #000000", "placement": "inline"}
+        {
+            "width": 10.5,
+            "height": 10.5,
+            "fill": "transparent",
+            "border": "0.5pt solid #000000",
+            "placement": "inline",
+        }
     ]
     assert display(
         etree.fromstring(xml.replace('prst="rect"', 'prst="unknown"'))
@@ -288,7 +294,13 @@ def test_vml_rectangles_become_inline_shapes_with_bounded_geometry():
       strokecolor="#123456"/></w:pict></w:r>'''
     result = display(etree.fromstring(xml))
     assert result["shapes"] == [
-        {"width": 14.0, "height": 10.5, "fill": "#ffffff", "border": "0.5pt solid #123456", "placement": "inline"}
+        {
+            "width": 14.0,
+            "height": 10.5,
+            "fill": "#ffffff",
+            "border": "0.5pt solid #123456",
+            "placement": "inline",
+        }
     ]
     for old, new in [
         ('style="width:14pt;height:10.5pt"', 'style="width:14pt"'),

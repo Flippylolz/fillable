@@ -243,7 +243,7 @@ class DocxExport:
         self.locked.add(node["attrs"]["id"])
 
     def checkbox(self, node: Node, part: str) -> Any:
-        """Emit the anchored checkbox SDT with only its checked state possibly changed."""
+        """Emit the anchored checkbox SDT; only its checked state may change."""
         identity = node["attrs"]["id"]
         original = self.known.get(identity)
         attrs = node["attrs"]
@@ -277,7 +277,8 @@ class DocxExport:
             ):
                 raise InvalidDocument("invalid_anchor")
             states[name] = value
-        glyph = chr(int(states["checkedState" if attrs["checked"] else "uncheckedState"], 16))
+        wanted = "checkedState" if attrs["checked"] else "uncheckedState"
+        glyph = chr(int(states[wanted], 16))
         previous = chr(
             int(
                 states["uncheckedState" if attrs["checked"] else "checkedState"],

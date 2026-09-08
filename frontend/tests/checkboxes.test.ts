@@ -110,12 +110,12 @@ test("inline shape placements render in flow; anchored ones stay absolutely posi
   const host = document.createElement("div");
   const nodeView = sourceNodeView(presentation)(schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" }));
   host.append(nodeView.dom);
-  const boxes = nodeView.dom.querySelectorAll("span[style]");
+  const boxes = (nodeView.dom as HTMLElement).querySelectorAll("span[style]");
   expect(boxes.length).toBe(2);
   expect((boxes[0] as HTMLElement).style.display).toBe("inline-block");
   expect((boxes[0] as HTMLElement).style.position).not.toBe("absolute");
   expect((boxes[1] as HTMLElement).style.position).toBe("absolute");
-  expect(nodeView.dom.classList.contains("document-quiet")).toBe(true);
+  expect((nodeView.dom as HTMLElement).classList.contains("document-quiet")).toBe(true);
   const labelled = sourceNodeView({locked:{"word/document.xml:1":{text:"note",shapes:[{width:10,height:10,fill:"transparent",placement:"inline"}]}}})(schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" }));
-  expect(labelled.dom.classList.contains("document-quiet")).toBe(false);
+  expect((labelled.dom as HTMLElement).classList.contains("document-quiet")).toBe(false);
 });

@@ -33,7 +33,11 @@ def _shape(geometry, extent):
     except (ValueError, TypeError):
         return None
     x = y = 0.0
-    if not all(-2000 <= v <= 2000 for v in (x, y, width, height)) or width <= 0 or height <= 0:
+    if (
+        not all(-2000 <= v <= 2000 for v in (x, y, width, height))
+        or width <= 0
+        or height <= 0
+    ):
         return None
     shape_properties = geometry.getparent()
     fill = shape_properties.find(A + "solidFill/" + A + "srgbClr")
@@ -46,7 +50,9 @@ def _shape(geometry, extent):
     line = shape_properties.find(A + "ln")
     if line is not None:
         border = etree.Element(W + "border")
-        border.set(W + "val", "none" if line.find(A + "noFill") is not None else "single")
+        border.set(
+            W + "val", "none" if line.find(A + "noFill") is not None else "single"
+        )
         try:
             border.set(W + "sz", str(round(int(line.get("w", "6350")) / 12700 * 8)))
         except ValueError:
@@ -71,10 +77,11 @@ def _vml_shape(rect):
             return None
         dimensions[name] = value
     fill = rect.get("fillcolor", "")
+    matched = re.fullmatch(r"#?([0-9a-fA-F]{6})", fill)
     shape = {
         "width": dimensions["width"],
         "height": dimensions["height"],
-        "fill": "#" + fill.lstrip("#").lower() if re.fullmatch(r"#?[0-9a-fA-F]{6}", fill) else "transparent",
+        "fill": "#" + matched.group(1).lower() if matched else "transparent",
     }
     if rect.get("stroked", "t") == "f":
         shape["border"] = "none"

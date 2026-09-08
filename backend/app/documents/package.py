@@ -286,7 +286,7 @@ class DocxPackage:
                 el.tag == W + "sdt"
                 and el.find(W + "sdtPr/" + W14 + "checkbox") is not None
             ):
-                # A native checkbox control keeps its own state; the glyph is display only.
+                # A native checkbox control keeps its state; the glyph is display only.
                 content = el.find(W + "sdtContent")
                 previous_unsupported = len(self.unsupported)
                 children = [] if content is None else self.inlines(content)
