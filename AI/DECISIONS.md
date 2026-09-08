@@ -314,6 +314,11 @@ Automerge never replaces the merge gate: `main` requires the strict, up-to-date
 `ci-required` check for every pull request, including Dependabot's, and the
 auto-merge request is bound to the exact head commit. A failed required check
 refuses the queued merge and leaves the pull request open for manual attention.
+Because that protection requires branches to be up to date and Dependabot only
+rebases on conflict, the automerge workflow also updates behind Dependabot
+branches (bound to the expected head SHA) and reconciles open Dependabot pull
+requests on a schedule, so the remaining updates follow each merge to `main`
+without manual intervention (E09.11).
 The automerge workflow dispatches no deployment itself, but since E09.6 every
 merge to `main` — a Dependabot merge included — is deployed automatically once
 that exact commit's required CI succeeds. A dependency update therefore reaches
@@ -322,10 +327,12 @@ task merge. Major-version updates automerge under the same rule; a broken
 update is reverted with a follow-up pull request rather than hidden from
 `main`.
 
-Backend Python dependencies remain outside Dependabot: they are compiled by
-pip-tools into the hash-pinned `backend/requirements.lock`, which Dependabot
-does not recognize as a manifest (its pip support covers `.txt` requirement
-files and PEP 621 `pyproject.toml`). A pull request bumping only
-`backend/requirements.in` would leave the installed lock unchanged. Backend
-dependency updates keep the documented manual pip-compile procedure in
-[Local development](LOCAL_DEVELOPMENT.md).
+Backend Python dependencies are covered through the pip ecosystem: the
+pip-compile lockfile lives at `backend/requirements.txt`, which Dependabot
+recognizes via its pip-compile header and recompiles with its bundled
+pip-compile 7.5.3 — the same pip-tools version pinned in
+[Local development](LOCAL_DEVELOPMENT.md) — updating it together with
+`requirements.in` in one pull request. The original `.lock` filename was not
+a Dependabot-recognized manifest, so E09.10 renamed the compiled file; the
+manual pip-compile procedure remains available for full operator-controlled
+re-resolutions.

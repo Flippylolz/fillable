@@ -277,37 +277,57 @@ so dispatched releases proceed without manual approval.
 
 ## Dependabot automatic updates (E09.7, D025)
 
-`.github/dependabot.yml` schedules weekly version updates (Mondays) for four
-ecosystems: `github-actions` (root workflows), `npm` (`frontend/`), `docker`
-(`infra/` Dockerfiles) and `docker-compose` (root Compose files). Minor and
-patch updates are grouped into one pull request per ecosystem; major updates
-open standalone pull requests. Each ecosystem keeps at most five open pull
-requests.
+`.github/dependabot.yml` schedules weekly version updates (Mondays) for five
+ecosystems: `pip` (`backend/requirements.txt`), `github-actions` (root
+workflows), `npm` (`frontend/`), `docker` (`infra/` Dockerfiles) and
+`docker-compose` (root Compose files). Minor and patch updates are grouped
+into one pull request per ecosystem; major updates open standalone pull
+requests. Each ecosystem keeps at most five open pull requests.
 
 `.github/workflows/dependabot-automerge.yml` enables squash auto-merge on
-Dependabot's own pull requests. Its contract:
+Dependabot's own pull requests and keeps their branches mergeable. Its
+contract:
 
 - Triggers on `pull_request_target` (`opened`, `reopened`, `synchronize`) so the
   trusted base-branch workflow definition always runs; no pull-request code is
-  checked out and the single step calls only the GitHub CLI.
+  checked out and the steps call only the GitHub CLI. A `*/30 * * * *` schedule
+  additionally reconciles all open Dependabot pull requests.
 - Guards on the repository identity and `dependabot[bot]` as pull-request
-  author, so it covers Dependabot version and security updates and nothing else.
+  author, so it covers Dependabot version and security updates and nothing else;
+  scheduled runs act only on open pull requests authored by Dependabot.
 - Requests only `contents: write` and `pull-requests: write`; deployment
   credentials are not involved and the workflow dispatches no release itself.
   The merge lands on `main` like any other merge, where the E09.6 automation
   deploys that exact commit after its required CI succeeds, so a Dependabot
   update ships once its full gate is green, exactly like a task merge.
-- Arms auto-merge with `--match-head-commit` for the event's exact head commit,
-  matching the task-PR workflow. GitHub performs the squash merge only after the
-  strict, up-to-date `ci-required` gate passes; a failed or stale required
-  check refuses the merge and disables auto-merge until the next Dependabot
-  push re-arms it.
+- Arms auto-merge with `--match-head-commit` for the exact head commit, matching
+  the task-PR workflow. GitHub performs the squash merge only after the strict,
+  up-to-date `ci-required` gate passes; a failed or stale required check refuses
+  the merge and disables auto-merge until the next Dependabot push re-arms it.
+- E09.11: when the pull request is `BEHIND` its base, the workflow updates the
+  branch through the update-branch API bound to the expected head SHA instead of
+  arming; the resulting synchronize event re-runs the workflow at the new head,
+  which arms there. Strict up-to-date protection can otherwise never be
+  satisfied after any merge to `main`, because Dependabot only rebases on
+  conflict.
+- E09.11: the scheduled reconciliation updates every open behind Dependabot
+  branch and arms squash auto-merge on pull requests that are neither armed nor
+  carrying failed/cancelled required checks, so remaining pull requests follow
+  each merge within one scheduled cycle. Pull requests with failing checks are
+  left open for a fixing push, which re-arms them through the synchronize event.
+- `scripts/test_dependabot_automerge_contract.py` pins this contract in the
+  required `contracts` job alongside the E09.6 deploy-dispatch contract.
 
-Backend Python dependencies are excluded from Dependabot by design: pip-compile
-output is hash-pinned `backend/requirements.lock`, not a `.txt` manifest or PEP
-621 `pyproject.toml`, so Dependabot cannot update it without leaving the
-installed lock drifting. Backend dependency updates continue through the manual
-pip-tools procedure in [Local development](LOCAL_DEVELOPMENT.md). First-run
+Backend Python dependencies are covered through the `pip` ecosystem
+(`/backend`): the hash-pinned pip-compile output lives at
+`backend/requirements.txt`, whose header Dependabot recognizes; Dependabot
+recompiles the lock with its bundled pip-compile 7.5.3 (the pip-tools version
+pinned in [Local development](LOCAL_DEVELOPMENT.md)) and updates it together
+with `requirements.in` in one pull request. Hash verification stays intact:
+the Docker build still installs with `--require-hashes`, so an unresolvable
+hash fails the build, the required gate, and the automerge. E09.10 renamed
+the compiled file from `requirements.lock` for this; the manual pip-compile
+procedure remains the operator path for full re-resolutions. First-run
 Dependabot behavior (config acceptance, ecosystem detection, grouped pull
 requests) must be verified on the repository after this lands; a config or
 parser error surfaces through Dependabot's update-error reporting rather than

@@ -1,4 +1,5 @@
-# Enables squash auto-merge on Dependabot pull requests.
+# Enables squash auto-merge on Dependabot pull requests and keeps their
+# branches mergeable.
 #
 # The merge itself is still performed by GitHub only after every required
 # check passes: `main` protection requires the strict, up-to-date
@@ -6,31 +7,96 @@
 # If required checks fail, GitHub refuses the queued merge and disables
 # auto-merge for that pull request; the next Dependabot push re-arms it.
 #
+# Strict up-to-date protection also means a pull request whose branch lacks
+# the current `main` tip can never merge, and Dependabot only rebases on
+# conflict. This workflow therefore updates behind Dependabot branches
+# (bound to the expected head SHA, so only an unchanged revision is moved)
+# and reconciles open Dependabot pull requests on a schedule: after every
+# merge to `main` the next scheduled run refreshes the remaining pull
+# requests, and their armed auto-merge requests complete as each fresh
+# required CI run passes. Pull requests whose checks failed are left for a
+# fixing push, which re-arms them through the synchronize event.
+#
 # `pull_request_target` runs this trusted workflow from the base branch and
-# no pull-request code is ever checked out; the step only calls the GitHub
-# CLI. The actor guard restricts it to Dependabot's own pull requests
-# (version and security updates). Auto-merge requires the exact head commit
-# so an unexpected revision cannot ride an armed request.
+# no pull-request code is ever checked out; the steps only call the GitHub
+# CLI. The actor guard restricts event runs to Dependabot's own pull
+# requests (version and security updates); scheduled runs act only on open
+# pull requests authored by Dependabot. Auto-merge requires the exact head
+# commit so an unexpected revision cannot ride an armed request.
 name: Dependabot auto-merge
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
+  schedule:
+    # Twice an hour, so remaining Dependabot pull requests follow each merge
+    # to `main` within one scheduled cycle.
+    - cron: "*/30 * * * *"
 
 permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: dependabot-automerge-${{ github.event_name }}-${{ github.event.pull_request.number || 'schedule' }}
+  cancel-in-progress: false
+
 jobs:
   automerge:
     if: >-
       github.repository == 'Flippylolz/fillable' &&
-      github.event.pull_request.user.login == 'dependabot[bot]'
+      (
+        github.event_name == 'schedule' ||
+        github.event.pull_request.user.login == 'dependabot[bot]'
+      )
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Enable squash auto-merge
-        run: gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
+        if: github.event_name != 'schedule'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          state="$(gh pr view "$PR_URL" --json mergeStateStatus --jq .mergeStateStatus)"
+          if [ "$state" = "BEHIND" ]; then
+            # Strict up-to-date protection cannot be satisfied until the
+            # branch contains the current `main` tip. Updating it fires a
+            # synchronize event, which re-runs this workflow at the new head
+            # and arms auto-merge there.
+            gh api --method PUT \
+              "repos/$REPO/pulls/$PR_NUMBER/update-branch" \
+              -f expected_head_sha="$HEAD_SHA" >/dev/null
+            exit 0
+          fi
+          gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
+
+      - name: Reconcile open Dependabot pull requests
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh pr list --repo "$REPO" --state open --author 'app/dependabot' \
+            --limit 50 \
+            --json number,headRefOid,mergeStateStatus,autoMergeRequest,statusCheckRollup \
+            --jq '.[] | [.number, .headRefOid, .mergeStateStatus, (.autoMergeRequest != null), ([.statusCheckRollup[]?.conclusion // empty] | join(","))] | @tsv' |
+          while IFS=$'\t' read -r number head_sha state armed conclusions; do
+            if [ "$state" = "BEHIND" ]; then
+              echo "PR #$number is behind main; updating its branch"
+              gh api --method PUT \
+                "repos/$REPO/pulls/$number/update-branch" \
+                -f expected_head_sha="$head_sha" >/dev/null \
+                || echo "PR #$number branch update was refused"
+            elif [ "$armed" = "false" ] &&
+              ! [[ "$conclusions" =~ FAILURE|CANCELLED|TIMED_OUT|ACTION_REQUIRED|STARTUP_FAILURE ]]; then
+              echo "PR #$number is not armed; arming squash auto-merge at $head_sha"
+              gh pr merge --repo "$REPO" --auto --squash \
+                --match-head-commit "$head_sha" "$number" \
+                || echo "PR #$number could not be armed"
+            fi
+          done
