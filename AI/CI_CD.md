@@ -60,7 +60,7 @@ References: [GitHub Actions job dependencies](https://docs.github.com/en/actions
 
 ## E08 deployment workflow
 
-Implemented E08.2 workflow: `.github/workflows/deploy.yml`; rollout remains pending E08.3–E08.5. See [release artifacts](RELEASE_ARTIFACTS.md) for the exact gate and transport contract. The initial proposed trigger is manual `workflow_dispatch` for a commit on the protected default branch; automatic deployment on push is not assumed.
+Implemented E08.2 workflow: `.github/workflows/deploy.yml`; rollout remains pending E08.3–E08.5. See [release artifacts](RELEASE_ARTIFACTS.md) for the exact gate and transport contract. Since E09.6 the user requested automatic deployment on merges to the protected default branch: `.github/workflows/deploy-main.yml` waits for that exact commit's successful required CI and then dispatches the unchanged `workflow_dispatch` release, which still verifies the dispatched current-main revision and its green `ci-required` before building and shipping. Manual `workflow_dispatch` remains available; a commit whose required CI fails or is missing is never deployed, and a newer merge always supersedes an older queued release.
 
 Before rollout, complete the shared-server preflight in [Deployment target](DEPLOYMENT_TARGET.md). The Actions deployment must use the supplied SSH target, isolated Fillable resources, the verified Fillable-owned TCP relay port 3200, a private app upstream, and the existing owner-managed TLS listener. The public origin is `https://<DEPLOY_HOST>:3200` under D024. Local and production are the only persistent environments; no staging environment or backup system is required.
 
@@ -260,3 +260,20 @@ E08.7 public Actions readiness deliberately leaves authenticated acceptance pend
 The operator privately provisions the requested account and runs authenticated smoke
 and E08.5 browser/persistence checks. A successful workflow alone does not close E08.
 See [Server runtime](SERVER_RUNTIME.md) for private inputs and required evidence.
+
+## E09.6 automated main deployment
+
+The user requested deployment on every merge to `main`. `.github/workflows/deploy-main.yml`
+runs only for pushes to the protected default branch, polls the exact pushed commit's
+`ci.yml` run until it completes, fails without dispatching anything if `ci-required` did
+not succeed, and otherwise dispatches `deploy.yml` with that source SHA. The release
+workflow and its `release_gate.py` contract are unchanged: they still require a
+`workflow_dispatch` of the current protected `main` revision whose latest exact-main CI
+attempt has every required job successful. A newer merge therefore supersedes an older
+queued release because the older SHA stops being current main, and a failed-CI commit is
+never shipped. `scripts/test_deploy_dispatch_contract.py` (required in the `checks` job)
+pins the contract: the gated release stays manual-dispatch-only, the dispatcher only
+targets pushes to `main`, must await a successful exact-main CI before dispatching, and
+cannot invoke build/ship/verify scripts directly. The production environment allows only
+`main` and has no required reviewers, so dispatched releases proceed without manual
+approval.

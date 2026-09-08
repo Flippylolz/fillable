@@ -1,0 +1,39 @@
+name: Deploy main after required CI
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: deploy-main-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      SOURCE_SHA: ${{ github.sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Wait for the exact-main required CI and dispatch the verified release
+        run: |
+          for attempt in $(seq 1 75); do
+            run_json=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$SOURCE_SHA" \
+              --jq '[.workflow_runs[] | select(.path == ".github/workflows/ci.yml")][0] // "{}"')
+            status=$(printf '%s' "$run_json" | jq -r '.status // "pending"')
+            conclusion=$(printf '%s' "$run_json" | jq -r '.conclusion // ""')
+            echo "attempt $attempt: required CI status=$status conclusion=$conclusion"
+            if [ "$status" = "completed" ]; then
+              if [ "$conclusion" != "success" ]; then
+                echo "::error::Required CI failed for $SOURCE_SHA; production deployment blocked."
+                exit 1
+              fi
+              gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main -f source_sha="$SOURCE_SHA"
+              echo "Dispatched the verified release for $SOURCE_SHA."
+              exit 0
+            fi
+            sleep 60
+          done
+          echo "::error::Timed out waiting for required CI on $SOURCE_SHA; production deployment blocked."
+          exit 1
