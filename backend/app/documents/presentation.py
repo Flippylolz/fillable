@@ -74,8 +74,13 @@ def properties(root, style):
         ("caps", "text-transform", "uppercase"),
         ("smallCaps", "font-variant", "small-caps"),
     ]:
-        if root.find(W + tag) is not None:
-            style[name] = on
+        node = root.find(W + tag)
+        if node is not None:
+            style[name] = (
+                ("none" if tag == "caps" else "normal")
+                if node.get(W + "val") in {"0", "false"}
+                else on
+            )
     if root.find(W + "pageBreakBefore") is not None:
         style["break-before"] = "page"
 

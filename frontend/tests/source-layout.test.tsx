@@ -14,6 +14,7 @@ test("source CSS is scoped, bounded and cannot load URLs or inject selectors", (
   expect(css).toContain('[data-layout="one"]');
   expect(css).toContain('font-family:"Times New Roman"!important');
   expect(css).toContain('font-size:11.5pt!important');
+  expect(css).toContain('[data-source^="new:word/document.xml:10:"]');
   expect(css).not.toMatch(/evil|url\(|position|display:none/);
   expect(sourceRules("empty", {})).toContain('section[data-part="word/document.xml"]');
 });

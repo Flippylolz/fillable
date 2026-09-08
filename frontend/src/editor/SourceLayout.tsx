@@ -13,7 +13,7 @@ export function sourceRules(scope: string, presentation: SourcePresentation) {
   const rules = [`${prefix} .ProseMirror{padding:0!important;background:transparent!important;box-shadow:none!important;overflow-wrap:normal!important}`, `${prefix} section[data-part="word/document.xml"]{${section}}`];
   for (const [id, styles] of Object.entries(presentation.nodes ?? {})) {
     if (!/^[\w/.:~-]+$/.test(id) || !styles || typeof styles !== "object") continue;
-    rules.push(`${prefix} [data-source=${JSON.stringify(id)}],${prefix} [data-source-run=${JSON.stringify(id)}]{${declarations(styles)}}`);
+    rules.push(`${prefix} [data-source=${JSON.stringify(id)}],${prefix} [data-source-run=${JSON.stringify(id)}],${prefix} [data-source^=${JSON.stringify(`new:${id}:`)}]{${declarations(styles)}}`);
   }
   return rules.join("\n");
 }
