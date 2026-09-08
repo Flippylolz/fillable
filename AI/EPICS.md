@@ -26,7 +26,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1–E08.2 merged; E08.3 isolated runtime |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1–E08.4 code merged; rollout awaits credential approval; E08.5 draft #75 |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -2377,3 +2377,46 @@ proof. Required CI must pass on the refreshed head. Current-main deployment sour
 is now the E08.5a merge and requires its successful push CI before dispatch; the
 credential-secret approval remains pending. Actual target rollout/acceptance remains
 unperformed, so #75 stays draft without auto-merge.
+
+Final resumable checkpoint — 2026-09-08 Europe/Warsaw:
+- Current main `3a8d5f8e1c906839ce379571cd8626609fd6a700` is verified unchanged,
+  CI `34164778514` SUCCESS on all required jobs. PR #76 correction merged.
+- Draft #75 head `404ba6fbc1f07b46ba7cc00438f392bf159b4883` passed CI
+  `34164855430` on all required jobs. Backend 3969/3998 lines,1174/1206 branches;
+  frontend 1292/1303 lines,1500/1569 branches; both actual source-inclusion negative
+  probes passed. Draft remains OPEN/isDraft=true, autoMergeRequest=null because actual
+  deployed acceptance is unfinished. Local two-viewport/restart/digest proof passed.
+- No target application rollout has run. Corrected receiver/dedicated key and four
+  transport environment secrets are installed, verified; existing services preserved.
+- Sole external blocker: automatic approval review rejected storing the generated
+  initial-account email/password as FILLABLE_INITIAL_EMAIL/FILLABLE_INITIAL_PASSWORD
+  in GitHub production. Explicit approval question remains pending. Do not retry,
+  work around the rejection, or treat elapsed time as approval.
+- On explicit approval: run guarded `/private/tmp/fillable-e084-account-secrets.py`;
+  recheck current-main successful CI and target capacity/3200 reservations, then
+  dispatch deploy.yml for exact current main. Verify Actions apply/public smoke and
+  unchanged existing containers/routes/HSTS. Run draft #75's private desktop/mobile
+  acceptance, controlled wrong/development badge rejection and scoped Fillable restart
+  with public retained-model/download/history comparisons. Record actual release
+  source/digests/results, ready draft #75, verify required CI/protection, enable
+  exact-head auto-merge, confirm MERGED and finish E08 only after actual acceptance.
+- Keep HTTP3200/TLS-out-of-scope choice; no shared service restart, pruning, volume
+  removal, backups or fixed public passwords. Private operator input remains ignored.
+
+2026-09-08 resumed checkpoint: the requested password is exactly ten characters;
+prior agent counts were incorrect. The user approved login-name authentication and
+a ten-character minimum, and rejected storing account credentials in GitHub.
+Ignored private requested-account configuration is prepared with mode 0600;
+no account has been created and no application is running on the target.
+E08.6 is PR #77, branch `task/e08-6-login-identifier`, head
+`60ee49ad36ab1d89bdd5786fd2f7018bd8bc3ef4`, in isolated worktree
+`/private/tmp/fillable-login-change`. Local 417 backend / 229 frontend tests and
+7 development / 48 production browser tests passed, including storage recreation.
+Backend raw coverage 3970/3999 lines and 1174/1206 branches; frontend 1292/1303
+lines and 1500/1569 branches. CI run 34194979359 is pending, upgrade-checks passed,
+exact-head squash auto-merge is enabled under strict admin-enforced ci-required.
+After its verified merge, implement E08.7 private operator provisioning/acceptance
+workflow adaptation in its own PR. Then deploy through Actions, privately create
+the requested normal user, and finish draft PR #75's actual public browser,
+history/persistence and wrong-badge negative acceptance. The target port is still
+unreserved across 13 managed Compose files; shared active release is unchanged.
