@@ -11,27 +11,28 @@
 # the current `main` tip can never merge, and Dependabot only rebases on
 # conflict. This workflow therefore updates behind Dependabot branches
 # (bound to the expected head SHA, so only an unchanged revision is moved)
-# and reconciles open Dependabot pull requests on a schedule: after every
-# merge to `main` the next scheduled run refreshes the remaining pull
-# requests, and their armed auto-merge requests complete as each fresh
-# required CI run passes. Pull requests whose checks failed are left for a
-# fixing push, which re-arms them through the synchronize event.
+# and reconciles open Dependabot pull requests after every push to `main`:
+# each merge refreshes the remaining pull requests immediately, and their
+# armed auto-merge requests complete as each fresh required CI run passes.
+# A twice-hourly offset schedule runs the same reconciliation as a fallback.
+# Pull requests whose checks failed are left for a fixing push, which re-arms
+# them through the synchronize event.
 #
 # `pull_request_target` runs this trusted workflow from the base branch and
 # no pull-request code is ever checked out; the steps only call the GitHub
-# CLI. The actor guard restricts event runs to Dependabot's own pull
-# requests (version and security updates); scheduled runs act only on open
-# pull requests authored by Dependabot. Auto-merge requires the exact head
-# commit so an unexpected revision cannot ride an armed request.
+# CLI. The actor guard restricts pull-request runs to Dependabot's own pull
+# requests (version and security updates); push and scheduled runs act only
+# on open pull requests authored by Dependabot. Auto-merge requires the
+# exact head commit so an unexpected revision cannot ride an armed request.
 name: Dependabot auto-merge
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
+  push:
+    branches: [main]
   schedule:
-    # Twice an hour, so remaining Dependabot pull requests follow each merge
-    # to `main` within one scheduled cycle. The offset misses the :00/:30
-    # slots where GitHub's scheduler is most contended and delays grow to
-    # tens of minutes.
+    # Fallback cadence for staleness that no merge caused. The offset misses
+    # the :00/:30 slots where GitHub's scheduler is most contended.
     - cron: "13,43 * * * *"
 
 permissions:
@@ -39,7 +40,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: dependabot-automerge-${{ github.event_name }}-${{ github.event.pull_request.number || 'schedule' }}
+  group: dependabot-automerge-${{ github.event.pull_request.number || 'reconcile' }}
   cancel-in-progress: false
 
 jobs:
@@ -48,13 +49,17 @@ jobs:
       github.repository == 'Flippylolz/fillable' &&
       (
         github.event_name == 'schedule' ||
+        (
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/main'
+        ) ||
         github.event.pull_request.user.login == 'dependabot[bot]'
       )
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Enable squash auto-merge
-        if: github.event_name != 'schedule'
+        if: github.event_name == 'pull_request_target'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
@@ -77,7 +82,7 @@ jobs:
           gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
 
       - name: Reconcile open Dependabot pull requests
-        if: github.event_name == 'schedule'
+        if: github.event_name != 'pull_request_target'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
