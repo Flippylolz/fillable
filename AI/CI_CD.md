@@ -322,7 +322,12 @@ contract:
   failed/cancelled required checks, so remaining pull requests follow each
   merge with one required-CI cycle instead of staling indefinitely. Pull
   requests with failing checks are left open for a fixing push, which re-arms
-  them through the synchronize event.
+  them through the synchronize event. The Dependabot author filter is applied
+  client-side over all open pull requests (the bot's login differs between the
+  REST and GraphQL surfaces, and the first push run matched nothing through
+  `--author` under `GITHUB_TOKEN`), and behind-ness is computed from the
+  compare API because `mergeStateStatus` caches stale values for minutes after
+  a merge.
 - `scripts/test_dependabot_automerge_contract.py` pins this contract in the
   required `contracts` job alongside the E09.6 deploy-dispatch contract.
 
