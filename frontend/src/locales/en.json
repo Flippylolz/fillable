@@ -288,5 +288,9 @@
   "editor.dateBoxesHelp": "Select all six or eight date digits separated by vertical bars, or select the date’s table cells, then enter one date. Six boxes use DDMMYY; eight use DDMMYYYY.",
   "editor.dateBoxes.invalid_date": "Enter a valid calendar date.",
   "editor.dateBoxes.select_boxes": "Select only the date’s six or eight digit boxes, or three cells for day, month and year. Protected drawings cannot be filled with this action.",
-  "editor.dateBoxes.read_only": "Editing is unavailable. Your document has not changed."
+  "editor.dateBoxes.read_only": "Editing is unavailable. Your document has not changed.",
+  "editor.toggleCheckbox": "Toggle checkbox",
+  "editor.checkboxHelp": "Select one empty ballot box ☐ or a crossed one ☒ in the document, then toggle it. Native checkbox controls can also be switched by clicking them.",
+  "editor.checkbox.select_box": "Select exactly one checkbox character ☐ or ☒ in the document.",
+  "editor.checkbox.read_only": "Editing is unavailable. Your document has not changed."
 }

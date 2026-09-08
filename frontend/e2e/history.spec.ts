@@ -90,6 +90,11 @@ for (const kind of ["template", "document"] as const) test(`${kind} history pres
   expect((await (await page.request.get(endpoint)).json()).current_version_id).toBe(second.current_version_id);
   page.once("dialog", dialog => dialog.accept());
   await panel.getByRole("button", { name: "Відновити як нову версію", exact: true }).click();
+  // A missed dialog or a slow restore otherwise fails as an unrelated invisible
+  // toolbar button; require the new revision to land before the panel closes.
+  await expect.poll(async () => (await (await page.request.get(endpoint)).json()).current_version_id, {
+    timeout: 15000,
+  }).not.toBe(second.current_version_id);
   await expect(page.getByRole("button", { name: "Історія версій", exact: true })).toBeVisible();
   await expect(editor).not.toContainText("Незбережена Єва 🙂");
   expect(await downloadedBytes(page, endpoint)).toEqual(await readFile("/fixtures/upload.docx"));

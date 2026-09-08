@@ -55,11 +55,13 @@ export function DocumentEditor({
   validity.current = onFieldValidityChange;
   const composition = useRef(onCompositionChange);
   composition.current = onCompositionChange;
-  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false });
-  const { fields: occurrences, active, review, unsupported } = presentation;
+  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false, glyphCheckbox: false });
+  const { fields: occurrences, active, review, unsupported, glyphCheckbox } = presentation;
   const [date, setDate] = useState("");
   const [dateIssue, setDateIssue] = useState<ReturnType<EditorAdapter["fillDate"]>>(null);
   const dateHelp = useId();
+  const [checkboxIssue, setCheckboxIssue] = useState<ReturnType<EditorAdapter["toggleGlyph"]>>(null);
+  const checkboxHelp = useId();
   const [label, setLabel] = useState("");
   const [creationIssue, setCreationIssue] = useState<ReturnType<EditorAdapter["createField"]>>(null);
   const creationErrorId = useId();
@@ -116,6 +118,9 @@ export function DocumentEditor({
         <button disabled={readOnly || !date} onClick={() => setDateIssue(view.current!.fillDate(date))}>{t("editor.fillDateBoxes")}</button>
         <p id={dateHelp}>{t("editor.dateBoxesHelp")}</p>
         {dateIssue && <p role="alert">{t(`editor.dateBoxes.${dateIssue}`)}</p>}
+        <button disabled={readOnly || !glyphCheckbox} onClick={() => setCheckboxIssue(view.current!.toggleGlyph())}>{t("editor.toggleCheckbox")}</button>
+        <p id={checkboxHelp}>{t("editor.checkboxHelp")}</p>
+        {checkboxIssue && <p role="alert">{t(`editor.checkbox.${checkboxIssue}`)}</p>}
         {creationIssue && <p role="alert" id={creationErrorId}>{t(`editor.creation.${creationIssue}`, { labelLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_LABEL_LIMIT), fieldLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_RECORD_LIMIT) })}</p>}
         {unsupported && <p>{t("editor.unsupported")}</p>}
       </div>

@@ -401,3 +401,22 @@ Borders now include internal horizontal/vertical table edges and inherited table
 styles, with direct cell overrides; paragraph/run outlines and DrawingML line
 weights retain bounded source values. Source files that only contain separator
 characters do not acquire new graphical boxes or altered originals implicitly.
+
+### Checkbox controls and toggling (E09.13)
+
+Native Word checkbox content controls (`w14:checkbox`) are no longer generic
+unsupported content: import maps each control to a bounded checkbox node carrying
+its checked state, rendered as an accessible ☐/☒ mark that toggles by direct click
+or Space on the selection and participates in undo/redo like any document change.
+Export updates only that control's `w14:checked` value and its state glyph;
+unchecked documents save byte-identically, and malformed controls stay protected
+as before. The glyph action mirrors the boxed-date pattern: selecting exactly one
+unambiguous ballot-box character (U+2610/U+2612) and toggling swaps the pair in
+one undoable transaction while preserving run formatting; symbol-font private-use
+codes (Wingdings and similar) are deliberately not paired because the run font is
+not part of the editing model and a wrong swap could corrupt ordinary text.
+Inline DrawingML rectangles and VML rectangles — the way many converted forms draw
+checkboxes — are extracted as bounded, read-only shapes rendered in the text flow
+at their anchor position, matching Word's inline rendering; anchored shapes keep
+their source offsets relative to the paragraph box. Their geometry is presentation
+only and never becomes editable text or a filled value.
