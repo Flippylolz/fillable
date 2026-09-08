@@ -28,7 +28,7 @@ def readiness(client, source):
     assert (
         cookie.value and cookie["httponly"] and cookie["samesite"].lower() == "strict"
     )
-    assert not cookie["secure"] and not cookie["domain"] and cookie["path"] == "/"
+    assert cookie["secure"] and not cookie["domain"] and cookie["path"] == "/"
     client.headers["X-CSRF-Token"] = state["csrf_token"]
     assert client.get("/api/storage/usage").status_code == 401
     for headers in (
@@ -49,7 +49,7 @@ def main():
     source, output = sys.argv[1:]
     assert re.fullmatch("[0-9a-f]{40}", source)
     origin = os.environ["FILLABLE_PUBLIC_ORIGIN"]
-    assert re.fullmatch(r"http://[a-z0-9.-]+:3200", origin)
+    assert re.fullmatch(r"https://[a-z0-9.-]+:3200", origin)
     with httpx.Client(
         base_url=origin, headers={"Origin": origin}, timeout=40, trust_env=False
     ) as client:

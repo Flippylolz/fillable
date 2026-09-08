@@ -92,7 +92,7 @@ exit 99
             if kind == "private":
                 environment.update(
                     {
-                        "FILLABLE_PUBLIC_ORIGIN": "http://synthetic.invalid:3200",
+                        "FILLABLE_PUBLIC_ORIGIN": "https://synthetic.invalid:3200",
                         "FILLABLE_INITIAL_LOGIN": "Synthetic-user",
                         "FILLABLE_INITIAL_PASSWORD": "private-synthetic-password",
                     }

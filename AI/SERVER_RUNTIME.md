@@ -2,7 +2,7 @@
 
 Fillable installs a private receiver and fixed runtime under the supplied account's
 dedicated `fillable` directory. E08.3 prepares this boundary; E08.4 performs the first
-application rollout through Actions. HTTP port 3200 remains the accepted origin.
+application rollout through Actions. D024 now requires HTTPS port 3200 through externally managed TLS.
 No shared service is restarted or recreated, and no certificate or TLS policy changes.
 
 ## Deployment boundary
@@ -22,7 +22,7 @@ then their IDs, platform and revision labels must match. Runtime image selection
 those IDs with builds removed and application image pulls disabled.
 
 The database password is generated privately on the server and is never returned by
-the installer. The exact HTTP origin, dedicated document path and 2 GiB disk headroom
+the installer. The exact HTTPS origin, dedicated document path and 2 GiB disk headroom
 are explicit private settings. Existing settings survive installation retries. GitHub
 receives only the dedicated SSH identity and trusted host-key data through production
 environment secrets; the production environment must restrict deployment to main.
@@ -46,8 +46,7 @@ host :3200 → Fillable TCP relay → existing shared nginx :3200
 Gateway and relay join the existing `wef-edge` network with a distinct Fillable gateway
 alias. The database, Redis and API have no host publication. Existing 80/443 listeners,
 shared-container port mappings and other application services remain unchanged. The
-relay uses the already pinned nginx stream implementation; the shared nginx handles
-HTTP. Local proof uses an isolated equivalent network and no public host publication.
+relay uses the already pinned nginx stream implementation; the shared nginx terminates TLS and forwards private HTTP. Local proof uses an isolated equivalent network and no public host publication.
 
 All established runtime CPU/memory ceilings, private storage, read-only application
 roots and bounded logs remain. Preflight requires the observed Linux amd64 Docker
@@ -57,29 +56,26 @@ configured port reservations must also be rechecked before the first E08.4 rollo
 
 ## Shared nginx integration
 
-The authoritative installed owner is the WEF shared-edge `ops` tree, not a Git checkout.
-Its inspected source/template fingerprints are recorded privately. The installer does
-not edit that manager. On first Actions apply, the adapter refuses an unexpected source,
-adds a small reentrant process-lock helper to the existing activate/rollback entry
-points, and uses the same lock while preparing and activating Fillable's extension.
-This coordinates manager writers; it does not claim control over arbitrary manual
-filesystem changes by noncooperating actors.
+The shared nginx configuration task owns the existing TLS listener and certificate.
+The user and owner confirmed its interface: internal TLS 3200 on `wef-edge`, variable
+Docker-DNS upstream `http://fillable-gateway:8080`, preserved Host including port,
+forwarded HTTPS scheme/3200 and 12 MiB body limit. Shared Compose publishes only 80/443.
+No activation, template/manager patch, config replacement or nginx reload is required.
+Contact that task before ingress changes. Legacy edge helpers remain in the fixed
+receiver file allowlist for installation compatibility; the runtime never calls them.
 
-One marked include is added inside HTTP in the three authoritative templates and in
-a new release derived from the current configuration bytes. This preserves later
-regeneration and does not reconstruct unrelated routes from an older template. The
-current hook/issuance files are retained; certificate/key trees are not copied or
-changed. The owner validates the complete candidate with its pinned image and applies
-through its existing atomic pointer and graceful reload process. Failed validation
-cannot activate the candidate. Concurrent source/template changes abort activation.
+Preflight requires `ingress_mode=external_tls`, an exact HTTPS origin, no shared host
+3200 binding and a verified certificate/hostname connection to the dynamically
+inspected edge IP. A 502 is allowed only before the app starts. After starting the
+relay, an end-to-end TLS request through loopback 3200 must return readiness 200.
 
-The extension owns only internal HTTP 3200, the exact configured hostname and private
-Fillable upstream. Its body/time limits and content-free logging are scoped to that
-listener. Recovery creates a new release from the then-current configuration, removing
-only Fillable's marked include while preserving intervening unrelated edits. It never
-uses a blanket previous-shared-release rollback. The local real-manager proof verifies
-activation, graceful reload, existing-route preservation and scoped removal after a
-concurrent owner edit, with unchanged shared container ID/start time/restart count.
+For the existing idle bootstrap, run the reviewed installer's `upgrade-https` mode
+with merged source and its full commit. It holds the Fillable release lock, refuses
+any existing app containers or release state, verifies every old installed fingerprint,
+and replaces only fixed receiver files, their fingerprints, installation revision and
+public origin. Database credentials, SSH authorization, documents and shared nginx
+remain untouched. Concurrent changes fail; partial writes are rolled back only when
+they still contain this upgrade's bytes. Never execute the old HTTP receiver apply.
 
 ## Schema-aware failure handling
 
@@ -90,8 +86,8 @@ forward plan before starting the application. Reviewed migrations remain startup
 dependencies and readiness verifies the resulting schema. No downgrade, data drop,
 volume deletion, host-wide shutdown/pruning or backup operation exists in this path.
 
-On ingress/verification failure the relay is stopped; a newly added Fillable include is
-removed through the scoped manager process. Private application/database data remains
+On ingress/verification failure only the Fillable relay is stopped; the externally
+owned TLS listener is never removed or changed. Private application/database data remains
 for diagnosis and forward repair. `attempt.json` records only source, phase and status;
 failed attempts do not replace the last successful `state.json`. Release archives and
 receipts remain available. First deployment has no earlier application to restore.
@@ -138,9 +134,9 @@ run `smoke-release.sh` privately with `FILLABLE_PUBLIC_ORIGIN`, `FILLABLE_INITIA
 and `FILLABLE_INITIAL_PASSWORD`. It requires matching successful deployment evidence
 and the manifest's exact immutable image/revision. No SSH key or provisioning command
 is used by this smoke utility. Credentials must never be shell arguments, public logs,
-GitHub secrets or committed files. The installed restricted receiver remains unchanged.
+GitHub secrets or committed files. The restricted receiver is updated through the guarded D024 predeployment upgrade.
 
-The authenticated checker verifies HTTP cookie policy, exact-origin/CSRF rejection,
+The authenticated checker verifies HTTPS Secure cookie policy, exact-origin/CSRF rejection,
 synthetic upload, worker completion, a saved revision, and byte-exact original/current/
 history downloads. An unchanged idempotent write may retry a temporary file-reader
 conflict. Failed checks remove stale evidence and fail. Content-free private acceptance

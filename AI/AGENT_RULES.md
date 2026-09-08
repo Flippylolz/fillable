@@ -52,12 +52,12 @@ These instructions guide automated implementation in this repository. Direct use
 ## Shared-server deployment
 
 - Preserve all unrelated services. Inspect service state, occupied/reserved ports, capacity, and the active nginx owner before choosing a new application port or making server changes.
-- Use the existing shared nginx for public ingress at `http://<DEPLOY_HOST>:<PORT>` under D019. Allocate a new public nginx listener and a separate private Fillable upstream as needed; do not take host ports 80/443 or replace existing TLS/default-host routing.
+- Use the existing owner-managed HTTPS listener at `https://<DEPLOY_HOST>:3200` under D024. Only Fillable’s TCP relay publishes host 3200. Shared nginx forwards to the private gateway over `wef-edge`; preserve existing host ports and TLS/default-host routing.
 - Investigate WEF as a possible nginx source repository. If it is the owner, use its instructions and managed configuration; never assume a repository path or overwrite generated/live configuration independently.
 - Keep app upstream access private and compatible with nginx's actual host/container networking. Scope Compose commands to Fillable's verified project name, files, volumes, and directories.
-- Validate the full effective nginx configuration before a graceful reload. Follow the existing manager's apply workflow; do not restart shared nginx or Docker as routine rollout.
-- Record existing-route/service checks before and after changes. Roll back only Fillable's change, preserving concurrent shared-config edits and unrelated data.
-- Match session cookie settings to the configured public scheme; the accepted HTTP origin requires Secure=false and provides no transport encryption. Keep HttpOnly, SameSite, CSRF, a distinct cookie name, and exact-origin checks including the port. Cookies are not isolated by port. Do not silently substitute a different public URL.
+- Contact the shared nginx configuration task before any ingress changes. The TLS listener is already deployed; application rollout must not edit or reload shared nginx. Read-only validation uses the full effective configuration.
+- Record existing-route/service checks before and after changes. On application verification failure stop only Fillable’s relay, preserving the owner’s ingress and unrelated data.
+- Match session cookie settings to the configured public scheme; the accepted HTTPS origin requires Secure and normal certificate verification. Keep HttpOnly, SameSite, CSRF, a distinct cookie name, and exact-origin checks including the port. Cookies are not isolated by port. Do not silently substitute a different public URL.
 - Do not perform host-wide pruning, blanket container shutdown, unrelated upgrades, or broad firewall changes. If extra scope is unavoidable, explain the concrete conflict and seek direction after completing safe independent work.
 
 ## Document correctness
