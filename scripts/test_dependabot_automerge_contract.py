@@ -21,13 +21,14 @@ LINES = AUTOMERGE.replace("\\\n", " ").splitlines()
 
 
 class DependabotAutomergeContractTests(TestCase):
-    def test_triggers_cover_dependabot_events_and_scheduled_reconciliation(self):
+    def test_triggers_cover_dependabot_events_main_pushes_and_a_fallback_schedule(self):
         self.assertIn("pull_request_target:", TRIGGERS)
         self.assertIn("types: [opened, reopened, synchronize]", TRIGGERS)
+        self.assertIn("push:", TRIGGERS)
+        self.assertIn("branches: [main]", TRIGGERS)
         self.assertIn("schedule:", TRIGGERS)
         self.assertRegex(TRIGGERS, r'cron: ".*\* \* \* \*"')
         self.assertNotIn("pull_request:", TRIGGERS)
-        self.assertNotIn("push:", TRIGGERS)
 
     def test_permissions_stay_minimal_and_no_pull_request_code_is_checked_out(self):
         self.assertIn("contents: write", AUTOMERGE)
@@ -36,12 +37,14 @@ class DependabotAutomergeContractTests(TestCase):
         self.assertNotIn("actions/checkout", AUTOMERGE)
         self.assertNotIn("head.ref", AUTOMERGE)
 
-    def test_job_is_guarded_to_dependabot_in_this_repository(self):
+    def test_job_is_guarded_to_dependabot_and_main_pushes_in_this_repository(self):
         self.assertIn("github.repository == 'Flippylolz/fillable'", AUTOMERGE)
         self.assertIn("github.event.pull_request.user.login == 'dependabot[bot]'", AUTOMERGE)
         guard = AUTOMERGE[AUTOMERGE.index("if: >-"):AUTOMERGE.index("runs-on:")]
         self.assertIn("github.event_name == 'schedule'", guard)
-        self.assertIn("||", guard, "Scheduled reconciliation runs under the same guard")
+        self.assertIn("github.event_name == 'push'", guard)
+        self.assertIn("github.ref == 'refs/heads/main'", guard)
+        self.assertIn("||", guard, "Push and scheduled reconciliation share the guard")
 
     def test_every_merge_arming_is_auto_squash_at_an_exact_head(self):
         arming_lines = [line for line in LINES if "gh pr merge" in line]
@@ -52,18 +55,20 @@ class DependabotAutomergeContractTests(TestCase):
             self.assertIn("--match-head-commit", line)
 
     def test_event_runs_refresh_a_branch_that_is_behind_main(self):
+        self.assertIn("if: github.event_name == 'pull_request_target'", EVENT_STEP)
         self.assertIn('[ "$state" = "BEHIND" ]', EVENT_STEP)
         self.assertIn("update-branch", EVENT_STEP)
         self.assertIn('-f expected_head_sha="$HEAD_SHA"', EVENT_STEP)
         self.assertIn("exit 0", EVENT_STEP[EVENT_STEP.index("update-branch"):])
 
-    def test_scheduled_reconciliation_updates_behind_dependabot_branches(self):
+    def test_reconciliation_runs_for_main_pushes_and_the_fallback_schedule(self):
+        self.assertIn("if: github.event_name != 'pull_request_target'", SCHEDULE_STEP)
         self.assertIn("--author 'app/dependabot'", SCHEDULE_STEP)
         self.assertIn("mergeStateStatus", SCHEDULE_STEP)
         self.assertIn('[ "$state" = "BEHIND" ]', SCHEDULE_STEP)
         self.assertIn('-f expected_head_sha="$head_sha"', SCHEDULE_STEP)
 
-    def test_scheduled_reconciliation_arms_only_healthy_unarmed_pull_requests(self):
+    def test_reconciliation_arms_only_healthy_unarmed_pull_requests(self):
         self.assertIn('[ "$armed" = "false" ]', SCHEDULE_STEP)
         failed_guard = SCHEDULE_STEP.index(FAILED_CONCLUSIONS)
         for line in SCHEDULE_STEP.splitlines():

@@ -290,11 +290,17 @@ contract:
 
 - Triggers on `pull_request_target` (`opened`, `reopened`, `synchronize`) so the
   trusted base-branch workflow definition always runs; no pull-request code is
-  checked out and the steps call only the GitHub CLI. A `*/30 * * * *` schedule
-  additionally reconciles all open Dependabot pull requests.
+  checked out and the steps call only the GitHub CLI. Reconciliation of all
+  open Dependabot pull requests additionally runs after every push to `main`
+  (so each merge immediately refreshes the remaining pull requests) and on a
+  twice-hourly offset schedule (`13,43 * * * *`, clear of the contended :00/:30
+  slots) as the fallback cadence. GitHub's scheduler produced no scheduled runs
+  for this repository across the first three slots, so the push trigger
+  performs the reconciliation in practice.
 - Guards on the repository identity and `dependabot[bot]` as pull-request
   author, so it covers Dependabot version and security updates and nothing else;
-  scheduled runs act only on open pull requests authored by Dependabot.
+  push and scheduled runs act only on open pull requests authored by Dependabot,
+  and push runs only on the protected `main` branch.
 - Requests only `contents: write` and `pull-requests: write`; deployment
   credentials are not involved and the workflow dispatches no release itself.
   The merge lands on `main` like any other merge, where the E09.6 automation
@@ -310,11 +316,13 @@ contract:
   which arms there. Strict up-to-date protection can otherwise never be
   satisfied after any merge to `main`, because Dependabot only rebases on
   conflict.
-- E09.11: the scheduled reconciliation updates every open behind Dependabot
-  branch and arms squash auto-merge on pull requests that are neither armed nor
-  carrying failed/cancelled required checks, so remaining pull requests follow
-  each merge within one scheduled cycle. Pull requests with failing checks are
-  left open for a fixing push, which re-arms them through the synchronize event.
+- E09.11: the reconciliation after every `main` push (and the fallback
+  schedule) updates every open behind Dependabot branch and arms squash
+  auto-merge on pull requests that are neither armed nor carrying
+  failed/cancelled required checks, so remaining pull requests follow each
+  merge with one required-CI cycle instead of staling indefinitely. Pull
+  requests with failing checks are left open for a fixing push, which re-arms
+  them through the synchronize event.
 - `scripts/test_dependabot_automerge_contract.py` pins this contract in the
   required `contracts` job alongside the E09.6 deploy-dispatch contract.
 
