@@ -125,19 +125,28 @@ container baseline matched before/after. The production environment permits only
 main and holds the four dedicated transport secrets. Optional Docker health state is
 read safely, including containers without healthchecks.
 
-E08.4 adds a public smoke step after Actions applies the verified artifact. Two private
-environment secrets, `FILLABLE_INITIAL_EMAIL` and `FILLABLE_INITIAL_PASSWORD`, supply
-the operator's generated initial credentials. A normal login is attempted first. Only
-invalid credentials trigger the receiver's empty-database provisioning operation;
-network/server failures do not. An existing account is never reset to force success.
-The password travels through environment/stdin, never a command argument or report.
+E08.7 follows the user's private account-creation choice. Actions holds only the four
+transport secrets; it does not receive account credentials. After artifact application,
+`check-public-release.sh` verifies public readiness, the login page, anonymous session
+cookie policy, private-data denial and origin/CSRF rejection. Its public receipt
+explicitly records `authenticated_acceptance: pending`; a green Actions rollout alone
+is not completed MVP acceptance.
 
-The checker verifies HTTP cookie policy, exact-origin/CSRF rejection, synthetic upload,
-worker completion, a saved revision, and byte-exact original/current/history downloads.
-An unchanged idempotent write may retry a temporary file-reader conflict. Failed smoke
-checks fail Actions and cannot leave stale success evidence. Public evidence contains
-only the source, synthetic digests, version count and status. Synthetic documents remain
-retained and quota-charged. The browser badge and broader deployed acceptance remain E08.5.
+The authorized operator creates the initial user privately using the containerized
+account CLI and password stdin. Do not reset an existing account automatically. Then
+run `smoke-release.sh` privately with `FILLABLE_PUBLIC_ORIGIN`, `FILLABLE_INITIAL_LOGIN`
+and `FILLABLE_INITIAL_PASSWORD`. It requires matching successful deployment evidence
+and the manifest's exact immutable image/revision. No SSH key or provisioning command
+is used by this smoke utility. Credentials must never be shell arguments, public logs,
+GitHub secrets or committed files. The installed restricted receiver remains unchanged.
+
+The authenticated checker verifies HTTP cookie policy, exact-origin/CSRF rejection,
+synthetic upload, worker completion, a saved revision, and byte-exact original/current/
+history downloads. An unchanged idempotent write may retry a temporary file-reader
+conflict. Failed checks remove stale evidence and fail. Content-free private acceptance
+evidence contains only source, synthetic digests, version count and status. Synthetic
+documents remain retained and quota-charged. Complete E08.5's real browser version
+badge, broader MVP and restart/persistence acceptance before marking rollout done.
 
 E08.5 acceptance tooling can run independently against the isolated local topology
 while target access is pending. The existing bilingual desktop/mobile journey accepts

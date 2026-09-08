@@ -2495,3 +2495,37 @@ restored DOCX bytes, retained versions and draft behavior remained checked. Full
 scoped restart preserved stored bytes/digests/quota; shared route/container state
 and concurrent owner edits survived. Proof project fillable-e085-history-quntd4pz
 stopped with persistent volumes retained. Final refreshed-head CI still required.
+
+E08.6 done: PR #77 merged as bdf5ca846eea0afefabf92b9f50c0f73bdaa88cd.
+Exact-head CI 34196658969 passed checks, upgrade-checks and ci-required. Local and
+CI application coverage remained above both independent 90% gates; the negative
+probes rejected real unimported application source. The initial timed-out run is
+superseded by this successful run; no gate was bypassed.
+
+E08.7: private account creation and acceptance (user-requested dependency before
+final rollout). Keep only dedicated transport secrets in Actions. Verify public
+readiness without account credentials; explicitly leave authenticated acceptance
+pending. The operator privately creates the requested normal user and runs the
+required authenticated smoke, browser and persistence checks before completion.
+Remove automatic account provisioning from the private smoke shell; failed login
+must fail without resetting or creating any account. Preserve installed receiver
+fingerprints, all coverage/CI gates, HTTP 3200 and existing server services.
+Tests must reject broken readiness/cookie/CSRF/auth boundaries and stale evidence,
+and prove the private smoke shell never invokes SSH/provisioning. Verify this task
+in its own PR before actual deployment and final E08.5 acceptance.
+
+E08.7 local contract verification: all 16 shell scenarios pass, including wrong
+source/image, unapplied release, invalid credentials, bad receipts and failures after
+writing output; no scenario invokes SSH/provisioning or exposes credentials.
+Three HTTP contract tests pass, with readiness rejecting broken service, HTML,
+session/cache/cookie/CSRF/origin/private-data boundaries. Real isolated readiness,
+authenticated plain-login smoke and full restart/storage verification are in progress.
+Application source is unchanged from E08.6; its measured backend coverage is
+3970/3999 lines and 1174/1206 branches, frontend 1292/1303 lines and 1500/1569
+branches. This task's exact-head CI will remeasure both independently.
+
+E08.7 verified MERGED: PR #78 at 4e1d574932e19843c5f43e7f1d2a1661df0be476,
+required PR CI 34198928848 SUCCESS. Exact merged-main CI 34200635960 is pending
+and must pass before the final Actions dispatch. E08.5 draft now incorporates that
+merged base plus the verified history-read correction; its required CI must pass.
+No target deployment or private account creation has run yet.
