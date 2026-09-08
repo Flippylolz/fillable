@@ -102,7 +102,7 @@ the current-main Actions gate. Do not rebuild arbitrary server source, assume sw
 an image reverses a migration, or promise restoration of lost data. The current gate
 intentionally does not deploy arbitrary older main revisions.
 
-## Verification and remaining rollout
+## Verification and deployed acceptance
 
 Docker contract tests exercise receiver input/archive replay, installation retry/key
 preservation, failed-attempt records, scoped edits and competing processes. Required CI
@@ -112,9 +112,9 @@ and relay: six desktop/mobile save/badge cases, full Fillable restart with ident
 stored bytes/digests/quota counters, and scoped removal preserving an owner edit.
 These are isolated synthetic checks, not a deployed MVP claim.
 
-Application rollout remains E08.4 after this task's verified merge and private bootstrap.
-It must verify the externally reachable exact origin with authenticated synthetic flows.
-E08.5 verifies the broader deployed MVP and persistence. Existing-service container
+E08.4 completed the Actions rollout after verified merges and private bootstrap.
+E08.5 verified the externally reachable exact HTTPS origin with authenticated synthetic
+flows, the broader deployed MVP and persistence. Existing-service container
 identity/start/restart/health and existing route/HSTS results are compared before/after
 apply; production reports expose only safe source/digest/status evidence.
 
@@ -147,8 +147,32 @@ evidence contains only source, synthetic digests, version count and status. Synt
 documents remain retained and quota-charged. Complete E08.5's real browser version
 badge, broader MVP and restart/persistence acceptance before marking rollout done.
 
+E08.5 acceptance tooling can run independently against the isolated local topology
+while target access is pending. The existing bilingual desktop/mobile journey accepts
+private credentials through environment, retaining its local synthetic defaults. It
+verifies the visible artifact badge on all four pages, readable decimal storage units,
+saved edits/downloads, template-copy independence and history restoration. Each run
+writes a synthetic identity/digest manifest without document text, URLs or credentials.
+`verify_public_persistence.py` checks those exact current and historical bytes/models
+through authenticated public GETs after a scoped Fillable restart. Missing/reordered
+history, changed bytes/models/current revision and a mismatched recorded version fail.
+
+Production browser output must remain in the private operator directory because browser
+failure reports may contain connection details or credentials. Do not publish those
+traces/screenshots as CI artifacts. Local CI uses only synthetic accounts. Actual
+deployed acceptance, a controlled wrong-badge rejection and existing-service comparisons
+are still required before E08.5 is complete; isolated local evidence does not substitute.
+
 The Docker archive check covers both legacy and OCI metadata paths. An OCI index
 must reference exactly the two expected image configurations with only their Fillable
 source tags, verified manifest bytes and no nested indices. Legacy repository aliases
 are likewise restricted. The real Docker-produced archive passed these checks;
 controlled alternate-tag/config/index mutations are rejected before image loading.
+
+
+The final Actions rollout and E08.5 deployed acceptance are now verified for source
+`141288bcb12215fb34aede79ac2d7b7e799654d3`. See [Deployed acceptance](DEPLOYED_ACCEPTANCE.md)
+for the immutable archive, HTTPS/admin-session, desktop/mobile history and scoped-
+restart evidence. Earlier pending-rollout descriptions above record the implementation
+sequence; the verified acceptance record states the deployed result. Shared ingress
+remains externally owned and unchanged.

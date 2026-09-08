@@ -84,7 +84,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Retention is an explicit operator policy, communicated in history UI. Do not silently remove versions to resolve a failing save.
 - Backend permissions, bounded processing, safe saves, and cleanup are required infrastructure, not additional product pages.
 - CI blocks coverage below 90%; the measurement contract is in [CI and deployment](CI_CD.md).
-- Deployment is the final task, through GitHub Actions to the supplied server at `http://<DEPLOY_HOST>:<PORT>`. Existing shared nginx listens on the new public port and forwards to a private Fillable upstream while preserving other services; see [Deployment target](DEPLOYMENT_TARGET.md). Local Docker development is independent of live-server access.
+- Deployment is the final task, through GitHub Actions to the supplied server at `https://<DEPLOY_HOST>:3200` under D024. Fillable’s TCP relay alone publishes host 3200; existing shared nginx terminates TLS and forwards to the private gateway while preserving other services; see [Deployment target](DEPLOYMENT_TARGET.md). Local Docker development is independent of live-server access.
 
 ## Deferred beyond MVP
 

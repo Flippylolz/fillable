@@ -26,7 +26,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1–E08.2 merged; E08.3 isolated runtime |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -105,7 +105,7 @@ Acceptance:
 - Lowered limits preserve existing files and block new allocations appropriately.
 - API and worker paths share quota enforcement; user-isolation checks cover reads and writes.
 - Invalid credentials, successful login, session expiry, and logout behave correctly across protected pages.
-- Login works for the explicit HTTP origin in D019 with HttpOnly/SameSite, Secure=false, CSRF, and exact-origin checks including the port. An HTTPS configuration enables Secure. Do not assume cookies are isolated from other apps by port.
+- Login uses HttpOnly/SameSite, CSRF and exact-origin checks including the port. D024 production HTTPS requires Secure; local HTTP development retains scheme-specific cookies. Do not assume cookies are isolated from other apps by port.
 - Profile updates persist, password changes require the current credential, and users cannot update their own quota or role.
 - New accounts default to Ukrainian. The profile language switcher persists English or Ukrainian across sessions; save failures retain the prior language. A user's saved preference overrides stale browser state and cannot be changed by another user. Language switching preserves active state and document data.
 - Account and quota maintenance run through Docker without direct database edits or a separate administration page.
@@ -249,8 +249,8 @@ Work:
 
 - E08.1: Inspect `<DEPLOY_USER>@<DEPLOY_HOST>` read-only first: existing services, port allocations, capacity, Docker setup, and nginx ownership/networking. Investigate WEF as the possible configuration repository. Record baselines, select a new unused port and isolated Compose namespace, and prepare scoped paths/access without disrupting other workloads.
 - E08.2: Implement the GitHub Actions deployment workflow with serialized runs, an explicit source commit, immutable artifacts, and mandatory CI/coverage dependencies. Inject the verified source commit into the frontend build for the version badge, including manually selected revisions. Default proposal: manual dispatch for a protected default-branch commit.
-- E08.3: Configure only Fillable's persistent volumes, private upstream, resource limits, and schema-compatible release rollback procedure. No backups or staging environment are required. Prepare the new public HTTP listener for `http://<DEPLOY_HOST>:<PORT>` in the authoritative nginx configuration, using WEF's process if it is the owner. Preserve local document storage, quotas, and existing workloads.
-- E08.4: Run the workflow: validate capacity and persistence configuration, apply tested non-destructive migrations, update Fillable services, check private/public ports, validate effective nginx configuration, and apply the route with the owner's established process. Perform app smoke checks at the exact HTTP URL and recheck existing services/routes; do not require a backup.
+- E08.3: Configure only Fillable's persistent volumes, private upstream, resource limits, and schema-compatible release rollback procedure. No backups or staging environment are required. Use the owner-deployed D024 HTTPS listener on internal 3200, with only Fillable's TCP relay publishing host 3200. Coordinate with the shared nginx task before ingress changes; none are needed for rollout. Preserve local document storage, quotas, and existing workloads.
+- E08.4: Run the workflow: validate capacity and persistence configuration, apply tested non-destructive migrations, update Fillable services, check private/public ports, validate effective nginx configuration read-only and preserve the owner-deployed TLS route. Perform app smoke checks at the exact HTTPS URL and recheck existing services/routes; do not require a backup.
 - E08.5: Verify save/download, template independence, profile, history restoration, and data persistence on the deployed application. Confirm the served version badge matches the first seven characters of the artifact's source commit; a wrong hash or `development` fails a controlled production-release check. Record release commit, artifact digests, results, and the schema-aware rollback/recovery procedure in `AI/`.
 
 Acceptance:
@@ -2281,6 +2281,41 @@ Proof root `fillable-e084-real.timgnz3s`, project `fillable-e084-timgnz3s`.
 Next: task PR, required CI/verified merge, configure two private initial-account
 environment secrets, wait successful exact-main CI and run the Actions workflow.
 
+Live E08.4 checkpoint: [PR #74](https://github.com/Flippylolz/fillable/pull/74),
+head `2819601f9de390ad4484f76fc5b693ac5c814a8f`, CI `34160681711`
+running, exact-head squash auto-merge enabled under verified strict protection.
+Main CI `34160031264` for E08.3a merge is being followed. Private account-secret
+preparation is guarded on PR #74 MERGED; two additional secrets are not installed yet.
+Next: complete CI/merge, configure those secrets, wait successful exact-main push CI,
+recheck target reservations/capacity, dispatch deployment, verify public smoke and
+unchanged existing services/routes, then begin E08.5. No application deployed yet.
+
+E08.4 code PR #74 is verified MERGED as `fdfe53bb5f739fe8c72ff905785c753f260e7780`,
+head `2819601f9de390ad4484f76fc5b693ac5c814a8f`; CI `34160681711` passed
+all required jobs and unchanged raw coverage (backend 3969/3998,1174/1206; frontend
+1292/1303,1500/1569) plus both negative probes. Main CI `34161861411` is running.
+Automatic approval review rejected configuring the two newly generated initial-account
+secrets in GitHub production, requiring explicit approval of that payload/destination.
+A concise approval request is pending; no retry or workaround has run, and no app has
+been deployed. Existing four transport secrets/receiver are ready.
+
+E08.5 independent tooling preparation starts from the merged E08.4 source on
+`task/e08-5-deployed-acceptance` while that credential dependency waits. Parameterize
+the existing real bilingual four-page journey with private credentials, retain only
+synthetic identity/digest manifests, and add read-only post-restart verification.
+Exercise locally through real app/relay; actual deployed acceptance and task completion
+still depend on successful E08.4 rollout. This does not advance or bypass deployment.
+
+E08.5 local tooling verification passed: desktop/mobile four-page bilingual journey
+(2 cases, 25.8s), inspected local screenshots, actual shared-manager/relay path, full
+Fillable restart with identical stored bytes/digests/quota counters, and public checks
+of retained document models/downloads/full version history for both manifests.
+Corruption contracts reject changed bytes/models/current/history and wrong version.
+Proof root `fillable-e085-real.uvw0vu9t`; own containers stopped, volumes retained.
+The task will be a draft PR while actual target rollout/acceptance is blocked on the
+pending explicit credential-secret approval. It must not auto-merge or be marked done
+until that acceptance is verified; deployment must use current-main source.
+
 E08.4 code PR #74 merged as `fdfe53bb5f739fe8c72ff905785c753f260e7780`;
 PR CI `34160681711` and main CI `34161861411` passed. Actual deployment waits
 for explicit approval requested by automatic review for the two generated initial
@@ -2300,6 +2335,91 @@ E08.5a local verification passed all 20 real two-tab browser scenarios (10 deskt
 restart retained stored bytes/digests/quota counters; shared service/route remained
 unchanged and own containers stopped with volumes preserved. Proof project
 `fillable-e085a-fpcvr2vg`. Required final-head CI and merge remain pending.
+
+Live E08.5 checkpoint: draft [PR #75](https://github.com/Flippylolz/fillable/pull/75),
+head `05c44db2dd6d120c426e3cfb383f44bb8907256d`, required CI `34162407970` running.
+PR stays draft without auto-merge because actual deployed acceptance is still pending.
+E08.4 main CI `34161861411` for `fdfe53bb5f739fe8c72ff905785c753f260e7780`
+is also running. Local acceptance proof and corruption tests passed; no target app
+rollout has run. Automatic-review credential approval question remains pending.
+On approval, run guarded private initial-account secret preparation, verify exact-main
+CI success/current main, recheck capacity/reservations, dispatch E08.4 Actions, verify
+existing services, then run E08.5 private browser/restart/negative-badge acceptance.
+Record actual results and only then ready/auto-merge PR #75 behind its required CI.
+
+E08.4 exact merged-main CI `34161861411` is verified SUCCESS for all required jobs
+on `fdfe53bb5f739fe8c72ff905785c753f260e7780`. Current rollout source is eligible
+subject to rechecking main/CI at dispatch. Explicit credential-secret approval remains
+pending, so no deployment dispatch or secret-upload retry has run. Draft #75 CI
+`34162407970` remains in progress; upgrade and browser jobs/stages passed.
+
+Draft #75 CI `34162407970` failed in an existing editing-lease test during the fresh
+production run: 47 passed, initial `/content` API baseline was HTTP 409 (trace verified),
+so the test compared later document content to undefined. Actual new acceptance cases
+passed. Corrective E08.5a is isolated in `/private/tmp/fillable-ci-content-fix`, branch
+`task/e08-5a-lease-snapshot-read`, based on verified merged main. It requires HTTP 200
+for baseline/final reads, retries only operation_in_progress, retains every exact
+comparison, and uses a unique synthetic title for repeated verification. Twenty real
+browser cases are running (10 per viewport). Deliver corrective PR/CI/merge, then
+refresh draft #75; actual deployment still waits on the credential approval.
+
+Corrective E08.5a is in [PR #76](https://github.com/Flippylolz/fillable/pull/76),
+head `bc5abee` (full head in corrective worktree), CI `34163615157` running with
+exact-head auto-merge enabled and actual strict/admin-enforced protection verified.
+Twenty local real browser repetitions passed in 48.5s. Next verify required CI/merge,
+merge origin/main into draft #75 preserving its checkpoint, rerun required CI, and
+retain draft status until actual deployment acceptance. Credential approval still pending.
+
+E08.5a PR #76 is verified MERGED as `3a8d5f8e1c906839ce379571cd8626609fd6a700`,
+head `bc5abee79961088e40340d9b8589c800676b9a98`, CI `34163615157` SUCCESS.
+Draft #75 is refreshed with that merged correction and retains its local acceptance
+proof. Required CI must pass on the refreshed head. Current-main deployment source
+is now the E08.5a merge and requires its successful push CI before dispatch; the
+credential-secret approval remains pending. Actual target rollout/acceptance remains
+unperformed, so #75 stays draft without auto-merge.
+
+Final resumable checkpoint — 2026-09-08 Europe/Warsaw:
+- Current main `3a8d5f8e1c906839ce379571cd8626609fd6a700` is verified unchanged,
+  CI `34164778514` SUCCESS on all required jobs. PR #76 correction merged.
+- Draft #75 head `404ba6fbc1f07b46ba7cc00438f392bf159b4883` passed CI
+  `34164855430` on all required jobs. Backend 3969/3998 lines,1174/1206 branches;
+  frontend 1292/1303 lines,1500/1569 branches; both actual source-inclusion negative
+  probes passed. Draft remains OPEN/isDraft=true, autoMergeRequest=null because actual
+  deployed acceptance is unfinished. Local two-viewport/restart/digest proof passed.
+- No target application rollout has run. Corrected receiver/dedicated key and four
+  transport environment secrets are installed, verified; existing services preserved.
+- Sole external blocker: automatic approval review rejected storing the generated
+  initial-account email/password as FILLABLE_INITIAL_EMAIL/FILLABLE_INITIAL_PASSWORD
+  in GitHub production. Explicit approval question remains pending. Do not retry,
+  work around the rejection, or treat elapsed time as approval.
+- On explicit approval: run guarded `/private/tmp/fillable-e084-account-secrets.py`;
+  recheck current-main successful CI and target capacity/3200 reservations, then
+  dispatch deploy.yml for exact current main. Verify Actions apply/public smoke and
+  unchanged existing containers/routes/HSTS. Run draft #75's private desktop/mobile
+  acceptance, controlled wrong/development badge rejection and scoped Fillable restart
+  with public retained-model/download/history comparisons. Record actual release
+  source/digests/results, ready draft #75, verify required CI/protection, enable
+  exact-head auto-merge, confirm MERGED and finish E08 only after actual acceptance.
+- Keep HTTP3200/TLS-out-of-scope choice; no shared service restart, pruning, volume
+  removal, backups or fixed public passwords. Private operator input remains ignored.
+
+2026-09-08 resumed checkpoint: the requested password is exactly ten characters;
+prior agent counts were incorrect. The user approved login-name authentication and
+a ten-character minimum, and rejected storing account credentials in GitHub.
+Ignored private requested-account configuration is prepared with mode 0600;
+no account has been created and no application is running on the target.
+E08.6 is PR #77, branch `task/e08-6-login-identifier`, head
+`60ee49ad36ab1d89bdd5786fd2f7018bd8bc3ef4`, in isolated worktree
+`/private/tmp/fillable-login-change`. Local 417 backend / 229 frontend tests and
+7 development / 48 production browser tests passed, including storage recreation.
+Backend raw coverage 3970/3999 lines and 1174/1206 branches; frontend 1292/1303
+lines and 1500/1569 branches. CI run 34194979359 is pending, upgrade-checks passed,
+exact-head squash auto-merge is enabled under strict admin-enforced ci-required.
+After its verified merge, implement E08.7 private operator provisioning/acceptance
+workflow adaptation in its own PR. Then deploy through Actions, privately create
+the requested normal user, and finish draft PR #75's actual public browser,
+history/persistence and wrong-badge negative acceptance. The target port is still
+unreserved across 13 managed Compose files; shared active release is unchanged.
 
 E08.6 user-requested account update (2026-09-08): use a login name instead of an
 email address and a ten-character password minimum. The supplied private password
@@ -2330,6 +2450,52 @@ Allow 30 minutes for this sequential full verification job, preserving every che
 threshold and failure rule. This is bounded runtime headroom for observed runner
 variance, not a retry or coverage bypass. Exact updated-head CI must pass.
 
+E08.5 refreshed against merged E08.6 login behavior. PR #77 is MERGED at
+bdf5ca846eea0afefabf92b9f50c0f73bdaa88cd, CI 34196658969 successful. Existing
+acceptance browser/persistence helpers now take private FILLABLE_INITIAL_LOGIN
+and the new login labels. E08.7 PR #78 is independently under required CI;
+actual deployment and this draft's final public acceptance still remain pending.
+
+2026-09-08 latest checkpoint: E08.6 PR #77 MERGED at
+bdf5ca846eea0afefabf92b9f50c0f73bdaa88cd; final PR CI 34196658969 SUCCESS.
+Its first run hit the 20-minute job limit after application tests passed; checks now
+have 30 minutes with unchanged coverage/negative probes and aggregation rules.
+E08.7 PR #78 is ready with exact-head squash auto-merge on
+280fbdc3a775faf55de60aed03c4fd79afe6f761, CI 34198928848 running.
+Its 16 shell and 3 HTTP contracts passed; real local readiness, repeated authenticated
+smoke and full restart bytes/digests/quota proof passed in fillable-e087-k9m9t1k6.
+Private credentials are absent from GitHub: only the four transport secret names
+exist in production. The private requested-account JSON remains ignored, mode 0600.
+A guarded private provisioning helper is prepared but has not executed on the server.
+It requires a successful exact-source Actions rollout/evidence, locks the receiver's
+release lock, verifies active image/state, and never resets an existing account.
+
+Draft E08.5 PR #75 refreshed merged login behavior at
+20dff9abc356ab16e7a6982226924dde9a9ffead; CI 34199296170 running, still draft.
+Refreshed real desktop/mobile MVP journeys and public retained byte/model/full-history
+checks passed after scoped restart in fillable-e085-login-cp7q34zu. Both local proof
+projects stopped their own containers, retained volumes, and preserved shared test
+routes/container state/concurrent owner edits. Actual target deployment/acceptance
+remains pending. Next: verify #78 merge, refresh #75 with that merged base, wait for
+exact-main CI, recheck target baselines, dispatch Actions, create requested user by
+private stdin, run authenticated public/badge/persistence proofs, and only then
+ready/auto-merge #75 and verify final completion. No credential upload is authorized.
+
+E08.5 refreshed CI 34199296170 found a separate history acceptance read race:
+47 browser tests passed; the restored-current download returned documented
+HTTP 409 operation_in_progress, and the test compared its 58-byte JSON body with
+the 595094-byte original DOCX. The synthetic trace confirms restore succeeded
+(201). Require HTTP 200 and retry only that specific transient busy response before
+retaining the exact-byte equality assertion. This corrects acceptance observation;
+it does not weaken document or history comparisons or change application behavior.
+
+E08.5 history-read correction verified locally: all 20 real template/document history
+scenarios (desktop/mobile, five repetitions each) passed in 1.7 minutes. Exact
+restored DOCX bytes, retained versions and draft behavior remained checked. Full
+scoped restart preserved stored bytes/digests/quota; shared route/container state
+and concurrent owner edits survived. Proof project fillable-e085-history-quntd4pz
+stopped with persistent volumes retained. Final refreshed-head CI still required.
+
 E08.6 done: PR #77 merged as bdf5ca846eea0afefabf92b9f50c0f73bdaa88cd.
 Exact-head CI 34196658969 passed checks, upgrade-checks and ci-required. Local and
 CI application coverage remained above both independent 90% gates; the negative
@@ -2358,6 +2524,11 @@ Application source is unchanged from E08.6; its measured backend coverage is
 3970/3999 lines and 1174/1206 branches, frontend 1292/1303 lines and 1500/1569
 branches. This task's exact-head CI will remeasure both independently.
 
+E08.7 verified MERGED: PR #78 at 4e1d574932e19843c5f43e7f1d2a1661df0be476,
+required PR CI 34198928848 SUCCESS. Exact merged-main CI 34200635960 is pending
+and must pass before the final Actions dispatch. E08.5 draft now incorporates that
+merged base plus the verified history-read correction; its required CI must pass.
+No target deployment or private account creation has run yet.
 E08.8 user-directed HTTPS handoff (2026-09-08): shared nginx now owns the already
 deployed TLS listener on internal 3200, proxying to fillable-gateway:8080 over
 wef-edge. Fillable alone publishes host 3200 through its TCP relay. Forecast HTTP
@@ -2402,6 +2573,27 @@ set the exact HTTPS origin, recheck existing-service baselines, deploy that veri
 release through Actions, privately create the requested normal user and complete
 E08.5 deployed browser/restart acceptance. Keep shared nginx untouched.
 
+
+E08.8 verified MERGED: PR #79 at `8497c82bf4fedf2c5b54ee2c1f71b45c9ea317da`.
+Required CI `34203848582` passed all three jobs with backend 3970/3999 lines and
+1174/1206 branches; frontend 1292/1303 lines and 1500/1569 branches. Real unimported
+source probes failed the 90% gates as required. Auto-merge respected strict admin-
+enforced `ci-required`; no bypass was used.
+
+The guarded private HTTPS receiver upgrade from that merged source is now verified.
+The restricted key passes TLS preflight and rejects arbitrary shell commands. Existing
+containers matched exactly before/after; database credentials, SSH authorization,
+shared active configuration, edge state and shared Compose bytes were preserved.
+The app and relay are still absent. Main CI `34205708238` must pass before the exact
+HTTPS source can be dispatched through Actions; no old HTTP source may be deployed.
+
+The user subsequently requested the highest account role. The requested private
+account is now prepared as `admin`, superseding normal-user preparation. Preserve
+its supplied ten-character password. Create it after verified rollout (or promote
+only that account if already present), then verify role through the authenticated
+HTTPS session as well as stored account state. No account creation/promotion has
+occurred yet. E08.5 now resumes from the merged HTTPS base; deployed acceptance
+and its final PR merge remain outstanding.
 E08.9 — Portable Docker image identity (in_progress, prerequisite to retry rollout).
 Actions deployment `34207568628` failed closed before any Fillable application
 containers: the build engine records config digests, while the target's containerd
@@ -2446,3 +2638,42 @@ actual deployed acceptance remains pending. Next: verify this correction's merge
 upgrade only the idle Fillable receiver from that reviewed source, wait for exact-main
 CI, then retry Actions with a fresh stable baseline and create/verify the requested
 administrator privately. Do not retry the old incompatible receiver or image-ID path.
+
+
+E08.9 verified MERGED: PR #80 at `141288bcb12215fb34aede79ac2d7b7e799654d3`.
+Required CI `34209282057` passed all three jobs and the unchanged raw coverage gates.
+The guarded idle receiver update from that exact merged source passed TLS preflight,
+rejected arbitrary SSH commands and preserved existing containers, private credentials,
+SSH authorization and shared configuration/state/Compose bytes. Main CI `34211072187`
+must pass before dispatching the corrected release. The failed old rollout created
+no Fillable application containers, and its retry was cancelled. E08.5 resumes from
+this merged prerequisite; private admin-role proof passed locally, but actual account
+creation, public browser journeys and restart/persistence verification remain pending.
+
+
+E08.4 final rollout verified: Actions `34215081786` succeeded from protected-main
+`141288bcb12215fb34aede79ac2d7b7e799654d3` after exact-main CI `34211072187` passed
+all three jobs. The unrelated active WEF release completed before a fresh baseline
+and Fillable dispatch. Archive SHA-256 is
+`c325afd2ad9984427fa543a2a729db712ef1bff0076f5cd6a4037869fdad0aab` (130,181,120 bytes).
+Portable immutable IDs resolved correctly, migrations reached `0013_maintenance_state`,
+and private/public HTTPS readiness passed through the existing owner-managed ingress.
+
+E08.5 deployed acceptance passed: the requested administrator was created privately
+with its supplied password unchanged, and its HTTPS session role was verified before
+and after restart. Authenticated upload/processing/save/history smoke passed. Both
+real desktop/mobile bilingual journeys passed with exact template/copy/history bytes
+and persisted language, returning the account to Ukrainian. Actual screenshots were
+visually inspected. Full Fillable restart preserved 12 retained files, digests and
+quota counters; public current-model/revision/full-history comparisons matched both
+browser manifests. Four browser-only wrong-badge probes rejected development/wrong
+hash values while the real served badge remained `141288b`. All 15 unrelated
+containers and six route/HSTS baselines matched after rollout and after restart.
+No shared nginx edit/reload or unrelated-service mutation was performed.
+
+See [Deployed acceptance](DEPLOYED_ACCEPTANCE.md) for complete content-free evidence,
+coverage and recovery limits. Source coverage remains backend 3970/3999 lines,
+1174/1206 branches; frontend 1292/1303 lines, 1500/1569 branches. E08.5's final task
+PR #75 remains in_review until its final exact-head required CI and protected merge
+are verified. Final merge evidence is recorded in the PR body; no further production
+change is required for this acceptance documentation/test delivery.
