@@ -45,4 +45,4 @@ E01 must establish minimum Docker test/coverage CI and required repository rules
 
 ## Deployment remains separate
 
-Merging an ordinary task PR does not deploy the application. E08 remains the final task and uses the GitHub Actions deployment workflow after all previous epics pass. Its code/configuration is also delivered through its own task PRs, with server actions and shared-nginx evidence recorded in the corresponding task record.
+Every merge to the protected default branch is deployed automatically after that exact commit's required CI succeeds (E09.6): `.github/workflows/deploy-main.yml` awaits `ci-required` and dispatches the gated [release workflow](.github/workflows/deploy.yml). Merging a task PR therefore ships it once CI is green; a commit whose CI fails is never deployed. The release workflow itself is still delivered and changed only through its own reviewed PRs.

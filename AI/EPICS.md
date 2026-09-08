@@ -2703,3 +2703,7 @@ Status: in_review. User-reported polish: fix the home button, give the profile l
 ## E09.5 — Center the sign-in card
 
 Status: in_review. User feedback that the login page is not centered. Acceptance: the signed-out sign-in form renders as one centered card below the header on desktop and mobile in both languages, without changing authentication behavior, copy, or tests' semantics. Deliver a dedicated PR with required CI, merge, deploy through Actions, and confirm on the public origin.
+
+## E09.6 — Deploy automatically on merges to main
+
+Status: in_review. User request: make deployment automatic when work merges to `main`. Acceptance: a push to the protected default branch waits for that exact commit's required CI (`ci-required`) and then dispatches the unchanged gated release workflow; a commit whose CI fails, is missing, or is superseded by a newer merge is never deployed; the release gate, artifact transport, and rejection behavior are unchanged and pinned by a required contract test; documentation agrees. Deliver a dedicated PR with required CI, merge, and verify the first automated rollout on the public origin.
