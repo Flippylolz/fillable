@@ -87,6 +87,16 @@ class DependabotAutomergeContractTests(TestCase):
                     "Arming must follow the failed-check guard",
                 )
 
+    def test_reconciliation_approves_the_pull_request_runs_its_updates_held(self):
+        # GITHUB_TOKEN branch updates create the PR's pull_request runs as
+        # action_required; the reconciliation approves exactly those held runs
+        # for the head it just updated and reports anything it cannot approve.
+        self.assertIn("status=action_required", SCHEDULE_STEP)
+        self.assertIn('select(.head_sha == "$head_sha")', SCHEDULE_STEP.replace('\\"', '"'))
+        approve = SCHEDULE_STEP.index("/approve")
+        self.assertGreater(approve, SCHEDULE_STEP.index("update-branch"))
+        self.assertIn("needs manual maintainer approval", SCHEDULE_STEP)
+
     def test_automerge_never_bypasses_the_gate_or_releases_directly(self):
         self.assertNotIn("--admin", AUTOMERGE)
         for banned in ("ship-release.sh", "build-release.sh", "deploy.yml", "workflow run"):
