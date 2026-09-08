@@ -26,6 +26,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Email and password, submit/loading state, and clear invalid-credentials feedback.
 - Successful login opens the library. An expired session opens inline sign-in recovery while preserving the mounted workspace; returning to the login page or switching accounts requires explicit resolution of unsaved work.
 - Protect library, profile, workspace, and file APIs behind authentication.
+- Sign in with a login name and password. New passwords require at least 10 characters.
 - MVP accounts are provisioned by an operator through a containerized maintenance command. Public registration and email-based password recovery are deferred.
 
 ### 2. Document library
@@ -41,7 +42,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 
 ### 3. Simple profile
 
-- Show account email and allow changing the display name.
+- Show account login and allow changing the display name.
 - Allow password change after verifying the current password, and provide logout.
 - Include a language switcher: **Українська** (`uk`, default) and **English** (`en`). Save the account preference, apply it across the app without losing active state, and restore it after refresh or a new login. A failed save leaves the previous language selected and shows a recoverable localized error.
 - Show used storage, allowance, and remaining space. Users cannot change their own quota.

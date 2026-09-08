@@ -4,7 +4,7 @@ const originalPassword = "Synthetic-browser-Їжак-2026";
 const nextPassword = "Changed-profile-Ґанна-2026";
 async function login(page: Page) {
   await page.goto("/");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill("profile@example.test");
+  await page.getByLabel("Логін", { exact: true }).fill("profile@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill(originalPassword);
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
@@ -19,7 +19,7 @@ async function password(page: Page, current: string, next: string) {
 
 test("profile edits persist, passwords require current credentials and revoke another browser", async ({ page, browser }, testInfo) => {
   await login(page);
-  await expect(page.getByLabel("Електронна пошта", { exact: true })).toHaveAttribute("readonly", "");
+  await expect(page.getByLabel("Логін", { exact: true })).toHaveAttribute("readonly", "");
   await expect(page.getByRole("heading", { name: "Сховище", exact: true })).toBeVisible();
   const peer = await browser.newContext({ baseURL: new URL(page.url()).origin });
   try {
@@ -86,7 +86,7 @@ test("language saves preserve drafts and restore the account preference across b
     const other = await peer.newPage();
     await other.goto("/");
     await expect(other.locator("html")).toHaveAttribute("lang", "uk");
-    await other.getByLabel("Електронна пошта", { exact: true }).fill("profile@example.test");
+    await other.getByLabel("Логін", { exact: true }).fill("profile@example.test");
     await other.getByLabel("Пароль", { exact: true }).fill(originalPassword);
     await other.getByRole("button", { name: "Увійти", exact: true }).click();
     await other.getByRole("link", { name: "Profile", exact: true }).click();

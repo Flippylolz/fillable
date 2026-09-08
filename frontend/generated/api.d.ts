@@ -558,8 +558,8 @@ export interface components {
         };
         /** LoginInput */
         LoginInput: {
-            /** Email */
-            email: string;
+            /** Login */
+            login: string;
             /** Password */
             password: string;
         };
@@ -794,13 +794,13 @@ export interface components {
         UserInfo: {
             /** Display Name */
             display_name: string;
-            /** Email */
-            email: string;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Login */
+            login: string;
             /**
              * Role
              * @enum {string}

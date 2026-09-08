@@ -35,7 +35,7 @@ export function Reauthentication({ owner, onRecovered, allowDiscard }: {
     const timeout = setTimeout(cancel, 10000);
     try {
       const result = await api.POST("/api/auth/login", { headers: { "X-CSRF-Token": fresh.csrf_token },
-        body: { email: owner.email, password }, signal: controller.signal });
+        body: { login: owner.login, password }, signal: controller.signal });
       if (session.signal.aborted || controller.signal.aborted) return;
       if (result.data) {
         setPassword("");
@@ -60,9 +60,9 @@ export function Reauthentication({ owner, onRecovered, allowDiscard }: {
     {busy && <p role="status">{t("auth.loading")}</p>}
     {!fresh && !busy && <button type="button" onClick={() => setAttempt(value => value + 1)}>{t("auth.retry")}</button>}
     {fresh && <><form onSubmit={event => void submit(event)}>
-      <label>{t("auth.email")}<input type="email" value={owner.email} readOnly autoComplete="username" /></label>
+      <label>{t("auth.identifier")}<input type="text" value={owner.login} readOnly autoComplete="username" /></label>
       <label>{t("auth.password")}<input type="password" autoComplete="current-password" required maxLength={1024} value={password} onChange={event => setPassword(event.target.value)} /></label>
       <button type="submit" disabled={busy}>{t("reauth.action")}</button>
-    </form><button type="button" disabled={busy} onClick={switchAccount}>{fresh.user ? t("reauth.other", { email: fresh.user.email }) : t("reauth.switch")}</button></>}
+    </form><button type="button" disabled={busy} onClick={switchAccount}>{fresh.user ? t("reauth.other", { login: fresh.user.login }) : t("reauth.switch")}</button></>}
   </section>;
 }

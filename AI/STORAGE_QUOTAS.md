@@ -310,13 +310,13 @@ follows in E02.6/E03.1.
 Quota changes require trusted operator access to execute a container command, using
 the same boundary as account provisioning. A web user's role or request cannot
 invoke these commands; there is no administrator screen or artificial `--admin`
-flag. Examples for a local stack, using the intended existing account email:
+flag. Examples for a local stack, using the intended existing account login:
 
 ```sh
 docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli default --bytes 1073741824
-docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli override --email user@example.test --bytes 2147483648
-docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli inherit --email user@example.test
-docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli show --email user@example.test
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli override --login document-user --bytes 2147483648
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli inherit --login document-user
+docker compose -f compose.yaml -f compose.dev.yaml exec -T worker python -m app.storage.quota_cli show --login document-user
 ```
 
 `default` changes the singleton inherited allowance and increments its revision;
@@ -324,8 +324,8 @@ explicit overrides retain their values. `override` sets a specific allowance, an
 `inherit` restores null inheritance. Zero blocks additional bytes. Values must be
 exact integers in the documented range; negative, fractional, boolean or oversized
 service inputs fail. The CLI requires action-specific arguments, looks up an existing
-canonical account email and returns JSON counters/status without printing credentials,
-email addresses or file paths. Failure is nonzero; it never provisions a missing user.
+canonical account login and returns JSON counters/status without printing credentials,
+login names or file paths. Failure is nonzero; it never provisions a missing user.
 
 `quotas.set_default` and `set_override` serialize against allocations using the same
 settings-first lock order. A current setting is read under lock; no-op requests

@@ -17,7 +17,7 @@ engine = database()
 store = configured()
 with engine.connect() as connection:
     owner = connection.execute(select(users.c.id).where(
-        users.c.email == 'browser@example.test',
+        users.c.email == 'browser-user',
     )).scalar_one()
 payload = 'Synthetic retained storage: Ґанна Їжак'.encode()
 if sys.argv[1] == 'write':

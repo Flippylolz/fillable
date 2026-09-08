@@ -16,17 +16,17 @@ def main(argv=None):
     default = commands.add_parser("default")
     default.add_argument("--bytes", type=int, required=True)
     override = commands.add_parser("override")
-    override.add_argument("--email", required=True)
+    override.add_argument("--login", "--email", dest="login", required=True)
     override.add_argument("--bytes", type=int, required=True)
     for name in ("inherit", "show"):
         command = commands.add_parser(name)
-        command.add_argument("--email", required=True)
+        command.add_argument("--login", "--email", dest="login", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "default":
             result = quotas.set_default(args.bytes)
         else:
-            owner = quotas.owner_for_email(args.email)
+            owner = quotas.owner_for_login(args.login)
             if args.command == "show":
                 state = quotas.usage(owner)
             else:

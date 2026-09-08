@@ -14,7 +14,7 @@ from app.errors import AppError
 def main() -> int:
     parser = argparse.ArgumentParser(description="Manage local Fillable accounts")
     parser.add_argument("action", choices=["provision", "reset-password"])
-    parser.add_argument("--email", required=True)
+    parser.add_argument("--login", "--email", dest="login", required=True)
     parser.add_argument("--display-name", default="")
     parser.add_argument("--role", choices=["user", "admin"], default="user")
     parser.add_argument("--language", choices=["uk", "en"], default="uk")
@@ -29,14 +29,14 @@ def main() -> int:
                 raise ValueError("password_mismatch")
         if options.action == "provision":
             account = AccountInput(
-                email=options.email,
+                login=options.login,
                 display_name=options.display_name,
                 role=options.role,
                 ui_language=options.language,
             )
             provision(account, password)
         else:
-            reset_password(options.email, password)
+            reset_password(options.login, password)
     except (ValueError, ValidationError, AppError) as error:
         code = error.detail.code if isinstance(error, AppError) else "invalid_input"
         print(code, file=sys.stderr)

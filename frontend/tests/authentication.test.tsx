@@ -13,7 +13,7 @@ const anonymous = { user: null, csrf_token: "anonymous-csrf" };
 const signedIn = {
   user: {
     id: "123",
-    email: "client@example.test",
+    login: "client@example.test",
     display_name: "Ґанна Їжак",
     role: "user",
     ui_language: "en",
@@ -26,7 +26,7 @@ const show = () =>
   render(
     <I18nextProvider i18n={i18n}>
       <Authentication>
-        {(session) => <span data-testid="account">{session.user?.email}</span>}
+        {(session) => <span data-testid="account">{session.user?.login}</span>}
       </Authentication>
     </I18nextProvider>,
   );
@@ -35,7 +35,7 @@ beforeEach(async () => {
 });
 
 async function credentials() {
-  fireEvent.change(await screen.findByLabelText("Електронна пошта"), {
+  fireEvent.change(await screen.findByLabelText("Логін"), {
     target: { value: "client@example.test" },
   });
   fireEvent.change(screen.getByLabelText("Пароль"), {
@@ -55,12 +55,12 @@ test("login sends CSRF, restores account language, preserves failed inputs, and 
   show();
   await credentials();
   fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("Неправильна");
+  expect(await screen.findByRole("alert")).toHaveTextContent("Неправильний логін або пароль.");
   expect(screen.getByLabelText("Пароль")).toHaveValue("Synthetic-їжак-2026");
   const request = fetcher.mock.calls[1][0] as Request;
   expect(request.headers.get("X-CSRF-Token")).toBe("anonymous-csrf");
   expect(await request.json()).toEqual({
-    email: "client@example.test",
+    login: "client@example.test",
     password: "Synthetic-їжак-2026",
   });
   fireEvent.click(screen.getByRole("button", { name: "Увійти" }));

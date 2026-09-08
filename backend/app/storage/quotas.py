@@ -48,7 +48,7 @@ def usage(owner: UUID):
         return _usage(connection, owner)
 
 
-def owner_for_email(email: str):
+def owner_for_login(email: str):
     with database().connect() as connection:
         owner = connection.execute(
             select(users.c.id).where(

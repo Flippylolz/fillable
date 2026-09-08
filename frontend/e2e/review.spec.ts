@@ -9,7 +9,7 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill("review@example.test");
+  await page.getByLabel("Логін", { exact: true }).fill("review@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "Перевірка.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: bytes });

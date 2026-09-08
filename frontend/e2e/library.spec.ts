@@ -9,7 +9,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   const templateTitle = `Шаблон Ґанни — ${testInfo.project.name}`;
   const documentTitle = `Окрема заява Їжака — ${testInfo.project.name}`;
   await page.goto("/");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill("library@example.test");
+  await page.getByLabel("Логін", { exact: true }).fill("library@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/);

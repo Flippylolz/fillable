@@ -27,7 +27,7 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
   await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible(); await badge(page, "uk");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill("library@example.test");
+  await page.getByLabel("Логін", { exact: true }).fill("library@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/); await badge(page, "uk");
@@ -110,7 +110,7 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   expect((await (await page.request.get(`/api/documents/${copyId}`)).json()).current_version_id).toBe(copy.resource.current_version_id);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByLabel("Password", { exact: true })).toBeVisible(); await badge(page, "en");
-  await page.getByLabel("Email", { exact: true }).fill("library@example.test");
+  await page.getByLabel("Login", { exact: true }).fill("library@example.test");
   await page.getByLabel("Password", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.getByRole("link", { name: "Profile", exact: true }).click(); await badge(page, "en");

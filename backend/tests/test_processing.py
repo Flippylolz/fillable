@@ -76,7 +76,7 @@ def test_durable_intent_real_json_queue_owned_status_and_no_file_allocation():
     )
     peer = browser()
     login = peer.post(
-        "/api/auth/login", json={"email": other.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": other.login, "password": PASSWORD}
     )
     peer.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert peer.get(url).status_code == 404 and peer.post(url).status_code == 404

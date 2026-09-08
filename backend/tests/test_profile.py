@@ -27,7 +27,7 @@ def test_profile_renaming_is_validated_owner_only_and_persistent():
     result = client.patch("/api/profile", json={"display_name": "  Ґанна Їжак  "})
     assert result.status_code == 200
     assert result.json()["user"]["display_name"] == "Ґанна Їжак"
-    assert result.json()["user"]["email"] == owner.email
+    assert result.json()["user"]["login"] == owner.login
     assert (
         "password_hash" not in result.text
         and result.headers["cache-control"] == "no-store"

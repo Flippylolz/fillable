@@ -9,7 +9,7 @@ import corpus from "../prototype/document.json";
 const id = "11111111-1111-4111-8111-111111111111";
 const second = "22222222-2222-4222-8222-222222222222";
 const resource = { id, kind: "template", title: "Заява Ґанни", original_filename: "Заява.docx", current_version_id: "v1", created_at: "2026-09-06", updated_at: "2026-09-06", size_bytes: 3, digest: "hash", unsupported_count: 1, deletion_pending: false, processing_status: "not_started" };
-const session = { csrf_token: "csrf", user: { id: "owner", email: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
+const session = { csrf_token: "csrf", user: { id: "owner", login: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
 function defaults(request: Request | string) {
   const path = new URL(typeof request === "string" ? request : request.url, window.location.origin).pathname;
   if (path.endsWith("/editing-lease")) return leaseResponse(request as Request);

@@ -1,7 +1,7 @@
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -48,25 +48,28 @@ login_attempts = Table(
 
 class UserInfo(BaseModel):
     id: UUID
-    email: str
+    login: str = Field(validation_alias=AliasChoices("login", "email"))
     display_name: str
     role: Literal["user", "admin"]
     ui_language: Literal["uk", "en"]
 
 
 class AccountInput(BaseModel):
-    email: str = Field(
-        min_length=3, max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+    login: str = Field(
+        min_length=3,
+        max_length=254,
+        pattern=r"^[\w.@+-]+$",
+        validation_alias=AliasChoices("login", "email"),
     )
     display_name: str = Field(min_length=1, max_length=120)
     role: Literal["user", "admin"] = "user"
     ui_language: Literal["uk", "en"] = "uk"
 
-    @field_validator("email", mode="before")
+    @field_validator("login", mode="before")
     @classmethod
-    def normalize_email(cls, value: str) -> str:
+    def normalize_login(cls, value: str) -> str:
         if not isinstance(value, str):
-            raise ValueError("invalid_email")
+            raise ValueError("invalid_login")
         return value.strip().casefold()
 
     @field_validator("display_name")
@@ -78,7 +81,9 @@ class AccountInput(BaseModel):
 
 
 class LoginInput(BaseModel):
-    email: str = Field(min_length=1, max_length=254)
+    login: str = Field(
+        min_length=1, max_length=254, validation_alias=AliasChoices("login", "email")
+    )
     password: str = Field(min_length=1, max_length=1024)
 
 

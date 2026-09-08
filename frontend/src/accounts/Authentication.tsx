@@ -27,7 +27,7 @@ export function Authentication({
   const [childBusy, setChildBusy] = useState(false);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const leaveGuard = useRef<() => boolean>(() => true);
   const setLeaveGuard = useCallback((guard: () => boolean) => { leaveGuard.current = guard; }, []);
@@ -79,7 +79,7 @@ export function Authentication({
         ? await api.POST("/api/auth/logout", options)
         : await api.POST("/api/auth/login", {
             ...options,
-            body: { email, password },
+            body: { login, password },
           });
       if (result.data) {
         accept(result.data);
@@ -126,14 +126,14 @@ export function Authentication({
         <form onSubmit={(event) => void submit(event)}>
           <h2>{t("auth.login")}</h2>
           <label>
-            {t("auth.email")}
+            {t("auth.identifier")}
             <input
-              type="email"
+              type="text"
               autoComplete="username"
               required
               maxLength={254}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              value={login}
+              onChange={(event) => setLogin(event.target.value)}
             />
           </label>
           <label>

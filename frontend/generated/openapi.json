@@ -431,10 +431,10 @@
       },
       "LoginInput": {
         "properties": {
-          "email": {
+          "login": {
             "maxLength": 254,
             "minLength": 1,
-            "title": "Email",
+            "title": "Login",
             "type": "string"
           },
           "password": {
@@ -445,7 +445,7 @@
           }
         },
         "required": [
-          "email",
+          "login",
           "password"
         ],
         "title": "LoginInput",
@@ -519,7 +519,7 @@
           },
           "new_password": {
             "maxLength": 1024,
-            "minLength": 12,
+            "minLength": 10,
             "title": "New Password",
             "type": "string"
           }
@@ -1038,13 +1038,13 @@
             "title": "Display Name",
             "type": "string"
           },
-          "email": {
-            "title": "Email",
-            "type": "string"
-          },
           "id": {
             "format": "uuid",
             "title": "Id",
+            "type": "string"
+          },
+          "login": {
+            "title": "Login",
             "type": "string"
           },
           "role": {
@@ -1066,7 +1066,7 @@
         },
         "required": [
           "id",
-          "email",
+          "login",
           "display_name",
           "role",
           "ui_language"

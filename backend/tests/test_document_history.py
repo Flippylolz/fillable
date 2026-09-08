@@ -126,7 +126,7 @@ def test_history_owner_resource_revision_and_deletion_boundaries():
     )
     assert (
         peer.post(
-            "/api/auth/login", json={"email": other.email, "password": PASSWORD}
+            "/api/auth/login", json={"email": other.login, "password": PASSWORD}
         ).status_code
         == 200
     )

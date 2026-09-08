@@ -100,7 +100,7 @@ def login(
     state: service.SessionState = Depends(mutation_session),
 ) -> SessionInfo:
     return session_response(
-        service.login(state.token, payload.email, payload.password), response
+        service.login(state.token, payload.login, payload.password), response
     )
 
 

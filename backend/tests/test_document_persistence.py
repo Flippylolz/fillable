@@ -151,7 +151,7 @@ def test_lists_and_metadata_reads_are_owned_paginated_and_validated():
     )
     peer = browser()
     response = peer.post(
-        "/api/auth/login", json={"email": other.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": other.login, "password": PASSWORD}
     )
     peer.headers["X-CSRF-Token"] = response.json()["csrf_token"]
     assert peer.get("/api/documents/" + first["id"]).status_code == 404
@@ -440,7 +440,7 @@ def test_download_is_exact_saved_docx_owned_and_not_a_new_allocation():
         AccountInput(email="other@example.test", display_name="Other"), PASSWORD
     )
     peer = browser()
-    peer.post("/api/auth/login", json={"email": other.email, "password": PASSWORD})
+    peer.post("/api/auth/login", json={"email": other.login, "password": PASSWORD})
     assert peer.get(url).status_code == 404
     assert web.get(f"/api/documents/{uuid4()}/download").status_code == 404
     with database().begin() as connection:
@@ -563,7 +563,7 @@ def test_workspace_content_is_a_single_owned_verified_revision(
         AccountInput(email="other@example.test", display_name="Other"), PASSWORD
     )
     peer = browser()
-    peer.post("/api/auth/login", json={"email": other.email, "password": PASSWORD})
+    peer.post("/api/auth/login", json={"email": other.login, "password": PASSWORD})
     assert peer.get(url).status_code == 404
     path = document_store / "files" / str(owner.id) / str(version["file_id"])
     path.chmod(0o600)

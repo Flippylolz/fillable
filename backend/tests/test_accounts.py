@@ -69,6 +69,65 @@ def sign_in(client, password=PASSWORD):
     return response
 
 
+def test_login_names_and_ten_character_passwords_preserve_account_identity():
+    password = "Exact-10!!"
+    assert len(password) == 10
+    account_input = AccountInput(login="  Їжак-User  ", display_name="Їжак")
+    with pytest.raises(ValueError):
+        service.provision(account_input, password[:-1])
+    user = service.provision(account_input, password)
+    assert user.login == "їжак-user"
+    with database().connect() as connection:
+        row = connection.execute(select(users)).mappings().one()
+        assert row["email"] == user.login and row["id"] == user.id
+        original_hash = row["password_hash"]
+    with pytest.raises(AppError) as duplicate:
+        service.provision(
+            AccountInput(login="ЇЖАК-USER", display_name="Other"), password
+        )
+    assert duplicate.value.detail.code == "account_exists"
+    for invalid in ("a", "two words", "bad/login", "x" * 255):
+        with pytest.raises(ValueError):
+            AccountInput(login=invalid, display_name="Invalid")
+    client = browser()
+    signed = client.post(
+        "/api/auth/login", json={"login": " ЇЖАК-USER ", "password": password}
+    )
+    assert signed.status_code == 200
+    assert signed.json()["user"]["login"] == user.login
+    assert "email" not in signed.json()["user"]
+    assert signed.json()["user"]["id"] == str(user.id)
+    client.headers["X-CSRF-Token"] = signed.json()["csrf_token"]
+    assert (
+        client.post(
+            "/api/profile/password",
+            json={"current_password": password, "new_password": "123456789"},
+        ).status_code
+        == 422
+    )
+    with database().connect() as connection:
+        assert (
+            connection.execute(select(users.c.password_hash)).scalar_one()
+            == original_hash
+        )
+    updated = "Next-10!!!"
+    assert len(updated) == 10
+    changed = client.post(
+        "/api/profile/password",
+        json={"current_password": password, "new_password": updated},
+    )
+    assert changed.status_code == 200
+    service.reset_password(user.login, password)
+    assert client.get("/api/storage/usage").status_code == 401
+    legacy = browser()
+    assert (
+        legacy.post(
+            "/api/auth/login", json={"email": user.login, "password": password}
+        ).status_code
+        == 200
+    )
+
+
 def test_login_rotates_session_restores_language_and_logout_revokes():
     user = account(language="en")
     client = browser()
@@ -257,7 +316,7 @@ def test_provision_validation_duplicates_constraints_and_rehash():
     assert duplicate.value.detail.code == "account_exists"
     for password in ("short", "x" * 1025):
         with pytest.raises(ValueError):
-            service.reset_password(user.email, password)
+            service.reset_password(user.login, password)
     with pytest.raises(AppError):
         service.reset_password("missing@example.test", PASSWORD)
     for changes in ({"role": "owner"}, {"ui_language": "xx"}):
@@ -265,7 +324,7 @@ def test_provision_validation_duplicates_constraints_and_rehash():
             with database().begin() as connection:
                 connection.execute(update(users).values(**changes))
     with pytest.raises(ValueError):
-        AccountInput(email=user.email, display_name=" ")
+        AccountInput(email=user.login, display_name=" ")
     with database().begin() as connection:
         connection.execute(
             update(users).values(
@@ -283,7 +342,7 @@ def test_provision_validation_duplicates_constraints_and_rehash():
     assert service.read_session(secrets.token_hex(32)) is None
     assert service.read_session("invalid") is None
     with pytest.raises(AppError) as expired:
-        service.login(secrets.token_hex(32), user.email, PASSWORD)
+        service.login(secrets.token_hex(32), user.login, PASSWORD)
     assert expired.value.status == 403
     assert service.require_role(user, "user") == user
 
@@ -292,8 +351,8 @@ def test_private_operator_commands_never_print_credentials():
     args = [
         "command",
         "provision",
-        "--email",
-        "operator@example.test",
+        "--login",
+        "operator-user",
         "--display-name",
         "Оператор",
         "--role",
@@ -311,7 +370,7 @@ def test_private_operator_commands_never_print_credentials():
     with (
         patch(
             "sys.argv",
-            ["command", "reset-password", "--email", "operator@example.test"],
+            ["command", "reset-password", "--email", "operator-user"],
         ),
         patch("getpass.getpass", side_effect=[PASSWORD + "new", PASSWORD + "new"]),
     ):
@@ -319,7 +378,7 @@ def test_private_operator_commands_never_print_credentials():
     with (
         patch(
             "sys.argv",
-            ["command", "reset-password", "--email", "operator@example.test"],
+            ["command", "reset-password", "--login", "operator-user"],
         ),
         patch("getpass.getpass", side_effect=["one", "two"]),
     ):
