@@ -2321,3 +2321,11 @@ cover Unicode/case-folded identifiers, duplicate rejection, 9-character rejectio
 Fresh development/production browser verification and final-head CI remain pending.
 The requested account will be created privately after the final Actions rollout;
 no account credentials have been sent to GitHub.
+
+E08.6 PR #77 initial CI run 34194979359 reached the 20-minute `checks` job
+limit during the frontend negative coverage probe. Both real browser suites,
+DOCX rendering, 417 backend tests, 229 frontend tests, and the backend negative
+probe passed; upgrade-checks passed. The aggregator correctly failed on cancellation.
+Allow 30 minutes for this sequential full verification job, preserving every check,
+threshold and failure rule. This is bounded runtime headroom for observed runner
+variance, not a retry or coverage bypass. Exact updated-head CI must pass.

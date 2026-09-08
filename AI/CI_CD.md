@@ -250,3 +250,8 @@ E08.3 adds mandatory receiver/runtime contracts and actual server Compose author
 checks to the existing checks job. The [server runtime](SERVER_RUNTIME.md) consumes
 only verified artifacts through a fixed installed configuration. Application coverage
 roots, independent raw 90% gates and the three required CI job identities are unchanged.
+
+The full sequential `checks` job has a 30-minute timeout. Run 34194979359 hit its
+former 20-minute limit during the final negative frontend coverage probe after
+both browser suites, rendering, and application tests passed. Keep all positive
+and negative coverage checks mandatory; cancellation still fails `ci-required`.
