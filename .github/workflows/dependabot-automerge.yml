@@ -29,8 +29,10 @@ on:
     types: [opened, reopened, synchronize]
   schedule:
     # Twice an hour, so remaining Dependabot pull requests follow each merge
-    # to `main` within one scheduled cycle.
-    - cron: "*/30 * * * *"
+    # to `main` within one scheduled cycle. The offset misses the :00/:30
+    # slots where GitHub's scheduler is most contended and delays grow to
+    # tens of minutes.
+    - cron: "13,43 * * * *"
 
 permissions:
   contents: write
