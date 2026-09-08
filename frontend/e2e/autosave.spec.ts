@@ -8,7 +8,7 @@ async function open(page: Page) {
   const anonymous = await (await page.request.get("/api/auth/session")).json();
   const response = await page.request.post("/api/auth/login", {
     headers: { Origin: new URL(page.url()).origin, "X-CSRF-Token": anonymous.csrf_token },
-    data: { email: "library@example.test", password: "Synthetic-browser-Їжак-2026" },
+    data: { login: "library@example.test", password: "Synthetic-browser-Їжак-2026" },
   });
   expect(response.status()).toBe(200); const session = await response.json();
   const upload = await page.request.post("/api/documents", {

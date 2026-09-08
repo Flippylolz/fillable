@@ -51,13 +51,15 @@ def hash_password(password: str) -> str:
 
 
 def validate_password(password: str) -> None:
-    if not 12 <= len(password) <= 1024:
+    if not 10 <= len(password) <= 1024:
         raise ValueError("invalid_password")
 
 
 def provision(account: AccountInput, password: str) -> UserInfo:
     validate_password(password)
     values = {**account.model_dump(), "id": uuid4()}
+    # Preserve existing unique identifiers and account references in the legacy column.
+    values["email"] = values.pop("login")
     try:
         with database().begin() as connection:
             connection.execute(

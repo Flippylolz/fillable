@@ -42,7 +42,7 @@ def login(client, email, password):
     assert "httponly" in cookie and "samesite=strict" in cookie
     assert "; secure" not in cookie
     session = response.json()
-    assert session["user"]["email"] == email
+    assert session["user"]["login"] == email
     client.headers["X-CSRF-Token"] = session["csrf_token"]
     return True
 

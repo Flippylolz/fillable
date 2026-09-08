@@ -3,7 +3,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { manualSaving } from "./autosave-setting";
 
-const email = process.env.FILLABLE_INITIAL_EMAIL ?? "library@example.test";
+const login = process.env.FILLABLE_INITIAL_LOGIN ?? "library@example.test";
 const password = process.env.FILLABLE_INITIAL_PASSWORD ?? "Synthetic-browser-Їжак-2026";
 
 function canonical(value: unknown): string {
@@ -53,7 +53,7 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
   await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible(); await badge(page, "uk");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill(email);
+  await page.getByLabel("Логін", { exact: true }).fill(login);
   await page.getByLabel("Пароль", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/); await badge(page, "uk");
@@ -136,7 +136,7 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   expect((await (await page.request.get(`/api/documents/${copyId}`)).json()).current_version_id).toBe(copy.resource.current_version_id);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByLabel("Password", { exact: true })).toBeVisible(); await badge(page, "en");
-  await page.getByLabel("Email", { exact: true }).fill(email);
+  await page.getByLabel("Login", { exact: true }).fill(login);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.getByRole("link", { name: "Profile", exact: true }).click(); await badge(page, "en");

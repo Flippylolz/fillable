@@ -205,7 +205,7 @@ def test_restore_rejects_stale_or_unowned_requests_without_changing_current(chan
         )
         web = browser()
         login = web.post(
-            "/api/auth/login", json={"email": other.email, "password": PASSWORD}
+            "/api/auth/login", json={"email": other.login, "password": PASSWORD}
         )
         web.headers["X-CSRF-Token"] = login.json()["csrf_token"]
         expected = 404

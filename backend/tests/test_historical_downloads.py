@@ -105,7 +105,7 @@ def test_download_is_owned_scoped_and_never_falls_back_to_current(role):
     )
     assert (
         peer.post(
-            "/api/auth/login", json={"email": other.email, "password": PASSWORD}
+            "/api/auth/login", json={"email": other.login, "password": PASSWORD}
         ).status_code
         == 200
     )

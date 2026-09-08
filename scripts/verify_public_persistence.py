@@ -54,7 +54,7 @@ def main():
     ) as client:
         assert login(
             client,
-            os.environ["FILLABLE_INITIAL_EMAIL"],
+            os.environ["FILLABLE_INITIAL_LOGIN"],
             os.environ["FILLABLE_INITIAL_PASSWORD"],
         )
         for path in manifests:

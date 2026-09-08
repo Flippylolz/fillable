@@ -82,7 +82,7 @@ def test_delete_all_retained_versions_is_owned_confirmed_and_idempotent():
     )
     peer = browser()
     login = peer.post(
-        "/api/auth/login", json={"email": other.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": other.login, "password": PASSWORD}
     )
     peer.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert peer.delete(url).status_code == 404

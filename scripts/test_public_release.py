@@ -25,7 +25,7 @@ class PublicReleaseTests(unittest.TestCase):
                     return httpx.Response(
                         status,
                         headers={"Set-Cookie": cookie},
-                        json={"csrf_token": "signed", "user": {"email": "test"}},
+                        json={"csrf_token": "signed", "user": {"login": "test"}},
                     )
 
                 with httpx.Client(

@@ -11,7 +11,8 @@ test('build version remains fixed, theme independent and click-through', async (
   await expect(badge).toHaveAttribute('aria-label', `Версія застосунку ${version}`);
   const button = page.getByRole('button', { name: 'Спробувати знову' });
   await expect(button).toBeVisible();
-  await expect(page.getByLabel('Електронна пошта', { exact: true })).toBeVisible();
+  // This badge check also runs against the previous release during upgrades.
+  await expect(page.locator('input[autocomplete="username"]')).toBeVisible();
   for (let index = 0; index < 4; index++) await page.keyboard.press('Tab');
   await expect(button).toBeFocused();
   await page.keyboard.press('Tab');
