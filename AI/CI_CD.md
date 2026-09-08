@@ -277,31 +277,59 @@ so dispatched releases proceed without manual approval.
 
 ## Dependabot automatic updates (E09.7, D025)
 
-`.github/dependabot.yml` schedules weekly version updates (Mondays) for four
-ecosystems: `github-actions` (root workflows), `npm` (`frontend/`), `docker`
-(`infra/` Dockerfiles) and `docker-compose` (root Compose files). Minor and
-patch updates are grouped into one pull request per ecosystem; major updates
-open standalone pull requests. Each ecosystem keeps at most five open pull
-requests.
+`.github/dependabot.yml` schedules weekly version updates (Mondays) for five
+ecosystems: `pip` (`backend/requirements.txt`), `github-actions` (root
+workflows), `npm` (`frontend/`), `docker` (`infra/` Dockerfiles) and
+`docker-compose` (root Compose files). Minor and patch updates are grouped
+into one pull request per ecosystem; major updates open standalone pull
+requests. Each ecosystem keeps at most five open pull requests.
 
 `.github/workflows/dependabot-automerge.yml` enables squash auto-merge on
-Dependabot's own pull requests. Its contract:
+Dependabot's own pull requests and keeps their branches mergeable. Its
+contract:
 
 - Triggers on `pull_request_target` (`opened`, `reopened`, `synchronize`) so the
   trusted base-branch workflow definition always runs; no pull-request code is
-  checked out and the single step calls only the GitHub CLI.
+  checked out and the steps call only the GitHub CLI. Reconciliation of all
+  open Dependabot pull requests additionally runs after every push to `main`
+  (so each merge immediately refreshes the remaining pull requests) and on a
+  twice-hourly offset schedule (`13,43 * * * *`, clear of the contended :00/:30
+  slots) as the fallback cadence. GitHub's scheduler produced no scheduled runs
+  for this repository across the first three slots, so the push trigger
+  performs the reconciliation in practice.
 - Guards on the repository identity and `dependabot[bot]` as pull-request
-  author, so it covers Dependabot version and security updates and nothing else.
+  author, so it covers Dependabot version and security updates and nothing else;
+  push and scheduled runs act only on open pull requests authored by Dependabot,
+  and push runs only on the protected `main` branch.
 - Requests only `contents: write` and `pull-requests: write`; deployment
   credentials are not involved and the workflow dispatches no release itself.
   The merge lands on `main` like any other merge, where the E09.6 automation
   deploys that exact commit after its required CI succeeds, so a Dependabot
   update ships once its full gate is green, exactly like a task merge.
-- Arms auto-merge with `--match-head-commit` for the event's exact head commit,
-  matching the task-PR workflow. GitHub performs the squash merge only after the
-  strict, up-to-date `ci-required` gate passes; a failed or stale required
-  check refuses the merge and disables auto-merge until the next Dependabot
-  push re-arms it.
+- Arms auto-merge with `--match-head-commit` for the exact head commit, matching
+  the task-PR workflow. GitHub performs the squash merge only after the strict,
+  up-to-date `ci-required` gate passes; a failed or stale required check refuses
+  the merge and disables auto-merge until the next Dependabot push re-arms it.
+- E09.11: when the pull request is `BEHIND` its base, the workflow updates the
+  branch through the update-branch API bound to the expected head SHA instead of
+  arming; the resulting synchronize event re-runs the workflow at the new head,
+  which arms there. Strict up-to-date protection can otherwise never be
+  satisfied after any merge to `main`, because Dependabot only rebases on
+  conflict.
+- E09.11: the reconciliation after every `main` push (and the fallback
+  schedule) updates every open behind Dependabot branch and arms squash
+  auto-merge on pull requests that are neither armed nor carrying
+  failed/cancelled required checks, so remaining pull requests follow each
+  merge with one required-CI cycle instead of staling indefinitely. Pull
+  requests with failing checks are left open for a fixing push, which re-arms
+  them through the synchronize event. The Dependabot author filter is applied
+  client-side over all open pull requests (the bot's login differs between the
+  REST and GraphQL surfaces, and the first push run matched nothing through
+  `--author` under `GITHUB_TOKEN`), and behind-ness is computed from the
+  compare API because `mergeStateStatus` caches stale values for minutes after
+  a merge.
+- `scripts/test_dependabot_automerge_contract.py` pins this contract in the
+  required `contracts` job alongside the E09.6 deploy-dispatch contract.
 
 Backend Python dependencies are covered through the `pip` ecosystem
 (`/backend`): the hash-pinned pip-compile output lives at
