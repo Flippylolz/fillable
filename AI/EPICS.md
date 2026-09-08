@@ -2689,3 +2689,9 @@ E09.1 completion: PR #81 auto-merged as `eb8bc4fdb4023b7a794d0def688a2d347468107
 Status: in_review. User requests missing outlines and one date entry distributed across boxes. Acceptance: preserve supported paragraph/run and internal table borders; provide a localized single-date action targeting six/eight separated digit positions or selected date-table cells, retaining separators, source identities and cell formatting; validate calendar dates, reject ambiguous/locked selections, support one-step undo/redo and existing save/history contracts. Test synthetic bordered dates with export/reopen and private visual comparison. Deliver a dedicated gated PR and verify Actions deployment last, preserving existing services.
 
 Local Docker verification: 424 backend tests; 4246/4279 lines and 1292/1332 branches. Frontend 236 tests; 99.20% lines and 95.34% branches. Required browser/CI, merge and deployed acceptance remain pending.
+
+E09.2 completion: PR #82 auto-merged as `a5932cb3edad60e96ec3ae3388a565202e0c2b58`; PR CI 34236660133 and exact-main CI 34239106552 passed. Actions 34241492451 deployed that source. Both retained private document versions were verified, live outlines/date controls inspected, and 15 unrelated containers/six routes unchanged. Backend lines/branches 99.23%/97.00%; frontend 99.20%/95.49%.
+
+## E09.4 — Add the Fillable favicon
+
+Status: in_progress. Acceptance: serve a small, crisp document favicon matching the existing blue application mark on all application pages; include it in the production build; verify the asset visually and through the deployed HTML. Deliver a dedicated PR with required CI and unchanged independent 90% coverage gates, then deploy through Actions while preserving shared services. This static asset change needs no new implementation-mirroring tests.
