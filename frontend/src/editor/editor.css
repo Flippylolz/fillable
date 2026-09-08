@@ -48,6 +48,13 @@
   background: #fff1c9;
   user-select: none;
 }
+.document-unsupported.document-quiet {
+  background: transparent;
+}
+.document-checkbox {
+  cursor: pointer;
+  user-select: none;
+}
 .document-workbench aside > div {
   border-bottom: 1px solid #c7d2dc;
   padding: 0.75rem;

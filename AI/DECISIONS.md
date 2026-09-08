@@ -314,6 +314,12 @@ Automerge never replaces the merge gate: `main` requires the strict, up-to-date
 `ci-required` check for every pull request, including Dependabot's, and the
 auto-merge request is bound to the exact head commit. A failed required check
 refuses the queued merge and leaves the pull request open for manual attention.
+Because that protection requires branches to be up to date and Dependabot only
+rebases on conflict, the automerge workflow also updates behind Dependabot
+branches (bound to the expected head SHA) and reconciles open Dependabot pull
+requests after every push to `main` — with a twice-hourly offset schedule as a
+fallback — so the remaining updates follow each merge without manual
+intervention (E09.11).
 The automerge workflow dispatches no deployment itself, but since E09.6 every
 merge to `main` — a Dependabot merge included — is deployed automatically once
 that exact commit's required CI succeeds. A dependency update therefore reaches

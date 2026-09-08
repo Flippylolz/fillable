@@ -11,11 +11,18 @@ export function sourceNodeView(presentation: SourcePresentation | undefined) {
     dom.textContent = data?.text ?? node.attrs.label;
     for (const raw of data?.shapes ?? []) {
       const shape = raw as Record<string, unknown>;
-      if (![shape.x, shape.y, shape.width, shape.height].every(v => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= 2000) || typeof shape.fill !== "string" || !(shape.fill === "transparent" || /^#[0-9a-f]{6}$/i.test(shape.fill))) continue;
+      const inline = shape.placement === "inline";
+      const extent = [shape.width, shape.height].every(v => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= 2000 && (v as number) > 0);
+      const placed = inline || ([shape.x, shape.y].every(v => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= 2000));
+      if (!extent || !placed || typeof shape.fill !== "string" || !(shape.fill === "transparent" || /^#[0-9a-f]{6}$/i.test(shape.fill))) continue;
       const box = document.createElement("span");
-      Object.assign(box.style, { position: "absolute", pointerEvents: "none", left: `${shape.x}pt`, top: `${shape.y}pt`, width: `${shape.width}pt`, height: `${shape.height}pt`, background: shape.fill, border: typeof shape.border === "string" && /^(?:none|(?:[0-9]|1[0-2])(?:\.\d+)?pt (?:solid|double|dotted|dashed) #[0-9a-f]{6})$/i.test(shape.border) ? shape.border : "0.5pt solid black", boxSizing: "border-box" });
+      const geometry = { boxSizing: "border-box", width: `${shape.width}pt`, height: `${shape.height}pt`, background: shape.fill, border: typeof shape.border === "string" && /^(?:none|(?:[0-9]|1[0-2])(?:\.\d+)?pt (?:solid|double|dotted|dashed) #[0-9a-f]{6})$/i.test(shape.border) ? shape.border : "0.5pt solid black" };
+      // Inline shapes flow with text like Word's inline drawings; anchored ones keep
+      // their source offsets relative to the paragraph box.
+      Object.assign(box.style, inline ? { display: "inline-block", ...geometry } : { position: "absolute", pointerEvents: "none", left: `${shape.x}pt`, top: `${shape.y}pt`, ...geometry });
       box.setAttribute("aria-hidden", "true"); dom.append(box);
     }
+    if (!dom.textContent && dom.querySelector("span[style]")) dom.classList.add("document-quiet");
     return { dom, ignoreMutation: () => true };
   };
 }
