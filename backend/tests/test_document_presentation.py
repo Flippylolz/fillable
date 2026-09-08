@@ -96,7 +96,16 @@ def test_rectangles_exclude_xml_coordinates_and_duplicate_fallback_text():
     result = display(etree.fromstring(xml))
     assert result == {
         "text": "Позначка",
-        "shapes": [{"x": 10, "y": 2, "width": 10, "height": 10, "fill": "#ABCDEF"}],
+        "shapes": [
+            {
+                "x": 10,
+                "y": 2,
+                "width": 10,
+                "height": 10,
+                "fill": "#ABCDEF",
+                "placement": "absolute",
+            }
+        ],
     }
     for old, new in [
         ('prst="rect"', 'prst="unknown"'),
@@ -246,3 +255,70 @@ def test_outline_stroke_does_not_become_the_rectangle_fill():
     shape = display(etree.fromstring(xml))["shapes"][0]
     assert shape["fill"] == "transparent"
     assert shape["border"] == "1.5pt solid #000000"
+
+
+def test_inline_rectangles_render_in_flow_without_absolute_offsets():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import WP, A, display
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:wp="{WP[1:-1]}" xmlns:a="{A[1:-1]}">
+    <wp:inline><wp:extent cx="133350" cy="133350"/><a:prstGeom prst="rect"/>
+    <a:noFill/><a:ln><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln>
+    </wp:inline></w:r>'''
+    result = display(etree.fromstring(xml))
+    assert result["shapes"] == [
+        {
+            "width": 10.5,
+            "height": 10.5,
+            "fill": "transparent",
+            "border": "0.5pt solid #000000",
+            "placement": "inline",
+        }
+    ]
+    assert display(
+        etree.fromstring(xml.replace('prst="rect"', 'prst="unknown"'))
+    )["shapes"] == []
+    assert display(
+        etree.fromstring(xml.replace('cy="133350"', 'cy="0"'))
+    )["shapes"] == []
+
+
+def test_vml_rectangles_become_inline_shapes_with_bounded_geometry():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import V, display
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:v="{V[1:-1]}">
+    <w:pict><v:rect style="width:14pt;height:10.5pt" fillcolor="#ffffff" stroked="t"
+      strokecolor="#123456"/></w:pict></w:r>'''
+    result = display(etree.fromstring(xml))
+    assert result["shapes"] == [
+        {
+            "width": 14.0,
+            "height": 10.5,
+            "fill": "#ffffff",
+            "border": "0.5pt solid #123456",
+            "placement": "inline",
+        }
+    ]
+    for old, new in [
+        ('style="width:14pt;height:10.5pt"', 'style="width:14pt"'),
+        ('style="width:14pt;height:10.5pt"', 'style="width:14em;height:10.5pt"'),
+        ('style="width:14pt;height:10.5pt"', 'style="width:4000pt;height:10.5pt"'),
+        ('strokecolor="#123456"', 'strokecolor="evil"'),
+    ]:
+        shapes = display(etree.fromstring(xml.replace(old, new)))["shapes"]
+        assert shapes == [] or shapes[0]["border"].endswith("#000000")
+
+
+def test_vml_pixel_dimensions_convert_to_points():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import V, display
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:v="{V[1:-1]}">
+    <w:pict><v:rect style="width:13.4px;height:13.4px" stroked="f"/></w:pict></w:r>'''
+    shape = display(etree.fromstring(xml))["shapes"][0]
+    assert (shape["width"], shape["height"]) == (10.05, 10.05)
+    assert shape["border"] == "none"

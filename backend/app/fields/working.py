@@ -12,11 +12,11 @@ from app.fields.validation import MODEL_NODES, MODEL_TEXT
 from app.fields.working_schema import WorkingControl, WorkingReview
 
 CONTAINERS = {"doc", "section", "paragraph", "table", "tableRow", "tableCell", "field"}
-LEAVES = {"lockedBlock", "lockedInline"}
+LEAVES = {"lockedBlock", "lockedInline", "checkbox"}
 CHILDREN = {
     "doc": {"section"},
     "section": {"paragraph", "table", "lockedBlock"},
-    "paragraph": {"text", "field", "lockedInline"},
+    "paragraph": {"text", "field", "lockedInline", "checkbox"},
     "table": {"tableRow"},
     "tableRow": {"tableCell"},
     "tableCell": {"paragraph", "table", "lockedBlock"},
@@ -76,6 +76,16 @@ def index(model):
         elif kind in LEAVES:
             if children:
                 raise ValueError("invalid_working_leaf")
+            if kind == "checkbox":
+                attrs = node.get("attrs")
+                if (
+                    not isinstance(attrs, dict)
+                    or set(attrs) != {"id", "checked"}
+                    or not isinstance(attrs["id"], str)
+                    or not attrs["id"]
+                    or type(attrs["checked"]) is not bool
+                ):
+                    raise ValueError("invalid_working_leaf")
             sizes[id(node)] = 1
         elif kind in CONTAINERS:
             if any(
