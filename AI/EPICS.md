@@ -2681,3 +2681,11 @@ change is required for this acceptance documentation/test delivery.
 ## E09.1 — Render retained DOCX layout in the editor
 
 Status: in_progress. User-reported real documents exposed a gap between source-preserving export and generic browser rendering. Acceptance: render source fonts, paragraph spacing/indentation, page dimensions/margins, and table sizing/borders in current and historical editors; retain canonical editing identities and save contracts; apply to existing uploads without rewriting originals or revisions. Add synthetic layout/security/round-trip tests, retain independent 90% gates, merge a dedicated PR, then deploy and visually compare the private examples. Floating Word drawing placement and exact automatic pagination require explicit evidence and must not be claimed from content round-trip checks.
+
+E09.1 completion: PR #81 auto-merged as `eb8bc4fdb4023b7a794d0def688a2d3474681079`; PR CI 34228913257 and exact-main CI 34230864623 passed. Actions 34233024911 deployed that source. Both private examples were visually inspected, retained revision bytes verified, and 15 unrelated containers/six routes unchanged. Backend lines/branches 4178/4210 and 1264/1304; frontend 1319/1330 and 1531/1604. Exact Word pagination remains outside the proven layout support.
+
+## E09.2 — Retain outlines and fill boxed dates
+
+Status: in_review. User requests missing outlines and one date entry distributed across boxes. Acceptance: preserve supported paragraph/run and internal table borders; provide a localized single-date action targeting six/eight separated digit positions or selected date-table cells, retaining separators, source identities and cell formatting; validate calendar dates, reject ambiguous/locked selections, support one-step undo/redo and existing save/history contracts. Test synthetic bordered dates with export/reopen and private visual comparison. Deliver a dedicated gated PR and verify Actions deployment last, preserving existing services.
+
+Local Docker verification: 424 backend tests; 4246/4279 lines and 1292/1332 branches. Frontend 236 tests; 99.20% lines and 95.34% branches. Required browser/CI, merge and deployed acceptance remain pending.

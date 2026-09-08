@@ -3,6 +3,7 @@
 import re
 from typing import Any
 
+from app.documents.borders import cell_borders, property_borders
 from app.documents.drawing_presentation import display
 from app.documents.package import DocxPackage, W
 
@@ -33,6 +34,7 @@ def length(style, name, raw, divisor=20, lower=0):
 def properties(root, style):
     if root is None:
         return
+    property_borders(root, style)
     font = value(root, "rFonts", "ascii") or value(root, "rFonts", "hAnsi")
     if font and re.fullmatch(r"[\w -]{1,80}", font):
         style["font-family"] = f'"{font}"'
@@ -152,7 +154,7 @@ class Layout:
                 k: v
                 for k, v in result.items()
                 if k.startswith("font-")
-                or k in {"color", "text-decoration", "text-transform"}
+                or k in {"color", "text-decoration", "text-transform", "border"}
             }
         if tag == "tbl":
             result = {"border-collapse": "collapse", "table-layout": "fixed"}
@@ -233,32 +235,17 @@ class Layout:
                     length(
                         result, "padding-" + side, value(root, path + "/" + side, "w")
                     )
-                for root, path in [
-                    (table, "tblPr/tblBorders"),
-                    (element, "tcPr/tcBorders"),
-                ]:
-                    border = root.find(
-                        "/".join(W + p for p in (path + "/" + side).split("/"))
-                    )
-                    if border is None and side in {"left", "right"}:
-                        edge = "start" if side == "left" else "end"
-                        border = root.find(
-                            "/".join(W + p for p in (path + "/" + edge).split("/"))
-                        )
-                    if border is not None:
-                        kind = border.get(W + "val")
-                        size = number(border.get(W + "sz"), 8, 0, 12)
-                        color = border.get(W + "color", "000000")
-                        color = (
-                            color
-                            if re.fullmatch(r"[0-9a-fA-F]{6}", color)
-                            else "000000"
-                        )
-                        result["border-" + side] = (
-                            "none"
-                            if kind in {"nil", "none"}
-                            else f"{size or 0.5:g}pt solid #{color}"
-                        )
+            chain: list[Any] = []
+            key = value(table, "tblPr/tblStyle")
+            seen = set()
+            while key in self.styles and key not in seen and len(chain) < 32:
+                seen.add(key)
+                style = self.styles[key]
+                chain.append(style.find(W + "tblPr"))
+                key = value(style, "basedOn")
+            result.update(
+                cell_borders(element, [*reversed(chain), table.find(W + "tblPr")])
+            )
         if (
             tag == "tc"
             and element.getparent().getparent().find(W + "tblPr/" + W + "tblpPr")

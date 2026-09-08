@@ -48,3 +48,14 @@ test("unsupported source graphics show bounded shapes without exposing internal 
   expect(view.ignoreMutation!({type:"selection",target:view.dom})).toBe(true);
   expect(sourceNodeView(undefined)(node).dom.textContent).toBe("12700025400");
 });
+
+
+test("outlined transparent rectangles retain their stroke without adding opaque fill", async () => {
+  const { sourceNodeView } = await import("../src/editor/sourceNodes");
+  const { editorSchema } = await import("../src/editor/model");
+  const node = editorSchema.nodes.lockedInline.create({id:"outline",label:""});
+  const view = sourceNodeView({locked:{outline:{text:"",shapes:[{x:0,y:0,width:12,height:12,fill:"transparent",border:"1.5pt solid #000000"}]}}})(node);
+  const shape = (view.dom as HTMLElement).querySelector("span")!;
+  expect(shape.style.background).toBe("transparent");
+  expect(shape.style.borderWidth).toBe("1.5pt");
+});
