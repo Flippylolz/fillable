@@ -327,7 +327,10 @@ contract:
   REST and GraphQL surfaces, and the first push run matched nothing through
   `--author` under `GITHUB_TOKEN`), and behind-ness is computed from the
   compare API because `mergeStateStatus` caches stale values for minutes after
-  a merge.
+  a merge. Branch updates made with `GITHUB_TOKEN` also create the pull
+  request's `pull_request` workflow runs as `action_required`, so the
+  reconciliation approves exactly the held runs for the head it just updated;
+  a run GitHub refuses to self-approve is reported and needs a maintainer.
 - `scripts/test_dependabot_automerge_contract.py` pins this contract in the
   required `contracts` job alongside the E09.6 deploy-dispatch contract.
 
