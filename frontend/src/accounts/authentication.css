@@ -6,6 +6,23 @@
   gap: 1rem;
   max-width: 24rem;
 }
+/* The signed-out sign-in card sits centered below the header. */
+.authentication > form {
+  box-sizing: border-box;
+  width: 100%;
+  margin-inline: auto;
+  margin-block: 2.75rem 0;
+  padding: 1.6rem 1.6rem 1.8rem;
+  border: 1px solid #dadce0;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 1px 4px #3c40431a;
+}
+.authentication > form h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.35rem;
+}
 .authentication label {
   display: grid;
   gap: 0.35rem;

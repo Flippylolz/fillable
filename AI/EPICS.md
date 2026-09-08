@@ -2699,3 +2699,7 @@ Status: in_progress. Acceptance: serve a small, crisp document favicon matching 
 ## E09.3 — UI polish: navigation, buttons, and workspace toolbar
 
 Status: in_review. User-reported polish: fix the home button, give the profile link its own place, align buttons across pages, remove the useless "Увійти знову" strip button, and run a full UI diagnosis. Acceptance: the brand in the header is a home link to the library; the signed-in strip keeps identity and logout only while session recovery stays automatic on a rejected protected request; the profile link keeps its own account place on the navigation row with correct current-page state; the workspace toolbar aligns back/title/actions in one row with consistent button sizes; main actions use one primary button style across login, library, profile, and workspace; both catalogs stay complete and the independent 90% gates hold. Deliver a dedicated PR, verify required CI and auto-merge, then deploy and confirm the public origin.
+
+## E09.5 — Center the sign-in card
+
+Status: in_review. User feedback that the login page is not centered. Acceptance: the signed-out sign-in form renders as one centered card below the header on desktop and mobile in both languages, without changing authentication behavior, copy, or tests' semantics. Deliver a dedicated PR with required CI, merge, deploy through Actions, and confirm on the public origin.
