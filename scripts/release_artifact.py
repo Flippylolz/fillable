@@ -140,7 +140,11 @@ def validate_image_archive(path, manifest):
             ):
                 raise ValueError("Docker archive image identity mismatch")
             found.add(role)
-        validate_oci_index(archive, names, manifest)
+        descriptors = validate_oci_index(archive, names, manifest)
+        return {
+            role: tuple(dict.fromkeys([image["id"], *descriptors.get(role, [])]))
+            for role, image in manifest["images"].items()
+        }
 
 
 def validate_oci_index(archive, names, manifest):
@@ -160,7 +164,7 @@ def validate_oci_index(archive, names, manifest):
         ):
             raise ValueError("Unexpected Docker repository alias")
     if "index.json" not in names and "oci-layout" not in names:
-        return  # Older Docker archives use only the checked legacy manifest.
+        return {}  # Older archives have only the checked config identity.
     _, layout = read_json("oci-layout")
     _, index = read_json("index.json")
     if layout != {"imageLayoutVersion": "1.0.0"} or index.get("schemaVersion") != 2:
@@ -169,6 +173,7 @@ def validate_oci_index(archive, names, manifest):
     if len(descriptors) != 2:
         raise ValueError("Unexpected OCI image count")
     found = set()
+    identities = {}
     for descriptor in descriptors:
         if descriptor.get("mediaType") not in {
             "application/vnd.oci.image.manifest.v1+json",
@@ -201,6 +206,8 @@ def validate_oci_index(archive, names, manifest):
         }:
             raise ValueError("Unexpected OCI repository alias")
         found.add(role)
+        identities[role] = [digest]
+    return identities
 
 
 def pack(root, source, ci_run_id):

@@ -18,8 +18,11 @@ The installer copies a fixed allowlist of reviewed Compose/configuration/helper 
 Their fingerprints are verified at every preflight. Uploaded source is evidence and
 is never executed or used as Compose input. The complete bounded archive is retained;
 apply revalidates it and its image/config digests. Docker loads the delivered images,
-then their IDs, platform and revision labels must match. Runtime image selection uses
-those IDs with builds removed and application image pulls disabled.
+then their platform and revision labels must match. E08.9 resolves only the checked
+config or OCI manifest digest from the same archive, accounting for classic versus
+containerd image stores. Runtime image selection and private release state use that
+exact host ID with builds removed and application image pulls disabled. No mutable
+tag or storage-driver change is permitted.
 
 The database password is generated privately on the server and is never returned by
 the installer. The exact HTTPS origin, dedicated document path and 2 GiB disk headroom

@@ -26,7 +26,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: E08.1–E08.4 code merged; rollout awaits credential approval; E08.5 draft #75 |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: HTTPS and portable-image receiver verified; exact-main CI gates rollout; E08.5 draft #75 |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -249,8 +249,8 @@ Work:
 
 - E08.1: Inspect `<DEPLOY_USER>@<DEPLOY_HOST>` read-only first: existing services, port allocations, capacity, Docker setup, and nginx ownership/networking. Investigate WEF as the possible configuration repository. Record baselines, select a new unused port and isolated Compose namespace, and prepare scoped paths/access without disrupting other workloads.
 - E08.2: Implement the GitHub Actions deployment workflow with serialized runs, an explicit source commit, immutable artifacts, and mandatory CI/coverage dependencies. Inject the verified source commit into the frontend build for the version badge, including manually selected revisions. Default proposal: manual dispatch for a protected default-branch commit.
-- E08.3: Configure only Fillable's persistent volumes, private upstream, resource limits, and schema-compatible release rollback procedure. No backups or staging environment are required. Prepare the new public HTTP listener for `http://<DEPLOY_HOST>:<PORT>` in the authoritative nginx configuration, using WEF's process if it is the owner. Preserve local document storage, quotas, and existing workloads.
-- E08.4: Run the workflow: validate capacity and persistence configuration, apply tested non-destructive migrations, update Fillable services, check private/public ports, validate effective nginx configuration, and apply the route with the owner's established process. Perform app smoke checks at the exact HTTP URL and recheck existing services/routes; do not require a backup.
+- E08.3: Configure only Fillable's persistent volumes, private upstream, resource limits, and schema-compatible release rollback procedure. No backups or staging environment are required. Use the owner-deployed D024 HTTPS listener on internal 3200, with only Fillable's TCP relay publishing host 3200. Coordinate with the shared nginx task before ingress changes; none are needed for rollout. Preserve local document storage, quotas, and existing workloads.
+- E08.4: Run the workflow: validate capacity and persistence configuration, apply tested non-destructive migrations, update Fillable services, check private/public ports, validate effective nginx configuration read-only and preserve the owner-deployed TLS route. Perform app smoke checks at the exact HTTPS URL and recheck existing services/routes; do not require a backup.
 - E08.5: Verify save/download, template independence, profile, history restoration, and data persistence on the deployed application. Confirm the served version badge matches the first seven characters of the artifact's source commit; a wrong hash or `development` fails a controlled production-release check. Record release commit, artifact digests, results, and the schema-aware rollback/recovery procedure in `AI/`.
 
 Acceptance:
@@ -2594,3 +2594,58 @@ only that account if already present), then verify role through the authenticate
 HTTPS session as well as stored account state. No account creation/promotion has
 occurred yet. E08.5 now resumes from the merged HTTPS base; deployed acceptance
 and its final PR merge remain outstanding.
+E08.9 — Portable Docker image identity (in_progress, prerequisite to retry rollout).
+Actions deployment `34207568628` failed closed before any Fillable application
+containers: the build engine records config digests, while the target's containerd
+image store exposes the verified OCI manifest digest as image ID. The archive itself
+imports successfully. A retry was cancelled; do not weaken identity checks or change
+the server's Docker storage driver. Shared nginx remains unchanged.
+
+Return both config and checked OCI manifest digests from archive validation, select
+only an exact loaded immutable identity with matching platform/revision, and record
+that host's resolved IDs for Compose and subsequent account/runtime checks. Preserve
+all source/archive checks, reject alternate tags/configs/descriptors and prove both
+classic and containerd identities. Deliver this correction in its own PR with required
+CI and raw 90% gates, then upgrade only the still-undeployed receiver under its lock.
+
+WEF production containers were replaced by concurrent work before Fillable's receiver
+step; existing route observations match. Coordinate current owner activity using the
+existing shared configuration task, then establish the current stable baseline rather
+than rolling back unrelated WEF containers. The user's requested account must have
+the highest supported role, admin, with its supplied password preserved; creation and
+authenticated role verification remain pending successful rollout.
+
+E08.9 verification: 23 receiver/release contracts passed, including archive-bound
+candidate derivation, classic/containerd resolution, wrong digest/platform/revision
+rejection and existing malformed OCI/tag/index checks. Real saved local release
+images resolved by config digest. Four actual imported target images resolved by
+checked OCI manifest digest; bounded read-only-root, network-none disposable image
+processes started and their container Image fields matched the resolved IDs. Those
+probes were removed; all existing container snapshots were unchanged. No production
+app/relay/account exists and no shared ingress change was made.
+
+The shared nginx configuration task confirmed WEF's separate production workflow
+completed successfully, current production/shared nginx are healthy, expected routes
+answer 200, and no WEF workflow is queued/running at its sample. The historical
+candidate edge remains its pre-existing unhealthy baseline and must remain untouched.
+Recheck current owner/host state immediately before the later Fillable rollout.
+
+E08.9 is ready for its task PR and required CI. Application source is unchanged;
+last exact-main CI `34205708238` passed all jobs with raw backend 3970/3999 lines,
+1174/1206 branches and frontend 1292/1303 lines, 1500/1569 branches. Draft E08.5
+head `8cb2bb789a3e5405e05e5e13b198ace1fd22ed39` passed CI `34205853855`, but
+actual deployed acceptance remains pending. Next: verify this correction's merge,
+upgrade only the idle Fillable receiver from that reviewed source, wait for exact-main
+CI, then retry Actions with a fresh stable baseline and create/verify the requested
+administrator privately. Do not retry the old incompatible receiver or image-ID path.
+
+
+E08.9 verified MERGED: PR #80 at `141288bcb12215fb34aede79ac2d7b7e799654d3`.
+Required CI `34209282057` passed all three jobs and the unchanged raw coverage gates.
+The guarded idle receiver update from that exact merged source passed TLS preflight,
+rejected arbitrary SSH commands and preserved existing containers, private credentials,
+SSH authorization and shared configuration/state/Compose bytes. Main CI `34211072187`
+must pass before dispatching the corrected release. The failed old rollout created
+no Fillable application containers, and its retry was cancelled. E08.5 resumes from
+this merged prerequisite; private admin-role proof passed locally, but actual account
+creation, public browser journeys and restart/persistence verification remain pending.

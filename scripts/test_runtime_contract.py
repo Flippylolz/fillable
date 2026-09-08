@@ -27,7 +27,7 @@ from fillable_edge import (
     patched_manager,
 )
 from fillable_edge_lock import locked
-from fillable_runtime import FILES, Runtime, tls_status
+from fillable_runtime import FILES, Runtime, resolve_image, tls_status
 from install_receiver import install, upgrade_https
 from release_artifact import pack
 from release_receiver import parse_command, receive
@@ -98,6 +98,46 @@ def hold_lock(root, ready, release):
 
 
 class RuntimeContracts(unittest.TestCase):
+    def test_classic_and_containerd_identities_require_verified_exact_metadata(self):
+        expected = {
+            "id": "sha256:" + "a" * 64,
+            "os": "linux",
+            "architecture": "amd64",
+            "revision": SOURCE,
+        }
+        descriptor = "sha256:" + "b" * 64
+        with patch(
+            "fillable_runtime.execute", return_value=json.dumps(expected)
+        ) as inspect:
+            self.assertEqual(
+                resolve_image(expected, [expected["id"], descriptor]), expected
+            )
+            self.assertEqual(inspect.call_count, 1)
+        resolved = {**expected, "id": descriptor}
+        with patch(
+            "fillable_runtime.execute",
+            side_effect=[RuntimeError("absent config id"), json.dumps(resolved)],
+        ) as inspect:
+            self.assertEqual(
+                resolve_image(expected, [expected["id"], descriptor]), resolved
+            )
+            self.assertEqual(inspect.call_args.args[0][-1], descriptor)
+        for field, value in (
+            ("id", "sha256:" + "c" * 64),
+            ("os", "other"),
+            ("architecture", "arm64"),
+            ("revision", "d" * 40),
+        ):
+            with patch(
+                "fillable_runtime.execute",
+                return_value=json.dumps({**resolved, field: value}),
+            ):
+                with self.assertRaisesRegex(ValueError, "mismatch"):
+                    resolve_image(expected, [descriptor])
+        with patch("fillable_runtime.execute", side_effect=RuntimeError("absent")):
+            with self.assertRaisesRegex(ValueError, "No verified"):
+                resolve_image(expected, [expected["id"], descriptor])
+
     def test_forced_command_cannot_select_shell_path_or_project(self):
         self.assertEqual(parse_command("check"), ("check",))
         digest_value = "b" * 64

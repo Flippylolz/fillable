@@ -222,6 +222,30 @@ def fixture(root, *, oci=False):
 
 
 class ReleaseArtifactTests(unittest.TestCase):
+    def test_only_archive_bound_config_and_oci_identities_are_returned(self):
+        for oci in (False, True):
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root, oci=oci)
+                pack(root, SOURCE, 123)
+                manifest = json.loads((root / "manifest.json").read_text())
+                identities = validate_image_archive(root / "images.tar.gz", manifest)
+                self.assertEqual(set(identities), {"backend", "gateway"})
+                for role, candidates in identities.items():
+                    self.assertEqual(candidates[0], manifest["images"][role]["id"])
+                    self.assertEqual(len(candidates), 2 if oci else 1)
+                    if oci:
+                        with tarfile.open(root / "images.tar.gz") as archive:
+                            data = archive.extractfile(
+                                "blobs/sha256/" + candidates[1][7:]
+                            ).read()
+                        self.assertEqual(
+                            candidates[1], "sha256:" + hashlib.sha256(data).hexdigest()
+                        )
+                        self.assertEqual(
+                            json.loads(data)["config"]["digest"], candidates[0]
+                        )
+
     def test_oci_index_cannot_load_other_tags_or_nested_images(self):
         for corruption in (None, "tag", "nested", "extra", "config"):
             with tempfile.TemporaryDirectory() as directory:
