@@ -298,3 +298,34 @@ management and HSTS. Application failure stops only Fillable's relay and retains
 private data; it must not remove the owner's TLS listener. Upgrade the idle installed
 Fillable receiver and its origin under the receiver lock, verifying installed file
 fingerprints and preserving database credentials, SSH keys and all unrelated bytes.
+
+
+## D025 — Dependabot automatic updates with automerge
+
+Status: **Accepted — explicit user requirement, recorded 2026-09-08.**
+
+Run Dependabot version updates on the supported ecosystems — GitHub Actions
+workflows, the frontend npm manifest, `infra/` Dockerfiles, and root Docker
+Compose files — on a weekly schedule, with minor/patch updates grouped into one
+pull request per ecosystem and major updates opened standalone. A repository
+workflow enables squash auto-merge on Dependabot's own pull requests only.
+
+Automerge never replaces the merge gate: `main` requires the strict, up-to-date
+`ci-required` check for every pull request, including Dependabot's, and the
+auto-merge request is bound to the exact head commit. A failed required check
+refuses the queued merge and leaves the pull request open for manual attention.
+The automerge workflow dispatches no deployment itself, but since E09.6 every
+merge to `main` — a Dependabot merge included — is deployed automatically once
+that exact commit's required CI succeeds. A dependency update therefore reaches
+production after the same full gate (including browser and upgrade jobs) as any
+task merge. Major-version updates automerge under the same rule; a broken
+update is reverted with a follow-up pull request rather than hidden from
+`main`.
+
+Backend Python dependencies remain outside Dependabot: they are compiled by
+pip-tools into the hash-pinned `backend/requirements.lock`, which Dependabot
+does not recognize as a manifest (its pip support covers `.txt` requirement
+files and PEP 621 `pyproject.toml`). A pull request bumping only
+`backend/requirements.in` would leave the installed lock unchanged. Backend
+dependency updates keep the documented manual pip-compile procedure in
+[Local development](LOCAL_DEVELOPMENT.md).
