@@ -290,7 +290,7 @@ contract:
 
 - Triggers on `pull_request_target` (`opened`, `reopened`, `synchronize`) so the
   trusted base-branch workflow definition always runs; no pull-request code is
-  checked out and the steps call only the GitHub CLI. A `*/30 * * * *` schedule
+  checked out and the steps call only the GitHub CLI. A twice-hourly offset schedule (`13,43 * * * *`, clear of the contended :00/:30 slots)
   additionally reconciles all open Dependabot pull requests.
 - Guards on the repository identity and `dependabot[bot]` as pull-request
   author, so it covers Dependabot version and security updates and nothing else;
