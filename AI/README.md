@@ -14,7 +14,10 @@ Docs-like workspace and locale-aware storage displays are verified on desktop/mo
 E00–E07 are merged. E07 has verified bilingual MVP flows, session recovery,
 content-free diagnostics, bounded scheduled maintenance and a previous-image upgrade/
 full-stack crash proof. Runtime isolation, documentation and the final gate audit are
-merged. E08.1 verified the supplied server and HTTP port 3200. E08.2 merged the verified artifact workflow; E08.3 is preparing the isolated server runtime. [Epics](EPICS.md) contains exact PR, commit and check evidence.
+merged. E08’s artifact workflow and isolated receiver are verified, including D024
+owner-managed HTTPS and portable Docker image identities. The final Actions rollout
+and deployed HTTPS acceptance passed; [deployed evidence](DEPLOYED_ACCEPTANCE.md)
+records the source, persistence and shared-service checks. [Epics](EPICS.md) contains exact PR, commit and check evidence.
 
 - The free ProseMirror/Python adapter preserves supported source DOCX structures,
   originals and revision-matched review metadata. See [Editor feasibility](EDITOR_FEASIBILITY.md)
@@ -31,9 +34,10 @@ merged. E08.1 verified the supplied server and HTTP port 3200. E08.2 merged the 
   with its specified fixed appearance and click-through behavior.
 - Every task has its own PR and verified exact-head auto-merge. Actual strict main
   protection includes administrator enforcement.
-- E08 deploys through Actions to `http://<DEPLOY_HOST>:<PORT>` on new shared-nginx
-  ingress while preserving existing services. Read-only supplied-server preflight and isolated port probes have started;
-  application deployment has not occurred. Private connection values stay in ignored local configuration.
+- E08 deploys through Actions to `https://<DEPLOY_HOST>:3200`. Only Fillable’s TCP
+  relay publishes host 3200; the existing shared nginx terminates TLS and forwards
+  to its private gateway over `wef-edge`. Existing services and owner-managed ingress
+  remain unchanged. Private connection values stay in ignored local configuration.
 - Repository: [Flippylolz/fillable](https://github.com/Flippylolz/fillable).
 
 Start with [Docker development](LOCAL_DEVELOPMENT.md), including explicit account

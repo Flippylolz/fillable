@@ -26,7 +26,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E05 | Workspace editor, settings, and synchronized sidebar | E00, E03, E04 field contract | done: E05.1–E05.6b verified merged; history completed through E06.3b/PR #59 |
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
-| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | in_progress: HTTPS and portable-image receiver verified; exact-main CI gates rollout; E08.5 draft #75 |
+| E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
 
@@ -105,7 +105,7 @@ Acceptance:
 - Lowered limits preserve existing files and block new allocations appropriately.
 - API and worker paths share quota enforcement; user-isolation checks cover reads and writes.
 - Invalid credentials, successful login, session expiry, and logout behave correctly across protected pages.
-- Login works for the explicit HTTP origin in D019 with HttpOnly/SameSite, Secure=false, CSRF, and exact-origin checks including the port. An HTTPS configuration enables Secure. Do not assume cookies are isolated from other apps by port.
+- Login uses HttpOnly/SameSite, CSRF and exact-origin checks including the port. D024 production HTTPS requires Secure; local HTTP development retains scheme-specific cookies. Do not assume cookies are isolated from other apps by port.
 - Profile updates persist, password changes require the current credential, and users cannot update their own quota or role.
 - New accounts default to Ukrainian. The profile language switcher persists English or Ukrainian across sessions; save failures retain the prior language. A user's saved preference overrides stale browser state and cannot be changed by another user. Language switching preserves active state and document data.
 - Account and quota maintenance run through Docker without direct database edits or a separate administration page.
@@ -2649,3 +2649,31 @@ must pass before dispatching the corrected release. The failed old rollout creat
 no Fillable application containers, and its retry was cancelled. E08.5 resumes from
 this merged prerequisite; private admin-role proof passed locally, but actual account
 creation, public browser journeys and restart/persistence verification remain pending.
+
+
+E08.4 final rollout verified: Actions `34215081786` succeeded from protected-main
+`141288bcb12215fb34aede79ac2d7b7e799654d3` after exact-main CI `34211072187` passed
+all three jobs. The unrelated active WEF release completed before a fresh baseline
+and Fillable dispatch. Archive SHA-256 is
+`c325afd2ad9984427fa543a2a729db712ef1bff0076f5cd6a4037869fdad0aab` (130,181,120 bytes).
+Portable immutable IDs resolved correctly, migrations reached `0013_maintenance_state`,
+and private/public HTTPS readiness passed through the existing owner-managed ingress.
+
+E08.5 deployed acceptance passed: the requested administrator was created privately
+with its supplied password unchanged, and its HTTPS session role was verified before
+and after restart. Authenticated upload/processing/save/history smoke passed. Both
+real desktop/mobile bilingual journeys passed with exact template/copy/history bytes
+and persisted language, returning the account to Ukrainian. Actual screenshots were
+visually inspected. Full Fillable restart preserved 12 retained files, digests and
+quota counters; public current-model/revision/full-history comparisons matched both
+browser manifests. Four browser-only wrong-badge probes rejected development/wrong
+hash values while the real served badge remained `141288b`. All 15 unrelated
+containers and six route/HSTS baselines matched after rollout and after restart.
+No shared nginx edit/reload or unrelated-service mutation was performed.
+
+See [Deployed acceptance](DEPLOYED_ACCEPTANCE.md) for complete content-free evidence,
+coverage and recovery limits. Source coverage remains backend 3970/3999 lines,
+1174/1206 branches; frontend 1292/1303 lines, 1500/1569 branches. E08.5's final task
+PR #75 remains in_review until its final exact-head required CI and protected merge
+are verified. Final merge evidence is recorded in the PR body; no further production
+change is required for this acceptance documentation/test delivery.

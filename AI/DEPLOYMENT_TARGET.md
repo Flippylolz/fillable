@@ -1,8 +1,9 @@
 # Deployment target and shared-service constraints
 
 Status: the user and shared nginx configuration task confirmed D024: the existing
-shared owner has deployed internal HTTPS 3200. Fillable's app and TCP relay are not
-yet deployed. Internal 502 is expected until the app is ready; it is not acceptance.
+shared owner has deployed internal HTTPS 3200. Fillable's app and TCP relay are now
+deployed and verified through Actions. [Deployed acceptance](DEPLOYED_ACCEPTANCE.md)
+records public readiness, authenticated flows, persistence and existing-service checks.
 
 Public documentation uses `<DEPLOY_HOST>` and `<DEPLOY_USER>` placeholders. Read the
 ignored local deployment configuration for actual identity; never publish credentials,

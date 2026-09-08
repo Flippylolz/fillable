@@ -17,9 +17,9 @@ Status: the four-page application, source-preserving editor, accounts, quotas, s
 | Redis | RQ transport and worker coordination; not the authoritative document or quota store |
 | Local filesystem | Immutable document versions, originals, retained outputs, bounded staging files |
 | Fillable nginx gateway | Same-origin app routing and production static frontend assets on a private upstream port |
-| Existing shared nginx | Public HTTP listener on Fillable's new port, potentially configured in WEF; outside Fillable's service lifecycle |
+| Existing shared nginx | Owner-managed TLS listener behind Fillable’s TCP relay; outside Fillable’s service lifecycle |
 
-Locally, the browser talks to the project-owned nginx gateway, which routes `/api` to FastAPI and frontend requests to containerized Vite. In production, the existing shared nginx listens at `http://<DEPLOY_HOST>:<PORT>` and routes to the isolated private Fillable gateway, which serves built static assets and proxies `/api`. Distinguish the public nginx listener from the private upstream port/network. User files are never served from a public static directory. Shared ingress ownership/networking is verified during E08, including whether WEF manages it.
+Locally, the browser talks to the project-owned nginx gateway, which routes `/api` to FastAPI and frontend requests to containerized Vite. In production, the public origin is `https://<DEPLOY_HOST>:3200`. Fillable’s TCP relay owns host 3200 and passes TLS to existing shared nginx on `wef-edge`, which routes HTTP to the isolated private Fillable gateway. That gateway serves built static assets and proxies `/api`. Distinguish the public nginx listener from the private upstream port/network. User files are never served from a public static directory. The WEF shared nginx owner has configured this listener; contact its configuration task before ingress changes. Application rollout does not modify or reload shared nginx.
 
 The page contract lives in [Product](PRODUCT.md). Operators provision accounts and configure quotas through containerized maintenance commands using the same Python services. The MVP has no administrator dashboard; history is a panel in the document workspace.
 

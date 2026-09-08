@@ -102,7 +102,7 @@ the current-main Actions gate. Do not rebuild arbitrary server source, assume sw
 an image reverses a migration, or promise restoration of lost data. The current gate
 intentionally does not deploy arbitrary older main revisions.
 
-## Verification and remaining rollout
+## Verification and deployed acceptance
 
 Docker contract tests exercise receiver input/archive replay, installation retry/key
 preservation, failed-attempt records, scoped edits and competing processes. Required CI
@@ -112,9 +112,9 @@ and relay: six desktop/mobile save/badge cases, full Fillable restart with ident
 stored bytes/digests/quota counters, and scoped removal preserving an owner edit.
 These are isolated synthetic checks, not a deployed MVP claim.
 
-Application rollout remains E08.4 after this task's verified merge and private bootstrap.
-It must verify the externally reachable exact origin with authenticated synthetic flows.
-E08.5 verifies the broader deployed MVP and persistence. Existing-service container
+E08.4 completed the Actions rollout after verified merges and private bootstrap.
+E08.5 verified the externally reachable exact HTTPS origin with authenticated synthetic
+flows, the broader deployed MVP and persistence. Existing-service container
 identity/start/restart/health and existing route/HSTS results are compared before/after
 apply; production reports expose only safe source/digest/status evidence.
 
@@ -168,3 +168,11 @@ must reference exactly the two expected image configurations with only their Fil
 source tags, verified manifest bytes and no nested indices. Legacy repository aliases
 are likewise restricted. The real Docker-produced archive passed these checks;
 controlled alternate-tag/config/index mutations are rejected before image loading.
+
+
+The final Actions rollout and E08.5 deployed acceptance are now verified for source
+`141288bcb12215fb34aede79ac2d7b7e799654d3`. See [Deployed acceptance](DEPLOYED_ACCEPTANCE.md)
+for the immutable archive, HTTPS/admin-session, desktop/mobile history and scoped-
+restart evidence. Earlier pending-rollout descriptions above record the implementation
+sequence; the verified acceptance record states the deployed result. Shared ingress
+remains externally owned and unchanged.
