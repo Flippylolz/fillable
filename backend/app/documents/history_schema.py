@@ -32,3 +32,4 @@ class VersionList(BaseModel):
 class VersionContent(BaseModel):
     version: VersionInfo
     document: dict
+    presentation: dict[str, dict] | None = None

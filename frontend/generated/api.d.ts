@@ -413,6 +413,12 @@ export interface components {
             document: {
                 [key: string]: unknown;
             };
+            /** Presentation */
+            presentation?: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            } | null;
             resource: components["schemas"]["ResourceInfo"];
         };
         /** ControlAnchor */
@@ -818,6 +824,12 @@ export interface components {
             document: {
                 [key: string]: unknown;
             };
+            /** Presentation */
+            presentation?: {
+                [key: string]: {
+                    [key: string]: unknown;
+                };
+            } | null;
             version: components["schemas"]["VersionInfo"];
         };
         /** VersionInfo */

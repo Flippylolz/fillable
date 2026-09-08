@@ -126,7 +126,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         {!discovery.error && (discovery.status === "failed" || discovery.status === "not_started") && <button type="button" disabled={discovery.busy} onClick={() => discovery.reload(true)}>{t(discovery.status === "failed" ? "processing.retry" : "processing.start")}</button>}
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
-      <DocumentEditor key={editorEpoch} initialDocument={saved.document} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
+      <DocumentEditor key={editorEpoch} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
         onSnapshot={markDocument} onReader={registerReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
         canEdit={access.canEdit} readOnly={access.status !== "active" || restoring.busy} zoom={zoom} highlight={highlight} /></div></>}
   </section>;

@@ -373,3 +373,13 @@ reacquires editing authority; a still-live lease may require an explicit retry a
 expiry. Switching accounts uses the unsaved-work discard guard and remounts account
 pages. Obsolete write responses remain uncertain and use the existing exact retry
 protocol. See [Authentication](AUTHENTICATION.md).
+
+### Source presentation (E09.1)
+
+Current and historical content include a separate optional `presentation` object.
+The source reader uses the owner's retained original, whose identities anchor saved
+models, so existing documents and historical selections share their proper source
+formatting. Presentation is never copied into the live JSON model, undo stack,
+review state or save payload. Scoped CSS is isolated per editor/history instance;
+source graphics use safe read-only node views. Page width is retained at mobile
+sizes with canvas scrolling rather than reflowing the document to phone width.

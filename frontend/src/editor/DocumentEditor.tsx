@@ -7,9 +7,11 @@ import { FieldSidebar } from "./FieldSidebar";
 import { FIELD_LABEL_LIMIT, FIELD_RECORD_LIMIT } from "./fieldProperties";
 import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
+import { useSourceLayout, type SourcePresentation } from "./SourceLayout";
 
 export function DocumentEditor({
   initialDocument,
+  sourcePresentation,
   onDocumentChange,
   onSnapshot,
   onReader,
@@ -25,6 +27,7 @@ export function DocumentEditor({
   highlight = true,
 }: {
   initialDocument: object;
+  sourcePresentation?: SourcePresentation;
   onDocumentChange?: (document: object) => void;
   onSnapshot?: (snapshot: EditorSnapshot) => void;
   onReader?: (read: (() => EditorSnapshot) | null) => void;
@@ -40,6 +43,7 @@ export function DocumentEditor({
   highlight?: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const layout = useSourceLayout(sourcePresentation);
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorAdapter | null>(null);
   const initial = useRef(initialDocument);
@@ -59,6 +63,7 @@ export function DocumentEditor({
   const [reviewStale, setReviewStale] = useState(false);
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
+      presentation: sourcePresentation,
       canEdit: () => !access.current.readOnly && access.current.canEdit?.() !== false,
       onChange: snapshot => { change.current?.(snapshot.document); snapshots.current.onSnapshot?.(snapshot); },
       onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); composition.current?.(presentation.composing); },
@@ -104,7 +109,8 @@ export function DocumentEditor({
         {creationIssue && <p role="alert" id={creationErrorId}>{t(`editor.creation.${creationIssue}`, { labelLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_LABEL_LIMIT), fieldLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_RECORD_LIMIT) })}</p>}
         {unsupported && <p>{t("editor.unsupported")}</p>}
       </div>
-      <div ref={host} className="document-canvas" />
+      <style>{layout.rules}</style>
+      <div ref={host} className="document-canvas" data-layout={layout.scope} />
       <aside aria-label={t("editor.fields")}>
         {reviewStale && <div role="alert"><p>{t("review.stale")}</p>{onReopen && <button type="button" onClick={onReopen}>{t("review.reopen")}</button>}</div>}
         {review && <details className="review-section"><summary>{t("review.title")}</summary>

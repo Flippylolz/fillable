@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.documents.history_schema import VersionContent, VersionInfo, VersionList
 from app.documents.package import ARCHIVE_BYTES
+from app.documents.presentation import presentation
 from app.documents.retention import policy
 from app.documents.schema import resources, versions
 from app.documents.service import working_model
@@ -80,7 +81,7 @@ def listing(owner, identity, limit, before):
 
 def saved_row(owner, identity, version, *, include_model=False):
     statement = query(owner, identity).add_columns(
-        versions.c.file_id, resources.c.original_filename
+        versions.c.file_id, resources.c.original_filename, resources.c.original_file_id
     )
     if include_model:
         statement = statement.add_columns(
@@ -103,7 +104,9 @@ def content(owner, identity, version):
     row = saved_row(owner, identity, version, include_model=True)
     with configured().read(owner, row["file_id"]):
         return VersionContent(
-            version=VersionInfo.model_validate(dict(row)), document=working_model(row)
+            version=VersionInfo.model_validate(dict(row)),
+            document=working_model(row),
+            presentation=presentation(owner, row["original_file_id"]),
         )
 
 

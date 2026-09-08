@@ -9,6 +9,7 @@ from sqlalchemy import and_, func, insert, or_, select
 from app.accounts.profile import active_user
 from app.documents.deletion import pending_expression
 from app.documents.package import ARCHIVE_BYTES
+from app.documents.presentation import presentation
 from app.documents.schema import (
     ContentInfo,
     ResourceInfo,
@@ -61,6 +62,7 @@ def content(owner, identity):
         return ContentInfo(
             resource=ResourceInfo.model_validate(dict(row)),
             document=working_model(row),
+            presentation=presentation(owner, row["original_file_id"]),
         )
 
 

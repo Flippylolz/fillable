@@ -67,6 +67,21 @@
             "title": "Document",
             "type": "object"
           },
+          "presentation": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Presentation"
+          },
           "resource": {
             "$ref": "#/components/schemas/ResourceInfo"
           }
@@ -1080,6 +1095,21 @@
             "additionalProperties": true,
             "title": "Document",
             "type": "object"
+          },
+          "presentation": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Presentation"
           },
           "version": {
             "$ref": "#/components/schemas/VersionInfo"

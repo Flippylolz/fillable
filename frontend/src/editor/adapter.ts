@@ -1,3 +1,5 @@
+import { sourceNodeView } from "./sourceNodes";
+import type { SourcePresentation } from "./SourceLayout";
 import { EditorState, type Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { history, undo, redo } from "prosemirror-history";
@@ -17,6 +19,7 @@ export type EditorSnapshot = { document: object; revision: number; fieldValuesVa
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
 export function mountEditor(host: HTMLElement, initialDocument: object, callbacks: {
+  presentation?: SourcePresentation;
   canEdit?: () => boolean;
   onChange: (snapshot: EditorSnapshot) => void;
   onUpdate: (presentation: EditorPresentation) => void;
@@ -30,6 +33,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
   let compositionTimer: ReturnType<typeof setTimeout> | undefined;
   source.descendants(node => { if (node.type.name.startsWith("locked")) unsupported = true; });
   const editor = new EditorView(host, {
+    nodeViews: { lockedInline: sourceNodeView(callbacks.presentation), lockedBlock: sourceNodeView(callbacks.presentation) },
     editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
       plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
