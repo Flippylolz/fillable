@@ -3,6 +3,21 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
+async function downloadedBytes(page: Page, endpoint: string) {
+  let bytes: Buffer | undefined;
+  await expect.poll(async () => {
+    const response = await page.request.get(`${endpoint}/download`);
+    if (response.status() === 409) {
+      expect((await response.json()).error.code).toBe("operation_in_progress");
+      return false;
+    }
+    expect(response.status()).toBe(200);
+    bytes = await response.body();
+    return true;
+  }).toBe(true);
+  return bytes!;
+}
+
 async function open(page: Page, kind: "template" | "document") {
   await page.goto("/");
   await expect(page.getByLabel("Пароль", { exact: true })).toBeVisible();
@@ -77,7 +92,7 @@ for (const kind of ["template", "document"] as const) test(`${kind} history pres
   await panel.getByRole("button", { name: "Відновити як нову версію", exact: true }).click();
   await expect(page.getByRole("button", { name: "Історія версій", exact: true })).toBeVisible();
   await expect(editor).not.toContainText("Незбережена Єва 🙂");
-  expect(await (await page.request.get(`${endpoint}/download`)).body()).toEqual(await readFile("/fixtures/upload.docx"));
+  expect(await downloadedBytes(page, endpoint)).toEqual(await readFile("/fixtures/upload.docx"));
   await page.getByRole("button", { name: "Історія версій", exact: true }).click();
   await expect(panel.getByText("Відновлено з версії 1", { exact: true })).toBeVisible();
   await expect(panel.getByRole("button", { name: /^Версія 2/ })).toBeVisible();

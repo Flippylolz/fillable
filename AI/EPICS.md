@@ -2455,3 +2455,43 @@ bdf5ca846eea0afefabf92b9f50c0f73bdaa88cd, CI 34196658969 successful. Existing
 acceptance browser/persistence helpers now take private FILLABLE_INITIAL_LOGIN
 and the new login labels. E08.7 PR #78 is independently under required CI;
 actual deployment and this draft's final public acceptance still remain pending.
+
+2026-09-08 latest checkpoint: E08.6 PR #77 MERGED at
+bdf5ca846eea0afefabf92b9f50c0f73bdaa88cd; final PR CI 34196658969 SUCCESS.
+Its first run hit the 20-minute job limit after application tests passed; checks now
+have 30 minutes with unchanged coverage/negative probes and aggregation rules.
+E08.7 PR #78 is ready with exact-head squash auto-merge on
+280fbdc3a775faf55de60aed03c4fd79afe6f761, CI 34198928848 running.
+Its 16 shell and 3 HTTP contracts passed; real local readiness, repeated authenticated
+smoke and full restart bytes/digests/quota proof passed in fillable-e087-k9m9t1k6.
+Private credentials are absent from GitHub: only the four transport secret names
+exist in production. The private requested-account JSON remains ignored, mode 0600.
+A guarded private provisioning helper is prepared but has not executed on the server.
+It requires a successful exact-source Actions rollout/evidence, locks the receiver's
+release lock, verifies active image/state, and never resets an existing account.
+
+Draft E08.5 PR #75 refreshed merged login behavior at
+20dff9abc356ab16e7a6982226924dde9a9ffead; CI 34199296170 running, still draft.
+Refreshed real desktop/mobile MVP journeys and public retained byte/model/full-history
+checks passed after scoped restart in fillable-e085-login-cp7q34zu. Both local proof
+projects stopped their own containers, retained volumes, and preserved shared test
+routes/container state/concurrent owner edits. Actual target deployment/acceptance
+remains pending. Next: verify #78 merge, refresh #75 with that merged base, wait for
+exact-main CI, recheck target baselines, dispatch Actions, create requested user by
+private stdin, run authenticated public/badge/persistence proofs, and only then
+ready/auto-merge #75 and verify final completion. No credential upload is authorized.
+
+E08.5 refreshed CI 34199296170 found a separate history acceptance read race:
+47 browser tests passed; the restored-current download returned documented
+HTTP 409 operation_in_progress, and the test compared its 58-byte JSON body with
+the 595094-byte original DOCX. The synthetic trace confirms restore succeeded
+(201). Require HTTP 200 and retry only that specific transient busy response before
+retaining the exact-byte equality assertion. This corrects acceptance observation;
+it does not weaken document or history comparisons or change application behavior.
+
+E08.5 history-read correction verified locally: all 20 real template/document history
+scenarios (desktop/mobile, five repetitions each) passed in 1.7 minutes. Exact
+restored DOCX bytes, retained versions and draft behavior remained checked. Full
+scoped restart preserved stored bytes/digests/quota; shared route/container state
+and concurrent owner edits survived. Proof project fillable-e085-history-quntd4pz
+stopped with persistent volumes retained. Final refreshed-head CI still required.
