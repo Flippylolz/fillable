@@ -5,10 +5,10 @@ import { Reauthentication } from "../src/accounts/Reauthentication";
 import { i18n, setLanguage } from "../src/i18n";
 import type { Session } from "../src/accounts/Authentication";
 
-const owner: NonNullable<Session["user"]> = { id: "owner", email: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "en" };
+const owner: NonNullable<Session["user"]> = { id: "owner", login: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "en" };
 const anonymous: Session = { user: null, csrf_token: "fresh-anonymous" };
 const restored: Session = { user: owner, csrf_token: "new-authenticated" };
-const other: Session = { user: { ...owner, id: "other", email: "other@example.test" }, csrf_token: "other-csrf" };
+const other: Session = { user: { ...owner, id: "other", login: "other@example.test" }, csrf_token: "other-csrf" };
 const failure = (code = "internal_error", status = 503) => Response.json({ error: { code } }, { status });
 const submit = () => fireEvent.click(screen.getByRole("button", { name: "Sign in again" }));
 function show() {
@@ -28,12 +28,12 @@ test("fresh CSRF and the fixed owner are used for login; failed credentials pres
   const fetcher = vi.fn().mockResolvedValueOnce(Response.json(anonymous)).mockResolvedValueOnce(failure("invalid_credentials", 401)).mockResolvedValueOnce(Response.json(restored));
   vi.stubGlobal("fetch", fetcher); const state = show();
   const password = await screen.findByLabelText("Password");
-  expect(screen.getByLabelText("Email")).toHaveAttribute("readonly");
+  expect(screen.getByLabelText("Login")).toHaveAttribute("readonly");
   fireEvent.change(password, { target: { value: "Synthetic-Їжак-2026" } }); submit();
-  await screen.findByText("The email or password is incorrect."); expect(password).toHaveValue("Synthetic-Їжак-2026");
+  await screen.findByText("The login or password is incorrect."); expect(password).toHaveValue("Synthetic-Їжак-2026");
   const sent = fetcher.mock.calls[1][0] as Request;
   expect(sent.headers.get("X-CSRF-Token")).toBe(anonymous.csrf_token);
-  expect(await sent.clone().json()).toEqual({ email: owner.email, password: "Synthetic-Їжак-2026" });
+  expect(await sent.clone().json()).toEqual({ login: owner.login, password: "Synthetic-Їжак-2026" });
   submit(); await waitFor(() => expect(state.recovered).toHaveBeenCalledWith(restored)); expect(password).toHaveValue("");
 });
 
@@ -111,6 +111,6 @@ test.each(["bootstrap", "login"])("%s timeout aborts its request and offers reco
     expect(fetcher.mock.calls.at(-1)![0].signal.aborted).toBe(true);
     expect(screen.getByRole("alert")).toBeVisible(); expect(state.recovered).not.toHaveBeenCalled();
     if (stage === "bootstrap") expect(screen.getByRole("button", { name: "Retry loading" })).toBeEnabled();
-    else { expect(screen.getByLabelText("Password")).toHaveValue("retained"); expect(screen.getByLabelText("Email")).toHaveValue(owner.email); }
+    else { expect(screen.getByLabelText("Password")).toHaveValue("retained"); expect(screen.getByLabelText("Login")).toHaveValue(owner.login); }
   } finally { vi.useRealTimers(); }
 });

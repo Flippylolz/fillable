@@ -1,17 +1,22 @@
 # Local authentication
 
 E02.1 uses PostgreSQL users, opaque server sessions and login-attempt windows.
-Accounts have UUIDs, normalized email, display name, role (`user`/`admin`), active
+Accounts have UUIDs, normalized login, display name, role (`user`/`admin`), active
 status and constrained `ui_language` (`uk`/`en`, default `uk`). Public responses
 whitelist account fields; password hashes and session hashes are never returned.
+Login names contain 3–254 Unicode letters, numbers, underscores or `. @ + -`,
+with surrounding whitespace removed and case folded. The API exposes `login`;
+legacy `email` request input and CLI `--email` remain aliases. Existing email-shaped
+identifiers, UUIDs, password hashes, sessions and document ownership are preserved.
+The historical database column remains `users.email`; no data migration is needed.
 Provisioning/reset require operator access to container commands; no public signup.
 
 Passwords use pinned argon2-cffi 25.1.0's Argon2id defaults, random salts and
 rehashing after successful authentication when parameters change. Passwords contain
-12–1024 Unicode characters and are not trimmed or normalized. Hashing/verification
+10–1024 Unicode characters and are not trimmed or normalized. Hashing/verification
 is bounded to two simultaneous operations per process. Unknown accounts undergo a
 dummy verification and receive the same credential error. PostgreSQL attempt rows,
-keyed by a hash of normalized email, serialize concurrent attempts and limit five
+keyed by a hash of normalized login, serialize concurrent attempts and limit five
 failures per 15-minute window, including unknown accounts. Failure increments
 commit before the response; successful login/reset clears the window.
 
@@ -38,10 +43,10 @@ restores the saved account language on session load/login; successful logout cle
 the password field. Failed requests retain inputs/authenticated state as appropriate.
 E02.6 adds profile editing; E02.7 adds persisted language preferences.
 
-The profile shows read-only email and authenticated storage usage, and permits a
+The profile shows read-only login and authenticated storage usage, and permits a
 trimmed nonblank display name up to 120 characters. `PATCH /api/profile` accepts
 only `display_name`. `POST /api/profile/password` requires the current password and
-a new 12–1024-character password; five failed verifications per 15-minute window
+a new 10–1024-character password; five failed verifications per 15-minute window
 are allowed per account. Successful changes revoke every existing session and issue
 a fresh current cookie/CSRF pair. Invalid current credentials preserve sessions.
 Both mutations recheck active account/session state under transaction locks and
@@ -80,7 +85,7 @@ and [password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_S
 A protected API 401 opens an inline recovery form. The authenticated workspace
 stays mounted, hidden and inert; editing, autosave and new protected requests pause.
 Recovery fetches a fresh session/CSRF token. The same account UUID resumes its draft
-and undo history; otherwise the form fixes the original account email and requests
+and undo history; otherwise the form fixes the original account login and requests
 its password. Failed login retains the form. Bootstrap and login requests abort on
 unmount and time out after ten seconds. The account strip also offers sign-in again
 for stale-CSRF errors or session changes in another tab.

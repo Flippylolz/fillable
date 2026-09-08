@@ -9,7 +9,7 @@ async function open(page: Page) {
   const anonymous = await (await page.request.get("/api/auth/session")).json();
   const login = await page.request.post("/api/auth/login", {
     headers: { Origin: new URL(page.url()).origin, "X-CSRF-Token": anonymous.csrf_token },
-    data: { email: "library@example.test", password: "Synthetic-browser-Їжак-2026" },
+    data: { login: "library@example.test", password: "Synthetic-browser-Їжак-2026" },
   });
   expect(login.status()).toBe(200);
   const session = await login.json();
@@ -95,11 +95,11 @@ test("switching the browser account explicitly discards the old draft and adopts
   const current = await (await page.request.get("/api/auth/session")).json();
   const login = await page.request.post("/api/auth/login", {
     headers: { Origin: new URL(page.url()).origin, "X-CSRF-Token": current.csrf_token },
-    data: { email: "browser@example.test", password: "Synthetic-browser-Їжак-2026" },
+    data: { login: "browser-user", password: "Synthetic-browser-Їжак-2026" },
   });
   expect(login.status()).toBe(200);
   await page.getByRole("button", { name: "Увійти знову", exact: true }).click();
-  const switchAccount = page.getByRole("button", { name: "Перейти до browser@example.test", exact: true });
+  const switchAccount = page.getByRole("button", { name: "Перейти до browser-user", exact: true });
   await expect(switchAccount).toBeVisible();
   page.once("dialog", dialog => dialog.dismiss()); await switchAccount.click();
   expect(await retained!.evaluate(node => node.isConnected)).toBe(true);
@@ -118,5 +118,5 @@ test("switching the browser account explicitly discards the old draft and adopts
   await recovery.getByLabel("Password", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await recovery.getByRole("button", { name: "Sign in again", exact: true }).click();
   await expect(recovery).not.toBeVisible();
-  expect((await (await page.request.get("/api/auth/session")).json()).user.email).toBe("browser@example.test");
+  expect((await (await page.request.get("/api/auth/session")).json()).user.login).toBe("browser-user");
 });

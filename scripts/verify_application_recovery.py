@@ -47,7 +47,7 @@ def authenticate():
     signed = request(
         client, "POST", "/api/auth/login", json={"email": EMAIL, "password": PASSWORD}
     ).json()
-    assert signed["user"]["email"] == EMAIL
+    assert signed["user"].get("login", signed["user"].get("email")) == EMAIL
     client.headers["X-CSRF-Token"] = signed["csrf_token"]
     return client, signed["user"]["id"]
 

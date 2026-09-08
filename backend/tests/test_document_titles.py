@@ -95,7 +95,7 @@ def test_rename_requires_current_owner_session_and_csrf_and_rejects_deleted_reso
     )
     other = browser()
     login = other.post(
-        "/api/auth/login", json={"email": peer.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": peer.login, "password": PASSWORD}
     )
     other.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert rename(other, saved).status_code == 404

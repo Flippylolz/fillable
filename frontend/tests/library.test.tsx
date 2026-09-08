@@ -8,7 +8,7 @@ import { i18n, setLanguage } from "../src/i18n";
 
 const usage = { used_bytes: 10, reserved_bytes: 2, limit_bytes: 1000, available_bytes: 988, over_limit: false };
 const item = { id: "resource", kind: "template", title: "Ґанна <script>", original_filename: "Заява.docx", current_version_id: "version", size_bytes: 10, digest: "a".repeat(64), unsupported_count: 1, processing_status: "not_started", created_at: "2026-09-06T10:00:00Z", updated_at: "2026-09-06T10:00:00Z" };
-const session = { csrf_token: "csrf", user: { id: "owner", email: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
+const session = { csrf_token: "csrf", user: { id: "owner", login: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
 const fail = (code: string) => Response.json({ error: { code, parameters: {} } }, { status: code === "rate_limited" ? 429 : 409 });
 const onBusy = vi.fn(); const onDirty = vi.fn(); const onSaved = vi.fn();
 const empty = () => Response.json({ items: [], next_cursor: null });

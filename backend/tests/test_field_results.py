@@ -36,7 +36,7 @@ def test_real_result_is_owned_revision_bound_and_copied_without_processing_again
     )
     other = browser()
     login = other.post(
-        "/api/auth/login", json={"email": peer.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": peer.login, "password": PASSWORD}
     )
     other.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert other.get(endpoint).status_code == 404

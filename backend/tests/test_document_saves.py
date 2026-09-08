@@ -210,7 +210,7 @@ def test_unowned_or_stale_saves_leave_current_bytes_and_usage(change):
         )
         web = browser()
         login = web.post(
-            "/api/auth/login", json={"email": peer.email, "password": PASSWORD}
+            "/api/auth/login", json={"email": peer.login, "password": PASSWORD}
         )
         web.headers["X-CSRF-Token"] = login.json()["csrf_token"]
         expected = 404

@@ -9,7 +9,7 @@ async function open(page: Page, kind: "template" | "document") {
   const anonymous = await (await page.request.get("/api/auth/session")).json();
   const login = await page.request.post("/api/auth/login", {
     headers: { Origin: new URL(page.url()).origin, "X-CSRF-Token": anonymous.csrf_token },
-    data: { email: "library@example.test", password: "Synthetic-browser-Їжак-2026" },
+    data: { login: "library@example.test", password: "Synthetic-browser-Їжак-2026" },
   });
   expect(login.status()).toBe(200);
   const session = await login.json();

@@ -256,3 +256,20 @@ Status: **Accepted — explicit user design; specification-only delivery confirm
 Include a subtle, translucent badge across all four MVP pages on desktop/mobile. Show `version: <first seven commit characters>` or `version: development` when unavailable. Use the deployed artifact's source commit, injected during the frontend build. Preserve the user's fixed bottom-right positioning, safe-area handling, `2.75rem` bottom offset, explicit colors, and click-through CSS. Keep the hash monospace; no icon, link, tooltip, focus stop, or interaction.
 
 [Version badge](VERSION_BADGE.md) preserves the supplied markup/CSS and defines build metadata, fallback, and acceptance. Badge labels still live in i18n: the visible `version:` and `development` strings stay exactly as requested in both catalogs, while the accessible label is localized. This is a narrow display exception, not permission to hardcode other UI labels. E01.8 implements the feature after foundation work; E08 verifies the deployed hash. No application implementation or deployment is part of this specification task.
+
+## D023 — Login names and ten-character password minimum
+
+Status: **Accepted — explicit user request, 2026-09-08.**
+
+Use a login name instead of an email address in authentication, reauthentication,
+and the read-only profile identifier. New and reset passwords require 10–1024
+Unicode characters, without trimming or normalization. Existing identifiers remain
+valid logins and keep their account UUIDs, files, sessions and password hashes.
+Keep the historical storage column and input aliases for upgrade/operator
+compatibility; expose `login` in the current API and UI. See
+[Authentication](AUTHENTICATION.md) for normalization and validation.
+
+Initial account credentials are supplied privately by the operator and must not
+be uploaded to GitHub secrets or committed to the repository. Deployment remains
+last; private account creation and authenticated acceptance must finish before
+the rollout is marked complete.

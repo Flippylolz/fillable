@@ -130,7 +130,7 @@ def test_copy_authorization_kind_revision_and_quota_fail_without_retained_target
     )
     other = browser()
     login = other.post(
-        "/api/auth/login", json={"email": peer.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": peer.login, "password": PASSWORD}
     )
     other.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert copy(other, saved).status_code == 404

@@ -4,7 +4,7 @@ import { Profile } from "../src/accounts/Profile";
 import { Authentication, type Session } from "../src/accounts/Authentication";
 import { i18n, setLanguage } from "../src/i18n";
 
-const user = { id: "owner", email: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } as const;
+const user = { id: "owner", login: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } as const;
 const session: Session = { user, csrf_token: "csrf" };
 const usage = { limit_bytes: 1000, used_bytes: 8, reserved_bytes: 2, available_bytes: 990, over_limit: false };
 const failure = (code: string) => Response.json({ error: { code, parameters: {} } }, { status: 400 });
@@ -29,7 +29,7 @@ test("name save preserves failed drafts, sends only allowed data and accepts can
   vi.stubGlobal("fetch", fetcher);
   show();
   expect(await screen.findByText("8 байтів")).toBeVisible();
-  expect(screen.getByLabelText("Електронна пошта")).toHaveAttribute("readonly");
+  expect(screen.getByLabelText("Логін")).toHaveAttribute("readonly");
   fireEvent.change(screen.getByLabelText("Ім’я для відображення"), { target: { value: "  Єва  " } });
   fireEvent.submit(nameForm());
   expect(await screen.findByRole("alert")).toHaveTextContent("Дія недоступна");

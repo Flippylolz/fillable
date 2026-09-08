@@ -13,7 +13,7 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Configure isolated local defaults
@@ -42,7 +42,7 @@ jobs:
           export VITE_APP_COMMIT_SHA="$(git rev-parse HEAD)"
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml up --build --wait --wait-timeout 120
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T gateway nginx -t -c /etc/nginx/fillable.conf
-          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email browser@example.test --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
+          docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email browser-user --display-name "Тестовий користувач" --language en --password-stdin < fixtures/auth/browser-password.txt
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email profile@example.test --display-name "Тест профілю" --language uk --password-stdin < fixtures/auth/browser-password.txt
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email library@example.test --display-name "Тест бібліотеки" --language uk --password-stdin < fixtures/auth/browser-password.txt
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml exec -T api python -m app.accounts.cli provision --email review@example.test --display-name "Перевірка полів" --language uk --password-stdin < fixtures/auth/browser-password.txt

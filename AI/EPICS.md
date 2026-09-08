@@ -2300,3 +2300,32 @@ E08.5a local verification passed all 20 real two-tab browser scenarios (10 deskt
 restart retained stored bytes/digests/quota counters; shared service/route remained
 unchanged and own containers stopped with volumes preserved. Proof project
 `fillable-e085a-fpcvr2vg`. Required final-head CI and merge remain pending.
+
+E08.6 user-requested account update (2026-09-08): use a login name instead of an
+email address and a ten-character password minimum. The supplied private password
+is ten characters; an earlier agent count was incorrect. Do not publish credentials
+or upload them to GitHub secrets. Preserve existing account UUIDs, stored identifiers,
+hashes, sessions, quotas and documents; expose login in API/UI/operator commands,
+allow existing email-shaped identifiers as logins, and keep legacy request/CLI input
+aliases so installed tooling and upgrade verification remain compatible. No database
+rewrite is needed: the existing unique text column stores the same identifiers.
+Deliver this change separately with auth/profile/browser/upgrade and >=90% gates.
+Then adapt deployment verification to private operator account creation (no credential
+secrets), perform actual rollout and create the requested user through private stdin.
+
+E08.6 local gates: 417 backend tests pass with raw coverage 3970/3999 lines
+(99.27%) and 1174/1206 branches (97.35%); 229 frontend tests pass with raw
+coverage 1292/1303 lines (99.16%) and 1500/1569 branches (95.60%). Login tests
+cover Unicode/case-folded identifiers, duplicate rejection, 9-character rejection,
+10-character creation/change/reset, session revocation and legacy input aliases.
+Fresh development/production browser verification and final-head CI remain pending.
+The requested account will be created privately after the final Actions rollout;
+no account credentials have been sent to GitHub.
+
+E08.6 PR #77 initial CI run 34194979359 reached the 20-minute `checks` job
+limit during the frontend negative coverage probe. Both real browser suites,
+DOCX rendering, 417 backend tests, 229 frontend tests, and the backend negative
+probe passed; upgrade-checks passed. The aggregator correctly failed on cancellation.
+Allow 30 minutes for this sequential full verification job, preserving every check,
+threshold and failure rule. This is bounded runtime headroom for observed runner
+variance, not a retry or coverage bypass. Exact updated-head CI must pass.

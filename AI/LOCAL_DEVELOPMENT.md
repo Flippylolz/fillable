@@ -21,10 +21,10 @@ supports persisted English as well. Normal startup creates no accounts. Provisio
 an account with the interactive password prompt:
 
 ```sh
-docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.accounts.cli provision --email owner@example.test --display-name 'Власник документів' --language uk
+docker compose -f compose.yaml -f compose.dev.yaml exec api python -m app.accounts.cli provision --login owner --display-name 'Власник документів' --language uk
 ```
 
-Use your intended account identifier and a password of at least 12 characters.
+Use your intended account identifier and a password of at least 10 characters.
 For explicit automation, the same command accepts `--password-stdin`; do not put
 passwords in command arguments. [Authentication](AUTHENTICATION.md) covers account
 management. The synthetic fixture accounts are created only by verification scripts.

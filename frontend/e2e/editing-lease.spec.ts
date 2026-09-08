@@ -24,7 +24,7 @@ async function savedContent(page: Page, identity: string) {
 test("two tabs fence editing and preserve an IME draft, history and locale after lost access", async ({ page, context }, testInfo) => {
   await page.clock.install();
   await page.goto("/");
-  await page.getByLabel("Електронна пошта", { exact: true }).fill(`lease-${testInfo.project.name}@example.test`);
+  await page.getByLabel("Логін", { exact: true }).fill(`lease-${testInfo.project.name}@example.test`);
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   const title = `Доступ Їжака ${testInfo.project.name} ${randomUUID().slice(0, 8)}`;

@@ -12,12 +12,12 @@ test("local login rotates a cookie, restores language across refresh, and logout
     (cookie) => cookie.name === "fillable_session_v1",
   )!;
   await page
-    .getByLabel("Електронна пошта", { exact: true })
-    .fill("browser@example.test");
+    .getByLabel("Логін", { exact: true })
+    .fill(" BROWSER-USER ");
   await page.getByLabel("Пароль", { exact: true }).fill("incorrect");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page.getByRole("alert")).toHaveText(
-    "Неправильна електронна пошта або пароль.",
+    "Неправильний логін або пароль.",
   );
   await page
     .getByLabel("Пароль", { exact: true })

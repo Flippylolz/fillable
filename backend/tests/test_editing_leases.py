@@ -192,7 +192,7 @@ def test_owner_session_csrf_and_resource_readiness_are_required():
     )
     other = browser()
     login = other.post(
-        "/api/auth/login", json={"email": other_owner.email, "password": PASSWORD}
+        "/api/auth/login", json={"email": other_owner.login, "password": PASSWORD}
     )
     other.headers["X-CSRF-Token"] = login.json()["csrf_token"]
     assert request(other, saved, tab).status_code == 404
