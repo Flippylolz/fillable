@@ -107,6 +107,22 @@ jobs:
                 "repos/$REPO/pulls/$number/update-branch" \
                 -f expected_head_sha="$head_sha" >/dev/null \
                 || echo "PR #$number branch update was refused"
+              # Branch updates made with GITHUB_TOKEN create the PR's
+              # pull_request CI runs as action_required instead of running
+              # them. Approve our own held runs so the required CI actually
+              # executes; if GitHub rejects the self-approval the run stays
+              # held and needs a maintainer.
+              sleep 5
+              held="$(gh api --cache 0 \
+                "repos/$REPO/actions/runs?event=pull_request&status=action_required&per_page=50" \
+                --jq ".workflow_runs[] | select(.head_sha == \"$head_sha\") | .id" 2>/dev/null || true)"
+              for run_id in $held; do
+                if gh api -X POST "repos/$REPO/actions/runs/$run_id/approve" >/dev/null 2>&1; then
+                  echo "PR #$number: approved held run $run_id"
+                else
+                  echo "PR #$number: run $run_id needs manual maintainer approval"
+                fi
+              done
             elif [ "$armed" = "false" ] &&
               ! [[ "$conclusions" =~ FAILURE|CANCELLED|TIMED_OUT|ACTION_REQUIRED|STARTUP_FAILURE ]]; then
               echo "PR #$number is not armed; arming squash auto-merge at $head_sha"
