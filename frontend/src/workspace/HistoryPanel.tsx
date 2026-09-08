@@ -59,7 +59,7 @@ export function HistoryPanel({ identity, current, filename, dirty, blocked, busy
         <DownloadVersion key={selected} identity={identity} version={selected} filename={filename} />
         <button type="button" disabled={busy || blocked || stale} onClick={() => onRestore(preview.version)}>{t("history.restore")}</button>
       </div>{blocked && <p>{t("history.resolveSave")}</p>}
-        <HistoricalPreview key={selected} document={preview.document} /></>}
+        <HistoricalPreview key={selected} document={preview.document} presentation={preview.presentation} /></>}
     </div></div>
   </section>;
 }

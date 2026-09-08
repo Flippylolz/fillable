@@ -270,3 +270,26 @@ and explicit restore/reopen choices. E07 tests complete user flows. E00's go dec
 is not a claim those application tasks are already implemented or permission for
 early deployment. Revisit the support matrix when adding a new OOXML feature or
 reviewed real fixture, preserving the immutable v1 corpus.
+
+## E09.1 source layout rendering
+
+Real private examples exposed that the original editor's generic HTML typography
+was not a visual-fidelity check. Current and historical content responses now carry
+read-only presentation data derived from the owned immutable original. Source styles,
+fonts/case, paragraph spacing and indentation, page width/margins, table grid widths,
+cell padding/borders and bounded floating-table offsets are applied outside the
+canonical editor model. This works for already-stored revisions without migrations,
+rewrites or new quota charges. Save/export validation continues using the original
+source identities and preserved package.
+
+Simple retained DrawingML rectangles receive bounded display geometry; duplicate
+fallback text and internal XML coordinate values are not displayed as prose. These
+nodes remain read-only and cannot mutate their original XML. Rendering accepts only
+explicit numeric/color geometry and bounded font/style values, with no external
+resource fetching, arbitrary HTML/XML, URLs or document-provided scripts.
+
+This improves visual fidelity; it is not a complete Word layout engine. Automatic
+pagination, arbitrary floating drawing placement, font availability and advanced
+Word features can still differ. Content/byte round-trip checks must not be described
+as proof of identical visual layout. Synthetic style/shape/security tests accompany
+private, local browser comparisons; private examples remain outside Git and CI.

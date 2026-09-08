@@ -71,3 +71,5 @@
 .document-canvas { overflow: auto; }
 .document-canvas .ProseMirror { zoom: var(--document-zoom, 1); }
 .document-workbench[data-highlight-fields="false"] .document-field { background: transparent; outline-color: transparent; }
+/* HTML tables reset inherited whitespace; Word line breaks must remain visible. */
+.document-canvas .ProseMirror p { white-space: pre-wrap; }

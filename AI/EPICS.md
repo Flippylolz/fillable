@@ -2677,3 +2677,7 @@ coverage and recovery limits. Source coverage remains backend 3970/3999 lines,
 PR #75 remains in_review until its final exact-head required CI and protected merge
 are verified. Final merge evidence is recorded in the PR body; no further production
 change is required for this acceptance documentation/test delivery.
+
+## E09.1 — Render retained DOCX layout in the editor
+
+Status: in_progress. User-reported real documents exposed a gap between source-preserving export and generic browser rendering. Acceptance: render source fonts, paragraph spacing/indentation, page dimensions/margins, and table sizing/borders in current and historical editors; retain canonical editing identities and save contracts; apply to existing uploads without rewriting originals or revisions. Add synthetic layout/security/round-trip tests, retain independent 90% gates, merge a dedicated PR, then deploy and visually compare the private examples. Floating Word drawing placement and exact automatic pagination require explicit evidence and must not be claimed from content round-trip checks.

@@ -178,6 +178,7 @@ class DeletionResult(BaseModel):
 class ContentInfo(BaseModel):
     resource: ResourceInfo
     document: dict
+    presentation: dict[str, dict] | None = None
 
 
 class ResourceList(BaseModel):

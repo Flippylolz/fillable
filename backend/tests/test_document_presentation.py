@@ -1,0 +1,149 @@
+from copy import deepcopy
+
+from test_document_package import archive, doc
+
+from app.documents.export import DocxExport
+from app.documents.package import DocxPackage, W
+from app.documents.presentation import Layout, number
+
+
+def test_source_layout_preserves_edit_model_and_original_package():
+    styles = f'''<w:styles xmlns:w="{W[1:-1]}">
+    <w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman"/>
+    <w:sz w:val="23"/></w:rPr></w:rPrDefault></w:docDefaults>
+    <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:pPr><w:spacing w:after="0" w:line="240"/></w:pPr></w:style>
+    <w:style w:styleId="Heading"><w:basedOn w:val="Normal"/>
+    <w:rPr><w:b/><w:color w:val="123ABC"/></w:rPr></w:style></w:styles>'''
+    body = """<w:tbl><w:tblPr><w:tblBorders><w:top w:val="single"
+      w:sz="8" w:color="000000"/></w:tblBorders>
+      <w:tblCellMar><w:left w:w="80"/></w:tblCellMar></w:tblPr>
+      <w:tblGrid><w:gridCol w:w="2800"/><w:gridCol w:w="3200"/></w:tblGrid>
+      <w:tr><w:trPr><w:trHeight w:val="600"/></w:trPr><w:tc>
+      <w:tcPr><w:tcW w:w="2800"/><w:vAlign w:val="center"/></w:tcPr>
+      <w:p><w:pPr><w:pStyle w:val="Heading"/><w:ind w:left="200"/>
+      <w:spacing w:before="120"/></w:pPr><w:r><w:rPr><w:sz w:val="28"/>
+      </w:rPr><w:t>Синтетична форма</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
+      <w:sectPr><w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:left="680" w:right="680" w:top="1020"/></w:sectPr>"""
+    package = DocxPackage(archive(doc(body), {"word/styles.xml": styles}))
+    before = deepcopy(package.model)
+    layout = Layout(package).render()
+    assert layout["section"]["font-size"] == "11.5pt"
+    assert layout["section"]["width"] == "595.3pt"
+    assert layout["section"]["padding-left"] == "34pt"
+    by_tag = {
+        el.tag.removeprefix(W): layout["nodes"][key]
+        for key, el in package.elements.items()
+    }
+    assert by_tag["tbl"]["width"] == "300pt"
+    assert by_tag["tr"]["height"] == "30pt"
+    assert by_tag["tc"]["width"] == "140pt"
+    assert by_tag["tc"]["padding-left"] == "4pt"
+    assert by_tag["tc"]["border-top"] == "1pt solid #000000"
+    assert by_tag["tc"]["vertical-align"] == "middle"
+    assert by_tag["p"]["margin-top"] == "6pt"
+    assert by_tag["p"]["margin-left"] == "10pt"
+    assert by_tag["r"]["font-size"] == "14pt"
+    assert by_tag["r"]["font-weight"] == "bold"
+    assert "margin-left" not in by_tag["r"]
+    assert package.model == before
+    assert DocxExport(package).render(before, package.digest) == package.original
+
+
+def test_untrusted_layout_values_cycles_and_extremes_are_bounded():
+    styles = f'''<w:styles xmlns:w="{W[1:-1]}"><w:style w:styleId="cycle">
+    <w:basedOn w:val="cycle"/><w:rPr><w:rFonts w:ascii="url(evil)"/>
+    <w:color w:val="red;display:none"/><w:sz w:val="99999999"/>
+    </w:rPr></w:style></w:styles>'''
+    body = """<w:p><w:pPr><w:pStyle w:val="cycle"/><w:ind w:hanging="240"/>
+    <w:spacing w:line="280" w:lineRule="exact"/><w:jc w:val="both"/>
+    <w:pageBreakBefore/></w:pPr><w:r><w:rPr><w:b w:val="0"/>
+    <w:i/><w:u w:val="none"/></w:rPr><w:t>ҐЄІЇ</w:t></w:r></w:p>"""
+    package = DocxPackage(archive(doc(body), {"word/styles.xml": styles}))
+    layout = Layout(package).render()
+    paragraph, run = list(layout["nodes"].values())
+    assert paragraph["text-indent"] == "-12pt"
+    assert paragraph["line-height"] == "14pt"
+    assert paragraph["text-align"] == "justify"
+    assert paragraph["break-before"] == "page"
+    assert run == {
+        "font-weight": "normal",
+        "font-style": "italic",
+        "text-decoration": "none",
+    }
+    assert number("bad") is None
+    assert number("-1") is None
+    assert number(None) is None
+    empty = Layout(DocxPackage(archive(doc("<w:p/>")))).render()
+    assert empty["section"]["width"] == "595.3pt"
+
+
+def test_rectangles_exclude_xml_coordinates_and_duplicate_fallback_text():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import MC, WP, A, display
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:a="{A[1:-1]}"
+      xmlns:wp="{WP[1:-1]}" xmlns:mc="{MC[1:-1]}">
+      <mc:AlternateContent><mc:Choice><w:drawing><wp:anchor>
+      <wp:positionH><wp:posOffset>127000</wp:posOffset></wp:positionH>
+      <wp:positionV><wp:posOffset>25400</wp:posOffset></wp:positionV>
+      <wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+      <a:solidFill><a:srgbClr val="ABCDEF"/></a:solidFill>
+      <w:t>Позначка</w:t></wp:anchor></w:drawing></mc:Choice>
+      <mc:Fallback><w:t>Позначка</w:t></mc:Fallback></mc:AlternateContent></w:r>'''
+    result = display(etree.fromstring(xml))
+    assert result == {
+        "text": "Позначка",
+        "shapes": [{"x": 10, "y": 2, "width": 10, "height": 10, "fill": "#ABCDEF"}],
+    }
+    for old, new in [
+        ('prst="rect"', 'prst="unknown"'),
+        ('cx="127000"', 'cx="bad"'),
+        ('cy="127000"', 'cy="-1"'),
+    ]:
+        assert display(etree.fromstring(xml.replace(old, new)))["shapes"] == []
+    assert (
+        display(etree.fromstring(xml.replace('val="ABCDEF"', 'val="evil"')))["shapes"][
+            0
+        ]["fill"]
+        == "#FFFFFF"
+    )
+
+
+def test_floating_tables_use_page_offsets_and_start_end_borders():
+    cell = """<w:tr><w:tc><w:tcPr><w:tcBorders><w:start w:val="single"
+      w:sz="8"/><w:end w:val="nil"/></w:tcBorders></w:tcPr><w:p/></w:tc></w:tr>"""
+
+    def table(position):
+        return f'''<w:tbl><w:tblPr><w:tblpPr w:horzAnchor="page"
+        w:tblpX="{position}" w:tblpY="200"/></w:tblPr>
+        <w:tblGrid><w:gridCol w:w="800"/></w:tblGrid>{cell}</w:tbl>'''
+
+    package = DocxPackage(
+        archive(
+            doc(
+                table(2000)
+                + table(3200)
+                + """
+      <w:sectPr><w:pgSz w:w="12000"/><w:pgMar w:left="400"/></w:sectPr>"""
+            )
+        )
+    )
+    result = Layout(package).render()
+    tables = [
+        result["nodes"][key]
+        for key, el in package.elements.items()
+        if el.tag == W + "tbl"
+    ]
+    assert tables[0]["display"] == "inline-table"
+    assert tables[0]["margin-left"] == "80pt"
+    assert tables[1]["margin-left"] == "20pt"
+    cells = [
+        result["nodes"][key]
+        for key, el in package.elements.items()
+        if el.tag == W + "tc"
+    ]
+    assert cells[0]["border-left"] == "1pt solid #000000"
+    assert cells[0]["border-right"] == "none"
