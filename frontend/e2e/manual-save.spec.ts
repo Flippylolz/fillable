@@ -157,3 +157,34 @@ test("native composition, lost-response retry after lease pause and quota failur
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
   await cdp.detach();
 });
+
+test("one date fills outlined digit positions, undoes together, saves and reopens", async ({ page }) => {
+  const { endpoint } = await open(page, "document");
+  const editor = page.getByRole("textbox", {name:"Редагований документ",exact:true});
+  const paragraph = editor.locator("p").first();
+  async function selectDate() {
+    await paragraph.click();
+    await paragraph.evaluate(async node => {
+      const changed = new Promise<void>(resolve => document.addEventListener("selectionchange", () => resolve(), {once:true}));
+      window.getSelection()!.selectAllChildren(node); await changed;
+    });
+  }
+  await selectDate();
+  await page.keyboard.insertText("0 │ 1 │ 0 │ 1 │ 2 │ 0 │ 0 │ 0");
+  await selectDate();
+  await page.getByLabel("Дата в клітинках",{exact:true}).fill("2024-02-29");
+  await page.getByRole("button",{name:"Заповнити вибрані клітинки дати",exact:true}).click();
+  await expect(paragraph).toHaveText("2 │ 9 │ 0 │ 2 │ 2 │ 0 │ 2 │ 4");
+  await page.getByRole("button",{name:"Скасувати",exact:true}).click();
+  await expect(paragraph).toHaveText("0 │ 1 │ 0 │ 1 │ 2 │ 0 │ 0 │ 0");
+  await page.getByRole("button",{name:"Повторити",exact:true}).click();
+  await expect(paragraph).toHaveText("2 │ 9 │ 0 │ 2 │ 2 │ 0 │ 2 │ 4");
+  await page.getByRole("button",{name:"Зберегти документ",exact:true}).click();
+  await expect(page.getByText("Усі зміни документа збережено.",{exact:true})).toBeVisible();
+  const saved = await (await page.request.get(`${endpoint}/content`)).json();
+  const downloaded = await page.request.get(`${endpoint}/download`);
+  expect(downloaded.status()).toBe(200);
+  expect(downloaded.headers()["x-fillable-version"]).toBe(saved.resource.current_version_id);
+  await page.reload();
+  await expect(paragraph).toHaveText("2 │ 9 │ 0 │ 2 │ 2 │ 0 │ 2 │ 4");
+});

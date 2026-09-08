@@ -57,6 +57,9 @@ export function DocumentEditor({
   composition.current = onCompositionChange;
   const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false });
   const { fields: occurrences, active, review, unsupported } = presentation;
+  const [date, setDate] = useState("");
+  const [dateIssue, setDateIssue] = useState<ReturnType<EditorAdapter["fillDate"]>>(null);
+  const dateHelp = useId();
   const [label, setLabel] = useState("");
   const [creationIssue, setCreationIssue] = useState<ReturnType<EditorAdapter["createField"]>>(null);
   const creationErrorId = useId();
@@ -106,6 +109,13 @@ export function DocumentEditor({
         >
           {t("editor.redo")}
         </button>
+        <label>{t("editor.boxedDate")}
+          <input type="date" value={date} disabled={readOnly} aria-describedby={dateHelp}
+            onChange={event => { setDate(event.target.value); setDateIssue(null); }} />
+        </label>
+        <button disabled={readOnly || !date} onClick={() => setDateIssue(view.current!.fillDate(date))}>{t("editor.fillDateBoxes")}</button>
+        <p id={dateHelp}>{t("editor.dateBoxesHelp")}</p>
+        {dateIssue && <p role="alert">{t(`editor.dateBoxes.${dateIssue}`)}</p>}
         {creationIssue && <p role="alert" id={creationErrorId}>{t(`editor.creation.${creationIssue}`, { labelLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_LABEL_LIMIT), fieldLimit: new Intl.NumberFormat(i18n.resolvedLanguage).format(FIELD_RECORD_LIMIT) })}</p>}
         {unsupported && <p>{t("editor.unsupported")}</p>}
       </div>

@@ -293,3 +293,11 @@ pagination, arbitrary floating drawing placement, font availability and advanced
 Word features can still differ. Content/byte round-trip checks must not be described
 as proof of identical visual layout. Synthetic style/shape/security tests accompany
 private, local browser comparisons; private examples remain outside Git and CI.
+
+E09.2 extends border presentation to inherited/internal table edges, paragraph/run
+outlines and simple rectangle stroke weights. A source-position date action fills
+six/eight separated digits or selected table date cells, preserving the canonical
+structures and save path. It does not reinterpret protected drawing geometry as
+editable text. The photo-derived example uses literal separator characters for its
+digit positions; a faithful graphical reconstruction of that source is distinct
+from preserving borders actually present in a DOCX.

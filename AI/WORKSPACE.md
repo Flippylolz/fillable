@@ -383,3 +383,21 @@ formatting. Presentation is never copied into the live JSON model, undo stack,
 review state or save payload. Scoped CSS is isolated per editor/history instance;
 source graphics use safe read-only node views. Page width is retained at mobile
 sizes with canvas scrolling rather than reflowing the document to phone width.
+
+### Boxed date entry (E09.2)
+
+The workspace date action accepts one calendar date and distributes DDMMYY or
+DDMMYYYY into the current selection. Supported targets are six/eight individual
+positions separated by vertical bars, six/eight table cells, or three populated
+cells containing day/month/year groups of 2/2/2 or 2/2/4 digits. Selection supplies
+source positions; it is never inferred from screen coordinates. Separators, cell
+structure, paragraph identities and existing source marks are retained. All digits
+change in one undoable transaction using the ordinary revision/quota/history path.
+Invalid dates, ambiguous selections, protected objects and unavailable edit leases
+produce localized errors without mutation. This is an explicit fill action, not
+automatic date inference or an editable conversion of arbitrary drawing objects.
+
+Borders now include internal horizontal/vertical table edges and inherited table
+styles, with direct cell overrides; paragraph/run outlines and DrawingML line
+weights retain bounded source values. Source files that only contain separator
+characters do not acquire new graphical boxes or altered originals implicitly.

@@ -147,3 +147,88 @@ def test_floating_tables_use_page_offsets_and_start_end_borders():
     ]
     assert cells[0]["border-left"] == "1pt solid #000000"
     assert cells[0]["border-right"] == "none"
+
+
+def test_internal_borders_styles_and_explicit_cell_overrides_survive_date_export():
+    styles = f'''<w:styles xmlns:w="{W[1:-1]}">
+      <w:style w:styleId="Boxes" w:type="table"><w:tblPr><w:tblBorders>
+      <w:top w:val="double" w:sz="12"/><w:bottom w:val="single"/>
+      <w:start w:val="single"/><w:end w:val="single"/>
+      <w:insideV w:val="dotted" w:sz="8"/>
+      <w:insideH w:val="dashed" w:sz="8"/>
+      </w:tblBorders></w:tblPr></w:style></w:styles>'''
+    cell = """<w:tc><w:tcPr>{}</w:tcPr><w:p><w:r><w:t>{}</w:t></w:r></w:p></w:tc>"""
+    body = '<w:tbl><w:tblPr><w:tblStyle w:val="Boxes"/></w:tblPr>'
+    body += "<w:tr>" + "".join(cell.format("", n) for n in "01012000") + "</w:tr>"
+    body += (
+        "<w:tr>"
+        + cell.format('<w:tcBorders><w:top w:val="nil"/></w:tcBorders>', "x")
+        + "</w:tr></w:tbl>"
+    )
+    package = DocxPackage(archive(doc(body), {"word/styles.xml": styles}))
+    layout = Layout(package).render()
+    cells = [
+        layout["nodes"][key]
+        for key, el in package.elements.items()
+        if el.tag == W + "tc"
+    ]
+    assert cells[0]["border-top"] == "1.5pt double #000000"
+    assert cells[0]["border-right"] == "1pt dotted #000000"
+    assert cells[0]["border-bottom"] == "1pt dashed #000000"
+    assert cells[-1]["border-top"] == "none"
+    changed = deepcopy(package.model)
+    row = changed["content"][0]["content"][0]["content"][0]
+    for cell_node, digit in zip(row["content"], "29022024", strict=True):
+        cell_node["content"][0]["content"][0]["text"] = digit
+    output = DocxExport(package).render(changed, package.digest)
+    reopened = DocxPackage(output)
+    from lxml import etree
+
+    original_borders = [
+        etree.tostring(e) for e in package.roots["word/document.xml"].iter(W + "tcPr")
+    ]
+    assert original_borders == [
+        etree.tostring(e) for e in reopened.roots["word/document.xml"].iter(W + "tcPr")
+    ]
+    assert Layout(reopened).render()["nodes"] == layout["nodes"]
+
+
+def test_paragraph_and_run_outlines_are_bounded_and_preserved():
+    body = """<w:p><w:pPr><w:pBdr><w:bottom w:val="double" w:sz="16" w:color="ABCDEF"/>
+    <w:start w:val="single" w:sz="bad"/>
+    <w:end w:val="single" w:sz="99999" w:color="evil"/>
+    </w:pBdr></w:pPr><w:r><w:rPr><w:bdr w:val="single" w:sz="8"/></w:rPr>
+    <w:t>0</w:t></w:r></w:p>"""
+    package = DocxPackage(archive(doc(body)))
+    paragraph, run = Layout(package).render()["nodes"].values()
+    assert paragraph["border-bottom"] == "2pt double #ABCDEF"
+    assert (
+        paragraph["border-left"] == paragraph["border-right"] == "0.5pt solid #000000"
+    )
+    assert run["border"] == "1pt solid #000000"
+
+
+def test_drawing_outline_weight_and_absent_stroke():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import WP, A, display
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:wp="{WP[1:-1]}" xmlns:a="{A[1:-1]}">
+    <wp:anchor><wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+    <a:ln w="19050"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln>
+    </wp:anchor></w:r>'''
+    assert (
+        display(etree.fromstring(xml))["shapes"][0]["border"] == "1.5pt solid #000000"
+    )
+    assert (
+        display(etree.fromstring(xml.replace('w="19050"', 'w="bad"')))["shapes"][0][
+            "border"
+        ]
+        == "0.5pt solid #000000"
+    )
+    assert (
+        display(etree.fromstring(xml.replace('<a:ln w="19050">', "<a:ln><a:noFill/>")))[
+            "shapes"
+        ][0]["border"]
+        == "none"
+    )

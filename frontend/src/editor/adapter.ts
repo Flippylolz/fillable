@@ -1,8 +1,9 @@
+import { fillBoxedDate, type DateBoxIssue } from "./boxedDates";
 import { sourceNodeView } from "./sourceNodes";
 import type { SourcePresentation } from "./SourceLayout";
 import { EditorState, type Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { history, undo, redo } from "prosemirror-history";
+import { history, undo, redo, closeHistory } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import type { components } from "../../generated/api";
@@ -136,6 +137,13 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
         : action === "configure" ? configureCandidate(editor.state, id, options.label, options.key || newFieldId(), options.type)
         : reviewCandidate(editor.state, id, action, { ...options, key: options.key || undefined });
       return dispatch(transaction, action === "focus" || action === "accept");
+    },
+    fillDate(iso: string): DateBoxIssue | null {
+      if (!allowed() || compositionSource) return "read_only";
+      const result = fillBoxedDate(editor.state, iso);
+      if (result.issue) return result.issue;
+      dispatch(closeHistory(result.transaction!), true);
+      return null;
     },
     createField(label: string) {
       if (!allowed()) return "read_only" as const;

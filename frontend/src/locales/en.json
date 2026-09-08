@@ -281,5 +281,11 @@
   "reauth.different": "Another account is active in this browser. Sign in to your original account to keep this workspace, or explicitly switch accounts.",
   "reauth.action": "Sign in again",
   "reauth.other": "Switch to {{login}}",
-  "reauth.switch": "Leave this workspace and use another account"
+  "reauth.switch": "Leave this workspace and use another account",
+  "editor.boxedDate": "Date in boxes",
+  "editor.fillDateBoxes": "Fill selected date boxes",
+  "editor.dateBoxesHelp": "Select all six or eight date digits separated by vertical bars, or select the date’s table cells, then enter one date. Six boxes use DDMMYY; eight use DDMMYYYY.",
+  "editor.dateBoxes.invalid_date": "Enter a valid calendar date.",
+  "editor.dateBoxes.select_boxes": "Select only the date’s six or eight digit boxes, or three cells for day, month and year. Protected drawings cannot be filled with this action.",
+  "editor.dateBoxes.read_only": "Editing is unavailable. Your document has not changed."
 }
