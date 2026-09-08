@@ -116,7 +116,6 @@ export function Authentication({
           <button disabled={busy || childBusy || recovering} onClick={() => void submit()}>
             {t("auth.logout")}
           </button>
-          {!recovering && <button type="button" disabled={busy} onClick={() => setRecovering(true)}>{t("reauth.action")}</button>}
           </div>
           {recovering && <Reauthentication owner={session.user} onRecovered={recovered} allowDiscard={() => leaveGuard.current()} />}
           <div hidden={recovering} inert={recovering}>{children(session, { accept, busy, paused: recovering, setBusy: setChildBusy, setLeaveGuard })}</div>
@@ -147,7 +146,7 @@ export function Authentication({
               onChange={(event) => setPassword(event.target.value)}
             />
           </label>
-          <button type="submit" disabled={busy}>
+          <button type="submit" className="primary" disabled={busy}>
             {t("auth.login")}
           </button>
         </form>

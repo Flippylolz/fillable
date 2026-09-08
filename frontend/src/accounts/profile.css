@@ -45,4 +45,8 @@
     grid-template-columns: 1fr 1fr;
     align-items: start;
   }
+  /* The tall password card spans both rows so the language card fills the gap beside it. */
+  .profile .profile-security {
+    grid-row: span 2;
+  }
 }

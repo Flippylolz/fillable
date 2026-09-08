@@ -47,6 +47,7 @@
   "errors.current_password_invalid": "The current password is incorrect.",
   "profile.title": "Profile",
   "navigation.label": "Main navigation",
+  "navigation.home": "Fillable — home",
   "library.title": "Document library",
   "library.description": "Keep reusable templates and individual documents in one place.",
   "library.refresh": "Refresh library",

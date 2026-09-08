@@ -1,8 +1,12 @@
 .workspace { margin-top: 1rem; }
-.workspace-save-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.workspace-save-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; justify-content: flex-end; }
+.workspace-save-actions .library-download { margin-top: 0; }
+.workspace-save-actions .library-download button { font-size: inherit; }
 .workspace-save-error { padding: 0.6rem 0; }
 .workspace-save-error p { margin: 0.3rem 0; }
 .workspace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-bottom: 0.8rem; border-bottom: 1px solid #dadce0; }
+.workspace-toolbar-main { display: flex; align-items: center; gap: 0.8rem; min-width: 0; flex: 1 1 auto; }
+.workspace-titles { min-width: 0; }
 .workspace-toolbar h2 { margin: 0; font-size: 1.25rem; font-weight: 500; }
 .workspace-toolbar p, .workspace-save-state { margin: 0.3rem 0; color: #5f6368; font-size: 0.85rem; }
 .workspace .document-tools { background: #edf2fa; padding: 0.8rem; border-radius: 0.75rem; margin-top: 0.7rem; }
@@ -15,7 +19,6 @@
 @media (max-width: 48rem) { .workspace .document-canvas { padding: 0.65rem; } }
 .workspace-discovery { margin-bottom: 0.75rem; font-size: 0.85rem; color: #5f6368; }
 .workspace-discovery p { margin: 0.3rem 0; }
-.workspace-toolbar > div > button { margin-bottom: 0.65rem; }
 .workspace-settings { margin: 0.8rem 0; padding: 0.8rem 1rem; background: #fff; border: 1px solid #e3e7ed; border-radius: 0.75rem; }
 .workspace-settings summary { cursor: pointer; color: #1a73e8; font-size: 0.9rem; }
 .workspace-settings-body { display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding-top: 1rem; }
