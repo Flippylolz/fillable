@@ -32,7 +32,7 @@ def evidence():
         "run_attempt": 1,
     }
     jobs = {
-        "total_count": 3,
+        "total_count": len(gate.REQUIRED_JOBS),
         "jobs": [
             {
                 "name": name,
@@ -77,7 +77,7 @@ class ReleaseGateTests(unittest.TestCase):
         for state in (None, "failure", "cancelled", "skipped", "neutral", "timed_out"):
             with self.assertRaises(ValueError):
                 gate.validate_ci(SOURCE, workflow, {**run, "conclusion": state}, jobs)
-            for index in range(3):
+            for index in range(len(jobs["jobs"])):
                 changed = copy.deepcopy(jobs)
                 changed["jobs"][index]["conclusion"] = state
                 with self.assertRaises(ValueError):
@@ -94,10 +94,11 @@ class ReleaseGateTests(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 gate.validate_ci(SOURCE, workflow, {**run, key: value}, jobs)
+        count = len(jobs["jobs"])
         for changed in (
             {},
-            {"total_count": 3, "jobs": jobs["jobs"][:2]},
-            {"total_count": 3, "jobs": [jobs["jobs"][0]] * 3},
+            {"total_count": count, "jobs": jobs["jobs"][:-1]},
+            {"total_count": count, "jobs": [jobs["jobs"][0]] * count},
         ):
             with self.assertRaises(ValueError):
                 gate.validate_ci(SOURCE, workflow, run, changed)
