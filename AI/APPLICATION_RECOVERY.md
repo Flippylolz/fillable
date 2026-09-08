@@ -47,7 +47,8 @@ real process crash at one explicit database/filesystem boundary, complemented by
 existing storage crash integration tests. It is not a disk-loss or backup/restore drill.
 
 CI runs this proof in mandatory `upgrade-checks`, separately from the existing full
-browser/backend/frontend/raw coverage checks. `ci-required` requires both job results
-to be `success`; missing, failed, skipped or cancelled results cannot satisfy it.
+browser/backend/frontend/raw coverage checks. `ci-required` requires every aggregated
+job result, including this one, to be `success`; missing, failed, skipped or
+cancelled results cannot satisfy it.
 Reports are retained as `application-recovery`. No workflow deploys to a server here;
 E08 remains last after all E07 acceptance work is verified and merged.

@@ -322,10 +322,12 @@ task merge. Major-version updates automerge under the same rule; a broken
 update is reverted with a follow-up pull request rather than hidden from
 `main`.
 
-Backend Python dependencies remain outside Dependabot: they are compiled by
-pip-tools into the hash-pinned `backend/requirements.lock`, which Dependabot
-does not recognize as a manifest (its pip support covers `.txt` requirement
-files and PEP 621 `pyproject.toml`). A pull request bumping only
-`backend/requirements.in` would leave the installed lock unchanged. Backend
-dependency updates keep the documented manual pip-compile procedure in
-[Local development](LOCAL_DEVELOPMENT.md).
+Backend Python dependencies are covered through the pip ecosystem: the
+pip-compile lockfile lives at `backend/requirements.txt`, which Dependabot
+recognizes via its pip-compile header and recompiles with its bundled
+pip-compile 7.5.3 — the same pip-tools version pinned in
+[Local development](LOCAL_DEVELOPMENT.md) — updating it together with
+`requirements.in` in one pull request. The original `.lock` filename was not
+a Dependabot-recognized manifest, so E09.10 renamed the compiled file; the
+manual pip-compile procedure remains available for full operator-controlled
+re-resolutions.

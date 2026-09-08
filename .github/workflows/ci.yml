@@ -11,15 +11,19 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  checks:
+  lint:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Configure isolated local defaults
         run: cp .env.example .env
       - name: Build check images
         run: docker compose -p fillable-checks -f compose.test.yaml build
+      - name: Lint and type-check backend
+        run: docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test sh -c 'ruff check . && mypy app'
+      - name: Lint, validate catalogs and build frontend
+        run: docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test sh -c 'npm run lint && npm run check:i18n && npm run build'
       - name: Check generated API drift
         run: |
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/output" backend-test python /checks/export_openapi.py /output/openapi.json
@@ -37,6 +41,70 @@ jobs:
         run: |
           docker compose -f compose.yaml -f compose.dev.yaml config --quiet
           docker compose -f compose.yaml -f compose.prod.yaml config --quiet
+  backend-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Build backend check image
+        run: docker compose -p fillable-checks -f compose.test.yaml build backend-test
+      - name: Backend tests and coverage
+        run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
+      - name: Verify coverage provenance and aggregation gate contracts
+        run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD/.github/workflows/ci.yml:/checks/ci.yml:ro" backend-test sh -c 'python /checks/test_coverage_provenance.py && python /checks/test_gate_contract.py'
+      - name: Reject real unimported backend source
+        run: docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/probe_backend_coverage.py
+      - name: Collect reports
+        if: always()
+        run: |
+          mkdir -p reports/backend
+          docker cp fillable-backend-check:/app/coverage/. reports/backend/ || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: coverage-backend
+          path: reports/
+          if-no-files-found: error
+  frontend-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Build frontend check image
+        run: docker compose -p fillable-checks -f compose.test.yaml build frontend-test
+      - name: Frontend tests and coverage
+        run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-frontend-check frontend-test
+      - name: Validate frontend raw coverage and full source inclusion
+        run: |
+          mkdir -p frontend/coverage
+          docker cp fillable-frontend-check:/app/coverage/. frontend/coverage/
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -v "$PWD/scripts:/checks:ro" \
+            -v "$PWD/frontend:/source:ro" \
+            -v "$PWD/frontend/coverage:/source/coverage:ro" \
+            python:3.13.12-slim-bookworm@sha256:a58daefb915e1e03ad48f3ca4df8832065412c5c35cacb9d39f4229184de12b6 \
+            python /checks/check_coverage.py frontend /source
+      - name: Reject real unimported frontend source
+        run: docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test node scripts/probe-coverage.mjs
+      - name: Collect reports
+        if: always()
+        run: |
+          mkdir -p reports/frontend
+          docker cp fillable-frontend-check:/app/coverage/. reports/frontend/ || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: coverage-frontend
+          path: reports/
+          if-no-files-found: error
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Configure isolated local defaults
+        run: cp .env.example .env
       - name: Build and verify production gateway
         run: |
           export VITE_APP_COMMIT_SHA="$(git rev-parse HEAD)"
@@ -62,44 +130,47 @@ jobs:
         if: always()
         run: |
           docker compose -p fillable-ci -f compose.yaml -f compose.prod.yaml down
+      - name: Collect reports
+        if: always()
+        run: |
+          mkdir -p reports/browser
+          docker cp fillable-browser-check:/app/test-results/. reports/browser/ || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: browser-evidence
+          path: reports/
+          if-no-files-found: error
+  development:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Verify clean development, reload and persistence
         run: FILLABLE_BROWSER_REPORTS="$PWD/reports/editor" scripts/verify-development.sh
       - name: Verify independent DOCX rendering
         run: scripts/verify-docx-render.sh reports/editor
-      - name: Backend tests and coverage
-        run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-backend-check backend-test
-      - name: Frontend tests and build
-        run: docker compose -p fillable-checks -f compose.test.yaml run --name fillable-frontend-check frontend-test
-      - name: Verify coverage and aggregation failure gates
-        run: |
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_release_contract.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_runtime_contract.py
-          sh scripts/verify-server-runtime.sh
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_public_release.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_public_persistence.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD:/source:ro" backend-test python /checks/test_deploy_dispatch_contract.py /source
-          python3 scripts/test_smoke_transport.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_coverage_provenance.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/test_gate_contract.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/probe_backend_coverage.py
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test node scripts/probe-coverage.mjs
-      - name: Collect reports
-        if: always()
-        run: |
-          mkdir -p reports/backend reports/frontend reports/browser
-          docker cp fillable-backend-check:/app/coverage/. reports/backend/ || true
-          docker cp fillable-frontend-check:/app/coverage/. reports/frontend/ || true
-          docker cp fillable-browser-check:/app/test-results/. reports/browser/ || true
-      - name: Validate frontend raw coverage and full source inclusion
-        run: |
-          mkdir -p frontend/coverage
-          docker run --rm -v "$PWD/frontend:/source:ro" -v "$PWD/reports/frontend:/source/coverage:ro" --entrypoint python fillable-checks-backend-test /checks/check_coverage.py frontend /source
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: coverage
+          name: development-reports
           path: reports/
           if-no-files-found: error
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Configure isolated local defaults
+        run: cp .env.example .env
+      - name: Build backend check image
+        run: docker compose -p fillable-checks -f compose.test.yaml build backend-test
+      - name: Verify release, runtime and public release contracts
+        run: |
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test sh -c 'python /checks/test_release_contract.py && python /checks/test_runtime_contract.py && python /checks/test_public_release.py && python /checks/test_public_persistence.py'
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD:/source:ro" backend-test python /checks/test_deploy_dispatch_contract.py /source
+          python3 scripts/test_smoke_transport.py
+          sh scripts/verify-server-runtime.sh
   upgrade-checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -117,12 +188,18 @@ jobs:
           if-no-files-found: error
   ci-required:
     if: always()
-    needs: [checks, upgrade-checks]
+    needs: [lint, backend-tests, frontend-tests, browser, development, contracts, upgrade-checks]
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Require every check to succeed
         env:
-          RESULT: ${{ needs.checks.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          BACKEND_RESULT: ${{ needs.backend-tests.result }}
+          FRONTEND_RESULT: ${{ needs.frontend-tests.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+          DEVELOPMENT_RESULT: ${{ needs.development.result }}
+          CONTRACTS_RESULT: ${{ needs.contracts.result }}
           UPGRADE_RESULT: ${{ needs.upgrade-checks.result }}
-        run: scripts/require-ci-success.sh "$RESULT" "$UPGRADE_RESULT"
+        run: scripts/require-ci-success.sh "$LINT_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT" "$BROWSER_RESULT" "$DEVELOPMENT_RESULT" "$CONTRACTS_RESULT" "$UPGRADE_RESULT"

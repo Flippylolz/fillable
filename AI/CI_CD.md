@@ -43,9 +43,9 @@ Implemented workflow: `.github/workflows/ci.yml`. Tests and coverage use the sam
 
 1. Run on pull requests and pushes to `main`; add merge-queue events if a merge queue is enabled later.
 2. Check out the exact source revision and install/build from pinned dependencies and images.
-3. Validate Compose, lint/type-check application code, validate migrations/contracts and Ukrainian/English catalogs, run backend and frontend tests with coverage, and run the required Playwright flows against the Docker stack.
-4. Produce separate backend/frontend coverage reports and test summaries as Actions artifacts for diagnosis, including on failed runs where reports exist.
-5. Evaluate the coverage gates and produce a stable required check, proposed name `ci-required`, that succeeds only when every required job succeeded. Its aggregation must explicitly fail on missing, skipped, or cancelled prerequisites; a green summary must never mask a failed test job.
+3. Run independent parallel jobs, each building only the images it needs: static `lint` checks (Ruff, mypy, ESLint, Ukrainian/English catalog validation, generated API/fixture/notice drift, Compose validation), `backend-tests` and `frontend-tests` with independent raw coverage gates and real negative probes, `browser` production-image Playwright flows, full development/persistence and previous-image recovery verification, and release/runtime contract checks.
+4. Produce separate backend/frontend coverage reports and browser/development evidence as Actions artifacts for diagnosis, including on failed runs where reports exist.
+5. Evaluate the coverage gates and produce a stable required check, proposed name `ci-required`, that succeeds only when every required job succeeded. It forwards each aggregated `needs` result to `scripts/require-ci-success.sh`, which fails on any missing, skipped, or cancelled prerequisite; a green summary must never mask a failed test job.
 6. During E01, once the workflow exists and its check name is established, configure branch rules in `Flippylolz/fillable` to require PRs and `ci-required` for merges to `main`, with up-to-date checks or a verified merge-queue equivalent. Establish this before the first application PR merges. Workflow YAML alone does not enable merge protection. Record the actual configured check name and evidence; the repository already exists.
 
 Keep required workflow scheduling reliable: do not skip the whole required check with path filters. Keep deployment credentials unavailable to untrusted pull-request jobs. Test reports must use synthetic fixtures and must not expose production documents or secrets.
@@ -268,12 +268,12 @@ workflow and its `release_gate.py` contract are unchanged: they still require a
 `workflow_dispatch` of the current protected `main` revision whose latest exact-main CI
 attempt has every required job successful. A newer merge therefore supersedes an older
 queued release because the older SHA stops being current main, and a failed-CI commit is
-never shipped. `scripts/test_deploy_dispatch_contract.py` (required in the `checks` job)
-pins the contract: the gated release stays manual-dispatch-only, the dispatcher only
-targets pushes to `main`, must await a successful exact-main CI before dispatching, and
-cannot invoke build/ship/verify scripts directly. The production environment allows only
-`main` and has no required reviewers, so dispatched releases proceed without manual
-approval.
+never shipped. `scripts/test_deploy_dispatch_contract.py` (required in the `contracts`
+job since E09.8; previously the `checks` job) pins the contract: the gated release stays
+manual-dispatch-only, the dispatcher only targets pushes to `main`, must await a
+successful exact-main CI before dispatching, and cannot invoke build/ship/verify scripts
+directly. The production environment allows only `main` and has no required reviewers,
+so dispatched releases proceed without manual approval.
 
 ## Dependabot automatic updates (E09.7, D025)
 
@@ -303,12 +303,60 @@ Dependabot's own pull requests. Its contract:
   check refuses the merge and disables auto-merge until the next Dependabot
   push re-arms it.
 
-Backend Python dependencies are excluded from Dependabot by design: pip-compile
-output is hash-pinned `backend/requirements.lock`, not a `.txt` manifest or PEP
-621 `pyproject.toml`, so Dependabot cannot update it without leaving the
-installed lock drifting. Backend dependency updates continue through the manual
-pip-tools procedure in [Local development](LOCAL_DEVELOPMENT.md). First-run
+Backend Python dependencies are covered through the `pip` ecosystem
+(`/backend`): the hash-pinned pip-compile output lives at
+`backend/requirements.txt`, whose header Dependabot recognizes; Dependabot
+recompiles the lock with its bundled pip-compile 7.5.3 (the pip-tools version
+pinned in [Local development](LOCAL_DEVELOPMENT.md)) and updates it together
+with `requirements.in` in one pull request. Hash verification stays intact:
+the Docker build still installs with `--require-hashes`, so an unresolvable
+hash fails the build, the required gate, and the automerge. E09.10 renamed
+the compiled file from `requirements.lock` for this; the manual pip-compile
+procedure remains the operator path for full re-resolutions. First-run
 Dependabot behavior (config acceptance, ecosystem detection, grouped pull
 requests) must be verified on the repository after this lands; a config or
 parser error surfaces through Dependabot's update-error reporting rather than
 this repository's CI.
+
+## E09.8 parallel required jobs (2026-09-08)
+
+The single sequential `checks` job above made every PR wait for the sum of image
+builds, lints, both test suites, browser flows, development verification and
+contract tests. It is now split into parallel jobs so required feedback is the
+maximum of independent jobs instead of their sum:
+
+| Job | Owns |
+| --- | --- |
+| `lint` | Both check images; Ruff/mypy; ESLint, catalog validation and frontend build; generated API/editor-fixture/notice drift; Compose validation |
+| `backend-tests` | pytest with independent raw line/branch gates, provenance and gate contracts, the real unimported-source backend probe, `coverage-backend` artifact |
+| `frontend-tests` | Vitest with independent raw line/branch gates, checkout-side raw validation, the real unimported-source frontend probe, `coverage-frontend` artifact |
+| `browser` | Production-image build, gateway/log verification, desktop/mobile browser smoke, `browser-evidence` artifact |
+| `development` | Fresh staged development/persistence/browser verification and independent DOCX rendering, `development-reports` artifact |
+| `contracts` | Release, runtime, public-release and persistence contract tests, the E09.6 deploy-dispatch and E09.7 Dependabot-automerge contracts, smoke transport, server runtime configuration checks |
+| `upgrade-checks` | Unchanged previous-image upgrade and crash-recovery proof, `application-recovery` artifact |
+| `ci-required` | Aggregates all seven results through `scripts/require-ci-success.sh`; any non-success fails |
+
+`compose.test.yaml` service commands now produce only tests and coverage; the
+lints run as explicit `sh -c` overrides against the same pinned images, locally
+and in CI. The gate contract test reads `ci-required`'s needs directly from a
+checkout-mounted workflow, so the aggregator contract follows the actual job
+graph:
+
+```sh
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps \
+  -v "$PWD/.github/workflows/ci.yml:/checks/ci.yml:ro" \
+  backend-test python /checks/test_gate_contract.py
+```
+
+`scripts/release_gate.py` requires the exact eight-job set from the same CI run
+attempt, and `scripts/build-release.sh` builds the backend and gateway release
+images concurrently. Coverage roots, the independent raw 90% line/branch gates,
+provenance binding, both negative probes and fail-closed aggregation semantics
+are unchanged: no threshold, exclusion or required check was relaxed. The E09.6
+`deploy-main.yml` dispatcher, its contract test and the E09.7 Dependabot
+automerge stay unchanged and required; every automatic merge still waits for a
+successful `ci-required` on the exact pushed main commit before the gated
+release dispatches. Branch protection still requires only the single
+`ci-required` context, so no protection change is needed; the deployment gate
+validates the new exact job set at dispatch time per
+[Release artifacts](RELEASE_ARTIFACTS.md).
