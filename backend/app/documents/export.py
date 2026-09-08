@@ -242,6 +242,54 @@ class DocxExport:
             raise InvalidDocument("unsupported_change")
         self.locked.add(node["attrs"]["id"])
 
+    def checkbox(self, node: Node, part: str) -> Any:
+        """Emit the anchored checkbox SDT with only its checked state possibly changed."""
+        identity = node["attrs"]["id"]
+        original = self.known.get(identity)
+        attrs = node["attrs"]
+        if (
+            original is None
+            or original["type"] != "checkbox"
+            or set(attrs) != {"id", "checked"}
+            or type(attrs["checked"]) is not bool
+            or not identity.startswith(part + ":")
+            or identity in self.seen
+        ):
+            raise InvalidDocument("invalid_anchor")
+        self.seen.add(identity)
+        if attrs["checked"] == original["attrs"]["checked"]:
+            return deepcopy(self.package.elements[identity])
+        element = deepcopy(self.package.elements[identity])
+        control = element.find(W + "sdtPr/" + W14 + "checkbox")
+        state = control.find(W14 + "checked")
+        if state is None:
+            state = etree.SubElement(control, W14 + "checked")
+        state.set(W14 + "val", "1" if attrs["checked"] else "0")
+        states = {}
+        for name, default in (("checkedState", "2612"), ("uncheckedState", "2610")):
+            marker = control.find(W14 + name)
+            value = default if marker is None else (marker.get(W14 + "val") or default)
+            if (
+                not isinstance(value, str)
+                or len(value) > 6
+                or any(char not in "0123456789abcdefABCDEF" for char in value)
+                or int(value, 16) > 0x10FFFF
+            ):
+                raise InvalidDocument("invalid_anchor")
+            states[name] = value
+        glyph = chr(int(states["checkedState" if attrs["checked"] else "uncheckedState"], 16))
+        previous = chr(
+            int(
+                states["uncheckedState" if attrs["checked"] else "checkedState"],
+                16,
+            )
+        )
+        for text in element.iter(W + "t"):
+            if text.text == previous:
+                text.set(XML_SPACE, "preserve")
+                text.text = glyph
+        return element
+
     def replace_inlines(self, parent: Any, nodes: list[Node], part: str) -> None:
         for child in list(parent):
             if child.tag != W + "pPr":
@@ -279,6 +327,8 @@ class DocxExport:
             elif kind == "lockedInline":
                 element = self.anchor(node, part)
                 self.preserve_locked(node, self.known[node["attrs"]["id"]])
+            elif kind == "checkbox":
+                element = self.checkbox(node, part)
             else:
                 raise InvalidDocument("invalid_inline")
             parent.append(element)
