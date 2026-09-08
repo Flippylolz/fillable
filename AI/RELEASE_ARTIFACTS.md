@@ -40,7 +40,7 @@ Only source/digest/CI metadata and a reconstructed successful deployment result 
 uploaded. Private runtime setup and the receiver implementation belong to E08.3;
 actual Actions rollout and deployed application verification belong to E08.4–E08.5.
 
-HTTP port 3200 and the existing shared-nginx owner remain the accepted target. No
+D024 HTTPS port 3200 and the existing shared-nginx owner are the accepted target. No
 application is deployed by introducing this workflow. Contract tests exercise rejected
 CI states and races, archive tampering, unsafe/duplicate entries and image identity
 mismatches; actual image archive and workflow evidence are recorded in the epic ledger.
@@ -51,3 +51,22 @@ credentials. The private operator must separately complete authenticated smoke,
 real browser/version checks and persistence before deployment acceptance is complete.
 Both check shells bind their image and evidence to the requested source and remove
 stale success reports on failure.
+
+E08.9 keeps version-1 manifest IDs as config digests. The archive verifier also returns
+an OCI manifest digest only after checking its bytes, size, media type, exact config
+reference, source tag and annotations against that same release. No arbitrary alias,
+nested index or unchecked descriptor becomes an accepted runtime identity.
+
+The receiver tries only those verified immutable digests. Classic Docker resolves the
+config ID; the target's containerd store resolves the OCI manifest ID. The inspected
+ID must equal the selected candidate, with the same Linux amd64 platform and full
+source revision. Missing or mismatched metadata fails closed. Compose and private
+`state.json` use the resolved host identity; the public artifact manifest and archive
+digest remain unchanged. Later account and recovery checks compare the running
+container to that recorded host identity. Never change Docker's storage driver or
+substitute a mutable tag to make rollout pass.
+
+This distinction was reproduced using real saved classic-store images and the actual
+already-imported target OCI images. Docker documents the [containerd image store](https://docs.docker.com/engine/storage/containerd/)
+as a separate storage backend; the exact identity behavior above is observed evidence
+from the two engines used by this release path.
