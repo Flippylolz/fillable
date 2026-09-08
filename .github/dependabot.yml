@@ -1,18 +1,30 @@
 # Dependabot version updates for supported ecosystems.
 #
-# Backend Python dependencies are intentionally absent: they are compiled by
-# pip-tools into the hash-pinned `backend/requirements.lock`, which Dependabot
-# does not recognize as a manifest (it supports `.txt` requirement files and
-# PEP 621 `pyproject.toml`). A pull request that bumped `backend/requirements.in`
-# alone would leave the installed lock unchanged and drift from it. Backend
-# dependency updates stay on the documented manual pip-compile procedure in
-# AI/LOCAL_DEVELOPMENT.md.
+# Backend Python dependencies are covered through the pip ecosystem: the
+# hash-pinned pip-compile output lives at `backend/requirements.txt`, which
+# Dependabot recognizes as a pip-compile lockfile (it recompiles it with its
+# bundled pip-compile 7.5.3, the same pip-tools version documented in
+# AI/LOCAL_DEVELOPMENT.md) and updates it together with `requirements.in` in
+# one pull request.
 #
 # Minor and patch updates are grouped into one pull request per ecosystem;
 # major updates open standalone pull requests for review. Every pull request
 # must pass the required `ci-required` gate regardless of origin.
 version: 2
 updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      python-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

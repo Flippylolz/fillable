@@ -138,6 +138,8 @@ against the same test database. The fixtures refuse an application database.
 
 ```sh
 docker compose -p fillable-checks -f compose.test.yaml build
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test sh -c 'ruff check . && mypy app'
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test sh -c 'npm run lint && npm run check:i18n && npm run build'
 docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test
 report_container="fillable-frontend-report-$(date +%s)-$$"
 docker compose -p fillable-checks -f compose.test.yaml run --name "$report_container" frontend-test
@@ -146,11 +148,23 @@ docker cp "$report_container:/app/coverage/." frontend/coverage/
 docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD/frontend:/source:ro" backend-test python /checks/check_coverage.py frontend /source
 ```
 
-Backend runs Ruff, mypy, real integration tests and raw coverage gates. Frontend
-runs lint, catalog/copy checks, TypeScript/build and Vitest. Both independently need
-at least 90% lines and branches, including unimported application files and authored
-migrations. Tests discard old reports; the named frontend container retains its new
-reports. [CI and deployment](CI_CD.md) documents negative probes and required gates.
+Lints and tests run in separate fast steps against the same pinned images: Ruff
+and mypy for the backend, ESLint, catalog/copy checks and the TypeScript build
+for the frontend. The test services run real backend integration tests and raw
+coverage gates, and Vitest coverage for the frontend. Both independently need
+at least 90% lines and branches, including unimported application files and
+authored migrations. Tests discard old reports; the named frontend container
+retains its new reports. The gate contract test mounts the checked-out workflow
+so it validates the actual `ci-required` job list:
+
+```sh
+docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps \
+  -v "$PWD/.github/workflows/ci.yml:/checks/ci.yml:ro" \
+  backend-test python /checks/test_gate_contract.py
+```
+
+[CI and deployment](CI_CD.md) documents negative probes, required jobs and
+gates.
 
 ## Fresh installation, browser flows and recovery
 

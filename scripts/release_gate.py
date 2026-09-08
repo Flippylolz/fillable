@@ -10,7 +10,16 @@ from urllib.request import Request, urlopen
 REPOSITORY = "Flippylolz/fillable"
 WORKFLOW_ID = 351418605
 WORKFLOW_PATH = ".github/workflows/ci.yml"
-REQUIRED_JOBS = {"checks", "upgrade-checks", "ci-required"}
+REQUIRED_JOBS = {
+    "lint",
+    "backend-tests",
+    "frontend-tests",
+    "browser",
+    "development",
+    "contracts",
+    "upgrade-checks",
+    "ci-required",
+}
 
 
 def validate_source(source, context, branch):

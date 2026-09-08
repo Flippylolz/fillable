@@ -2,8 +2,10 @@
 
 The manual `.github/workflows/deploy.yml` accepts the full current protected-main
 commit. Its credential-free verification job requires the latest push CI run for
-that exact revision, the expected active workflow identity, and successful `checks`,
-`upgrade-checks` and `ci-required` jobs from the same completed run attempt. Missing,
+that exact revision, the expected active workflow identity, and successful
+`ci-required` plus every job it aggregates (`lint`, `backend-tests`,
+`frontend-tests`, `browser`, `development`, `contracts`, `upgrade-checks`) from
+the same completed run attempt. Missing,
 failed, cancelled, skipped, stale or mismatched evidence fails closed. The gate
 rechecks the latest run and main ref after retrieving jobs, and again after building.
 It does not fall back to an older successful run. The existing CI owns the independent
