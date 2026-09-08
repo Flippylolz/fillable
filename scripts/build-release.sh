@@ -18,11 +18,16 @@ mkdir "$output/context"
 tar -xf "$output/source.tar" -C "$output/context"
 backend="fillable-backend:$source_sha"
 gateway="fillable-gateway:$source_sha"
+# Both images derive from the same archive; build them concurrently.
 docker build --platform linux/amd64 --label "org.opencontainers.image.revision=$source_sha" \
-  -f "$output/context/infra/backend.Dockerfile" -t "$backend" "$output/context"
+  -f "$output/context/infra/backend.Dockerfile" -t "$backend" "$output/context" &
+backend_build=$!
 docker build --platform linux/amd64 --label "org.opencontainers.image.revision=$source_sha" \
   --build-arg "VITE_APP_COMMIT_SHA=$source_sha" --target gateway-prod \
-  -f "$output/context/infra/frontend.Dockerfile" -t "$gateway" "$output/context"
+  -f "$output/context/infra/frontend.Dockerfile" -t "$gateway" "$output/context" &
+gateway_build=$!
+wait "$backend_build"
+wait "$gateway_build"
 format='{"id":"{{.Id}}","os":"{{.Os}}","architecture":"{{.Architecture}}","revision":"{{index .Config.Labels "org.opencontainers.image.revision"}}"}'
 docker image inspect --format "$format" "$backend" > "$output/backend.json"
 docker image inspect --format "$format" "$gateway" > "$output/gateway.json"

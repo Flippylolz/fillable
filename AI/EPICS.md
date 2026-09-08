@@ -2703,3 +2703,7 @@ Status: in_review. User-reported polish: fix the home button, give the profile l
 ## E09.5 — Center the sign-in card
 
 Status: in_review. User feedback that the login page is not centered. Acceptance: the signed-out sign-in form renders as one centered card below the header on desktop and mobile in both languages, without changing authentication behavior, copy, or tests' semantics. Deliver a dedicated PR with required CI, merge, deploy through Actions, and confirm on the public origin.
+
+## E09.6 — Parallel required CI jobs and concurrent release image builds
+
+Status: in_progress. The single sequential `checks` job made every PR wait for the sum of image builds, lints, both test suites, browser flows, development verification and contract tests, with a 30-minute ceiling. Acceptance: split static checks and tests into independent parallel jobs (`lint`, `backend-tests`, `frontend-tests`, `browser`, `development`, `contracts`) beside the unchanged `upgrade-checks`; keep the independent raw 90% line/branch gates, source provenance binding, both real unimported-source negative probes and fail-closed `ci-required` aggregation over all seven job results; update the deployment gate and its contract tests to the exact new job set and build the two release images concurrently; keep branch protection on the single `ci-required` context and update AI documentation. No threshold, exclusion, or required check may be relaxed.
