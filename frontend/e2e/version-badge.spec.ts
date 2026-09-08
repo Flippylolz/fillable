@@ -13,7 +13,8 @@ test('build version remains fixed, theme independent and click-through', async (
   await expect(button).toBeVisible();
   // This badge check also runs against the previous release during upgrades.
   await expect(page.locator('input[autocomplete="username"]')).toBeVisible();
-  for (let index = 0; index < 4; index++) await page.keyboard.press('Tab');
+  // The focusable set differs between releases (for example the home brand link), so walk tabs until the retry button takes focus.
+  for (let index = 0; index < 8 && !(await button.evaluate((el) => el === document.activeElement)); index++) await page.keyboard.press('Tab');
   await expect(button).toBeFocused();
   await page.keyboard.press('Tab');
   expect(await badge.evaluate(el => el.contains(document.activeElement))).toBe(false);

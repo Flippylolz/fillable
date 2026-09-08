@@ -32,7 +32,7 @@ export function App() {
 
   return <main>
     <header className="app-header">
-      <div className="app-brand"><span className="app-document-icon" aria-hidden="true" /><h1>{t('app.title')}</h1></div>
+      <a className="app-brand" href="/documents" aria-label={t('navigation.home')}><span className="app-document-icon" aria-hidden="true" /><h1>{t('app.title')}</h1></a>
       <p className="app-description">{t('app.description')}</p>
       <p className={`app-connection app-connection-${status}`} role="status">{t(`health.${status}`)}</p>
     </header>

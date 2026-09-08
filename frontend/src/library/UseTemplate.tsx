@@ -50,7 +50,7 @@ export function UseTemplate({ item, csrfToken, disabled, onBusy, onCreated }: {
       <form aria-label={t("copy.use")} onSubmit={event => void create(event)}>
         <p>{t("copy.description")}</p>
         <label>{t("copy.title")}<input autoFocus maxLength={160} value={title} disabled={busy || disabled} onChange={event => { setTitle(event.target.value); key.current = newKey(); setError(""); }} /></label>
-        <button type="submit" disabled={busy || disabled}>{t(busy ? "copy.creating" : "copy.create")}</button>
+        <button type="submit" className="primary" disabled={busy || disabled}>{t(busy ? "copy.creating" : "copy.create")}</button>
         <button type="button" disabled={busy || disabled} onClick={() => setOpen(false)}>{t("copy.cancel")}</button>
         {error && <p role="alert">{apiErrorMessage(error)}</p>}
       </form>}

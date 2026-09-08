@@ -87,8 +87,9 @@ stays mounted, hidden and inert; editing, autosave and new protected requests pa
 Recovery fetches a fresh session/CSRF token. The same account UUID resumes its draft
 and undo history; otherwise the form fixes the original account login and requests
 its password. Failed login retains the form. Bootstrap and login requests abort on
-unmount and time out after ten seconds. The account strip also offers sign-in again
-for stale-CSRF errors or session changes in another tab.
+unmount and time out after ten seconds. Recovery opens only automatically from a
+rejected protected request; the signed-in strip offers no manual sign-in-again
+trigger, and deliberate account switching goes through logout with its discard guard.
 
 Switching to a different account or leaving for the login page requires the existing
 unsaved-work discard guard. A different account UUID remounts the page tree so it

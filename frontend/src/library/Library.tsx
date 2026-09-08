@@ -105,7 +105,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
       <label>{t("library.kind")}<select value={kind} disabled={blocked} onChange={event => { changed(); setKind(event.target.value === "template" ? "template" : "document"); }}>
         <option value="template">{t("library.template")}</option><option value="document">{t("library.document")}</option>
       </select></label>
-      <button type="submit" disabled={blocked}>{t(busy ? "library.uploading" : "library.upload")}</button>
+      <button type="submit" className="primary" disabled={blocked}>{t(busy ? "library.uploading" : "library.upload")}</button>
       {error && <p role="alert">{apiErrorMessage(error)}</p>}
       {saved && <p role="status">{t("library.uploadSaved", { title: saved })}</p>}
     </form>

@@ -47,6 +47,7 @@
   "errors.current_password_invalid": "Поточний пароль неправильний.",
   "profile.title": "Профіль",
   "navigation.label": "Головна навігація",
+  "navigation.home": "Fillable — на головну",
   "library.title": "Бібліотека документів",
   "library.description": "Зберігайте багаторазові шаблони та окремі документи в одному місці.",
   "library.refresh": "Оновити бібліотеку",

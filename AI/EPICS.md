@@ -2695,3 +2695,7 @@ E09.2 completion: PR #82 auto-merged as `a5932cb3edad60e96ec3ae3388a565202e0c2b5
 ## E09.4 — Add the Fillable favicon
 
 Status: in_progress. Acceptance: serve a small, crisp document favicon matching the existing blue application mark on all application pages; include it in the production build; verify the asset visually and through the deployed HTML. Deliver a dedicated PR with required CI and unchanged independent 90% coverage gates, then deploy through Actions while preserving shared services. This static asset change needs no new implementation-mirroring tests.
+
+## E09.3 — UI polish: navigation, buttons, and workspace toolbar
+
+Status: in_review. User-reported polish: fix the home button, give the profile link its own place, align buttons across pages, remove the useless "Увійти знову" strip button, and run a full UI diagnosis. Acceptance: the brand in the header is a home link to the library; the signed-in strip keeps identity and logout only while session recovery stays automatic on a rejected protected request; the profile link keeps its own account place on the navigation row with correct current-page state; the workspace toolbar aligns back/title/actions in one row with consistent button sizes; main actions use one primary button style across login, library, profile, and workspace; both catalogs stay complete and the independent 90% gates hold. Deliver a dedicated PR, verify required CI and auto-merge, then deploy and confirm the public origin.

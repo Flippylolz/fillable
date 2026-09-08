@@ -78,12 +78,14 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
     return () => controller.abort();
   }, [identity, attempt]);
   return <section className="workspace" aria-labelledby="workspace-title">
-    <div className="workspace-toolbar"><div>
+    <div className="workspace-toolbar"><div className="workspace-toolbar-main">
       {onBack && <button type="button" disabled={mutating} onClick={onBack}>{t("workspace.back")}</button>}
-      <h2 id="workspace-title">{saved ? saved.resource.title : t("workspace.title")}</h2>
-      {saved && <p>{t(saved.resource.kind === "template" ? "workspace.template" : "workspace.document")}</p>}
+      <div className="workspace-titles">
+        <h2 id="workspace-title">{saved ? saved.resource.title : t("workspace.title")}</h2>
+        {saved && <p>{t(saved.resource.kind === "template" ? "workspace.template" : "workspace.document")}</p>}
+      </div>
     </div>{saved && <div className="workspace-save-actions">
-      <button type="button" disabled={historyOpen || mutating || !!restoring.pending || restoring.conflict || saving.conflict || (!saving.pending && (revision === saving.acknowledged || !valid || composing || access.status !== "active"))}
+      <button type="button" className="primary" disabled={historyOpen || mutating || !!restoring.pending || restoring.conflict || saving.conflict || (!saving.pending && (revision === saving.acknowledged || !valid || composing || access.status !== "active"))}
         onClick={() => void saving.save()}>{t(saving.busy ? "save.saving" : saving.pending ? "save.retry" : "save.action")}</button>
       {!historyOpen && <DownloadSaved item={saved.resource} disabled={false} />}
       <button type="button" disabled={mutating || composing} aria-expanded={historyOpen} onClick={() => setHistoryOpen(value => !value)}>{t(historyOpen ? "history.close" : "history.open")}</button></div>}</div>

@@ -68,6 +68,9 @@ test("login sends CSRF, restores account language, preserves failed inputs, and 
   expect(screen.getByTestId("account")).toHaveTextContent(
     "client@example.test",
   );
+  // Session recovery is automatic on expiry; the signed-in strip offers no manual trigger.
+  expect(screen.queryByRole("button", { name: "Sign in again" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Увійти знову" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(
     "This action is unavailable",
@@ -178,15 +181,19 @@ test("protected expiry hides but retains the draft and resumes it with fresh sam
   expect(draft).toHaveValue("Unsaved Їжак"); expect(screen.getByTestId("csrf")).toHaveTextContent("recovered-csrf");
 });
 
-test("explicit recovery discards the old workspace only after its leave guard allows an account switch", async () => {
+test("expired-session recovery discards the old workspace only after its leave guard allows an account switch", async () => {
   const guard = vi.fn(() => false);
-  const fetcher = vi.fn().mockResolvedValueOnce(Response.json(signedIn)).mockResolvedValueOnce(Response.json(anonymous));
+  const { api } = await import("../src/api");
+  const fetcher = vi.fn().mockResolvedValueOnce(Response.json(signedIn))
+    .mockResolvedValueOnce(failure("authentication_required"))
+    .mockResolvedValueOnce(Response.json(anonymous));
   vi.stubGlobal("fetch", fetcher);
   render(<I18nextProvider i18n={i18n}><Authentication>{(_session, actions) =>
-    <button onClick={() => actions.setLeaveGuard(guard)}>Protect draft</button>
+    <div><button onClick={() => actions.setLeaveGuard(guard)}>Protect draft</button>
+      <button onClick={() => void api.GET("/api/documents", { params: { query: { kind: "document" } } })}>Load documents</button></div>
   }</Authentication></I18nextProvider>);
   fireEvent.click(await screen.findByRole("button", { name: "Protect draft" }));
-  fireEvent.click(screen.getByRole("button", { name: "Sign in again" }));
+  fireEvent.click(screen.getByRole("button", { name: "Load documents" }));
   const leave = await screen.findByRole("button", { name: "Leave this workspace and use another account" });
   fireEvent.click(leave); expect(guard).toHaveBeenCalledTimes(1);
   expect(screen.getByText("Protect draft")).toBeInTheDocument();

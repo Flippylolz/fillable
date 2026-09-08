@@ -57,7 +57,7 @@ export function HistoryPanel({ identity, current, filename, dirty, blocked, busy
       {!preview && !error && <p role="status">{t("history.loadingPreview")}</p>}
       {preview && <><div className="history-actions"><h4>{versionName(preview.version.number)}</h4>
         <DownloadVersion key={selected} identity={identity} version={selected} filename={filename} />
-        <button type="button" disabled={busy || blocked || stale} onClick={() => onRestore(preview.version)}>{t("history.restore")}</button>
+        <button type="button" className="primary" disabled={busy || blocked || stale} onClick={() => onRestore(preview.version)}>{t("history.restore")}</button>
       </div>{blocked && <p>{t("history.resolveSave")}</p>}
         <HistoricalPreview key={selected} document={preview.document} presentation={preview.presentation} /></>}
     </div></div>
