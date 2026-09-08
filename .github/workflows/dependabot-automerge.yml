@@ -1,0 +1,36 @@
+# Enables squash auto-merge on Dependabot pull requests.
+#
+# The merge itself is still performed by GitHub only after every required
+# check passes: `main` protection requires the strict, up-to-date
+# `ci-required` aggregator, and this workflow does not bypass or weaken it.
+# If required checks fail, GitHub refuses the queued merge and disables
+# auto-merge for that pull request; the next Dependabot push re-arms it.
+#
+# `pull_request_target` runs this trusted workflow from the base branch and
+# no pull-request code is ever checked out; the step only calls the GitHub
+# CLI. The actor guard restricts it to Dependabot's own pull requests
+# (version and security updates). Auto-merge requires the exact head commit
+# so an unexpected revision cannot ride an armed request.
+name: Dependabot auto-merge
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    if: >-
+      github.repository == 'Flippylolz/fillable' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Enable squash auto-merge
+        run: gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}

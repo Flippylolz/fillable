@@ -260,3 +260,39 @@ E08.7 public Actions readiness deliberately leaves authenticated acceptance pend
 The operator privately provisions the requested account and runs authenticated smoke
 and E08.5 browser/persistence checks. A successful workflow alone does not close E08.
 See [Server runtime](SERVER_RUNTIME.md) for private inputs and required evidence.
+
+## Dependabot automatic updates (E09.6, D025)
+
+`.github/dependabot.yml` schedules weekly version updates (Mondays) for four
+ecosystems: `github-actions` (root workflows), `npm` (`frontend/`), `docker`
+(`infra/` Dockerfiles) and `docker-compose` (root Compose files). Minor and
+patch updates are grouped into one pull request per ecosystem; major updates
+open standalone pull requests. Each ecosystem keeps at most five open pull
+requests.
+
+`.github/workflows/dependabot-automerge.yml` enables squash auto-merge on
+Dependabot's own pull requests. Its contract:
+
+- Triggers on `pull_request_target` (`opened`, `reopened`, `synchronize`) so the
+  trusted base-branch workflow definition always runs; no pull-request code is
+  checked out and the single step calls only the GitHub CLI.
+- Guards on the repository identity and `dependabot[bot]` as pull-request
+  author, so it covers Dependabot version and security updates and nothing else.
+- Requests only `contents: write` and `pull-requests: write`; deployment
+  credentials are not involved and `deploy.yml` stays manual-dispatch only, so
+  automatic merges never deploy.
+- Arms auto-merge with `--match-head-commit` for the event's exact head commit,
+  matching the task-PR workflow. GitHub performs the squash merge only after the
+  strict, up-to-date `ci-required` gate passes; a failed or stale required
+  check refuses the merge and disables auto-merge until the next Dependabot
+  push re-arms it.
+
+Backend Python dependencies are excluded from Dependabot by design: pip-compile
+output is hash-pinned `backend/requirements.lock`, not a `.txt` manifest or PEP
+621 `pyproject.toml`, so Dependabot cannot update it without leaving the
+installed lock drifting. Backend dependency updates continue through the manual
+pip-tools procedure in [Local development](LOCAL_DEVELOPMENT.md). First-run
+Dependabot behavior (config acceptance, ecosystem detection, grouped pull
+requests) must be verified on the repository after this lands; a config or
+parser error surfaces through Dependabot's update-error reporting rather than
+this repository's CI.
