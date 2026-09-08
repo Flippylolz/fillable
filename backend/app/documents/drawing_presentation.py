@@ -42,11 +42,14 @@ def display(element):
             or height <= 0
         ):
             continue
-        fill = anchor.find(".//" + A + "solidFill/" + A + "srgbClr")
+        shape_properties = geometry.getparent()
+        fill = shape_properties.find(A + "solidFill/" + A + "srgbClr")
         color = "FFFFFF" if fill is None else fill.get("val", "FFFFFF")
         if not re.fullmatch(r"[0-9a-fA-F]{6}", color):
             color = "FFFFFF"
         shape = {"x": x, "y": y, "width": width, "height": height, "fill": "#" + color}
+        if shape_properties.find(A + "noFill") is not None:
+            shape["fill"] = "transparent"
         line = anchor.find(".//" + A + "ln")
         if line is not None:
             from app.documents.borders import border_css

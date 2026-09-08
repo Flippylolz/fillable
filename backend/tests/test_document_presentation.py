@@ -232,3 +232,17 @@ def test_drawing_outline_weight_and_absent_stroke():
         ][0]["border"]
         == "none"
     )
+
+
+def test_outline_stroke_does_not_become_the_rectangle_fill():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import WP, A, display
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:wp="{WP[1:-1]}" xmlns:a="{A[1:-1]}">
+    <wp:anchor><wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+    <a:noFill/><a:ln w="19050"><a:solidFill><a:srgbClr val="000000"/>
+    </a:solidFill></a:ln></wp:anchor></w:r>'''
+    shape = display(etree.fromstring(xml))["shapes"][0]
+    assert shape["fill"] == "transparent"
+    assert shape["border"] == "1.5pt solid #000000"
