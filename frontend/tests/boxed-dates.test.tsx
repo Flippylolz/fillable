@@ -80,3 +80,15 @@ test("localized date action fills the actual editor selection and respects read-
   expect(screen.getByRole("button",{name:"Fill selected date boxes"})).toBeDisabled();
   expect(change).toHaveBeenCalled();
 });
+
+
+test("date boxes nested in a form cell are filled without touching surrounding form text", () => {
+  const nested = table(["1","5","1","1","8","3"]);
+  const outer = schema.nodes.table.create({id:"outer"}, schema.nodes.tableRow.create({id:"outerrow"}, schema.nodes.tableCell.create({id:"outercell"},[paragraph("Label", "label"),nested])));
+  const current = state([outer]); const positions: number[]=[];
+  current.doc.descendants((node,pos)=>{if(node.type.name==="paragraph" && node.attrs.id !== "label") positions.push(pos);});
+  const selected=current.apply(current.tr.setSelection(TextSelection.create(current.doc,positions[0]+1,positions[5]+2)));
+  const result=fillBoxedDate(selected,"2024-02-29");
+  expect(result.issue).toBeUndefined();
+  expect(selected.apply(result.transaction!).doc.textContent).toBe("Label290224");
+});

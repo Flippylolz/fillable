@@ -31,16 +31,18 @@ export function fillBoxedDate(state: EditorState, iso: string) {
     }
   }
   if (!slots.length && from !== to) {
-    let row: Node | null = null, invalid = false;
-    state.doc.nodesBetween(from, to, (node, pos, parent) => {
-      if (node.type.name !== "tableCell") return;
-      if (parent !== row && row !== null) invalid = true;
-      row = parent;
+    let depth = $from.depth, endDepth = $to.depth;
+    while (depth && $from.node(depth).type.name !== "tableRow") depth--;
+    while (endDepth && $to.node(endDepth).type.name !== "tableRow") endDepth--;
+    const row = depth && endDepth && $from.node(depth) === $to.node(endDepth) ? $from.node(depth) : null;
+    let invalid = false;
+    row?.forEach((node, offset) => {
+      const pos = $from.start(depth) + offset;
+      if (pos >= to || pos + node.nodeSize <= from) return;
       const paragraph = node.firstChild;
       const value = paragraph?.textContent.trim() ?? "";
-      if (node.childCount !== 1 || paragraph?.type.name !== "paragraph" || !plain(paragraph) || !/^[\d_]{0,4}$/.test(value)) { invalid = true; return false; }
+      if (node.childCount !== 1 || paragraph?.type.name !== "paragraph" || !plain(paragraph) || !/^[\d_]{0,4}$/.test(value)) { invalid = true; return; }
       slots.push({ from: pos + 2, to: pos + 2 + paragraph.content.size, digits: value.length || 1 });
-      return false;
     });
     if (invalid || !row || ![6, 8].includes(slots.length) && !(slots.length === 3 && slots[0].digits === 2 && slots[1].digits === 2 && [2, 4].includes(slots[2].digits))) slots = [];
     if ([6, 8].includes(slots.length) && slots.some(slot => slot.digits !== 1)) slots = [];
