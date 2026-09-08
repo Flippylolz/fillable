@@ -5,7 +5,12 @@ import copy
 import io
 import json
 import multiprocessing
+import os
+import socket
+import ssl
+import subprocess
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,8 +27,8 @@ from fillable_edge import (
     patched_manager,
 )
 from fillable_edge_lock import locked
-from fillable_runtime import FILES, Runtime
-from install_receiver import install
+from fillable_runtime import FILES, Runtime, tls_status
+from install_receiver import install, upgrade_https
 from release_artifact import pack
 from release_receiver import parse_command, receive
 from test_release_contract import SOURCE, fixture
@@ -258,6 +263,176 @@ class RuntimeContracts(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "preserved"):
                     install(source, SOURCE, wrong)
                 self.assertEqual((home / "fillable/runtime.env").read_bytes(), private)
+
+    def test_idle_https_upgrade_preserves_credentials_keys_and_other_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            owner, _, configuration = edge_fixture(home)
+            owner.rename(home / "wef-shared-edge")
+            source = home / "source"
+            for name in FILES:
+                path = source / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("old reviewed receiver\n")
+            configuration["public_key"] = "ssh-ed25519 AAAA fillable-deploy"
+            with (
+                patch("pathlib.Path.home", return_value=home),
+                patch("install_receiver.execute", return_value="") as docker,
+            ):
+                install(source, SOURCE, configuration)
+                root = home / "fillable"
+                env = root / "runtime.env"
+                env.write_text(env.read_text().replace("https://", "http://"))
+                previous_env = env.read_bytes()
+                keys = (home / ".ssh/authorized_keys").read_bytes()
+                shared = {
+                    p: p.read_bytes()
+                    for p in (home / "wef-shared-edge").rglob("*")
+                    if p.is_file()
+                }
+                for name in FILES:
+                    (source / name).write_text("new reviewed receiver\n")
+                original_files = {
+                    p: p.read_bytes() for p in root.rglob("*") if p.is_file()
+                }
+                original_replace = Path.replace
+
+                def fail_once(path, target):
+                    if target == env:
+                        raise OSError("synthetic write failure")
+                    return original_replace(path, target)
+
+                with patch("pathlib.Path.replace", new=fail_once):
+                    with self.assertRaisesRegex(OSError, "synthetic"):
+                        upgrade_https(source, "c" * 40)
+                self.assertEqual(
+                    {p: p.read_bytes() for p in original_files}, original_files
+                )
+                result = upgrade_https(source, "c" * 40)
+                self.assertTrue(result["upgraded"])
+                self.assertEqual(
+                    env.read_bytes(), previous_env.replace(b"http://", b"https://")
+                )
+                self.assertEqual((home / ".ssh/authorized_keys").read_bytes(), keys)
+                self.assertEqual({p: p.read_bytes() for p in shared}, shared)
+                self.assertEqual(
+                    json.loads((root / "configuration.json").read_text())[
+                        "ingress_mode"
+                    ],
+                    "external_tls",
+                )
+                self.assertEqual(
+                    (root / "ops/infra/nginx.relay.conf").stat().st_mode & 0o777, 0o644
+                )
+                docker.return_value = "existing-app"
+                with self.assertRaisesRegex(ValueError, "undeployed"):
+                    upgrade_https(source, SOURCE)
+                docker.return_value = ""
+                (root / "ops" / FILES[0]).write_text("concurrent change")
+                with self.assertRaisesRegex(ValueError, "changed"):
+                    upgrade_https(source, SOURCE)
+                self.assertEqual(
+                    env.read_bytes(), previous_env.replace(b"http://", b"https://")
+                )
+
+    def test_relay_failure_stops_only_fillable_and_never_changes_shared_ingress(self):
+        runtime = object.__new__(Runtime)
+        runtime.configuration = {"hostname": "ingress"}
+        runtime.command = Mock()
+        runtime.progress = Mock()
+        runtime.baselines = Mock(return_value={"existing": 200})
+        before = {"other": {"started": "unchanged"}}
+        with (
+            patch("fillable_runtime.snapshot", return_value=before) as state,
+            patch("fillable_runtime.tls_status", return_value=200) as tls,
+            patch("fillable_edge.SharedEdge.activate") as activate,
+        ):
+            runtime.start_relay(before, {"existing": 200})
+            self.assertEqual(runtime.command.call_count, 1)
+            tls.return_value = 502
+            with self.assertRaisesRegex(ValueError, "not ready"):
+                runtime.start_relay(before, {"existing": 200})
+            self.assertEqual(runtime.command.call_args.args, ("stop", "ingress"))
+            tls.side_effect = ssl.SSLCertVerificationError("untrusted")
+            with self.assertRaises(ssl.SSLCertVerificationError):
+                runtime.start_relay(before, {"existing": 200})
+            self.assertEqual(runtime.command.call_args.args, ("stop", "ingress"))
+            tls.side_effect = None
+            tls.return_value = 200
+            state.return_value = {"other": {"started": "changed"}}
+            with self.assertRaisesRegex(ValueError, "baseline"):
+                runtime.start_relay(before, {"existing": 200})
+            activate.assert_not_called()
+            self.assertTrue(
+                all(
+                    call.args[-1] == "ingress"
+                    for call in runtime.command.call_args_list
+                )
+            )
+
+    def test_real_tls_checks_trust_hostname_and_http_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cert, key = root / "cert.pem", root / "key.pem"
+            subprocess.run(
+                [
+                    "openssl",
+                    "req",
+                    "-x509",
+                    "-newkey",
+                    "rsa:2048",
+                    "-nodes",
+                    "-days",
+                    "1",
+                    "-subj",
+                    "/CN=ingress",
+                    "-addext",
+                    "subjectAltName=DNS:ingress",
+                    "-keyout",
+                    str(key),
+                    "-out",
+                    str(cert),
+                ],
+                check=True,
+                capture_output=True,
+            )
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain(cert, key)
+            with socket.socket() as listener:
+                listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                listener.bind(("127.0.0.1", 3200))
+                listener.listen()
+                listener.settimeout(10)
+                requests = []
+
+                def serve():
+                    for _ in range(3):
+                        connection, _ = listener.accept()
+                        try:
+                            with context.wrap_socket(
+                                connection, server_side=True
+                            ) as secured:
+                                requests.append(secured.recv(4096))
+                                secured.sendall(
+                                    b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n"
+                                    b"Connection: close\r\n\r\n"
+                                )
+                        except ssl.SSLError:
+                            connection.close()
+
+                server = threading.Thread(target=serve, daemon=True)
+                server.start()
+                with patch.dict(os.environ, {"SSL_CERT_FILE": str(cert)}):
+                    self.assertEqual(tls_status("ingress", "127.0.0.1"), 200)
+                    with self.assertRaises(ssl.SSLCertVerificationError):
+                        tls_status("wrong-name", "127.0.0.1")
+                with patch.dict(os.environ, {"SSL_CERT_FILE": str(root / "absent-ca")}):
+                    with self.assertRaises(ssl.SSLCertVerificationError):
+                        tls_status("ingress", "127.0.0.1")
+                server.join(10)
+                self.assertFalse(server.is_alive())
+                self.assertEqual(len(requests), 1)
+                self.assertIn(b"Host: ingress:3200", requests[0])
 
     @patch("fillable_runtime.execute", return_value="sha256:" + "0" * 64)
     def test_initial_account_is_source_bound_and_cannot_replace_existing_users(

@@ -7,7 +7,7 @@ output=$2
 rm -f "$output/public-readiness.json"
 case "$source_sha" in *[!0-9a-f]*|'') exit 2 ;; esac
 test "${#source_sha}" -eq 40
-export FILLABLE_PUBLIC_ORIGIN="http://$FILLABLE_DEPLOY_HOST:3200"
+export FILLABLE_PUBLIC_ORIGIN="https://$FILLABLE_DEPLOY_HOST:3200"
 jq -e --arg sha "$source_sha" '.source_sha == $sha and .status == "succeeded"' "$output/deployment.json" >/dev/null
 image=$(jq -er --arg sha "$source_sha" 'select(.source_sha == $sha and .images.backend.revision == $sha) | .images.backend.id' "$output/manifest.json")
 printf '%s' "$image" | grep -Eq '^sha256:[0-9a-f]{64}$'

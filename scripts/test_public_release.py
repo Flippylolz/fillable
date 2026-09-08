@@ -45,12 +45,13 @@ class PublicReleaseTests(unittest.TestCase):
                         )
                     if path == "/api/auth/session":
                         cookie = (
-                            "fillable_session_v1=x; HttpOnly; SameSite=Strict; Path=/"
+                            "fillable_session_v1=x; HttpOnly; "
+                            "SameSite=Strict; Secure; Path=/"
                         )
                         if scenario == "cookie":
                             cookie = cookie.replace("HttpOnly", "Other")
                         if scenario == "secure":
-                            cookie += "; Secure"
+                            cookie = cookie.replace("; Secure", "")
                         if scenario == "domain":
                             cookie += "; Domain=test"
                         return httpx.Response(
@@ -70,7 +71,7 @@ class PublicReleaseTests(unittest.TestCase):
                         return httpx.Response(200 if scenario == "public_data" else 401)
                     assert path == "/api/auth/logout"
                     if (
-                        request.headers["Origin"] != "http://test:3200"
+                        request.headers["Origin"] != "https://test:3200"
                         or request.headers["X-CSRF-Token"] != "a" * 64
                     ):
                         return httpx.Response(200 if scenario == "origin" else 403)
@@ -79,8 +80,8 @@ class PublicReleaseTests(unittest.TestCase):
                     )
 
                 with httpx.Client(
-                    base_url="http://test:3200",
-                    headers={"Origin": "http://test:3200"},
+                    base_url="https://test:3200",
+                    headers={"Origin": "https://test:3200"},
                     transport=httpx.MockTransport(handle),
                 ) as client:
                     if scenario == "ok":
@@ -98,10 +99,10 @@ class PublicReleaseTests(unittest.TestCase):
 
     def test_login_requires_cookie_policy_and_distinguishes_missing_account(self):
         for status, cookie, expected in (
-            (200, "session=x; HttpOnly; SameSite=Strict", True),
+            (200, "session=x; HttpOnly; SameSite=Strict; Secure", True),
             (401, "", False),
             (200, "session=x; SameSite=Strict", AssertionError),
-            (200, "session=x; HttpOnly; SameSite=Strict; Secure", AssertionError),
+            (200, "session=x; HttpOnly; SameSite=Strict", AssertionError),
             (503, "", httpx.HTTPStatusError),
         ):
             with self.subTest(status=status, cookie=cookie):
@@ -117,7 +118,7 @@ class PublicReleaseTests(unittest.TestCase):
                     )
 
                 with httpx.Client(
-                    base_url="http://test", transport=httpx.MockTransport(handle)
+                    base_url="https://test", transport=httpx.MockTransport(handle)
                 ) as client:
                     if isinstance(expected, type):
                         with self.assertRaises(expected):
@@ -138,7 +139,7 @@ class PublicReleaseTests(unittest.TestCase):
 
         with (
             httpx.Client(
-                base_url="http://test", transport=httpx.MockTransport(handle)
+                base_url="https://test", transport=httpx.MockTransport(handle)
             ) as client,
             patch("public_release_smoke.time.sleep"),
         ):
@@ -154,7 +155,7 @@ class PublicReleaseTests(unittest.TestCase):
         self.assertEqual(requests[0], requests[1])
         for code in ("source_revision_changed", "operation_in_progress"):
             with httpx.Client(
-                base_url="http://test",
+                base_url="https://test",
                 transport=httpx.MockTransport(
                     lambda request: httpx.Response(409, json={"error": {"code": code}})
                 ),

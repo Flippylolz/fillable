@@ -213,7 +213,7 @@ Persistent volumes, safe writes, crash reconciliation, restart/upgrade checks, a
 
 ## D019 — Public HTTP address on a new port
 
-Status: **Accepted — HTTP reaffirmed during E08.1; public port 3200 selected.**
+Status: **Superseded by D024 on 2026-09-08. Historical HTTP decision below.**
 
 The production origin is `http://<DEPLOY_HOST>:<PORT>`. Keep the existing shared-nginx requirement: nginx listens on the newly allocated public port and proxies to Fillable's private gateway. Distinguish `FILLABLE_PUBLIC_PORT` from the gateway's `FILLABLE_UPSTREAM_PORT` when a host binding is needed. E08.1 selects public port 3200; the private gateway uses Docker-network reachability. Existing ports 80/443, routes, and TLS services remain owned by their current applications.
 
@@ -273,3 +273,28 @@ Initial account credentials are supplied privately by the operator and must not
 be uploaded to GitHub secrets or committed to the repository. Deployment remains
 last; private account creation and authenticated acceptance must finish before
 the rollout is marked complete.
+
+
+## D024 — Externally managed HTTPS on port 3200
+
+Status: **Accepted — explicit user handoff on 2026-09-08.**
+
+D024 supersedes D019's HTTP-only origin. The shared nginx owner has deployed internal
+TLS 3200 with the existing hostname certificate and unchanged HSTS. Configure
+`FILLABLE_PUBLIC_ORIGIN=https://<DEPLOY_HOST>:3200`; session cookies require Secure,
+HttpOnly and SameSite, with existing CSRF and exact-origin validation preserved.
+Verify certificate trust and hostname normally; never disable TLS verification.
+
+Fillable's TCP relay alone publishes host 3200 and passes encrypted bytes to shared
+nginx on `wef-edge`. Shared nginx proxies HTTP to `fillable-gateway:8080`. Do not add
+host 3200 to shared Compose, patch its manager/templates, activate an old HTTP include,
+or reload nginx during application rollout. Contact the existing shared nginx
+configuration task before any ingress change. No such change is currently needed:
+the internal 502 is expected until the private application starts; final readiness
+must return 200 through the public relay.
+
+Preserve Forecast HTTP 3000, WEF HTTP 3100/HTTPS 443, all existing services, certificate
+management and HSTS. Application failure stops only Fillable's relay and retains
+private data; it must not remove the owner's TLS listener. Upgrade the idle installed
+Fillable receiver and its origin under the receiver lock, verifying installed file
+fingerprints and preserving database credentials, SSH keys and all unrelated bytes.

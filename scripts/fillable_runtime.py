@@ -1,18 +1,20 @@
 """Apply verified images through a fixed, namespaced server runtime."""
 
 import hashlib
+import http.client
+import ipaddress
 import json
 import os
 import re
 import shutil
 import socket
+import ssl
 import subprocess
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from uuid import uuid4
 
-from fillable_edge import SharedEdge
 from release_artifact import unpack
 
 PROJECT = "fillable-production"
@@ -101,6 +103,23 @@ def route_status(url, *, hostname=None, method="HEAD"):
         return response.code, response.headers.get("Strict-Transport-Security")
 
 
+def tls_status(hostname, address, path="/api/ready"):
+    # Connect to the inspected edge/loopback address while verifying the real SNI.
+    ipaddress.ip_address(address)
+    context = ssl.create_default_context()
+    with socket.create_connection((address, 3200), timeout=10) as connection:
+        with context.wrap_socket(connection, server_hostname=hostname) as secured:
+            secured.sendall(
+                (
+                    f"GET {path} HTTP/1.1\r\nHost: {hostname}:3200\r\n"
+                    "Connection: close\r\n\r\n"
+                ).encode()
+            )
+            response = http.client.HTTPResponse(secured)
+            response.begin()
+            return response.status
+
+
 def validate_compose(configuration, root, images):
     if configuration.get("name") != PROJECT:
         raise ValueError("Unexpected runtime project")
@@ -162,13 +181,15 @@ class Runtime:
     def __init__(self, root):
         self.root = Path(root).resolve()
         self.configuration = json.loads((self.root / "configuration.json").read_text())
+        if self.configuration.get("ingress_mode") != "external_tls":
+            raise ValueError("Receiver requires externally managed TLS ingress")
         self.settings = environment_file(self.root / "runtime.env")
         hostname = self.configuration["hostname"]
         if not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?", hostname):
             raise ValueError("Invalid private hostname")
         if self.settings.get(
             "FILLABLE_PUBLIC_ORIGIN"
-        ) != f"http://{hostname}:3200" or self.settings.get(
+        ) != f"https://{hostname}:3200" or self.settings.get(
             "DOCUMENTS_HOST_PATH"
         ) != str(self.root / "documents"):
             raise ValueError("Runtime origin or storage mismatch")
@@ -193,7 +214,6 @@ class Runtime:
         ]
         for name in ("compose.yaml", "compose.prod.yaml", "compose.server.yaml"):
             self.compose += ["-f", str(self.root / "ops" / name)]
-        self.edge = SharedEdge(Path.home() / "wef-shared-edge", self.configuration)
 
     def command(self, *arguments, input=None):
         return execute(
@@ -285,6 +305,35 @@ class Runtime:
         ).splitlines()
         if len(shared) != 1:
             raise ValueError("Shared nginx owner is ambiguous")
+        ports = json.loads(
+            execute(
+                [
+                    "docker",
+                    "inspect",
+                    "--format",
+                    "{{json .NetworkSettings.Ports}}",
+                    shared[0],
+                ]
+            )
+        )
+        if any(
+            binding.get("HostPort") == "3200"
+            for bindings in ports.values()
+            if bindings
+            for binding in bindings
+        ):
+            raise ValueError("Shared nginx must not publish Fillable's relay port")
+        address = execute(
+            [
+                "docker",
+                "inspect",
+                "--format",
+                '{{(index .NetworkSettings.Networks "wef-edge").IPAddress}}',
+                shared[0],
+            ]
+        )
+        if tls_status(self.configuration["hostname"], address) not in {200, 502}:
+            raise ValueError("Externally managed TLS listener is unavailable")
         execute(
             [
                 "docker",
@@ -459,34 +508,7 @@ class Runtime:
         )
         if self.schema() != SCHEMA:
             raise ValueError("Migration did not reach the reviewed schema")
-        changed = False
-        try:
-            self.progress("activate_shared_ingress")
-            changed = self.edge.activate()
-            self.command(
-                "up", "-d", "--no-build", "--wait", "--wait-timeout", "120", "ingress"
-            )
-            if (
-                route_status(
-                    "http://127.0.0.1:3200/api/ready",
-                    hostname=f"{self.configuration['hostname']}:3200",
-                    method="GET",
-                )[0]
-                != 200
-            ):
-                raise ValueError("New ingress is not ready")
-            self.progress("verify_existing_services")
-            after = snapshot()
-            if (
-                any(after.get(key) != value for key, value in before.items())
-                or self.baselines() != routes
-            ):
-                raise ValueError("Existing service baseline changed")
-        except Exception:
-            self.command("stop", "ingress")
-            if changed:
-                self.edge.activate(enabled=False)
-            raise
+        self.start_relay(before, routes)
         result = {
             "source_sha": source,
             "sha256": digest,
@@ -499,3 +521,22 @@ class Runtime:
         temporary = path.with_name("state-" + uuid4().hex + ".json")
         temporary.write_text(json.dumps(result, sort_keys=True) + "\n")
         temporary.replace(path)
+
+    def start_relay(self, before, routes):
+        try:
+            self.progress("start_tls_relay")
+            self.command(
+                "up", "-d", "--no-build", "--wait", "--wait-timeout", "120", "ingress"
+            )
+            if tls_status(self.configuration["hostname"], "127.0.0.1") != 200:
+                raise ValueError("New ingress is not ready")
+            self.progress("verify_existing_services")
+            after = snapshot()
+            if (
+                any(after.get(key) != value for key, value in before.items())
+                or self.baselines() != routes
+            ):
+                raise ValueError("Existing service baseline changed")
+        except Exception:
+            self.command("stop", "ingress")
+            raise
