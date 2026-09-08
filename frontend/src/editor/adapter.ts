@@ -1,4 +1,5 @@
 import { fillBoxedDate, type DateBoxIssue } from "./boxedDates";
+import { glyphCheckboxReady, toggleGlyphCheckbox, toggleSelectedCheckbox, type CheckboxIssue } from "./checkboxes";
 import { sourceNodeView } from "./sourceNodes";
 import type { SourcePresentation } from "./SourceLayout";
 import { EditorState, type Transaction } from "prosemirror-state";
@@ -15,7 +16,7 @@ import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
 export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 export type ReviewOptions = { label: string; key: string; type: string };
-export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean };
+export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean; glyphCheckbox: boolean };
 export type EditorSnapshot = { document: object; revision: number; fieldValuesValid: boolean; composing: boolean };
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
@@ -38,13 +39,24 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
       plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
-        ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
+        " ": toggleSelectedCheckbox, ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
     }),
     handleTextInput: (view, from, to, value) => !allowed() && !compositionSource || fieldTextInput(view, from, to, value),
     handleDOMEvents: {
       beforeinput(view, event) {
         if (!allowed() && !compositionSource) { event.preventDefault(); return true; }
         return fieldBeforeInput(view, event);
+      },
+      click(view, event) {
+        // Leaf checkbox controls are uneditable DOM; route direct clicks to a toggle.
+        const box = (event.target as HTMLElement | null)?.closest?.("span.document-checkbox");
+        if (!box || !view.dom.contains(box)) return false;
+        const position = view.posAtDOM(box, 0);
+        const node = view.state.doc.nodeAt(position);
+        if (!node || node.type.name !== "checkbox" || !allowed() || compositionSource) return false;
+        editor.dispatch(closeHistory(editor.state.tr.setNodeMarkup(position, undefined, { ...node.attrs, checked: !node.attrs.checked })));
+        event.preventDefault();
+        return true;
       },
       compositionstart(_view, event) {
         if (!allowed()) { event.preventDefault(); return true; }
@@ -105,7 +117,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     const active = occurrences.find(field => editor.state.selection.from > field.pos && editor.state.selection.from < field.pos + field.size)?.id ?? "";
     const summaries = occurrences.map(({ id, key, label, value }) => ({ id, key, label, value, issue: fieldValueIssue(value) }));
     callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
-      active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null });
+      active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null,
+      glyphCheckbox: allowed() && glyphCheckboxReady(editor.state) });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {
     if (!transaction || (transaction.docChanged && !allowed())) return false;
@@ -141,6 +154,13 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     fillDate(iso: string): DateBoxIssue | null {
       if (!allowed() || compositionSource) return "read_only";
       const result = fillBoxedDate(editor.state, iso);
+      if (result.issue) return result.issue;
+      dispatch(closeHistory(result.transaction!), true);
+      return null;
+    },
+    toggleGlyph(): CheckboxIssue | null {
+      if (!allowed() || compositionSource) return "read_only";
+      const result = toggleGlyphCheckbox(editor.state);
       if (result.issue) return result.issue;
       dispatch(closeHistory(result.transaction!), true);
       return null;

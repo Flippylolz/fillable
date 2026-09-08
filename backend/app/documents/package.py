@@ -14,6 +14,7 @@ from lxml import etree
 Element = Any
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+W14 = "{http://schemas.microsoft.com/office/word/2010/wordml}"
 Node = dict[str, Any]
 
 
@@ -279,6 +280,30 @@ class DocxPackage:
                             "label": "" if alias is None else alias.get(W + "val", ""),
                         },
                         "content": children,
+                    }
+                )
+            elif (
+                el.tag == W + "sdt"
+                and el.find(W + "sdtPr/" + W14 + "checkbox") is not None
+            ):
+                # A native checkbox control keeps its state; the glyph is display only.
+                content = el.find(W + "sdtContent")
+                previous_unsupported = len(self.unsupported)
+                children = [] if content is None else self.inlines(content)
+                if any(node["type"] != "text" for node in children):
+                    del self.unsupported[previous_unsupported:]
+                    result.append(self.locked(el, True))
+                    continue
+                key = self.identity(el)
+                state = el.find(W + "sdtPr/" + W14 + "checkbox/" + W14 + "checked")
+                result.append(
+                    {
+                        "type": "checkbox",
+                        "attrs": {
+                            "id": key,
+                            "checked": state is not None
+                            and state.get(W14 + "val") in {"1", "true"},
+                        },
                     }
                 )
             else:
