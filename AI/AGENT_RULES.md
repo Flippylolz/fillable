@@ -37,7 +37,7 @@ These instructions guide automated implementation in this repository. Direct use
 - Repository auto-merge is enabled. Enable it separately on each ready PR, using squash by default and checking the expected head commit.
 - Verify required CI/branch rules before arming a code PR. The 90% coverage blocker must be enforced; `--auto` alone does not create a gate. Do not bypass checks or use administrator merges.
 - Follow the PR through failures and updates, and verify that it merged before marking the task done. Record its URL and merge commit, then synchronize before dependent work.
-- Auto-merge does not authorize early deployment; E08 remains last.
+- Deployment is automated: merging to `main` dispatches the verified release after that commit's required CI succeeds (E09.6). Do not weaken the exact-main CI gate or bypass it with administrator merges.
 
 ## Stack and Docker
 
