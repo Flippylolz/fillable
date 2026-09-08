@@ -301,3 +301,14 @@ structures and save path. It does not reinterpret protected drawing geometry as
 editable text. The photo-derived example uses literal separator characters for its
 digit positions; a faithful graphical reconstruction of that source is distinct
 from preserving borders actually present in a DOCX.
+
+E09.13 adds verified checkbox support on the same boundaries. Native `w14:checkbox`
+controls become a dedicated atom node with a checked attribute: click or Space
+toggles, export rewrites only that control's state value and state glyph, and an
+unchanged document exports byte-identically. A selection-based action toggles the
+unambiguous ballot-box pair (U+2610/U+2612) as text; Wingdings-style private-use
+codes are excluded because the editing model does not carry run fonts. Inline
+DrawingML and VML rectangles render in flow like Word's inline drawings, so
+checkbox graphics from converted forms are visible at their anchor position;
+anchored shapes keep paragraph-relative offsets as an explicit approximation that
+can differ from Word's line-relative placement.

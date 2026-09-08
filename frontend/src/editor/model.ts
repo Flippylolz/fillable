@@ -143,6 +143,33 @@ export const editorSchema = new Schema({
         },
       ],
     },
+    checkbox: {
+      group: "inline",
+      inline: true,
+      atom: true,
+      attrs: { id: { default: null }, checked: { default: false } },
+      toDOM: (node) => [
+        "span",
+        {
+          contenteditable: "false",
+          class: "document-checkbox",
+          role: "checkbox",
+          "aria-checked": node.attrs.checked ? "true" : "false",
+          "data-source": node.attrs.id,
+          "data-checked": node.attrs.checked ? "true" : "false",
+        },
+        node.attrs.checked ? "☒" : "☐",
+      ],
+      parseDOM: [
+        {
+          tag: "span.document-checkbox",
+          getAttrs: (el) => ({
+            id: el.getAttribute("data-source"),
+            checked: el.getAttribute("data-checked") === "true",
+          }),
+        },
+      ],
+    },
     lockedBlock: {
       group: "block",
       atom: true,
