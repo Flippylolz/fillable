@@ -77,6 +77,7 @@ jobs:
           sh scripts/verify-server-runtime.sh
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_public_release.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_public_persistence.py
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD:/source:ro" backend-test python /checks/test_deploy_dispatch_contract.py /source
           python3 scripts/test_smoke_transport.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test python /checks/test_coverage_provenance.py
           docker compose -p fillable-checks -f compose.test.yaml run --rm backend-test python /checks/test_gate_contract.py

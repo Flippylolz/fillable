@@ -314,11 +314,13 @@ Automerge never replaces the merge gate: `main` requires the strict, up-to-date
 `ci-required` check for every pull request, including Dependabot's, and the
 auto-merge request is bound to the exact head commit. A failed required check
 refuses the queued merge and leaves the pull request open for manual attention.
-Merging an automatic update does not deploy; deployment stays the manual E08
-workflow, so a dependency change reaches production only through an operator
-action. Major-version updates therefore also automerge after the full gate
-(including browser and upgrade jobs) passes; a broken update is reverted with a
-follow-up pull request rather than hidden from `main`.
+The automerge workflow dispatches no deployment itself, but since E09.6 every
+merge to `main` — a Dependabot merge included — is deployed automatically once
+that exact commit's required CI succeeds. A dependency update therefore reaches
+production after the same full gate (including browser and upgrade jobs) as any
+task merge. Major-version updates automerge under the same rule; a broken
+update is reverted with a follow-up pull request rather than hidden from
+`main`.
 
 Backend Python dependencies remain outside Dependabot: they are compiled by
 pip-tools into the hash-pinned `backend/requirements.lock`, which Dependabot
