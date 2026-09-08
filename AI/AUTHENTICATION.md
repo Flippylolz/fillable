@@ -35,8 +35,8 @@ access. Absolute-expired session rows are cleaned during bootstrap; idle/disable
 All auth/error responses are `no-store`. Role guards query current account state;
 future protected APIs must use these guards and their own ownership checks.
 
-The distinct host-only HttpOnly SameSite=Strict cookie has Secure=false for the
-explicitly accepted HTTP origin; HTTPS configuration enables Secure. Exact-origin
+The distinct host-only HttpOnly SameSite=Strict cookie requires Secure for the
+D024 production HTTPS origin. Local HTTP development retains its scheme-specific configuration. Exact-origin
 checks include the port. Cookies themselves are not port-isolated. This preserves
 D019, rather than silently changing the requested public origin. The four-page UI
 restores the saved account language on session load/login; successful logout clears

@@ -40,7 +40,7 @@ def login(client, identifier, password):
     response.raise_for_status()
     cookie = response.headers["set-cookie"].lower()
     assert "httponly" in cookie and "samesite=strict" in cookie
-    assert "; secure" not in cookie
+    assert "; secure" in cookie
     session = response.json()
     assert session["user"]["login"] == identifier.strip().casefold()
     client.headers["X-CSRF-Token"] = session["csrf_token"]
@@ -145,7 +145,7 @@ def main():
     mode, source, output = sys.argv[1:]
     assert mode in {"login", "smoke"} and re.fullmatch("[0-9a-f]{40}", source)
     origin = os.environ["FILLABLE_PUBLIC_ORIGIN"]
-    assert re.fullmatch(r"http://[a-z0-9.-]+:3200", origin)
+    assert re.fullmatch(r"https://[a-z0-9.-]+:3200", origin)
     with httpx.Client(
         base_url=origin, headers={"Origin": origin}, timeout=40, trust_env=False
     ) as client:

@@ -2357,3 +2357,47 @@ authenticated plain-login smoke and full restart/storage verification are in pro
 Application source is unchanged from E08.6; its measured backend coverage is
 3970/3999 lines and 1174/1206 branches, frontend 1292/1303 lines and 1500/1569
 branches. This task's exact-head CI will remeasure both independently.
+
+E08.8 user-directed HTTPS handoff (2026-09-08): shared nginx now owns the already
+deployed TLS listener on internal 3200, proxying to fillable-gateway:8080 over
+wef-edge. Fillable alone publishes host 3200 through its TCP relay. Forecast HTTP
+3000, WEF HTTP 3100/HTTPS 443, the existing certificate and HSTS remain unchanged.
+This explicitly supersedes the earlier HTTP-only decision. Contact the shared-nginx
+configuration task before ingress changes; no old HTTP rollout may be dispatched.
+
+Adapt runtime/public checks and private operator configuration to HTTPS with Secure
+cookies and certificate verification. Treat the shared listener as externally owned:
+receiver application rollout must not add/remove includes, patch templates/manager,
+reload nginx, or remove the existing TLS route on failure. Update only Fillable's
+installed receiver/runtime origin after reviewed CI/merge, under its release lock,
+preserving credentials, keys and data. Prove TLS through the relay and private app,
+authenticated acceptance, immutable artifacts and unchanged existing services. This
+is a separate prerequisite PR before actual deployment and E08.5 completion.
+
+E08.7 prerequisite PR #78 merged as `4e1d574932e19843c5f43e7f1d2a1661df0be476`;
+PR CI `34198928848` and main CI `34200635960` succeeded. E08.5 draft #75 head
+`45826f0555a5ba003207fa6331610a83c46befd8` also passed CI `34200757732` after
+its real download-reader conflict retry correction. Actual deployment remains pending;
+these HTTP-era green runs do not authorize dispatching the superseded HTTP runtime.
+
+E08.8 local verification passed: 16 receiver/public-readiness contracts including real
+TLS trust and hostname rejection, guarded idle-upgrade credential/key preservation,
+partial-write recovery and no shared activation on relay failure; all 16 shell
+transport scenarios; actual Docker Compose boundary and rejection probes. A synthetic
+preconfigured TLS nginx with the real application and TCP relay passed credential-free
+readiness, case-insensitive login, repeated authenticated upload/save/history downloads,
+and full Fillable restart with identical stored bytes/digests/quota counters. The
+synthetic CA was trusted normally in the disposable client; verification was never
+disabled. Shared configuration and container identity/start/restart state stayed exact,
+including after stopping only the relay. Isolated containers were stopped; persistent
+volumes retained. No production app, relay, user or receiver upgrade has run yet.
+
+The existing shared nginx configuration task confirmed its deployed interface and
+that no nginx edit/reload is needed; coordination is complete for this unchanged
+interface. E08.8 is ready for its own PR/required CI. Application code is unchanged
+from E08.6: last measured backend 3970/3999 lines, 1174/1206 branches; frontend
+1292/1303 lines, 1500/1569 branches. Exact-head CI must remeasure both before merge.
+Next: verify merge, upgrade only the idle private Fillable receiver from merged source,
+set the exact HTTPS origin, recheck existing-service baselines, deploy that verified
+release through Actions, privately create the requested normal user and complete
+E08.5 deployed browser/restart acceptance. Keep shared nginx untouched.
