@@ -1,0 +1,86 @@
+"""The Dependabot automerge workflow arms gated merges and keeps branches up to date."""
+
+import sys
+import unittest
+from pathlib import Path
+from unittest import TestCase
+
+ROOT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent
+AUTOMERGE = (ROOT / ".github" / "workflows" / "dependabot-automerge.yml").read_text()
+CI = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+
+TRIGGERS = AUTOMERGE.split("permissions:", 1)[0]
+EVENT_STEP = AUTOMERGE[
+    AUTOMERGE.index("Enable squash auto-merge"):
+    AUTOMERGE.index("Reconcile open Dependabot pull requests")
+]
+SCHEDULE_STEP = AUTOMERGE[AUTOMERGE.index("Reconcile open Dependabot pull requests"):]
+FAILED_CONCLUSIONS = "FAILURE|CANCELLED|TIMED_OUT|ACTION_REQUIRED|STARTUP_FAILURE"
+# Join shell line continuations so logical commands can be asserted per line.
+LINES = AUTOMERGE.replace("\\\n", " ").splitlines()
+
+
+class DependabotAutomergeContractTests(TestCase):
+    def test_triggers_cover_dependabot_events_and_scheduled_reconciliation(self):
+        self.assertIn("pull_request_target:", TRIGGERS)
+        self.assertIn("types: [opened, reopened, synchronize]", TRIGGERS)
+        self.assertIn("schedule:", TRIGGERS)
+        self.assertRegex(TRIGGERS, r'cron: ".*\* \* \* \*"')
+        self.assertNotIn("pull_request:", TRIGGERS)
+        self.assertNotIn("push:", TRIGGERS)
+
+    def test_permissions_stay_minimal_and_no_pull_request_code_is_checked_out(self):
+        self.assertIn("contents: write", AUTOMERGE)
+        self.assertIn("pull-requests: write", AUTOMERGE)
+        self.assertNotIn("secrets.", AUTOMERGE.replace("secrets.GITHUB_TOKEN", ""))
+        self.assertNotIn("actions/checkout", AUTOMERGE)
+        self.assertNotIn("head.ref", AUTOMERGE)
+
+    def test_job_is_guarded_to_dependabot_in_this_repository(self):
+        self.assertIn("github.repository == 'Flippylolz/fillable'", AUTOMERGE)
+        self.assertIn("github.event.pull_request.user.login == 'dependabot[bot]'", AUTOMERGE)
+        guard = AUTOMERGE[AUTOMERGE.index("if: >-"):AUTOMERGE.index("runs-on:")]
+        self.assertIn("github.event_name == 'schedule'", guard)
+        self.assertIn("||", guard, "Scheduled reconciliation runs under the same guard")
+
+    def test_every_merge_arming_is_auto_squash_at_an_exact_head(self):
+        arming_lines = [line for line in LINES if "gh pr merge" in line]
+        self.assertGreaterEqual(len(arming_lines), 2)
+        for line in arming_lines:
+            self.assertIn("--auto", line)
+            self.assertIn("--squash", line)
+            self.assertIn("--match-head-commit", line)
+
+    def test_event_runs_refresh_a_branch_that_is_behind_main(self):
+        self.assertIn('[ "$state" = "BEHIND" ]', EVENT_STEP)
+        self.assertIn("update-branch", EVENT_STEP)
+        self.assertIn('-f expected_head_sha="$HEAD_SHA"', EVENT_STEP)
+        self.assertIn("exit 0", EVENT_STEP[EVENT_STEP.index("update-branch"):])
+
+    def test_scheduled_reconciliation_updates_behind_dependabot_branches(self):
+        self.assertIn("--author 'app/dependabot'", SCHEDULE_STEP)
+        self.assertIn("mergeStateStatus", SCHEDULE_STEP)
+        self.assertIn('[ "$state" = "BEHIND" ]', SCHEDULE_STEP)
+        self.assertIn('-f expected_head_sha="$head_sha"', SCHEDULE_STEP)
+
+    def test_scheduled_reconciliation_arms_only_healthy_unarmed_pull_requests(self):
+        self.assertIn('[ "$armed" = "false" ]', SCHEDULE_STEP)
+        failed_guard = SCHEDULE_STEP.index(FAILED_CONCLUSIONS)
+        for line in SCHEDULE_STEP.splitlines():
+            if "gh pr merge" in line:
+                self.assertLess(
+                    failed_guard, SCHEDULE_STEP.index(line),
+                    "Arming must follow the failed-check guard",
+                )
+
+    def test_automerge_never_bypasses_the_gate_or_releases_directly(self):
+        self.assertNotIn("--admin", AUTOMERGE)
+        for banned in ("ship-release.sh", "build-release.sh", "deploy.yml", "workflow run"):
+            self.assertNotIn(banned, AUTOMERGE)
+
+    def test_contracts_job_keeps_enforcing_this_contract(self):
+        self.assertIn("test_dependabot_automerge_contract.py", CI)
+
+
+if __name__ == "__main__":
+    unittest.main(argv=[sys.argv[0]])
