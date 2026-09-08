@@ -2721,3 +2721,8 @@ Status: in_progress. The single sequential `checks` job made every PR wait for t
 ## E09.9 — Restore the deploy-dispatch contract in the split CI
 
 Status: in_review. E09.8's CI split dropped `scripts/test_deploy_dispatch_contract.py` from required CI while the script and the E09.6 dispatcher stayed in use. Acceptance: the dispatch-dispatcher contract test runs again inside the required `contracts` job against the checked-out source, keeping the deploy-on-merge behavior pinned. Deliver a dedicated PR with required CI; the merge itself then deploys automatically through the E09.6 dispatcher.
+
+
+## E09.10 — Dependabot updates for backend Python dependencies
+
+Status: in_review. Follow-up to E09.7 and the user request to update Python dependencies the same way as the sibling WEF/estate_test repository: cover backend Python dependencies through the Dependabot `pip` ecosystem. Acceptance: the pip-compile lockfile lives at the Dependabot-recognized path `backend/requirements.txt` (renamed from `requirements.lock` with the Docker install path updated and the header normalized by a real pip-tools 7.5.3 recompile in the digest-pinned base image); `dependabot.yml` gains a grouped `pip` entry for `/backend`; hash-pinned `--require-hashes` installation is unchanged and remains enforced by the Docker build; D025 and [CI and deployment](CI_CD.md) no longer record a Python exclusion; both ecosystems' PRs flow through the existing squash automerge and `ci-required` gate. Configuration/rename only — no application source changes, so coverage is unchanged; the backend test image build validates the renamed lock locally, and required CI reruns all suites and gates.
