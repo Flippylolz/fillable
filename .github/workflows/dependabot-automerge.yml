@@ -88,13 +88,21 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          gh pr list --repo "$REPO" --state open --author 'app/dependabot' \
+          # Dependabot's author login differs between the REST and GraphQL
+          # surfaces and `--author` cannot be trusted under GITHUB_TOKEN, so
+          # list all open pull requests and filter here. `mergeStateStatus`
+          # also caches stale values for minutes after a merge, so behind-ness
+          # is computed from the compare API instead.
+          gh pr list --repo "$REPO" --state open \
             --limit 50 \
-            --json number,headRefOid,mergeStateStatus,autoMergeRequest,statusCheckRollup \
-            --jq '.[] | [.number, .headRefOid, .mergeStateStatus, (.autoMergeRequest != null), ([.statusCheckRollup[]?.conclusion // empty] | join(","))] | @tsv' |
-          while IFS=$'\t' read -r number head_sha state armed conclusions; do
-            if [ "$state" = "BEHIND" ]; then
-              echo "PR #$number is behind main; updating its branch"
+            --json number,headRefOid,author,autoMergeRequest,statusCheckRollup \
+            --jq '.[] | select(.author.login == "app/dependabot" or .author.login == "dependabot[bot]") | [.number, .headRefOid, (.autoMergeRequest != null), ([.statusCheckRollup[]?.conclusion // empty] | join(","))] | @tsv' |
+          while IFS=$'\t' read -r number head_sha armed conclusions; do
+            behind="$(gh api --cache 0 \
+              "repos/$REPO/compare/main...${head_sha}" \
+              --jq '.behind_by // 0' 2>/dev/null || echo 0)"
+            if [ "$behind" -gt 0 ]; then
+              echo "PR #$number is $behind commit(s) behind main; updating its branch"
               gh api --method PUT \
                 "repos/$REPO/pulls/$number/update-branch" \
                 -f expected_head_sha="$head_sha" >/dev/null \

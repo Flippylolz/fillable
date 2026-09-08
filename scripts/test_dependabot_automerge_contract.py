@@ -63,9 +63,18 @@ class DependabotAutomergeContractTests(TestCase):
 
     def test_reconciliation_runs_for_main_pushes_and_the_fallback_schedule(self):
         self.assertIn("if: github.event_name != 'pull_request_target'", SCHEDULE_STEP)
-        self.assertIn("--author 'app/dependabot'", SCHEDULE_STEP)
-        self.assertIn("mergeStateStatus", SCHEDULE_STEP)
-        self.assertIn('[ "$state" = "BEHIND" ]', SCHEDULE_STEP)
+        # The author filter is applied client-side: Dependabot's login differs
+        # between REST and GraphQL and --author is unreliable under
+        # GITHUB_TOKEN (the first push run matched nothing).
+        list_line = next(line for line in SCHEDULE_STEP.splitlines() if "gh pr list" in line)
+        self.assertNotIn("--author", list_line)
+        self.assertIn('.author.login == "app/dependabot"', SCHEDULE_STEP)
+        self.assertIn('.author.login == "dependabot[bot]"', SCHEDULE_STEP)
+        # mergeStateStatus caches stale values right after merges, so
+        # behind-ness comes from the compare API instead.
+        self.assertIn("compare/main...${head_sha}", SCHEDULE_STEP)
+        self.assertIn(".behind_by", SCHEDULE_STEP)
+        self.assertIn('[ "$behind" -gt 0 ]', SCHEDULE_STEP)
         self.assertIn('-f expected_head_sha="$head_sha"', SCHEDULE_STEP)
 
     def test_reconciliation_arms_only_healthy_unarmed_pull_requests(self):
