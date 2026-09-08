@@ -2721,3 +2721,7 @@ Status: in_progress. The single sequential `checks` job made every PR wait for t
 ## E09.9 — Restore the deploy-dispatch contract in the split CI
 
 Status: in_review. E09.8's CI split dropped `scripts/test_deploy_dispatch_contract.py` from required CI while the script and the E09.6 dispatcher stayed in use. Acceptance: the dispatch-dispatcher contract test runs again inside the required `contracts` job against the checked-out source, keeping the deploy-on-merge behavior pinned. Deliver a dedicated PR with required CI; the merge itself then deploys automatically through the E09.6 dispatcher.
+
+## E09.10 — Stabilize the history restore browser check
+
+Status: in_review. CI run 34259413491 flaked in the required browser job: after accepting the restore confirm, the desktop history check waited only five seconds for the toolbar button that reappears when the panel closes, so a missed dialog or a slow restore surfaced as an unrelated visibility failure and blocked `ci-required` and that cycle's automated deployment (identical browser content passed in the adjacent runs). Acceptance: the restore must be confirmed through the document endpoint before the panel-close assertion runs, keeping every original assertion and producing a direct failure if the restore does not happen. Test-only change; the independent 90% gates, catalogs and deploy behavior are untouched.
