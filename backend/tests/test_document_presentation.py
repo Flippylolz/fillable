@@ -322,3 +322,65 @@ def test_vml_pixel_dimensions_convert_to_points():
     shape = display(etree.fromstring(xml))["shapes"][0]
     assert (shape["width"], shape["height"]) == (10.05, 10.05)
     assert shape["border"] == "none"
+
+
+def test_alternate_content_drawing_renders_once_without_vml_duplicate():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import (
+        MC,
+        WP,
+        A,
+        V,
+        display,
+        recolor_targets,
+    )
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:a="{A[1:-1]}"
+      xmlns:wp="{WP[1:-1]}" xmlns:mc="{MC[1:-1]}" xmlns:v="{V[1:-1]}">
+      <mc:AlternateContent><mc:Choice Requires="wps"><w:drawing><wp:anchor>
+      <wp:positionH relativeFrom="column">
+      <wp:posOffset>127000</wp:posOffset></wp:positionH>
+      <wp:positionV relativeFrom="paragraph"><wp:posOffset>25400</wp:posOffset>
+      </wp:positionV>
+      <wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+      <a:solidFill><a:srgbClr val="938953"/></a:solidFill>
+      </wp:anchor></w:drawing></mc:Choice>
+      <mc:Fallback><w:pict><v:rect style="width:10pt;height:10pt"
+        fillcolor="#938953"/></w:pict></mc:Fallback></mc:AlternateContent></w:r>'''
+    result = display(etree.fromstring(xml))
+    assert len(result["shapes"]) == 1
+    assert result["shapes"][0]["placement"] == "absolute"
+    assert result["shapes"][0]["fill"] == "#938953"
+    targets = recolor_targets(etree.fromstring(xml))
+    assert len(targets) == 1 and targets[0] is not None
+    # A rejected DrawingML choice falls back to its duplicate VML rectangle.
+    broken = xml.replace('cx="127000"', 'cx="bad"')
+    fallback = display(etree.fromstring(broken))["shapes"]
+    assert [shape["placement"] for shape in fallback] == ["inline"]
+    assert fallback[0]["fill"] == "#938953"
+    # Standalone VML rectangles stay represented next to a valid drawing.
+    standalone = xml.replace(
+        "</w:r>",
+        '<w:pict><v:rect style="width:5pt;height:5pt"/></w:pict></w:r>',
+    )
+    extra = display(etree.fromstring(standalone))["shapes"]
+    assert [shape["width"] for shape in extra] == [10.0, 5.0]
+
+
+def test_recolor_targets_are_absent_for_implicit_and_missing_fills():
+    from lxml import etree
+
+    from app.documents.drawing_presentation import WP, A, recolor_targets
+
+    xml = f'''<w:r xmlns:w="{W[1:-1]}" xmlns:a="{A[1:-1]}" xmlns:wp="{WP[1:-1]}">
+    <wp:anchor><wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+    <a:noFill/></wp:anchor>
+    <wp:anchor><wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+    <a:solidFill><a:srgbClr val="ABCDEF"/></a:solidFill></wp:anchor>
+    </w:r>'''
+    tree = etree.fromstring(xml)
+    targets = recolor_targets(tree)
+    assert [target is not None for target in targets] == [False, True]
+    targets[1]("ff0000")
+    assert b'val="ff0000"' in etree.tostring(tree)

@@ -81,6 +81,7 @@ export function DocumentEditor({
   useEffect(() => {
     view.current!.setDocumentLabel(t("editor.document"));
     view.current!.setPageBreakLabel(page => t("editor.pageBreak", { page }));
+    view.current!.setShapeCheckboxLabel(t("editor.shapeCheckbox"));
   }, [t]);
   useEffect(() => {
     if (discoverySnapshot && sourceVersion) setReviewStale(!view.current!.attachDiscovery(discoverySnapshot, sourceVersion, reviewSaved));

@@ -196,3 +196,15 @@ def test_removed_structure_and_absent_source_identity_are_not_guessed():
     source["content"][0]["content"][0]["attrs"].pop("id")
     with pytest.raises(ValueError, match="copy_identity_mismatch"):
         prepare(source, package, SOURCE)
+
+
+def test_locked_shape_overrides_never_break_copy_correspondence():
+    from test_document_checkboxes import shape_document
+
+    package = DocxPackage(shape_document())
+    source = deepcopy(package.model)
+    run = next(node for node in walk(source) if node["type"] == "lockedInline")
+    run["attrs"]["shapes"] = {"0": "#938953"}
+    assert prepare(source, package, SOURCE).bind(uuid4()) == package.model
+    run["attrs"]["shapes"] = {}
+    assert prepare(source, package, SOURCE).bind(uuid4()) == package.model

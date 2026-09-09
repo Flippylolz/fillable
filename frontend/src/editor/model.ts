@@ -123,23 +123,42 @@ export const editorSchema = new Schema({
       group: "inline",
       inline: true,
       atom: true,
-      attrs: { id: { default: null }, label: {} },
-      toDOM: (node) => [
-        "span",
-        {
+      attrs: { id: { default: null }, label: {}, shapes: { default: {} } },
+      toDOM: (node) => {
+        const attributes: Record<string, string> = {
           contenteditable: "false",
           class: "document-unsupported",
           "data-locked": node.attrs.id,
-        },
-        node.attrs.label,
-      ],
+        };
+        const overrides = node.attrs.shapes as Record<string, string>;
+        if (overrides && Object.keys(overrides).length)
+          attributes["data-shapes"] = JSON.stringify(overrides);
+        return ["span", attributes, node.attrs.label];
+      },
       parseDOM: [
         {
           tag: "span[data-locked]",
-          getAttrs: (el) => ({
-            id: el.getAttribute("data-locked"),
-            label: el.textContent,
-          }),
+          getAttrs: (el) => {
+            let shapes: Record<string, string> = {};
+            const raw = el.getAttribute("data-shapes");
+            if (raw) {
+              try {
+                const parsed: unknown = JSON.parse(raw);
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                  for (const [key, value] of Object.entries(parsed)) {
+                    if (typeof value === "string") shapes[key] = value;
+                  }
+                }
+              } catch {
+                shapes = {};
+              }
+            }
+            return {
+              id: el.getAttribute("data-locked"),
+              label: el.textContent,
+              shapes,
+            };
+          },
         },
       ],
     },
