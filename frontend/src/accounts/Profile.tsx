@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
-import { api, apiErrorMessage } from "../api";
+import { api, apiErrorMessage, type ApiErrorParameters } from "../api";
 import { formatBytes } from "../i18n";
 import type { Session } from "./Authentication";
 import "./profile.css";
@@ -22,6 +22,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [errorParameters, setErrorParameters] = useState<ApiErrorParameters>({});
   const [notice, setNotice] = useState("");
   const [usage, setUsage] = useState<Usage | null>(null);
   const [usageError, setUsageError] = useState("");
@@ -50,7 +51,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
   async function submit(kind: "name" | "password" | "language", event: FormEvent) {
     event.preventDefault();
     if (busy || disabled) return;
-    setError(""); setNotice("");
+    setError(""); setErrorParameters({}); setNotice("");
     if (kind === "password" && password !== confirmation) {
       setError("password_mismatch");
       return;
@@ -78,11 +79,13 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
       } else {
         if (kind === "language") setLanguageChoice(user.ui_language);
         setError(result.error?.error.code ?? "internal_error");
+        setErrorParameters(result.error?.error.parameters ?? {});
       }
     } catch {
       if (!controller.signal.aborted) {
         if (kind === "language") setLanguageChoice(user.ui_language);
         setError("internal_error");
+        setErrorParameters({});
       }
     } finally {
       if (!controller.signal.aborted) { setBusy(false); onBusy(false); }
@@ -93,7 +96,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
 
   return <section className="profile" aria-labelledby="profile-title">
     <h2 id="profile-title">{t("profile.title")}</h2>
-    {error && <p role="alert">{error === "password_mismatch" ? t("profile.passwordMismatch") : error === "password_length" ? t("profile.passwordTooShort") : apiErrorMessage(error)}</p>}
+    {error && <p role="alert">{error === "password_mismatch" ? t("profile.passwordMismatch") : error === "password_length" ? t("profile.passwordTooShort") : apiErrorMessage(error, errorParameters)}</p>}
     {notice && <p role="status">{t(notice)}</p>}
     <form className="profile-card" aria-labelledby="profile-account" onSubmit={event => void submit("name", event)}>
       <h3 id="profile-account">{t("profile.account")}</h3>

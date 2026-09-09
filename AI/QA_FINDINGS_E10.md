@@ -85,6 +85,10 @@ An operator therefore cannot attribute upload/copy/restore events or identify wh
 
 ### F7 — 422 `invalid_request` responses do not identify the offending parameter (informational; API ergonomics)
 
+**Resolution (E10.6, 2026-09-09): fixed.** Schema-validation 422s now carry `{"parameter": <name>, "reason": <machine-readable reason>}` in `parameters` (for example `kind`/`missing` for the documented repro). Only names and bounded machine reasons leave the server — submitted values, exception text and internal messages are never included; request-supplied names are bounded to 64 printable characters. The OpenAPI/TypeScript contract was regenerated (byte-identical — `parameters` was already typed `dict[string|integer]`, so no schema drift exists and CI's drift check confirms it). The frontend interpolates the name where available: `errors.invalid_request_parameter` ("Перевірте значення поля {{parameter}}." / "Check the {{parameter}} field.") is used by the profile forms when the API names a parameter, with the generic catalog message remaining the fallback everywhere else. Covered by error-contract and profile component tests in both languages. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
+
 Schema violations (for example, `GET /api/documents` without the required `kind` query parameter, empty display name, unknown fields) all return `{"error":{"code":"invalid_request","parameters":{}}}` with empty `parameters`. The OpenAPI contract documents the constraints, but clients and the localized UI can only show a generic message. Direction: include a machine-readable parameter name/reason in `parameters` where safe (no submitted values), and surface it in the localized error text.
 
 ### F8 — Favicon is SVG-only (informational)
