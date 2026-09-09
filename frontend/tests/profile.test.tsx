@@ -90,6 +90,31 @@ test("a short new password shows the localized inline minimum without a request"
   expect(fetcher).toHaveBeenCalledTimes(1);
 });
 
+test("a 422 invalid_request names the offending field in both locales", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ error: { code: "invalid_request", parameters: {} } }))
+    .mockResolvedValueOnce(Response.json(usage))
+    .mockResolvedValueOnce(Response.json(
+      { error: { code: "invalid_request", parameters: { parameter: "display_name", reason: "extra_forbidden" } } },
+      { status: 422 },
+    ))
+    .mockResolvedValueOnce(Response.json(
+      { error: { code: "invalid_request", parameters: {} } },
+      { status: 422 },
+    ));
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  await screen.findByText("8 байтів");
+  fireEvent.change(screen.getByLabelText("Ім’я для відображення"), { target: { value: "Ґанна" } });
+  fireEvent.submit(nameForm());
+  expect(await screen.findByRole("alert")).toHaveTextContent("Перевірте значення поля display_name.");
+  await act(() => setLanguage("en"));
+  expect(screen.getByRole("alert")).toHaveTextContent("Check the display_name field.");
+  fireEvent.submit(screen.getByRole("form", { name: "Account details" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Check the entered information.");
+  await act(() => setLanguage("uk"));
+  expect(screen.getByRole("alert")).toHaveTextContent("Перевірте введені дані.");
+});
+
 test("usage failures retry without discarding drafts and copy updates with locale", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(failure("dependencies_unavailable"))
     .mockRejectedValueOnce(new Error("offline"))

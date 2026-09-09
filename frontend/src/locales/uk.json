@@ -12,6 +12,7 @@
   "errors.not_found": "Не знайдено.",
   "errors.method_not_allowed": "Ця дія недоступна.",
   "errors.invalid_request": "Перевірте введені дані.",
+  "errors.invalid_request_parameter": "Перевірте значення поля {{parameter}}.",
   "errors.internal_error": "Сталася помилка. Спробуйте ще раз.",
   "editor.document": "Редагований документ",
   "editor.fieldLabel": "Назва нового поля",
