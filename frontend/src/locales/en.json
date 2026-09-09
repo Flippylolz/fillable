@@ -99,6 +99,7 @@
   "profile.confirmPassword": "Confirm new password",
   "profile.changePassword": "Change password",
   "profile.passwordMismatch": "The new passwords do not match.",
+  "profile.passwordTooShort": "The new password must be at least 10 characters.",
   "profile.passwordSaved": "Your password has been changed. Other sessions have been signed out.",
   "profile.storage": "Storage",
   "profile.usageLoading": "Loading storage usage…",

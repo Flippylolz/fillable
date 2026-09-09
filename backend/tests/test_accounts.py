@@ -314,7 +314,7 @@ def test_provision_validation_duplicates_constraints_and_rehash():
     with pytest.raises(AppError) as duplicate:
         account()
     assert duplicate.value.detail.code == "account_exists"
-    for password in ("short", "x" * 1025):
+    for password in ("short", "x" * 9, "x" * 1025):
         with pytest.raises(ValueError):
             service.reset_password(user.login, password)
     with pytest.raises(AppError):
@@ -385,6 +385,41 @@ def test_private_operator_commands_never_print_credentials():
         assert cli.main() == 1
     with patch("sys.argv", args), patch("sys.stdin", io.StringIO(PASSWORD)):
         assert cli.main() == 1
+
+
+def test_operator_cli_enforces_the_ten_character_password_minimum():
+    nine, ten = "x" * 9, "Exact-10!!"
+    assert len(nine) == 9 and len(ten) == 10
+    for action, extra in (
+        ("provision", ["--login", "minlen-user", "--display-name", "Мінімум"]),
+        ("reset-password", ["--email", "minlen-user"]),
+    ):
+        output, errors = io.StringIO(), io.StringIO()
+        with (
+            patch("sys.argv", ["command", action, *extra, "--password-stdin"]),
+            patch("sys.stdin", io.StringIO(nine + "\n")),
+            patch("sys.stdout", output),
+            patch("sys.stderr", errors),
+        ):
+            assert cli.main() == 1
+        assert errors.getvalue().strip() == "invalid_password"
+        assert nine not in output.getvalue() + errors.getvalue()
+    for action, extra in (
+        ("provision", ["--login", "minlen-user", "--display-name", "Мінімум"]),
+        ("reset-password", ["--email", "minlen-user"]),
+    ):
+        output, errors = io.StringIO(), io.StringIO()
+        with (
+            patch("sys.argv", ["command", action, *extra, "--password-stdin"]),
+            patch("sys.stdin", io.StringIO(ten + "\n")),
+            patch("sys.stdout", output),
+            patch("sys.stderr", errors),
+        ):
+            assert cli.main() == 0
+        assert "completed" in output.getvalue()
+        assert ten not in output.getvalue() + errors.getvalue()
+    session = service.login(service.bootstrap(None).token, "minlen-user", ten)
+    assert session.user is not None and session.user.login == "minlen-user"
 
 
 def test_https_cookie_and_origin_configuration(monkeypatch):

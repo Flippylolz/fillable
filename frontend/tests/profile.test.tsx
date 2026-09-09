@@ -71,6 +71,25 @@ test("password validation, failures and successful rotation preserve or clear th
   expect(onSession).toHaveBeenCalledWith(expect.objectContaining({ csrf_token: "rotated" }));
 });
 
+test("a short new password shows the localized inline minimum without a request", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json(usage));
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  await screen.findByText("8 байтів");
+  fireEvent.change(screen.getByLabelText("Поточний пароль"), { target: { value: "Old-password-їжак" } });
+  fireEvent.change(screen.getByLabelText("Новий пароль"), { target: { value: "короткий" } });
+  fireEvent.change(screen.getByLabelText("Підтвердьте новий пароль"), { target: { value: "короткий" } });
+  fireEvent.submit(passwordForm());
+  expect(await screen.findByRole("alert")).toHaveTextContent("щонайменше 10 символів");
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  await act(() => setLanguage("en"));
+  fireEvent.change(screen.getByLabelText("New password"), { target: { value: "short-9ch" } });
+  fireEvent.change(screen.getByLabelText("Confirm new password"), { target: { value: "short-9ch" } });
+  fireEvent.submit(screen.getByRole("form", { name: "Change password" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("at least 10 characters");
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
 test("usage failures retry without discarding drafts and copy updates with locale", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(failure("dependencies_unavailable"))
     .mockRejectedValueOnce(new Error("offline"))
