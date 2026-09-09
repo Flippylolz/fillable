@@ -65,6 +65,10 @@ def correspondence(document, package):
             continue
         left, right = dict(source.get("attrs", {})), dict(target.get("attrs", {}))
         old, new = left.pop("id", None), right.pop("id", None)
+        # Shape fill overrides are locked-run presentation state that only the
+        # working model carries; the canonical package model never has them.
+        left.pop("shapes", None)
+        right.pop("shapes", None)
         if old is not None or new is not None:
             if (
                 not isinstance(old, str)
