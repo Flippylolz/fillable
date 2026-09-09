@@ -69,3 +69,64 @@ test("local login rotates a cookie, restores language across refresh, and logout
     fullPage: true,
   });
 });
+
+test("empty sign-in shows catalog feedback and the credentials alert stays inside the card", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("button", { name: "Увійти", exact: true }),
+  ).toBeEnabled();
+  await expect(page.getByLabel("Логін", { exact: true })).not.toHaveAttribute(
+    "required",
+  );
+  await expect(page.getByLabel("Пароль", { exact: true })).not.toHaveAttribute(
+    "required",
+  );
+  const card = page.locator("form");
+  const empty = await card.boundingBox();
+  await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await expect(
+    page.getByText("Введіть логін.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Введіть пароль.", { exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("login-empty-uk.png"),
+    fullPage: true,
+  });
+  await page.getByLabel("Логін", { exact: true }).fill("browser-user");
+  await page.getByLabel("Пароль", { exact: true }).fill("incorrect");
+  const settled = await card.boundingBox();
+  // The reserved feedback row keeps the card geometry stable when alerts appear.
+  expect(settled!.y).toBeCloseTo(empty!.y, 0);
+  expect(settled!.height).toBeCloseTo(empty!.height, 0);
+  await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  const alert = page.getByRole("alert");
+  await expect(alert).toHaveText("Неправильний логін або пароль.");
+  await expect(alert.locator("xpath=ancestor::form")).toBeVisible();
+  expect((await card.boundingBox())!.height).toBeCloseTo(empty!.height, 0);
+  await page.screenshot({
+    path: testInfo.outputPath("login-alert-uk.png"),
+    fullPage: true,
+  });
+  // Signing in applies the account language; the signed-out form follows it.
+  await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
+  await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await expect(
+    page.getByText("Signed in as Тестовий користувач."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Sign in", exact: true }),
+  ).toBeEnabled();
+  await page.getByLabel("Login", { exact: true }).fill("");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page.getByText("Enter your login name.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Enter your password.", { exact: true })).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("login-empty-en.png"),
+    fullPage: true,
+  });
+});
