@@ -61,6 +61,17 @@ install_probe() {
 review = json.load(sys.stdin)
 for item in review["attrs"]["review"]["items"]:
     item["type"] = "text"
+def strip(node):
+    if isinstance(node, dict):
+        attrs = node.get("attrs")
+        if isinstance(attrs, dict) and attrs.get("shapes") == {}:
+            attrs.pop("shapes")
+        for value in node.values():
+            strip(value)
+    elif isinstance(node, list):
+        for value in node:
+            strip(value)
+strip(review)
 json.dump(review, sys.stdout)' < "$verification_root/current/fixtures/docx/v1/working-review.json" > "$verification_root/review-payload.json"
   "$1" exec -T api sh -c 'cat > /tmp/recovery-review.json' < "$verification_root/review-payload.json"
 }
