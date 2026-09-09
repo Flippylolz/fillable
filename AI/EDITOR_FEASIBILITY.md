@@ -312,3 +312,12 @@ DrawingML and VML rectangles render in flow like Word's inline drawings, so
 checkbox graphics from converted forms are visible at their anchor position;
 anchored shapes keep paragraph-relative offsets as an explicit approximation that
 can differ from Word's line-relative placement.
+
+E09.15 adds approximate visual page breaks on the same boundary. The editor measures
+block flow against the retained source page height/margins and draws localized,
+non-saveable markers between blocks that begin a new page, so readers can see where
+one page ends and the next starts. Breaks land on block boundaries only; exact Word
+pagination, floating-object interactions and widow/orphan control remain unproved,
+and "exact Word pagination in the browser" stays on the protected/unproved list
+above. Markers are view decorations and never enter the document model, review
+metadata or exported DOCX.

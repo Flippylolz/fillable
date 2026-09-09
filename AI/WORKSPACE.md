@@ -420,3 +420,21 @@ checkboxes — are extracted as bounded, read-only shapes rendered in the text f
 at their anchor position, matching Word's inline rendering; anchored shapes keep
 their source offsets relative to the paragraph box. Their geometry is presentation
 only and never becomes editable text or a filled value.
+
+### Visual page breaks (E09.15)
+
+The mounted workspace and historical preview show approximate page boundaries so a
+reader can see where one page ends and the next begins. The adapter measures top-level
+blocks against the source page geometry already delivered for layout (page height and
+margins from `sectPr`) and renders a dashed marker with a localized "Сторінка N"/"Page N"
+label between the blocks that begin a new page. Markers are ProseMirror widget
+decorations only: never part of the document model, undo stack, review state, save
+payload or exports, hidden from assistive technology, and numbered in reading order.
+Measurement reruns after edits, zoom changes and layout/resize/font changes; marker
+positions honor the zoom scale and exclude previously rendered markers.
+
+Breaks fall on block boundaries and cannot split a paragraph or table row, so the
+marker shows the last block boundary before Word's exact break position. Documents
+whose presentation lacks page geometry (and header/footer sections) show no markers.
+This is deliberate flow approximation, not Word pagination; exact break positions,
+floating-object interactions and print layout remain outside the proven support matrix.
