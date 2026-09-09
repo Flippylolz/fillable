@@ -4,12 +4,17 @@ import type { EditorState } from "prosemirror-state";
 type Slot = { from: number; to: number; digits: number };
 export type DateBoxIssue = "invalid_date" | "select_boxes" | "read_only";
 
+/** Real calendar dates only, including leap-year February. */
+export function calendarValid(year: number, month: number, day: number): boolean {
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return year >= 1 && month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1];
+}
+
 function digitsFor(iso: string, count: number): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
   const [year, month, day] = iso.split("-").map(Number);
-  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  if (year < 1 || month < 1 || month > 12 || day < 1 || day > days[month - 1]) return null;
+  if (!calendarValid(year, month, day)) return null;
   return iso.slice(8) + iso.slice(5, 7) + iso.slice(count === 6 ? 2 : 0, 4);
 }
 

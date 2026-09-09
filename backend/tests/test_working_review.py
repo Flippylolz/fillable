@@ -214,6 +214,17 @@ def test_control_presence_properties_and_complete_tracking_match_document():
     )[1]
 
 
+def test_review_records_carry_types_and_legacy_rows_default_to_text():
+    typed = model(paragraph(text("A🙂B")), items=[{**item(), "type": "date"}])
+    assert working.validate_working(typed, SOURCE)[1]["items"][0]["type"] == "date"
+    legacy = item()
+    del legacy["type"]
+    reviewed = working.validate_working(
+        model(paragraph(text("A🙂B")), items=[legacy]), SOURCE
+    )[1]["items"][0]
+    assert reviewed["type"] == "text"
+
+
 def test_duplicate_and_overlapping_records_and_invalid_types_are_rejected():
     for second in (
         item(),
@@ -232,7 +243,7 @@ def test_duplicate_and_overlapping_records_and_invalid_types_are_rejected():
     with pytest.raises(ValueError, match="invalid_working_control"):
         working.validate_working(model(paragraph(field(), field())), SOURCE)
     for changes in (
-        {"type": "number"},
+        {"type": "checkbox"},
         {"missing": 1},
         {"reason": "manual"},
         {"decision": "accepted"},

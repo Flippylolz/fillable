@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import { DocumentEditor } from "../src/editor/DocumentEditor";
+import type { FieldSummary } from "../src/editor/adapter";
 import { FieldSidebar } from "../src/editor/FieldSidebar";
 import { i18n, setLanguage } from "../src/i18n";
 import corpus from "../prototype/document.json";
@@ -39,7 +40,7 @@ test("occurrence navigation distinguishes repeated controls, preserves locale/se
 
 test("unselected navigation has explicit endpoints, conflict values remain visible and an empty sidebar explains field creation", async () => {
   const focus = vi.fn(), update = vi.fn(), remove = vi.fn();
-  const fields = [{ id: "one", key: "shared", label: "ПІБ", value: "Ірина", issue: null }, { id: "two", key: "shared", label: "ПІБ", value: "Єва", issue: null }];
+  const fields: FieldSummary[] = [{ id: "one", key: "shared", label: "ПІБ", value: "Ірина", type: "text", issue: null }, { id: "two", key: "shared", label: "ПІБ", value: "Єва", type: "text", issue: null }];
   const ui = (empty = false) => <I18nextProvider i18n={i18n}><FieldSidebar fields={empty ? [] : fields} active="" focus={focus} update={update} remove={remove} /></I18nextProvider>;
   const view = render(ui());
   expect(screen.getAllByText("Linked occurrences have different values. Review them before editing.")).toHaveLength(2);
@@ -53,4 +54,46 @@ test("unselected navigation has explicit endpoints, conflict values remain visib
   expect(screen.queryByRole("button")).toBeNull();
   await act(() => setLanguage("uk"));
   expect(screen.getByText(/Полів ще немає/)).toBeVisible();
+});
+
+test("date fields render pickers writing canonical DD.MM.YYYY and number fields keep exact text", async () => {
+  const update = vi.fn(), focus = vi.fn(), remove = vi.fn();
+  const fields: FieldSummary[] = [
+    { id: "d", key: "date", label: "Дата події", value: "7.3.2026", type: "date", issue: null },
+    { id: "n", key: "sum", label: "Сума", value: "1 250,50", type: "number", issue: null },
+  ];
+  const ui = () => <I18nextProvider i18n={i18n}><FieldSidebar fields={fields} active="" focus={focus} update={update} remove={remove} /></I18nextProvider>;
+  render(ui());
+  expect(screen.getByText("Date")).toBeVisible();
+  expect(screen.getByText("Number")).toBeVisible();
+  const picker = screen.getByLabelText("Field value: Дата події") as HTMLInputElement;
+  expect(picker).toHaveAttribute("type", "date");
+  expect(picker).toHaveValue("2026-03-07");
+  fireEvent.change(picker, { target: { value: "2026-12-31" } });
+  expect(update).toHaveBeenLastCalledWith("date", "31.12.2026");
+  fireEvent.change(picker, { target: { value: "" } });
+  expect(update).toHaveBeenLastCalledWith("date", "");
+  const amount = screen.getByLabelText("Field value: Сума");
+  expect(amount).toHaveAttribute("inputmode", "decimal");
+  expect(amount).toHaveValue("1 250,50");
+  fireEvent.change(amount, { target: { value: "2 000,00" } });
+  expect(update).toHaveBeenLastCalledWith("sum", "2 000,00");
+});
+
+test("unparsable dates and non-numeric amounts surface localized issues", async () => {
+  const update = vi.fn(), focus = vi.fn(), remove = vi.fn();
+  const fields: FieldSummary[] = [
+    { id: "d", key: "date", label: "Дата", value: "31.02.2026", type: "date", issue: "invalid_date" },
+    { id: "n", key: "sum", label: "Сума", value: "1 25O", type: "number", issue: "invalid_number" },
+  ];
+  const view = render(<I18nextProvider i18n={i18n}><FieldSidebar fields={fields} active="" focus={focus} update={update} remove={remove} /></I18nextProvider>);
+  const alerts = screen.getAllByRole("alert");
+  expect(alerts[0]).toHaveTextContent(/not a valid date in DD.MM.YYYY/i);
+  expect(alerts[1]).toHaveTextContent(/not a number/i);
+  await act(() => setLanguage("uk"));
+  expect(screen.getAllByRole("alert").map(alert => alert.textContent)).toEqual([
+    "Це значення не є коректною датою у форматі ДД.ММ.РРРР. Воно залишається в чернетці; виправте його перед експортом або збереженням.",
+    "Це значення не є числом. Воно залишається в чернетці; виправте його перед експортом або збереженням.",
+  ]);
+  view.unmount();
 });

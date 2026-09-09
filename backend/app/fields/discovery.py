@@ -6,6 +6,7 @@ import re
 import unicodedata
 from uuid import UUID
 
+from app.fields.kinds import classify
 from app.fields.schema import FieldSnapshot
 from app.fields.validation import paragraphs, validate_snapshot
 
@@ -75,6 +76,7 @@ def extract(model: dict, source_version_id: UUID) -> FieldSnapshot:
                 "source_key": key,
                 "reason": reason,
                 "context": context[:1024],
+                "type": classify(occurrence["value"], label),
             }
         )
         return candidate_id
@@ -102,7 +104,12 @@ def extract(model: dict, source_version_id: UUID) -> FieldSnapshot:
                 key if key is not None else control_id,
             )
             if group not in groups:
-                groups[group] = {"id": group, "label": label, "occurrence_ids": []}
+                groups[group] = {
+                    "id": group,
+                    "type": classify(value, label),
+                    "label": label,
+                    "occurrence_ids": [],
+                }
             groups[group]["occurrence_ids"].append(control_id)
             # Preserve a field that already exists in the source, not inferred XML.
             data["decisions"].append(

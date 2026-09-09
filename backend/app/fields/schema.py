@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Identity = Annotated[str, Field(min_length=1, max_length=1024)]
 Offset = Annotated[int, Field(strict=True, ge=0, le=50 * 1024 * 1024)]
+FieldType = Literal["text", "number", "date"]
 
 
 class StrictModel(BaseModel):
@@ -45,7 +46,7 @@ class Occurrence(StrictModel):
 
 class TextField(StrictModel):
     id: Identity
-    type: Literal["text"] = "text"
+    type: FieldType = "text"
     label: str = Field(max_length=512)
     occurrence_ids: list[Identity] = Field(min_length=1, max_length=2000)
 
@@ -59,6 +60,8 @@ class Candidate(StrictModel):
         "native_control", "placeholder", "blank_line", "blank_cell", "manual"
     ]
     context: str = Field(max_length=1024)
+    # Proposed fill-time kind; absent in payloads saved before typed proposals.
+    type: FieldType = "text"
 
 
 class ReviewDecision(StrictModel):

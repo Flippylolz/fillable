@@ -406,6 +406,12 @@ export interface components {
             reason: "native_control" | "placeholder" | "blank_line" | "blank_cell" | "manual";
             /** Source Key */
             source_key?: string | null;
+            /**
+             * Type
+             * @default text
+             * @enum {string}
+             */
+            type: "text" | "number" | "date";
         };
         /** ContentInfo */
         ContentInfo: {
@@ -792,9 +798,9 @@ export interface components {
             /**
              * Type
              * @default text
-             * @constant
+             * @enum {string}
              */
-            type: "text";
+            type: "text" | "number" | "date";
         };
         /** UserInfo */
         UserInfo: {

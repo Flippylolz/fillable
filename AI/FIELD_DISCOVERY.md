@@ -39,6 +39,29 @@ and location validation before it is returned. Over-limit field values fail rath
 than truncating document contents. Supporting context is bounded user data and must
 not be logged or treated as instructions by downstream consumers.
 
+## Proposed field types (E11)
+
+`app.fields.kinds.classify` proposes a reviewable `type` for every occurrence from
+two deterministic inputs: the exact source text at the anchor and the candidate's
+label (for placeholders that is the token key, for blanks the nearby label, for
+native controls the alias/tag). Date shapes win first: a `D.M.YYYY`,
+`YYYY-M-D` or `дд.мм.рррр` value with any separator, or a blank of exactly three
+digit/underscore segments such as `__.__.____`. A date label («дат» root,
+word-bounded `date`) proposes date next. Contact and postal labels — «телефон»,
+«пошт», «адрес», `phone`, `mail`, `address` — force text so values with `+`
+prefixes, leading zeros and postal codes stay text. Number labels («кільк»,
+«вартіст», «цін» prefixes, word-bounded «сума/суми…» and «вік», `amount`,
+`price`, `quantity`, `total`, `sum`, `count`, `age`, and `№`) propose number; so
+does a value of optional minus, optional space-grouped thousands and one decimal
+separator. Document numbers deliberately stay text even under «номер», "number"
+or `№` labels, because they legitimately contain letters, dashes and leading
+zeros. Everything else defaults to text. Keyword roots are Unicode-aware for
+Cyrillic inflections and token keys joined by underscores, which are read as
+word separators; classification never normalizes or transliterates the stored
+label, key or value. A type proposal never auto-accepts anything, and review can
+change the type of any proposal or accepted field. Native logical fields take the
+classification of their first source occurrence.
+
 ## Current evidence
 
 The fixed Ukrainian corpus yields 23 proposals: all 22 labeled explicit detections

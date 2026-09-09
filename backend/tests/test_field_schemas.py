@@ -312,6 +312,23 @@ def test_model_identity_and_resource_bounds(monkeypatch):
         paragraphs(MODEL)
 
 
+def test_type_proposals_are_optional_defaulted_and_fail_closed():
+    data = payload()
+    snapshot = FieldSnapshot.model_validate(data)
+    assert snapshot.candidates[0].type == "text"
+    assert snapshot.fields[0].type == "text"
+    data["candidates"][0]["type"] = "date"
+    data["fields"][0]["type"] = "number"
+    snapshot = validate_snapshot(data, VERSION, MODEL)
+    assert snapshot.candidates[0].type == "date"
+    assert snapshot.fields[0].type == "number"
+    assert FieldSnapshot.model_validate_json(snapshot.model_dump_json()) == snapshot
+    for value in ("email", 1, None):
+        data["candidates"][0]["type"] = value
+        with pytest.raises(ValidationError):
+            FieldSnapshot.model_validate(data)
+
+
 def test_candidate_provenance_must_match_the_anchor_kind():
     data = payload()
     data["candidates"][0]["reason"] = "native_control"

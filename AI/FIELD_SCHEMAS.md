@@ -21,8 +21,12 @@ to an active field. Candidate provenance must match the anchor kind.
 All records reject unknown properties. Identity, label, value, context and collection
 sizes are bounded; offsets are strict nonnegative integers. Duplicate record IDs,
 repeated occurrence assignment, unknown references, conflicting decisions and invalid
-review assignments fail validation. Type is text only; verified support for other
-field types requires a subsequent explicit schema change. Labels, source keys, values
+review assignments fail validation. Each field and candidate carries a fill-time
+`type` of `text`, `number`, or `date`; `text` is the default, so payloads saved before
+typed proposals remain valid unchanged. The type is reviewable metadata about how a
+value is entered and checked, never a different DOCX control: accepted fields stay
+source-preserving plain-text content controls, and document values remain stored text.
+Labels, source keys, values
 and context remain user data in their original Unicode, never translation keys or
 instructions. Blank labels can be displayed through a localized fallback without
 changing saved metadata. Individual source values above 65,536 code points exceed

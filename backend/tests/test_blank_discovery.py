@@ -143,3 +143,21 @@ def test_short_label_and_underlined_spaces_at_line_end_need_no_colon():
     assert len(result.candidates) == 1
     assert result.candidates[0].label == "Ім’я"
     assert result.occurrences[0].value == "     "
+
+
+def test_blank_proposals_classify_dates_amounts_and_text_from_context():
+    source = package(
+        "<w:tbl><w:tr>"
+        "<w:tc><w:p><w:r><w:t>Дата народження:</w:t></w:r></w:p></w:tc>"
+        "<w:tc><w:p><w:r><w:t>__.__.____</w:t></w:r></w:p></w:tc>"
+        "</w:tr><w:tr>"
+        "<w:tc><w:p><w:r><w:t>Сума:</w:t></w:r></w:p></w:tc>"
+        "<w:tc><w:p><w:r><w:t>______</w:t></w:r></w:p></w:tc>"
+        "</w:tr><w:tr>"
+        "<w:tc><w:p><w:r><w:t>ПІБ:</w:t></w:r></w:p></w:tc>"
+        "<w:tc><w:p><w:r><w:t>______</w:t></w:r></w:p></w:tc>"
+        "</w:tr></w:tbl>"
+    )
+    result = discover(source.model, uuid4())
+    kinds = {candidate.label: candidate.type for candidate in result.candidates}
+    assert kinds == {"Дата народження": "date", "Сума": "number", "ПІБ": "text"}

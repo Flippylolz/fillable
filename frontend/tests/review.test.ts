@@ -29,7 +29,7 @@ function small(content: EditorNode[], id = "p") {
 function proposal(value: string, start: number, end: number): Snapshot {
   return { schema_version: 1, source_version_id: version, occurrences: [{ id: "o", value,
     anchor: { kind: "span", part: "word/document.xml", paragraph_id: "p", start, end } }],
-    candidates: [{ id: "c", occurrence_id: "o", reason: "placeholder", label: "Імʼя", context: "context" }] };
+    candidates: [{ id: "c", occurrence_id: "o", reason: "placeholder", label: "Імʼя", context: "context", type: "text" }] };
 }
 const text = (value: string) => editorSchema.text(value);
 const item = (doc: EditorNode, id: string) => reviewState(doc)!.items.find(candidate => candidate.id === id)!;
@@ -141,7 +141,7 @@ test("configure labels and groups without changing values; deletion and undo ret
 
 test("proposal label and type validation is atomic and preserves drafts on rejection", () => {
   const current = editor(attachReview(small([text("{{X}}")]), proposal("{{X}}", 0, 5), version));
-  for (const options of [{ label: " " }, { key: "" }, { label: "x".repeat(257) }, { key: "x".repeat(513) }, { key: "bad\n" }, { type: "date" }]) {
+  for (const options of [{ label: " " }, { key: "" }, { label: "x".repeat(257) }, { key: "x".repeat(513) }, { key: "bad\n" }, { type: "checkbox" }]) {
     expect(reviewCandidate(current.state, "c", "accept", options)).toBeNull();
     expect(configureCandidate(current.state, "c", options.label ?? "valid", options.key ?? "valid", options.type)).toBeNull();
   }
@@ -153,6 +153,29 @@ test("proposal label and type validation is atomic and preserves drafts on rejec
   current.dispatch(reviewCandidate(current.state, "c", "dismiss"));
   current.dispatch(reviewCandidate(current.state, "c", "accept"));
   expect(fields(current.state.doc)[0]).toMatchObject({ label: "New label", key: "new key" });
+});
+
+test("typed proposals attach, accept and reconfigure; undo restores the previous kind", () => {
+  const typed: Snapshot = proposal("{{X}}", 0, 5);
+  typed.candidates![0] = { ...typed.candidates![0], type: "date" };
+  const attached = attachReview(small([text("{{X}}")]), typed, version);
+  expect(item(attached, "c").type).toBe("date");
+  const current = editor(attached);
+  current.dispatch(reviewCandidate(current.state, "c", "accept"));
+  expect(item(current.state.doc, "c")).toMatchObject({ type: "date", decision: "accepted" });
+  current.dispatch(configureCandidate(current.state, "c", "Імʼя", "c", "number"));
+  expect(item(current.state.doc, "c").type).toBe("number");
+  const before = current.state.doc;
+  expect(undo(current.state, current.dispatch)).toBe(true);
+  expect(item(current.state.doc, "c").type).toBe("date");
+  expect(redo(current.state, current.dispatch)).toBe(true);
+  expect(item(current.state.doc, "c").type).toBe("number");
+  expect(current.state.doc.eq(before)).toBe(true);
+  // Accept with no explicit option keeps the proposed kind; unknown kinds fail.
+  const fresh = editor(attachReview(small([text("{{X}}")]), typed, version));
+  expect(reviewCandidate(fresh.state, "c", "accept", { type: "formula" })).toBeNull();
+  fresh.dispatch(reviewCandidate(fresh.state, "c", "accept"));
+  expect(item(fresh.state.doc, "c").type).toBe("date");
 });
 
 test("wrong revision, stale anchors, duplicate identities and protected spans are rejected", () => {
@@ -243,7 +266,7 @@ test("native review preserves an empty alias instead of adopting a discovery dis
   const original = small([control]);
   const detected: Snapshot = { schema_version: 1, source_version_id: version,
     occurrences: [{ id: "native", value: "Їжак", anchor: { kind: "control", part: "word/document.xml", paragraph_id: "p", control_id: "native" } }],
-    candidates: [{ id: "candidate", occurrence_id: "native", label: "Стала група", source_key: "Стала група", context: "Їжак", reason: "native_control" }],
+    candidates: [{ id: "candidate", occurrence_id: "native", label: "Стала група", source_key: "Стала група", context: "Їжак", reason: "native_control", type: "text" }],
     fields: [{ id: "group", type: "text", label: "Стала група", occurrence_ids: ["native"] }],
     decisions: [{ candidate_id: "candidate", status: "accepted", field_id: "group" }],
   };
