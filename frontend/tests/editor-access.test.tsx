@@ -70,3 +70,31 @@ test("read-only React controls retain drafts while selection and review browsing
   expect(screen.getByRole("textbox", { name: "Editable document" })).toHaveAttribute("contenteditable", "false");
   expect(screen.getAllByRole("button", { name: "Go to field: ПІБ клієнта" })[0]).toBeEnabled();
 });
+
+test("undo and redo buttons follow history availability in both locales", async () => {
+  await setLanguage("uk");
+  const view = render(<I18nextProvider i18n={i18n}><DocumentEditor initialDocument={corpus} canEdit={() => true} /></I18nextProvider>);
+  const undo = () => screen.getByRole("button", { name: "Скасувати" });
+  const redo = () => screen.getByRole("button", { name: "Повторити" });
+  expect(undo()).toBeDisabled();
+  expect(redo()).toBeDisabled();
+  const field = screen.getAllByRole("textbox", { name: "Значення поля: ПІБ клієнта" })[0];
+  fireEvent.change(field, { target: { value: "Історія Їжака" } });
+  await waitFor(() => expect(undo()).toBeEnabled());
+  expect(redo()).toBeDisabled();
+  fireEvent.click(undo());
+  await waitFor(() => expect(undo()).toBeDisabled());
+  expect(redo()).toBeEnabled();
+  fireEvent.click(redo());
+  await waitFor(() => expect(redo()).toBeDisabled());
+  expect(undo()).toBeEnabled();
+  await act(async () => setLanguage("en"));
+  const undoEn = screen.getByRole("button", { name: "Undo" });
+  const redoEn = screen.getByRole("button", { name: "Redo" });
+  expect(undoEn).toBeEnabled();
+  expect(redoEn).toBeDisabled();
+  fireEvent.click(undoEn);
+  await waitFor(() => expect(undoEn).toBeDisabled());
+  expect(redoEn).toBeEnabled();
+  view.unmount();
+});
