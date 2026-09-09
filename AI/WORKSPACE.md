@@ -95,7 +95,11 @@ Field values follow the versioned metadata limit of 65,536 Unicode code points a
 forbidden XML characters and lone surrogates are flagged. Invalid input remains in the
 working document and linked sidebar controls with a localized, associated error. Users
 can correct or undo it; no truncation, replacement or silent discard occurs. Language
-changes preserve the draft and its validation state.
+changes preserve the draft and its validation state. Since E11 the entry control follows
+the record's reviewable type (text textarea, decimal number input preserving exact user
+text, and a datepicker writing canonical `ДД.ММ.РРРР`); unparsable nonempty number/date
+values raise the same recoverable issues and save block under
+[Working field review](FIELD_REVIEW.md).
 
 Adapter snapshots and presentation expose `fieldValuesValid`. This only describes field
 values, not full DOCX/model validity or server authorization. The opt-in round-trip proof

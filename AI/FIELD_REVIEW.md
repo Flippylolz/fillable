@@ -38,10 +38,14 @@ metadata or mark a document dirty.
 - Dismiss changes only review metadata, leaving document content unchanged. It can be undone,
   and the dismissed proposal can later be accepted. Existing accepted controls are removed
   through the editor's control-removal operation, not hidden through a suggestion dismissal.
-- Configure changes a proposal's label/group or the corresponding live control's alias/tag.
-  Labels and keys follow E04.5a bounds (256/512 code points, nonblank, no control characters),
-  and reject text DOCX XML cannot store.
-  MVP supports text only. Invalid operations preserve the current document and metadata.
+- Configure changes a proposal's label/group/type or the corresponding live control's
+  alias/tag. Labels and keys follow E04.5a bounds (256/512 code points, nonblank, no
+  control characters), and reject text DOCX XML cannot store. E11 widens the type
+  choice to `text`, `number`, and `date`: accept keeps the proposed kind unless the
+  review supplies another, configure rewrites the review record's type in one undoable
+  step, and the type never changes DOCX control properties because it is fill-time
+  metadata, not a control attribute. Invalid operations preserve the current document
+  and metadata.
 - Focus selects the precise proposal/control range without changing the document. Missing
   locations cannot be focused or accepted.
 
@@ -64,10 +68,22 @@ is rejected and reopening the saved document requires confirming discard of the 
 
 The collapsible review panel separates proposed, accepted and dismissed records, with
 localized counts and ten records per page. Each record shows its reason, source context,
-label, text type and explicit value group. Group choices use readable labels rather than
-internal identifiers. Users can focus, configure, accept and dismiss valid proposals;
+label, localized type choice (text/number/date) and explicit value group. Group choices
+use readable labels rather than internal identifiers. Users can focus, configure, accept
+and dismiss valid proposals;
 missing locations remain visible with unavailable actions disabled. Applying a group
 preserves conflicting existing values until a subsequent value edit.
+
+Sidebar value cards render the record's type: text keeps the multiline textarea,
+number uses a decimal input that preserves the user's exact text (comma decimals and
+space thousands included), and date uses a picker that reads any supported day-first
+or ISO form and writes the canonical `ДД.ММ.РРРР` document format while leaving
+separators of directly edited values untouched. Empty values stay valid for every
+type; a nonempty number that does not parse and a nonempty unparsable date raise the
+same recoverable field-value issues as other invalid drafts, remain in the draft, and
+block saving through `fieldValuesValid`. The server keeps treating values as bounded
+text: value-format checking is a workspace contract, not a new rejection path for
+saves.
 
 The panel shares editor history and preserves unapplied label/group inputs across a
 profile language change. Ukrainian and English controls, errors and pagination use the

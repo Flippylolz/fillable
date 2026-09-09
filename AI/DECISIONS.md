@@ -337,3 +337,25 @@ pip-compile 7.5.3 — the same pip-tools version pinned in
 a Dependabot-recognized manifest, so E09.10 renamed the compiled file; the
 manual pip-compile procedure remains available for full operator-controlled
 re-resolutions.
+
+## D026 — Field types are reviewable text, number, and date
+
+Status: **Accepted — explicit user request, recorded 2026-09-09.**
+
+Every field carries a fill-time type: `text`, `number`, or `date`. Detection
+proposes the type deterministically from the anchored value shape and the
+nearby label (Ukrainian-first keywords, no AI under D009); `text` remains the
+default and every proposal is correctable in review. The type describes how a
+value is entered and checked, not a different Word control: accepted fields
+stay source-preserving plain-text content controls, DOCX bytes and control
+properties do not change when a type changes, and the type persists with the
+review metadata through saves, copies, and restores. The sidebar renders a
+decimal input for numbers (preserving the user's exact text) and a datepicker
+for dates (reading day-first or ISO values, writing canonical `ДД.ММ.РРРР`);
+empty values remain valid, and nonempty values that do not parse raise the
+existing recoverable field-value issues and block saving client-side. The
+server continues to treat values as bounded text and adds no new save
+rejection path. Choice/dropdown fields and Word-native date picker controls
+remain deferred; the schema widened the v1 records with a defaulted optional
+property instead of a version bump, so stored snapshots and reviews stay
+loadable unchanged.

@@ -175,3 +175,41 @@ def test_anonymous_control_identity_cannot_collide_with_an_explicit_tag_group():
     )
     result = extract(source.model, uuid4())
     assert len(result.fields) == 2
+
+
+def test_proposals_and_native_groups_carry_deterministic_kinds():
+    source = package(
+        "<w:p><w:r><w:t>Дата: {{ДАТА_НАРОДЖЕННЯ}} Сума: {{СУМА_ДОГОВОРУ}} "
+        "ПІБ: {{ПІБ_КЛІЄНТА}}</w:t></w:r></w:p>"
+        '<w:p><w:sdt><w:sdtPr><w:id w:val="1"/><w:tag w:val="ДАТА_ПОДІЇ"/>'
+        '<w:alias w:val="Дата події"/><w:text/></w:sdtPr><w:sdtContent/></w:sdt>'
+        '<w:sdt><w:sdtPr><w:id w:val="2"/><w:tag w:val="NOTES"/>'
+        '<w:alias w:val="Примітки"/><w:text/></w:sdtPr><w:sdtContent>'
+        "<w:r><w:t>1 250,50</w:t></w:r></w:sdtContent></w:sdt></w:p>"
+    )
+    result = extract(source.model, uuid4())
+    kinds = {
+        candidate.source_key or candidate.label: candidate.type
+        for candidate in result.candidates
+    }
+    assert kinds["ДАТА_НАРОДЖЕННЯ"] == "date"
+    assert kinds["СУМА_ДОГОВОРУ"] == "number"
+    assert kinds["ПІБ_КЛІЄНТА"] == "text"
+    assert kinds["ДАТА_ПОДІЇ"] == "date" and kinds["NOTES"] == "number"
+    fields = {field.label: field.type for field in result.fields}
+    assert fields == {"Дата події": "date", "Примітки": "number"}
+
+
+def test_native_group_kind_follows_its_first_source_occurrence():
+    source = package(
+        '<w:p><w:sdt><w:sdtPr><w:id w:val="1"/><w:tag w:val="NOTES"/>'
+        "<w:text/></w:sdtPr><w:sdtContent><w:r><w:t>2026</w:t></w:r>"
+        "</w:sdtContent></w:sdt>"
+        '<w:sdt><w:sdtPr><w:id w:val="2"/><w:tag w:val="NOTES"/><w:text/>'
+        "</w:sdtPr><w:sdtContent><w:r><w:t>текст</w:t></w:r>"
+        "</w:sdtContent></w:sdt></w:p>"
+    )
+    result = extract(source.model, uuid4())
+    assert len(result.fields) == 1
+    assert result.fields[0].type == "number"
+    assert [candidate.type for candidate in result.candidates] == ["number", "text"]

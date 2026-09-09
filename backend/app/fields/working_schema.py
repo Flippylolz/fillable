@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import Field, model_validator
 
-from app.fields.schema import Identity, StrictModel
+from app.fields.schema import FieldType, Identity, StrictModel
 from app.fields.validation import MODEL_TEXT
 
 Property = Annotated[str, Field(max_length=MODEL_TEXT)]
@@ -33,7 +33,9 @@ class WorkingItem(StrictModel):
     context: str = Field(max_length=1024)
     label: Property
     key: Property
-    type: Literal["text"]
+    # Fill-time kind carried by the review record; reviews saved before typed
+    # proposals always mean text, so the default keeps them loadable.
+    type: FieldType = "text"
     decision: Literal["proposed", "accepted", "dismissed"]
     missing: bool = Field(strict=True)
     location: Annotated[WorkingSpan | WorkingControl, Field(discriminator="kind")]

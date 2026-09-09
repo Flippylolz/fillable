@@ -48,6 +48,16 @@
               }
             ],
             "title": "Source Key"
+          },
+          "type": {
+            "default": "text",
+            "enum": [
+              "text",
+              "number",
+              "date"
+            ],
+            "title": "Type",
+            "type": "string"
           }
         },
         "required": [
@@ -1033,8 +1043,12 @@
             "type": "array"
           },
           "type": {
-            "const": "text",
             "default": "text",
+            "enum": [
+              "text",
+              "number",
+              "date"
+            ],
             "title": "Type",
             "type": "string"
           }

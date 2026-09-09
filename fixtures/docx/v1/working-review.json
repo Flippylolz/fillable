@@ -44,7 +44,7 @@
           "context": "Дата: [[ДАТА_АНКЕТИ]]",
           "label": "ДАТА_АНКЕТИ",
           "key": "ДАТА_АНКЕТИ",
-          "type": "text",
+          "type": "date",
           "decision": "proposed",
           "missing": true,
           "location": {
@@ -218,7 +218,7 @@
           "context": "[[ДАТА_ПОДІЇ]]",
           "label": "ДАТА_ПОДІЇ",
           "key": "ДАТА_ПОДІЇ",
-          "type": "text",
+          "type": "date",
           "decision": "proposed",
           "missing": false,
           "location": {
@@ -468,7 +468,7 @@
           "context": "Бажана дата завершення\nБажана дата завершення: ____ / ____ / ______",
           "label": "Бажана дата завершення",
           "key": "",
-          "type": "text",
+          "type": "date",
           "decision": "proposed",
           "missing": false,
           "location": {

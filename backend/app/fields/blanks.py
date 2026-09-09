@@ -6,6 +6,7 @@ import unicodedata
 from uuid import UUID
 
 from app.fields.discovery import extract, identity
+from app.fields.kinds import classify
 from app.fields.schema import FieldSnapshot
 from app.fields.validation import paragraphs, validate_snapshot
 
@@ -178,9 +179,10 @@ def discover(model: dict, source_version_id: UUID) -> FieldSnapshot:
                     "label": nearby,
                     "reason": "blank_cell" if start == end else "blank_line",
                     "source_key": None,
-                    "context": (nearby + "\n" + text[max(0, start - 160) : end + 160])[
-                        :1024
-                    ],
+                    "context": (
+                        nearby + "\n" + text[max(0, start - 160) : end + 160]
+                    )[:1024],
+                    "type": classify(text[start:end], nearby),
                 }
             )
             intervals.append((start, end))

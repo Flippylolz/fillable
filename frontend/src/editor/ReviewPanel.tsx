@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { FieldSummary, ReviewAction } from "./adapter";
+import { FIELD_TYPES, type FieldType } from "./fieldKinds";
 import type { ReviewItem, ReviewState } from "./review";
 import "./review.css";
 
@@ -11,18 +12,21 @@ function ReviewCard({ item, groups, act, readOnly }: { readOnly: boolean; item: 
   const { t, i18n } = useTranslation();
   const numbers = new Intl.NumberFormat(i18n.resolvedLanguage);
   const [label, setLabel] = useState(item.label), [key, setKey] = useState(item.key);
+  const [type, setType] = useState<FieldType>(item.type);
   const [invalid, setInvalid] = useState(false);
   const errorId = useId();
-  useEffect(() => { setLabel(item.label); setKey(item.key); }, [item.label, item.key]);
+  useEffect(() => { setLabel(item.label); setKey(item.key); setType(item.type); }, [item.label, item.key, item.type]);
   function apply(action: ReviewAction) {
-    setInvalid(!act(item.id, action, { label, key, type: "text" }));
+    setInvalid(!act(item.id, action, { label, key, type }));
   }
   return <article className="review-card" aria-label={t("review.card", { label: item.label })}>
     <p className="review-reason">{t(`review.reason.${item.reason}`)}</p>
     <p className="review-context">{item.context}</p>
     {item.missing && <p role="status" className="review-missing">{t("review.missing")}</p>}
     <label>{t("review.label")}<input aria-invalid={invalid || undefined} aria-describedby={invalid ? errorId : undefined} value={label} disabled={item.missing || readOnly} onChange={event => setLabel(event.target.value)} /></label>
-    <label>{t("review.type")}<select defaultValue="text" disabled={item.missing || readOnly}><option value="text">{t("review.text")}</option></select></label>
+    <label>{t("review.type")}<select value={type} disabled={item.missing || readOnly} onChange={event => setType(event.target.value as FieldType)}>
+      {FIELD_TYPES.map(kind => <option key={kind} value={kind}>{t(`review.${kind}`)}</option>)}
+    </select></label>
     <label>{t("review.group")}<select aria-invalid={invalid || undefined} aria-describedby={invalid ? errorId : undefined} value={key} disabled={item.missing || readOnly} onChange={event => setKey(event.target.value)}>
       <option value="">{t("review.independent")}</option>
       {key && !groups.some(group => group.key === key) && <option value={key}>{t("review.sourceGroup")}</option>}

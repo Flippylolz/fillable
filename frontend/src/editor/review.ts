@@ -5,6 +5,7 @@ import type { components } from "../../generated/api";
 import { fields, type FieldOccurrence } from "./model";
 import { newFieldId } from "./transactions";
 import { validFieldProperty } from "./fieldProperties";
+import { isFieldType, type FieldType } from "./fieldKinds";
 
 type Snapshot = components["schemas"]["FieldSnapshot"];
 type Candidate = components["schemas"]["Candidate"];
@@ -16,7 +17,7 @@ export type ReviewItem = {
   context: string;
   label: string;
   key: string;
-  type: "text";
+  type: FieldType;
   decision: "proposed" | "accepted" | "dismissed";
   missing: boolean;
   location: { kind: "span"; from: number; to: number; text: string }
@@ -110,7 +111,8 @@ export function attachReview(doc: EditorNode, snapshot: Snapshot, sourceVersion:
     }
     return { id: candidate.id, occurrenceId: occurrence.id, reason: candidate.reason,
       sourceKey: candidate.source_key ?? null, context: candidate.context, label,
-      key, type: "text", decision: location.kind === "control" ? "accepted" : decisions.get(candidate.id) ?? "proposed", missing: false, location };
+      key, type: isFieldType(candidate.type) ? candidate.type : "text",
+      decision: location.kind === "control" ? "accepted" : decisions.get(candidate.id) ?? "proposed", missing: false, location };
   });
   return doc.type.create({ ...doc.attrs, review: { sourceVersion, items } }, doc.content, doc.marks);
 }
@@ -159,28 +161,29 @@ export function reviewCandidate(state: EditorState, id: string, action: "dismiss
   });
   const label = options.label ?? item.label, identity = newFieldId();
   const key = options.key ?? (item.key || identity);
+  const type = isFieldType(options.type) ? options.type : item.type;
   if (item.missing || item.location.kind !== "span" || !validFieldProperty(label, 256)
-    || !validFieldProperty(key, 512) || (options.type ?? "text") !== "text") return null;
+    || !validFieldProperty(key, 512) || options.type !== undefined && !isFieldType(options.type)) return null;
   const { from, to, text } = item.location;
   if (!allowedSpan(state.doc, from, to, text)) return null;
   const node = state.schema.nodes.field.create({ id: identity, key, label }, state.doc.slice(from, to).content);
   const transaction = closeHistory(state.tr).replaceWith(from, to, node);
   const mapped = mappedReview(review, transaction);
   transaction.setDocAttribute("review", { ...mapped, items: mapped.items.map(entry => entry.id === id
-    ? { ...entry, label, key, decision: "accepted", missing: false, location: { kind: "control", id: identity } } : entry) });
+    ? { ...entry, label, key, type, decision: "accepted", missing: false, location: { kind: "control", id: identity } } : entry) });
   return transaction.setSelection(TextSelection.create(transaction.doc, from + 1));
 }
 
-export function configureCandidate(state: EditorState, id: string, label: string, key: string, type = "text"): Transaction | null {
+export function configureCandidate(state: EditorState, id: string, label: string, key: string, type: unknown = "text"): Transaction | null {
   const review = reviewState(state.doc), item = review?.items.find(entry => entry.id === id);
-  if (!review || !item || item.missing || !validFieldProperty(label, 256) || !validFieldProperty(key, 512) || type !== "text") return null;
+  if (!review || !item || item.missing || !validFieldProperty(label, 256) || !validFieldProperty(key, 512) || !isFieldType(type)) return null;
   const transaction = closeHistory(state.tr);
   if (item.location.kind === "control") {
     const field = controls(state.doc).get(item.location.id);
     if (!field) return null;
     transaction.setNodeMarkup(field.pos, undefined, { ...state.doc.nodeAt(field.pos)!.attrs, label, key });
   }
-  return transaction.setDocAttribute("review", { ...review, items: review.items.map(entry => entry.id === id ? { ...entry, label, key } : entry) });
+  return transaction.setDocAttribute("review", { ...review, items: review.items.map(entry => entry.id === id ? { ...entry, label, key, type } : entry) });
 }
 
 export function focusCandidate(state: EditorState, id: string): Transaction | null {

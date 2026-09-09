@@ -115,3 +115,19 @@ test("late proposals cannot replace an edited draft and reopening requires an ex
   fireEvent.click(screen.getByRole("button", { name: "Reopen saved document" }));
   expect(reopen).toHaveBeenCalledOnce();
 });
+
+test("the field type dropdown applies reviewable kinds and retypes the sidebar input", async () => {
+  const changed = vi.fn(); render(ui(changed)); await openReview();
+  const first = screen.getAllByRole("article", { name: /^Field suggestion:/ })[0], card = within(first);
+  const type = card.getByLabelText("Field type");
+  expect(type).toBeEnabled();
+  fireEvent.change(type, { target: { value: "date" } });
+  fireEvent.click(card.getByRole("button", { name: "Apply settings" }));
+  const latest = () => editorSchema.nodeFromJSON(changed.mock.calls.at(-1)![0]);
+  expect(reviewState(latest())!.items[0].type).toBe("date");
+  expect(latest().content.eq(editorSchema.nodeFromJSON(corpus).content)).toBe(true);
+  fireEvent.click(card.getByRole("button", { name: "Accept" }));
+  const value = await screen.findByLabelText("Field value: ІМʼЯ_РЕЦЕНЗЕНТА");
+  expect(value).toHaveAttribute("type", "date");
+  expect(within(value.closest("article")!).getByText("Date")).toBeVisible();
+});

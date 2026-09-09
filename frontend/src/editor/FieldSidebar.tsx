@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useId } from "react";
 import type { FieldSummary } from "./adapter";
 import { FIELD_VALUE_LIMIT } from "./fieldValues";
+import { formatDateValue, parseDateValue } from "./fieldKinds";
 import "./sidebar.css";
 
 export function FieldSidebar({ fields, active, update, focus, remove, readOnly = false }: {
@@ -22,21 +23,37 @@ export function FieldSidebar({ fields, active, update, focus, remove, readOnly =
         <button type="button" disabled={index === 0} onClick={() => focus(fields[index < 0 ? fields.length - 1 : index - 1].id)}>{t("editor.previousField")}</button>
         <button type="button" disabled={index === fields.length - 1} onClick={() => focus(fields[index + 1].id)}>{t("editor.nextField")}</button>
       </div>
-      {fields.map((field, number) => <article key={field.id} className="field-value-card" data-active={active === field.id}
-        aria-current={active === field.id ? true : undefined}
-        aria-label={t("editor.occurrence", { number: numbers.format(number + 1), label: field.label })}>
-        <p className="field-type">{t("review.text")}</p>
-        {active === field.id && <p className="field-active">{t("editor.activeField")}</p>}
-        <label>{field.label}<textarea disabled={readOnly} rows={3} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
-          aria-invalid={field.issue ? true : undefined} aria-describedby={field.issue ? `${errorPrefix}-${number}` : undefined}
-          onChange={event => update(field.key, event.target.value)} /></label>
-        {field.issue && <p role="alert" id={`${errorPrefix}-${number}`} className="field-conflict">{t(`editor.value.${field.issue}`, { limit: numbers.format(FIELD_VALUE_LIMIT) })}</p>}
-        <div className="field-actions">
-          <button type="button" onClick={() => focus(field.id)}>{t("editor.focus", { label: field.label })}</button>
-          <button type="button" disabled={readOnly} onClick={() => remove(field.id)}>{t("editor.remove", { label: field.label })}</button>
-        </div>
-        {fields.some(other => other.key === field.key && other.value !== field.value) && <p role="status" className="field-conflict">{t("editor.inconsistent")}</p>}
-      </article>)}
+      {fields.map((field, number) => {
+        const described = field.issue ? `${errorPrefix}-${number}` : undefined;
+        // Number values keep the user's exact text (comma decimals included);
+        // the picker writes the canonical ДД.ММ.РРРР document format.
+        const input = field.type === "date"
+          ? <input type="date" disabled={readOnly} value={parseDateValue(field.value) ?? ""}
+            aria-label={t("editor.fieldValue", { label: field.label })}
+            aria-invalid={field.issue ? true : undefined} aria-describedby={described}
+            onChange={event => update(field.key, formatDateValue(event.target.value) ?? "")} />
+          : field.type === "number"
+            ? <input type="text" inputMode="decimal" disabled={readOnly} value={field.value}
+              aria-label={t("editor.fieldValue", { label: field.label })}
+              aria-invalid={field.issue ? true : undefined} aria-describedby={described}
+              onChange={event => update(field.key, event.target.value)} />
+            : <textarea disabled={readOnly} rows={3} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
+              aria-invalid={field.issue ? true : undefined} aria-describedby={described}
+              onChange={event => update(field.key, event.target.value)} />;
+        return <article key={field.id} className="field-value-card" data-active={active === field.id}
+          aria-current={active === field.id ? true : undefined}
+          aria-label={t("editor.occurrence", { number: numbers.format(number + 1), label: field.label })}>
+          <p className="field-type">{t(`review.${field.type}`)}</p>
+          {active === field.id && <p className="field-active">{t("editor.activeField")}</p>}
+          <label>{field.label}{input}</label>
+          {field.issue && <p role="alert" id={described} className="field-conflict">{t(`editor.value.${field.issue}`, { limit: numbers.format(FIELD_VALUE_LIMIT) })}</p>}
+          <div className="field-actions">
+            <button type="button" onClick={() => focus(field.id)}>{t("editor.focus", { label: field.label })}</button>
+            <button type="button" disabled={readOnly} onClick={() => remove(field.id)}>{t("editor.remove", { label: field.label })}</button>
+          </div>
+          {fields.some(other => other.key === field.key && other.value !== field.value) && <p role="status" className="field-conflict">{t("editor.inconsistent")}</p>}
+        </article>;
+      })}
     </>}
   </section>;
 }

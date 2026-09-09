@@ -12,9 +12,10 @@ import { editorSchema, fields, type FieldOccurrence } from "./model";
 import { collapseFieldSelection, createField, fieldBeforeInput, fieldLineBreak, fieldPaste, fieldTextInput, focusField, linkedChanges, manualFieldIssue, newFieldId, paragraphIdentities, removeField, retainComposedField, updateField } from "./transactions";
 import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
 import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
+import { isFieldType, type FieldType } from "./fieldKinds";
 import { pageBreakPlugin } from "./pagination";
 
-export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { issue: FieldValueIssue };
+export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { type: FieldType; issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 export type ReviewOptions = { label: string; key: string; type: string };
 export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean; glyphCheckbox: boolean; canUndo: boolean; canRedo: boolean };
@@ -113,13 +114,26 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     editor.setProps({});
   }
   function exportSnapshot(): EditorSnapshot {
+    const types = occurrenceTypes();
     return { document: structuredClone(editor.state.doc.toJSON()), revision, composing: compositionSource !== null,
-      fieldValuesValid: fields(editor.state.doc).every(field => fieldValueIssue(field.value) === null) };
+      fieldValuesValid: fields(editor.state.doc).every(field => fieldValueIssue(field.value, types.get(field.id)) === null) };
+  }
+  // The review record owns each field's type; occurrences without one are text.
+  // Accepted controls map by live control identity, not the discovery occurrence.
+  function occurrenceTypes(): Map<string, FieldType> {
+    const result = new Map<string, FieldType>();
+    for (const item of reviewState(editor.state.doc)?.items ?? []) {
+      if (!isFieldType(item.type)) continue;
+      result.set(item.location.kind === "control" ? item.location.id : item.occurrenceId, item.type);
+    }
+    return result;
   }
   function publish() {
     const occurrences = fields(editor.state.doc);
+    const types = occurrenceTypes();
     const active = occurrences.find(field => editor.state.selection.from > field.pos && editor.state.selection.from < field.pos + field.size)?.id ?? "";
-    const summaries = occurrences.map(({ id, key, label, value }) => ({ id, key, label, value, issue: fieldValueIssue(value) }));
+    const summaries = occurrences.map(({ id, key, label, value }) => ({ id, key, label, value,
+      type: types.get(id) ?? "text", issue: fieldValueIssue(value, types.get(id)) }));
     const history = historyPlugin.getState(editor.state);
     callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
       active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null,

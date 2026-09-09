@@ -348,7 +348,8 @@
       "label": "ІМʼЯ_РЕЦЕНЗЕНТА",
       "source_key": "ІМʼЯ_РЕЦЕНЗЕНТА",
       "reason": "placeholder",
-      "context": "Кому: {{ІМʼЯ_РЕЦЕНЗЕНТА}}"
+      "context": "Кому: {{ІМʼЯ_РЕЦЕНЗЕНТА}}",
+      "type": "text"
     },
     {
       "id": "candidate:word/document.xml:control:1001",
@@ -356,7 +357,8 @@
       "label": "ПІБ клієнта",
       "source_key": "ПІБ_КЛІЄНТА",
       "reason": "native_control",
-      "context": "Від кого: [Введіть ПІБ клієнта]"
+      "context": "Від кого: [Введіть ПІБ клієнта]",
+      "type": "text"
     },
     {
       "id": "candidate:af22a8b3686e9e5b69b2f5b0be0e18d5",
@@ -364,7 +366,8 @@
       "label": "ДАТА_АНКЕТИ",
       "source_key": "ДАТА_АНКЕТИ",
       "reason": "placeholder",
-      "context": "Дата: [[ДАТА_АНКЕТИ]]"
+      "context": "Дата: [[ДАТА_АНКЕТИ]]",
+      "type": "date"
     },
     {
       "id": "candidate:0a27b89d01627b2c2011418000d44218",
@@ -372,7 +375,8 @@
       "label": "ТЕМА_ЗВЕРНЕННЯ",
       "source_key": "ТЕМА_ЗВЕРНЕННЯ",
       "reason": "placeholder",
-      "context": "Щодо: {{ТЕМА_ЗВЕРНЕННЯ}}"
+      "context": "Щодо: {{ТЕМА_ЗВЕРНЕННЯ}}",
+      "type": "text"
     },
     {
       "id": "candidate:c7eee321923b3e03dda70a33d5ccb004",
@@ -380,7 +384,8 @@
       "label": "ПІБ_КЛІЄНТА",
       "source_key": "ПІБ_КЛІЄНТА",
       "reason": "placeholder",
-      "context": "Клієнт {{ПІБ_КЛІЄНТА}} звертається щодо питання «{{ТЕМА_ЗВЕРНЕННЯ}}»."
+      "context": "Клієнт {{ПІБ_КЛІЄНТА}} звертається щодо питання «{{ТЕМА_ЗВЕРНЕННЯ}}».",
+      "type": "text"
     },
     {
       "id": "candidate:facab638ad602a8441de0b9fd330765e",
@@ -388,7 +393,8 @@
       "label": "ТЕМА_ЗВЕРНЕННЯ",
       "source_key": "ТЕМА_ЗВЕРНЕННЯ",
       "reason": "placeholder",
-      "context": "Клієнт {{ПІБ_КЛІЄНТА}} звертається щодо питання «{{ТЕМА_ЗВЕРНЕННЯ}}»."
+      "context": "Клієнт {{ПІБ_КЛІЄНТА}} звертається щодо питання «{{ТЕМА_ЗВЕРНЕННЯ}}».",
+      "type": "text"
     },
     {
       "id": "candidate:word/document.xml:control:1002",
@@ -396,7 +402,8 @@
       "label": "Організація",
       "source_key": "ОРГАНІЗАЦІЯ",
       "reason": "native_control",
-      "context": "Майстерня «Їжак і Ґудзик»"
+      "context": "Майстерня «Їжак і Ґудзик»",
+      "type": "text"
     },
     {
       "id": "candidate:7736bdc93d69fda0c7b4d4a0119df734",
@@ -404,7 +411,8 @@
       "label": "ЕЛЕКТРОННА_ПОШТА",
       "source_key": "ЕЛЕКТРОННА_ПОШТА",
       "reason": "placeholder",
-      "context": "{{ЕЛЕКТРОННА_ПОШТА}}"
+      "context": "{{ЕЛЕКТРОННА_ПОШТА}}",
+      "type": "text"
     },
     {
       "id": "candidate:word/document.xml:control:1003",
@@ -412,7 +420,8 @@
       "label": "Поштова адреса",
       "source_key": "ПОШТОВА_АДРЕСА",
       "reason": "native_control",
-      "context": "[Введіть поштову адресу]"
+      "context": "[Введіть поштову адресу]",
+      "type": "text"
     },
     {
       "id": "candidate:84b87117a0cf7a08474039ae8f889fa3",
@@ -420,7 +429,8 @@
       "label": "НОМЕР_СПРАВИ",
       "source_key": "НОМЕР_СПРАВИ",
       "reason": "placeholder",
-      "context": "Номер справи: {{НОМЕР_СПРАВИ}}"
+      "context": "Номер справи: {{НОМЕР_СПРАВИ}}",
+      "type": "text"
     },
     {
       "id": "candidate:word/document.xml:control:1004",
@@ -428,7 +438,8 @@
       "label": "Опис запиту",
       "source_key": "ОПИС_ЗАПИТУ",
       "reason": "native_control",
-      "context": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00."
+      "context": "Клієнт просить підготувати письмовий опис розкладу майстерні, обов’язків учасників та документів, яких бракує перед першою зустріччю. Текст має бути зрозумілим для читачів, які не бачили попереднього листування. Збережіть назву «Їжак і Ґудзик», контактний звʼязок та суми 1 250,50 грн і €250.00.",
+      "type": "text"
     },
     {
       "id": "candidate:5ada9b1543ef578669117556cd61db43",
@@ -436,7 +447,8 @@
       "label": "AGREEMENT_REF",
       "source_key": "AGREEMENT_REF",
       "reason": "placeholder",
-      "context": "{{AGREEMENT_REF}}"
+      "context": "{{AGREEMENT_REF}}",
+      "type": "text"
     },
     {
       "id": "candidate:5720a35b3a017446f88f3e4484e75ac6",
@@ -444,7 +456,8 @@
       "label": "ДАТА_ПОДІЇ",
       "source_key": "ДАТА_ПОДІЇ",
       "reason": "placeholder",
-      "context": "[[ДАТА_ПОДІЇ]]"
+      "context": "[[ДАТА_ПОДІЇ]]",
+      "type": "date"
     },
     {
       "id": "candidate:c5dd34debe1d7560be9c98b98ae4dc4c",
@@ -452,7 +465,8 @@
       "label": "AGREEMENT_REF",
       "source_key": "AGREEMENT_REF",
       "reason": "placeholder",
-      "context": "Перегляньте договір {{AGREEMENT_REF}} та збережіть зв’язок його номера з таблицею вище."
+      "context": "Перегляньте договір {{AGREEMENT_REF}} та збережіть зв’язок його номера з таблицею вище.",
+      "type": "text"
     },
     {
       "id": "candidate:6963651d7e5582023a36e4087b9cc3d3",
@@ -460,7 +474,8 @@
       "label": "ПІБ_КЛІЄНТА",
       "source_key": "ПІБ_КЛІЄНТА",
       "reason": "placeholder",
-      "context": "Погодьте розклад із клієнтом (ПІБ: {{ПІБ_КЛІЄНТА}})."
+      "context": "Погодьте розклад із клієнтом (ПІБ: {{ПІБ_КЛІЄНТА}}).",
+      "type": "text"
     },
     {
       "id": "candidate:38891784ac23cf5a6549e3d93644665c",
@@ -468,7 +483,8 @@
       "label": "ЕЛЕКТРОННА_ПОШТА",
       "source_key": "ЕЛЕКТРОННА_ПОШТА",
       "reason": "placeholder",
-      "context": "Надішліть заповнену анкету на адресу {{ЕЛЕКТРОННА_ПОШТА}}."
+      "context": "Надішліть заповнену анкету на адресу {{ЕЛЕКТРОННА_ПОШТА}}.",
+      "type": "text"
     },
     {
       "id": "candidate:word/document.xml:control:1005",
@@ -476,7 +492,8 @@
       "label": "ПІБ клієнта",
       "source_key": "ПІБ_КЛІЄНТА",
       "reason": "native_control",
-      "context": "Підтвердження клієнта: [Введіть ПІБ клієнта]"
+      "context": "Підтвердження клієнта: [Введіть ПІБ клієнта]",
+      "type": "text"
     },
     {
       "id": "candidate:cccb74316dd27dd22fb2c47286324214",
@@ -484,7 +501,8 @@
       "label": "ПІБ_ПРЕДСТАВНИКА",
       "source_key": "ПІБ_ПРЕДСТАВНИКА",
       "reason": "placeholder",
-      "context": "ПІБ: [[ПІБ_ПРЕДСТАВНИКА]]"
+      "context": "ПІБ: [[ПІБ_ПРЕДСТАВНИКА]]",
+      "type": "text"
     },
     {
       "id": "candidate:02de52a83b422cabd2cdcff8e9259f1a",
@@ -492,7 +510,8 @@
       "label": "ПОСАДА_ПРЕДСТАВНИКА",
       "source_key": "ПОСАДА_ПРЕДСТАВНИКА",
       "reason": "placeholder",
-      "context": "Посада: {{ПОСАДА_ПРЕДСТАВНИКА}}"
+      "context": "Посада: {{ПОСАДА_ПРЕДСТАВНИКА}}",
+      "type": "text"
     },
     {
       "id": "candidate:fcca4ae3a90b8af6f6be42b1bd2d52a0",
@@ -500,7 +519,8 @@
       "label": "ПІБ_ПОГОДЖУВАЧА",
       "source_key": "ПІБ_ПОГОДЖУВАЧА",
       "reason": "placeholder",
-      "context": "ПІБ: [[ПІБ_ПОГОДЖУВАЧА]]"
+      "context": "ПІБ: [[ПІБ_ПОГОДЖУВАЧА]]",
+      "type": "text"
     },
     {
       "id": "candidate:695cde5528bcc69109daf9d7b1bdbedf",
@@ -508,7 +528,8 @@
       "label": "НЕ_ЗАПОВНЮВАТИ",
       "source_key": "НЕ_ЗАПОВНЮВАТИ",
       "reason": "placeholder",
-      "context": "Рядок «{{НЕ_ЗАПОВНЮВАТИ}}» є прикладом позначення, а не запитом даних. Збережіть його, якщо користувач не редагує це речення безпосередньо."
+      "context": "Рядок «{{НЕ_ЗАПОВНЮВАТИ}}» є прикладом позначення, а не запитом даних. Збережіть його, якщо користувач не редагує це речення безпосередньо.",
+      "type": "text"
     },
     {
       "id": "candidate:690cf321359aef767d73ecf32e048cf3",
@@ -516,7 +537,8 @@
       "label": "ЕЛЕКТРОННА_ПОШТА",
       "source_key": "ЕЛЕКТРОННА_ПОШТА",
       "reason": "placeholder",
-      "context": "Повернути на адресу [[ЕЛЕКТРОННА_ПОШТА]]"
+      "context": "Повернути на адресу [[ЕЛЕКТРОННА_ПОШТА]]",
+      "type": "text"
     },
     {
       "id": "candidate:16d743f6037119a0e6104c21ff1d07d8",
@@ -524,7 +546,8 @@
       "label": "НОМЕР_СПРАВИ",
       "source_key": "НОМЕР_СПРАВИ",
       "reason": "placeholder",
-      "context": "Анкета клієнта   |   Справа {{НОМЕР_СПРАВИ}}"
+      "context": "Анкета клієнта   |   Справа {{НОМЕР_СПРАВИ}}",
+      "type": "text"
     },
     {
       "id": "candidate:184fef895abf5805f8a9645216ba00a6",
@@ -532,7 +555,8 @@
       "label": "Телефон",
       "source_key": null,
       "reason": "blank_line",
-      "context": "Телефон\n                "
+      "context": "Телефон\n                ",
+      "type": "text"
     },
     {
       "id": "candidate:2bd33e8671c3f1d4b6684575b49386e0",
@@ -540,7 +564,8 @@
       "label": "Місце зустрічі",
       "source_key": null,
       "reason": "blank_cell",
-      "context": "Місце зустрічі\n"
+      "context": "Місце зустрічі\n",
+      "type": "text"
     },
     {
       "id": "candidate:e27732d1aa483204ddadab0166ce8611",
@@ -548,7 +573,8 @@
       "label": "Номер клієнта",
       "source_key": null,
       "reason": "blank_line",
-      "context": "Номер клієнта\n________________"
+      "context": "Номер клієнта\n________________",
+      "type": "text"
     },
     {
       "id": "candidate:d7c932124c599619037a6b0ad70be845",
@@ -556,7 +582,8 @@
       "label": "Бажана дата завершення",
       "source_key": null,
       "reason": "blank_line",
-      "context": "Бажана дата завершення\nБажана дата завершення: ____ / ____ / ______"
+      "context": "Бажана дата завершення\nБажана дата завершення: ____ / ____ / ______",
+      "type": "date"
     },
     {
       "id": "candidate:abb053c34d175ad71847cd85a0015de9",
@@ -564,7 +591,8 @@
       "label": "Ініціали",
       "source_key": null,
       "reason": "blank_line",
-      "context": "Ініціали\nІніціали: ................."
+      "context": "Ініціали\nІніціали: .................",
+      "type": "text"
     }
   ],
   "decisions": [
