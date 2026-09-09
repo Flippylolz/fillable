@@ -27,6 +27,8 @@ ACTIONS = frozenset(
         "reconciliation_failed",
         "unrecognized_storage_entries",
         "document_deletion_requested",
+        "document_copied",
+        "original_uploaded",
         "history_retention_configured",
         "history_version_pruned",
         "revision_saved",

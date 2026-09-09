@@ -15,6 +15,7 @@ from app.errors import AppError
 from app.infrastructure import database
 from app.jobs.service import copy_intent
 from app.storage.configuration import configured
+from app.storage.maintenance import audit
 
 
 def create(state, identity, payload, key):
@@ -103,6 +104,18 @@ def create(state, identity, payload, key):
             snapshot["source_model"],
             model,
             snapshot["prepared"].identities,
+        )
+        audit(
+            connection,
+            "document_copied",
+            owner,
+            actor=owner,
+            event_id=uuid5(NAMESPACE_URL, "fillable:copy-audit:" + str(result.id)),
+            source_document_id=identity,
+            source_version_id=payload.source_version_id,
+            document_id=target,
+            version_id=version,
+            file_id=result.id,
         )
 
     result = store.store(
