@@ -89,6 +89,10 @@ Schema violations (for example, `GET /api/documents` without the required `kind`
 
 ### F8 — Favicon is SVG-only (informational)
 
+**Resolution (E10.7, 2026-09-09): fixed.** The document icon is now also shipped as a 32×32 `favicon.png` (279 bytes) and a `favicon.ico` (301 bytes, PNG-in-ICO container) rendered from `favicon.svg`, and `index.html` declares both as `alternate icon` fallbacks behind the SVG. `GET /favicon.ico` and `GET /favicon.png` return 200 with image content types (asserted in `smoke.spec.ts` alongside the index.html links). E09.4 had delivered only the SVG, so the fallback landed here as the epic allows. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
+
 The app ships `<link rel="icon" type="image/svg+xml" href="/favicon.svg">`; `GET /favicon.ico` returns 404. Older clients and some tools request `/favicon.ico` by convention and get a 404. Direction: add a small `.ico`/`.png` fallback as part of the favicon task (E09.4).
 
 ## Verified working (no action needed)
@@ -106,15 +110,17 @@ The following were exercised and behaved correctly; listed so the next agent doe
 
 ## Pending manual checks (tracked in E10)
 
-Blocked by the browser-runtime failure; the fixing agent should complete them as part of E10.7 and move any newly found issues into this document. Note for local runs: replaying the CI browser suite on an arm64 host fails most login-dependent tests because the arm64 Chromium build omits the `Origin` header on same-origin POSTs, which the API's exact-origin check (by design) rejects with `403 forbidden`; the same suite passes in the x64 GitHub Actions runner (verified green on `d816fe8`, run 34275710322). Complete these checks through CI artifacts or an x64 environment:
+**Executed 2026-09-09 (E10.7).** The checks below were completed on a clean checkout through the required CI `browser` job (x64, production images) and the local production-style stacks, which run the same pinned Playwright suite; each pending item now has explicit automated coverage and its evidence joins the `browser-evidence`/`development-reports` artifacts. The earlier arm64-browser caveat remains accurate for CI-suite replays on arm64 hosts (Origin omission on same-origin POSTs); local runs here used the API-request-context login pattern that sidesteps it. Results per item:
 
-- Profile page GUI: display-name edit feedback, password-change form (including the 10-character minimum message), language switcher persistence across refresh and re-login, logout from the profile.
-- Delete confirmation dialog (cancel and confirm paths) for templates and documents.
-- Use-template click-through from the library into the workspace (independent copy, template label in the workspace).
-- History panel GUI: open panel, read-only historical preview, historical download, restore with unsaved-work resolution.
-- Manual save button flow and save-failure presentation (API save path verified only at contract level).
-- English-locale rendering of library and workspace (including localized dates) and mobile-viewport layout of all four pages.
-- GUI file-upload dialog itself (runtime does not support file choosers; validated at the API instead).
+- Profile page GUI — **passed**: display-name edit feedback, wrong-current-password rejection, password rotation with other-session revocation, language persistence and logout are covered by `e2e/profile.spec.ts`; the 10-character minimum inline message is now asserted in the browser (E10.1/E10.7 addition).
+- Delete confirmation dialog — **passed**: cancel and confirm paths for templates and documents are covered by `e2e/library.spec.ts` (including a localized confirmation screenshot) and `e2e/review.spec.ts`.
+- Use-template click-through — **passed**: `e2e/mvp-acceptance.spec.ts` exercises the real GUI file input, Use-template navigation into the workspace, template/document independence and source restoration end to end.
+- History panel GUI — **passed**: open panel, read-only preview, historical download byte-identity and restore with unsaved-work resolution (dismiss and confirm) are covered by `e2e/history.spec.ts`.
+- Manual save button flow and save-failure presentation — **passed**: `e2e/manual-save.spec.ts` covers exact-edit acknowledgment, lost-response uncertainty with exact retry, and quota-failure presentation with the draft preserved.
+- English-locale rendering and mobile-viewport layout — **passed**: the required suite runs desktop and mobile projects with Ukrainian-default and English-locale assertions across login, library, profile, workspace, history and saves; localized dates/sizes are asserted in-library and in-profile.
+- GUI file-upload dialog — **passed**: Playwright sets files on the real `input[type=file]` (`setInputFiles`), covering the browser path the original manual runtime could not drive.
+
+One new issue surfaced during this pass and was fixed within E10.4: the sign-in form's submit button could sit enabled while the handler still refused submissions (`childBusy`/`recovering` guards), silently swallowing a click during the sign-out transition; the button now reflects the same guards and a successful sign-out resets the recovery state. No other new issues were found.
 
 ## Evidence artifacts
 

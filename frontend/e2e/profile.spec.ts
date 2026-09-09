@@ -35,6 +35,9 @@ test("profile edits persist, passwords require current credentials and revoke an
     await password(page, "incorrect", nextPassword);
     await expect(page.getByRole("alert")).toHaveText("Поточний пароль неправильний.");
     await expect(page.getByLabel("Новий пароль", { exact: true })).toHaveValue(nextPassword);
+    // The ten-character minimum message renders from the catalogs (F1/E10.1).
+    await password(page, originalPassword, "short-9ch");
+    await expect(page.getByRole("alert")).toHaveText("Новий пароль має містити щонайменше 10 символів.");
     await password(page, originalPassword, nextPassword);
     await expect(page.getByText("Пароль змінено. Інші сеанси завершено.", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Поточний пароль", { exact: true })).toHaveValue("");
