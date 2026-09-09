@@ -54,7 +54,15 @@ test -z "$(docker ps -aq --filter "label=com.docker.compose.project=$verificatio
 install_probe() {
   "$1" exec -T api sh -c 'cat > /tmp/verify_application_recovery.py' < "$verification_root/current/scripts/verify_application_recovery.py"
   "$1" exec -T api sh -c 'cat > /tmp/recovery-source.docx' < "$verification_root/current/fixtures/docx/v1/client-intake-uk-v1.docx"
-  "$1" exec -T api sh -c 'cat > /tmp/recovery-review.json' < "$verification_root/current/fixtures/docx/v1/working-review.json"
+  # The pinned previous release predates typed review records and rejects them,
+  # so the proof payload is normalized to the previous release's schema; every
+  # phase writes and compares that one normalized payload.
+  "$1" exec -T api python -c 'import json, sys
+review = json.load(sys.stdin)
+for item in review["attrs"]["review"]["items"]:
+    item["type"] = "text"
+json.dump(review, sys.stdout)' < "$verification_root/current/fixtures/docx/v1/working-review.json" > "$verification_root/review-payload.json"
+  "$1" exec -T api sh -c 'cat > /tmp/recovery-review.json' < "$verification_root/review-payload.json"
 }
 probe() { "$1" exec -T -e RECOVERY_PROOF_NONCE="$RECOVERY_PROOF_NONCE" api python /tmp/verify_application_recovery.py "$2"; }
 badge() {
