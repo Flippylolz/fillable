@@ -1,5 +1,5 @@
 import { File as NodeFile, Buffer } from "node:buffer";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import { Library } from "../src/library/Library";
 import { App } from "../src/App";
@@ -224,4 +224,35 @@ test("pending deletion remains visible after loading and cannot offer a saved do
   expect(screen.getByRole("button", { name: "Повторити очищення" })).toBeVisible();
   expect(screen.queryByRole("button", { name: "Завантажити збережений DOCX" })).toBeNull();
   expect(screen.getByText(/Очищення ще не завершено/)).toBeVisible();
+});
+
+test("the card title link opens the resource; blocked and modified clicks do not", async () => {
+  const onOpen = vi.fn();
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => {
+    if (new URL(request.url).pathname === "/api/documents") return Response.json({ items: [item], next_cursor: null });
+    return defaults(request);
+  }));
+  const view = render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} onOpen={onOpen} /></I18nextProvider>);
+  const card = await screen.findByRole("article", { name: item.title });
+  const link = within(card).getByRole("link", { name: item.title });
+  expect(link).toHaveAttribute("href", "/editor/resource");
+  fireEvent.click(link);
+  expect(onOpen).toHaveBeenNthCalledWith(1, "resource");
+  fireEvent.click(link, { ctrlKey: true });
+  expect(onOpen).toHaveBeenCalledTimes(1);
+  view.rerender(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={true} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} onOpen={onOpen} /></I18nextProvider>);
+  expect(screen.getByRole("link", { name: item.title })).toHaveAttribute("aria-disabled", "true");
+  fireEvent.click(screen.getByRole("link", { name: item.title }));
+  expect(onOpen).toHaveBeenCalledTimes(1);
+});
+
+test("pending deletion keeps the title as plain text and offers no open link", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => {
+    if (new URL(request.url).pathname === "/api/documents") return Response.json({ items: [{ ...item, deletion_pending: true }], next_cursor: null });
+    return defaults(request);
+  }));
+  render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} onOpen={vi.fn()} /></I18nextProvider>);
+  expect(await screen.findByRole("article", { name: item.title })).toBeVisible();
+  expect(screen.queryByRole("link", { name: item.title })).toBeNull();
+  expect(screen.getByRole("heading", { name: item.title })).toHaveTextContent(item.title);
 });

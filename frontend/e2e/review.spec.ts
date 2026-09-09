@@ -22,7 +22,7 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   await page.route("**/api/documents/*/fields", async route => {
     if (fail) { fail = false; await route.abort(); } else await route.continue();
   });
-  await libraryCard.getByRole("link", { name: "Відкрити", exact: true }).click();
+  await libraryCard.getByRole("link", { name: title, exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
   await manualSaving(page);
   await page.getByRole("button", { name: "Повторити запит стану", exact: true }).click();

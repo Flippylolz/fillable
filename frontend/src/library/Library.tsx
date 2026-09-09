@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
 import { formatBytes, formatDate } from "../i18n";
@@ -48,6 +48,13 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
     event.preventDefault();
     const next = event.key === "Home" ? 0 : event.key === "End" ? 1 : 1 - index;
     setTab(next === 0 ? "template" : "document"); tabs.current[next]?.focus();
+  }
+  // The title link stretches over the whole card; modified clicks keep the
+  // native new-tab behavior and blocked sessions swallow the activation.
+  function openCard(event: MouseEvent<HTMLAnchorElement>, identity: string) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (blocked || onOpen) event.preventDefault();
+    if (!blocked) onOpen?.(identity);
   }
   async function upload(event: FormEvent) {
     event.preventDefault();
@@ -118,14 +125,10 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
       {!data.loading && !data.error && data.items.length === 0 && <p className="library-empty">{t(tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
       <div className="library-items">{data.items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
         <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span></div>
-        <h3>{item.title}</h3><p className="library-filename">{item.original_filename}</p>
+        <h3>{item.deletion_pending ? item.title : <a className="library-card-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => openCard(event, item.id)}>{item.title}</a>}</h3><p className="library-filename">{item.original_filename}</p>
         {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><ProcessingStatus key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} /></>}
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>
-        {!item.deletion_pending && <><a className="library-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => {
-          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-          if (blocked || onOpen) event.preventDefault();
-          if (!blocked) onOpen?.(item.id);
-        }}>{t("library.open")}</a><DownloadSaved item={item} disabled={blocked} /></>}
+        {!item.deletion_pending && <DownloadSaved item={item} disabled={blocked} />}
         {!item.deletion_pending && item.kind === "template" && <UseTemplate key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onCreated={created => { setTab("document"); setRevision(value => value + 1); onSaved(); onOpen?.(created.id); }} />}
         <DeleteResource item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
       </article>)}</div>

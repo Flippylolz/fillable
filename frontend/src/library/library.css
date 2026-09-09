@@ -17,8 +17,15 @@
 .library-tabs button { color: #444746; background: transparent; border-color: transparent; }
 .library-tabs [aria-selected="true"] { background: #d3e3fd; color: #041e49; }
 .library-items { display: grid; gap: 1rem; margin-bottom: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); align-items: start; }
-.library-item { background: #fff; border: 1px solid #dadce0; border-radius: 0.5rem; min-width: 0; overflow: hidden; padding: 0 1rem 0.9rem; }
+.library-item { position: relative; background: #fff; border: 1px solid #dadce0; border-radius: 0.5rem; min-width: 0; overflow: hidden; padding: 0 1rem 0.9rem; }
 .library-item:hover { border-color: #a8c7fa; box-shadow: 0 1px 4px #3c40431a; }
+/* The card title link covers the whole card as an open affordance; real
+   controls keep their own click targets above it. */
+.library-card-open { color: inherit; text-decoration: none; }
+.library-card-open:hover { text-decoration: underline; }
+.library-card-open::after { content: ""; position: absolute; inset: 0; }
+.library-card-open:focus-visible { outline: 2px solid #4285f4; outline-offset: 2px; border-radius: 0.25rem; }
+.library-processing, .library-download, .library-copy, .library-delete { position: relative; z-index: 1; }
 .library-document-cover { display: flex; justify-content: center; align-items: end; height: 9rem; margin: 0 -1rem 0.9rem; padding-top: 1.1rem; background: #edf2fa; overflow: hidden; border-bottom: 1px solid #e3e7ed; }
 .library-paper { display: grid; align-content: start; gap: 0.55rem; width: 5rem; height: 7.5rem; padding: 1.1rem; border: 1px solid #e3e7ed; border-radius: 0.15rem; background: #fff; box-shadow: 0 2px 5px #3c404315; }
 .library-paper i { display: block; height: 0.2rem; background: #d3e3fd; }

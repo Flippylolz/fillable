@@ -1,5 +1,5 @@
 import { leaseResponse } from "./lease-response";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import { App } from "../src/App";
 import { Workspace } from "../src/workspace/Workspace";
@@ -42,11 +42,12 @@ test("direct workspace opens a verified model, preserves the live editor across 
   expect(confirm).toHaveBeenCalled();
   expect(fetcher.mock.calls.some(([request]) => typeof request !== "string" && new URL(request.url).pathname === "/api/auth/logout")).toBe(false);
   fireEvent.click(screen.getByRole("link", { name: "Document library" }));
-  const links = screen.getAllByRole("link", { name: "Open" });
-  fireEvent.click(links[1]);
+  const otherCard = screen.getByRole("article", { name: "Інша заява" });
+  const openLink = within(otherCard).getByRole("link", { name: "Інша заява" });
+  fireEvent.click(openLink);
   expect(window.location.pathname).toBe("/documents");
   confirm.mockReturnValue(true);
-  fireEvent.click(links[1]);
+  fireEvent.click(openLink);
   await waitFor(() => expect(window.location.pathname).toBe(`/editor/${second}`));
   expect(await screen.findByText("Saved revision opened.")).toBeVisible();
   expect(await screen.findByRole("textbox", { name: "Editable document" })).not.toBe(editor);
