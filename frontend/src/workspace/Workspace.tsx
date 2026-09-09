@@ -28,6 +28,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
   const [autosave, setAutosave] = useState(true);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false), [editorEpoch, setEditorEpoch] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [revision, setRevision] = useState(0), [titleDirty, setTitleDirty] = useState(false);
   const [valid, setValid] = useState(true), [composing, setComposing] = useState(false);
   const reader = useRef<(() => EditorSnapshot) | null>(null);
@@ -117,7 +118,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         dirty={dirty || unsaved} blocked={saving.pending || saving.conflict || !!restoring.pending || restoring.conflict || access.status !== "active"}
         busy={mutating} onRestore={restoreSelected} onReopen={reopen} />}
       <div style={{ display: historyOpen ? "none" : undefined }}>
-      <WorkspaceSettings key={editorEpoch} item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight} autosave={autosave} onAutosave={setAutosave}
+      <WorkspaceSettings key={editorEpoch} open={settingsOpen} onOpenChange={setSettingsOpen} item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight} autosave={autosave} onAutosave={setAutosave}
         disabled={saving.pending || mutating || saving.conflict || !!restoring.pending || restoring.conflict} onDirty={setTitleDirty} onBusy={setSettingsBusy} onReopen={reopen}
         onResource={resource => { setSaved(current => current ? { ...current, resource } : current); onChanged?.(); }} />
       <div className="workspace-discovery">

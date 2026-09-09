@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
 import type { Resource } from "../library/useLibrary";
 
-export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, onHighlight, autosave, onAutosave, onResource, onDirty, onBusy, onReopen, disabled = false }: {
+export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, onHighlight, autosave, onAutosave, onResource, onDirty, onBusy, onReopen, disabled = false, open, onOpenChange }: {
   autosave?: boolean; onAutosave?: (enabled: boolean) => void;
   item: Resource; csrfToken: string; zoom: number; highlight: boolean;
   onZoom: (zoom: number) => void; onHighlight: (highlight: boolean) => void;
   onResource: (resource: Resource) => void; onDirty: (dirty: boolean) => void;
   onBusy?: (busy: boolean) => void; onReopen: () => void;
-  disabled?: boolean;
+  disabled?: boolean; open: boolean; onOpenChange: (open: boolean) => void;
 }) {
   const { t, i18n } = useTranslation();
   const [title, setTitle] = useState(item.title);
@@ -53,7 +53,11 @@ export function WorkspaceSettings({ item, csrfToken, zoom, highlight, onZoom, on
     finally { if (!signal.aborted) { setBusy(false); busyChange.current?.(false); } }
   }
   function rename(event: FormEvent) { event.preventDefault(); void submit("rename"); }
-  return <details className="workspace-settings"><summary>{t("workspace.settings")}</summary>
+  // The workspace owns the open state so background refreshes cannot collapse the panel.
+  return <details className="workspace-settings" open={open} onToggle={event => {
+    const next = (event.target as HTMLDetailsElement).open;
+    if (next !== open) onOpenChange(next);
+  }}><summary>{t("workspace.settings")}</summary>
     <div className="workspace-settings-body">
       <form onSubmit={rename}>
         <label>{t("workspace.name")}<input value={title} aria-invalid={error === "invalid_title" || undefined} aria-describedby={error ? errorId : undefined}
