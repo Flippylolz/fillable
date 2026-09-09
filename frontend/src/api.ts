@@ -9,7 +9,9 @@ export const api = createClient<paths>({
   fetch: sessionFetch,
 });
 
-export function apiErrorMessage(code: string) {
+export type ApiErrorParameters = Record<string, string | number>;
+
+export function apiErrorMessage(code: string, parameters: ApiErrorParameters = {}) {
   switch (code) {
     case 'invalid_document': return i18n.t('errors.invalid_document');
     case 'unsupported_document': return i18n.t('errors.unsupported_document');
@@ -31,7 +33,9 @@ export function apiErrorMessage(code: string) {
     case 'dependencies_unavailable': return i18n.t('errors.dependencies_unavailable');
     case 'not_found': return i18n.t('errors.not_found');
     case 'method_not_allowed': return i18n.t('errors.method_not_allowed');
-    case 'invalid_request': return i18n.t('errors.invalid_request');
+    case 'invalid_request': return typeof parameters.parameter === 'string' && parameters.parameter
+      ? i18n.t('errors.invalid_request_parameter', { parameter: parameters.parameter })
+      : i18n.t('errors.invalid_request');
     default: return i18n.t('errors.internal_error');
   }
 }

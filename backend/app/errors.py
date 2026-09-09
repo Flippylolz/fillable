@@ -112,5 +112,30 @@ def register_errors(app: FastAPI) -> None:
         return error_response(exc.status_code, ErrorDetail(code=code))
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error(_request: Request, _exc: RequestValidationError):
-        return error_response(422, ErrorDetail(code="invalid_request"))
+    async def validation_error(_request: Request, exc: RequestValidationError):
+        return error_response(
+            422,
+            ErrorDetail(code="invalid_request", parameters=validation_parameters(exc)),
+        )
+
+
+def validation_parameters(exc: RequestValidationError) -> dict[str, str | int]:
+    """Report the offending parameter's name and machine reason only.
+
+    Submitted values, exception text and internal messages never leave the
+    server; hostile or oversized request-supplied names are bounded.
+    """
+    for error in exc.errors():
+        name = next(
+            (part for part in reversed(error.get("loc", ())) if isinstance(part, str)),
+            None,
+        )
+        cleaned = "".join(
+            char
+            for char in (name or "")[:64]
+            if char.isprintable() and not char.isspace()
+        )
+        if not cleaned:
+            continue
+        return {"parameter": cleaned, "reason": str(error.get("type", "invalid"))[:64]}
+    return {}

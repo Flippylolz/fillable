@@ -12,6 +12,7 @@
   "errors.not_found": "Not found.",
   "errors.method_not_allowed": "This action is unavailable.",
   "errors.invalid_request": "Check the entered information.",
+  "errors.invalid_request_parameter": "Check the {{parameter}} field.",
   "errors.internal_error": "Something went wrong. Try again.",
   "editor.document": "Editable document",
   "editor.fieldLabel": "New field label",
