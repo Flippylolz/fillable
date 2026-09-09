@@ -64,6 +64,10 @@ Both login inputs are `required`, so submitting empty fields shows the browser-n
 
 ### F6 — Storage audit trail has gaps (low; backend observability)
 
+**Resolution (E10.5, 2026-09-09): fixed, with one correction to the evidence.** Original uploads now record an `original_uploaded` row and use-template copies a `document_copied` row (owner + authenticated actor, source/target document and version ids, file id; deterministic event ids keep exact retries deduplicated, and the row commits atomically with the resource it describes). `document_deletion_requested` now records the authenticated actor that issued the DELETE; `deletion_completed` remains actor-less by design because it is written by the cleanup/reconciliation sweep, not by the request, and the requesting actor is already on the request row. One evidence correction: restore rows were **not** missing — `revision_restored` has been written by the shared save-commit path since E07.2 (PR #64), is covered by `test_revision_audits_are_atomic_and_exact_replays_do_not_duplicate`, and was most likely overlooked during the manual inspection. The two new actions are registered as known in the diagnostics chronology. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
+
 `storage_audit` recorded `revision_saved` and deletion events during the session, but:
 
 - original uploads, use-template copies, and restores produced no audit rows;

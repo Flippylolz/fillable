@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
@@ -77,6 +77,42 @@ def counts():
             connection.execute(select(func.count()).select_from(table)).scalar_one()
             for table in (resources, versions, files, reservations)
         )
+
+
+def test_original_uploads_record_an_audit_row_exactly_once(document_store):
+    owner = account()
+    web = client()
+    first = upload(web)
+    assert first.status_code == 201
+    assert upload(web).json() == first.json()
+    other = upload(web, key="one-off", kind="document")
+    assert other.status_code == 201
+    with database().connect() as connection:
+        rows = connection.execute(
+            select(
+                audit_events.c.action,
+                audit_events.c.owner_id,
+                audit_events.c.actor_id,
+                audit_events.c.details,
+            )
+            .order_by(audit_events.c.created_at, audit_events.c.id)
+        ).mappings().all()
+    assert [(row["action"], row["owner_id"], row["actor_id"]) for row in rows] == [
+        ("original_uploaded", owner.id, owner.id),
+        ("original_uploaded", owner.id, owner.id),
+    ]
+    assert [row["details"]["document_id"] for row in rows] == [
+        first.json()["id"],
+        other.json()["id"],
+    ]
+    assert rows[0]["details"]["version_id"] == first.json()["current_version_id"]
+    with database().connect() as connection:
+        original_file = connection.execute(
+            select(resources.c.original_file_id).where(
+                resources.c.id == UUID(first.json()["id"])
+            )
+        ).scalar_one()
+    assert rows[0]["details"]["file_id"] == str(original_file)
 
 
 def test_uploads_keep_originals_and_initial_models_and_retries_charge_once(

@@ -193,7 +193,10 @@ def test_revision_audits_are_atomic_and_exact_replays_do_not_duplicate(monkeypat
 
     monkeypatch.setattr(revision_commit, "audit", fail)
     assert save(web, original, payload, "failed").status_code == 503
-    assert diagnostics.audit_page()["events"] == []
+    # Only the upload's own audit row exists; the failed save recorded nothing.
+    assert [item["action"] for item in diagnostics.audit_page()["events"]] == [
+        "original_uploaded"
+    ]
     monkeypatch.setattr(revision_commit, "audit", real_audit)
     first = save(web, original, payload, "saved")
     assert first.status_code == 201
@@ -209,6 +212,7 @@ def test_revision_audits_are_atomic_and_exact_replays_do_not_duplicate(monkeypat
     assert [item["action"] for item in events] == [
         "revision_restored",
         "revision_saved",
+        "original_uploaded",
     ]
     assert all(
         item["owner_id"] == str(owner.id) and item["actor_id"] == str(owner.id)
@@ -218,7 +222,7 @@ def test_revision_audits_are_atomic_and_exact_replays_do_not_duplicate(monkeypat
         events[0]["details"]["restored_from_version_id"]
         == original["current_version_id"]
     )
-    assert [item["details"]["version_number"] for item in events] == [3, 2]
+    assert [item["details"]["version_number"] for item in events[:2]] == [3, 2]
 
 
 def test_audit_index_upgrade_and_downgrade_preserve_events():

@@ -16,7 +16,7 @@ from app.infrastructure import database
 from app.storage.configuration import configured
 from app.storage.filesystem import FileSystem
 from app.storage.maintenance import reconcile
-from app.storage.schema import accounts, files
+from app.storage.schema import accounts, audit_events, files
 
 
 def usage(owner):
@@ -92,6 +92,13 @@ def test_delete_all_retained_versions_is_owned_confirmed_and_idempotent():
     assert response.headers["cache-control"] == "no-store"
     assert web.delete(url).json() == {"status": "complete"}
     assert usage(owner) == len(DATA)
+    with database().connect() as connection:
+        requests = connection.execute(
+            select(audit_events.c.actor_id, audit_events.c.owner_id).where(
+                audit_events.c.action == "document_deletion_requested"
+            )
+        ).all()
+    assert requests == [(owner.id, owner.id)]
     with database().connect() as connection:
         models = (
             connection.execute(

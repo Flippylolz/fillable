@@ -113,7 +113,11 @@ def remove(state, identity):
                 .values(state="pending_delete")
             )
             audit(
-                connection, "document_deletion_requested", owner, document_id=identity
+                connection,
+                "document_deletion_requested",
+                owner,
+                actor=state.user.id,
+                document_id=identity,
             )
     # Never acquire an FS lock while holding the domain/account SQL transaction.
     with database().connect() as connection:
