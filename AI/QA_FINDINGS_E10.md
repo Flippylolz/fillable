@@ -40,6 +40,10 @@ The "Налаштування робочого простору" section collaps
 
 ### F3 — Undo/redo buttons are enabled with empty history (low; UI state)
 
+**Resolution (E10.3, 2026-09-09): fixed.** The editor adapter's presentation now carries `canUndo`/`canRedo` derived from the ProseMirror history plugin state (`done`/`undone` event counts), and the toolbar gates the "Скасувати"/"Повторити" buttons on them in addition to `readOnly`. The buttons are disabled on a fresh open, enable after an applicable edit, flip correctly across undo/redo, stay consistent through autosave, and reset when a history restore remounts the editor. Covered by a component test asserting the full cycle in both locales and by `frontend/e2e/undo-redo.spec.ts` (desktop + mobile) covering fresh-open, edit, autosave, undo/redo, and post-restore states. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
+
 On a freshly opened document (no edits), both "Скасувати" and "Повторити" are enabled. [DocumentEditor.tsx](../frontend/src/editor/DocumentEditor.tsx) on committed `main` gates them only by `readOnly` and never consults ProseMirror's `canUndo`/`canRedo`, so the buttons do not reflect history availability. Clicking them with empty stacks is a no-op, but the enabled state misleads users (and screen-reader users) about available actions.
 
 - Direction: track history state in the editor presentation and disable the buttons accordingly; cover with a component test and a browser assertion.
