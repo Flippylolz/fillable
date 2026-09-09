@@ -32,7 +32,7 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
   const acquisition = page.waitForResponse(response => response.url().endsWith("/editing-lease") && response.request().postDataJSON().action === "acquire");
-  await page.getByRole("article", { name: title }).getByRole("link", { name: "Відкрити", exact: true }).click();
+  await page.getByRole("article", { name: title }).getByRole("link", { name: title, exact: true }).click();
   const granted = await acquisition;
   expect(granted.status()).toBe(200);
   const holder = granted.request().postDataJSON(), generation = (await granted.json()).lease_id;

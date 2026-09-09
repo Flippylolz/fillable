@@ -124,7 +124,6 @@
   "library.cancelDeletion": "Cancel",
   "library.confirmDeletion": "Delete permanently",
   "library.deletionPending": "Cleanup is pending. Remaining files still use storage. Retry cleanup.",
-  "library.open": "Open",
   "workspace.title": "Document workspace",
   "workspace.template": "Editing a template",
   "workspace.document": "Individual document",

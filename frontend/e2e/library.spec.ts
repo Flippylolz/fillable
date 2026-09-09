@@ -56,7 +56,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   expect(keys[0]).toBe(keys[1]);
   await expect(page.getByLabel("Файл DOCX", { exact: true })).toHaveValue("");
   await page.screenshot({ path: testInfo.outputPath("library-uk.png"), fullPage: true });
-  await page.getByRole("article", { name: templateTitle }).getByRole("link", { name: "Відкрити", exact: true }).click();
+  await page.getByRole("article", { name: templateTitle }).locator(".library-document-cover").click();
   await expect(page).toHaveURL(/\/editor\/[0-9a-f-]+$/);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
   await manualSaving(page);
@@ -96,7 +96,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("button", { name: "Назад до бібліотеки", exact: true }).click();
   const renamedCard = page.getByRole("article", { name: renamedTitle, exact: true });
   await expect(renamedCard).toBeVisible();
-  await renamedCard.getByRole("link", { name: "Відкрити", exact: true }).click();
+  await renamedCard.getByRole("link", { name: renamedTitle, exact: true }).click();
   expect(await originalEditor!.evaluate(element => element.isConnected)).toBe(true);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toContainText(draft);
   await page.getByRole("textbox", { name: "Назва", exact: true }).fill(templateTitle);
@@ -225,7 +225,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   expect(await (await page.request.get(`/api/documents/${copyId}/fields`)).json()).toEqual(copyFields);
   await page.getByRole("tab", { name: "Документи", exact: true }).click();
   const copyCard = page.getByRole("article", { name: copyTitle });
-  await copyCard.getByRole("link", { name: "Відкрити", exact: true }).click();
+  await copyCard.getByRole("link", { name: copyTitle, exact: true }).click();
   await expect(page.getByRole("heading", { name: copyTitle, exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
   await copyCard.getByRole("button", { name: "Видалити", exact: true }).click();

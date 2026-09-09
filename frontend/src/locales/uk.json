@@ -126,7 +126,6 @@
   "library.cancelDeletion": "Скасувати",
   "library.confirmDeletion": "Видалити назавжди",
   "library.deletionPending": "Очищення ще не завершено. Решта файлів поки займає місце. Повторіть очищення.",
-  "library.open": "Відкрити",
   "workspace.title": "Робочий простір",
   "workspace.template": "Редагування шаблону",
   "workspace.document": "Окремий документ",

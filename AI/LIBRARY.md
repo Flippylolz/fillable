@@ -46,6 +46,14 @@ grid of document cards. Their paper illustrations are decorative generic icons,
 not previews of document contents. All existing upload, retry, profile and language
 behavior remains available. The shared version badge retains its original styling.
 
+E09.14 made each card itself the open affordance after user feedback that the
+standalone "Open" link was not discoverable: the card title is an accessible link
+stretched over the whole card, so clicking anywhere outside the real controls opens
+the template or document in the workspace, while download, use-template, processing
+retry and delete keep their own click targets. Middle-click and modified clicks keep
+the browser's native link semantics; a blocked (busy/disabled) session swallows the
+activation; deletion-pending cards keep a plain-text title and never open.
+
 Library sizes and profile usage share a locale-aware formatter: values below 1000
 retain byte plurals; larger values use decimal kB/MB/GB/TB/PB with at most two decimal
 places. For example, 1,073,741,824 bytes displays as 1.07 GB in English. These are
