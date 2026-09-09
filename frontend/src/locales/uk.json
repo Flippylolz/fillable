@@ -15,6 +15,7 @@
   "errors.invalid_request_parameter": "Перевірте значення поля {{parameter}}.",
   "errors.internal_error": "Сталася помилка. Спробуйте ще раз.",
   "editor.document": "Редагований документ",
+  "editor.pageBreak": "Сторінка {{page}}",
   "editor.fieldLabel": "Назва нового поля",
   "editor.createField": "Створити поле з виділення",
   "editor.undo": "Скасувати",

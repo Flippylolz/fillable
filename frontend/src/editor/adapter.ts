@@ -12,6 +12,7 @@ import { editorSchema, fields, type FieldOccurrence } from "./model";
 import { collapseFieldSelection, createField, fieldBeforeInput, fieldLineBreak, fieldPaste, fieldTextInput, focusField, linkedChanges, manualFieldIssue, newFieldId, paragraphIdentities, removeField, retainComposedField, updateField } from "./transactions";
 import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
 import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
+import { pageBreakPlugin } from "./pagination";
 
 export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
@@ -28,6 +29,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
 }) {
   const source = editorSchema.nodeFromJSON(structuredClone(initialDocument));
   let revision = 0, unsupported = false, settling = false;
+  let pageBreakLabel: ((page: number) => string) | null = null;
+  const pageBreaks: { refresh: (force?: boolean) => void } = { refresh: () => {} };
   const historyPlugin = history();
   const allowed = () => callbacks.canEdit?.() !== false;
   let compositionSource: EditorState | null = null;
@@ -39,7 +42,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     nodeViews: { lockedInline: sourceNodeView(callbacks.presentation), lockedBlock: sourceNodeView(callbacks.presentation) },
     editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
-      plugins: [historyPlugin, keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
+      plugins: [historyPlugin, pageBreakPlugin(() => pageBreakLabel ?? (page => String(page)), pageBreaks), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
         " ": toggleSelectedCheckbox, ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
     }),
     handleTextInput: (view, from, to, value) => !allowed() && !compositionSource || fieldTextInput(view, from, to, value),
@@ -135,6 +138,10 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     refreshAccess() { editor.setProps({}); },
     setDocumentLabel(label: string) {
       editor.setProps({ attributes: () => ({ "aria-label": label, role: "textbox", "aria-multiline": "true", "aria-readonly": String(!allowed()) }) });
+    },
+    setPageBreakLabel(formatter: (page: number) => string) {
+      pageBreakLabel = formatter;
+      pageBreaks.refresh(true);
     },
     attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string, reviewSaved = false): boolean {
       if (compositionSource) return false;

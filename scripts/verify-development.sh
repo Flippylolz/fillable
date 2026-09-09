@@ -53,6 +53,7 @@ dev exec -T api python -m app.accounts.cli provision --email browser-user --disp
 dev exec -T api python -m app.accounts.cli provision --email profile@example.test --display-name "Тест профілю" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python -m app.accounts.cli provision --email library@example.test --display-name "Тест бібліотеки" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python -m app.accounts.cli provision --email review@example.test --display-name "Перевірка полів" --language uk --password-stdin < fixtures/auth/browser-password.txt
+dev exec -T api python -m app.accounts.cli provision --email pagebreaks@example.test --display-name "Межі сторінок" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python -m app.accounts.cli provision --email lease-desktop@example.test --display-name "Перевірка доступу" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python -m app.accounts.cli provision --email lease-mobile@example.test --display-name "Перевірка доступу" --language uk --password-stdin < fixtures/auth/browser-password.txt
 dev exec -T api python /checks/verify_storage_persistence.py write

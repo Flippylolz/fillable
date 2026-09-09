@@ -16,7 +16,10 @@ export function HistoricalPreview({ document, presentation }: { document: object
     editor.current = view;
     return () => { view.destroy(); editor.current = null; };
   }, []);
-  useEffect(() => { editor.current!.setDocumentLabel(t("history.document")); }, [t]);
+  useEffect(() => {
+    editor.current!.setDocumentLabel(t("history.document"));
+    editor.current!.setPageBreakLabel(page => t("editor.pageBreak", { page }));
+  }, [t]);
   return <div className="history-preview">
     {unsupported && <p>{t("history.unsupported")}</p>}
     <style>{layout.rules}</style>

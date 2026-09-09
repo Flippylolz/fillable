@@ -27,7 +27,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
-| E09 | Post-release user-requested improvements and automation | E08 | in_progress: E09.1–E09.11 sections below |
+| E09 | Post-release user-requested improvements and automation | E08 | in_progress: E09.1–E09.15 sections below |
 | E10 | Manual QA findings and corrections | E00–E08 delivered; findings in [QA findings](QA_FINDINGS_E10.md) | done: E10.1–E10.7 merged (PRs #110–#116); E10.7's own record tracked by the closing docs PR |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -2742,6 +2742,10 @@ Status: in_progress. User-reported on a real Ukrainian form: checkbox graphics r
 ## E09.14 — Open a resource by clicking its library card
 
 Status: in_progress. User feedback on the library card: the card itself does nothing when clicked and the small "Відкрити" link is the only way in — reported as not clickable and useless. Acceptance: clicking anywhere on a library card (template or document) that is not another control opens that resource in the workspace through the card title link stretched over the card (middle/modified clicks keep native new-tab behavior, the blocked/disabled state swallows the click); the standalone "Відкрити" link is removed and its catalog entries drop from both locales; download, use-template, processing retry, and delete controls keep working above the card link, and deletion-pending cards do not open; component tests cover the new click behavior and existing open flows use the card link. Both catalogs stay complete and the independent 90% gates hold. Deliver a dedicated PR with required CI, then deploy through Actions while preserving existing services.
+
+## E09.15 — Visible page breaks in the editor
+
+Status: in_progress. User feedback: the document does not show where one page ends and the next begins. Acceptance: the mounted workspace and historical editors show approximate page boundaries derived from the source page geometry already delivered for layout (page height/margins), as dashed, localized "Сторінка N"/"Page N" markers between blocks that begin a new page; markers are purely visual ProseMirror decorations — never in the document model, review metadata, save payload or exports — recompute after edits, zoom and layout/font changes, honor the zoom scale, and stay hidden from assistive technology; documents without page geometry show no markers; breaks fall on block boundaries only, exact Word pagination stays unclaimed and recorded as unproved in [Editor feasibility](EDITOR_FEASIBILITY.md) and [Workspace](WORKSPACE.md); both catalogs stay complete and the independent 90% gates hold. Deliver a dedicated PR with required CI, then deploy through Actions while preserving existing services.
 
 
 ## E10 — Manual QA findings and corrections

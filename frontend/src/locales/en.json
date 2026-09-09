@@ -15,6 +15,7 @@
   "errors.invalid_request_parameter": "Check the {{parameter}} field.",
   "errors.internal_error": "Something went wrong. Try again.",
   "editor.document": "Editable document",
+  "editor.pageBreak": "Page {{page}}",
   "editor.fieldLabel": "New field label",
   "editor.createField": "Create field from selection",
   "editor.undo": "Undo",
