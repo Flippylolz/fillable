@@ -56,7 +56,10 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   expect(keys[0]).toBe(keys[1]);
   await expect(page.getByLabel("Файл DOCX", { exact: true })).toHaveValue("");
   await page.screenshot({ path: testInfo.outputPath("library-uk.png"), fullPage: true });
-  await page.getByRole("article", { name: templateTitle }).locator(".library-document-cover").click();
+  // The card link stretches over the cover, so the click lands on the link
+  // overlay; force skips Playwright's hit-target refusal while the following
+  // URL assertion still proves the card body opens the resource.
+  await page.getByRole("article", { name: templateTitle }).locator(".library-document-cover").click({ force: true });
   await expect(page).toHaveURL(/\/editor\/[0-9a-f-]+$/);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
   await manualSaving(page);
@@ -137,10 +140,10 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("article", { name: documentTitle }).getByRole("button", { name: "Download saved DOCX" }).click();
   expect(await readFile((await (await documentDownload).path())!)).toEqual(bytes);
   page.once("dialog", dialog => dialog.dismiss());
-  await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: "Open", exact: true }).click();
+  await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: documentTitle, exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/);
   page.once("dialog", dialog => dialog.accept());
-  await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: "Open", exact: true }).click();
+  await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: documentTitle, exact: true }).click();
   await expect(page.getByRole("heading", { name: documentTitle, exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: documentTitle, exact: true }).getByText("Individual document", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Document library", exact: true }).click();

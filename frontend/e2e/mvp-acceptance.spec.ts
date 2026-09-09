@@ -120,7 +120,7 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
 
   await page.getByRole("link", { name: "Document library", exact: true }).click();
   await page.getByRole("tab", { name: "Templates", exact: true }).click();
-  await card.getByRole("link", { name: "Open", exact: true }).click();
+  await card.getByRole("link", { name: title, exact: true }).click();
   await expect(page.getByText("Editing enabled.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Version history", exact: true }).click();
   await page.getByRole("button", { name: /^Version 1/ }).click();
