@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { api, apiErrorMessage } from "../api";
@@ -29,6 +29,10 @@ export function Authentication({
   const [attempt, setAttempt] = useState(0);
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
+  const [loginIssue, setLoginIssue] = useState("");
+  const [passwordIssue, setPasswordIssue] = useState("");
+  const loginIssueId = useId();
+  const passwordIssueId = useId();
   const leaveGuard = useRef<() => boolean>(() => true);
   const setLeaveGuard = useCallback((guard: () => boolean) => { leaveGuard.current = guard; }, []);
   const accept = useCallback((value: Session) => {
@@ -71,6 +75,14 @@ export function Authentication({
     event?.preventDefault();
     if (!session || busy || childBusy || recovering) return;
     if (session.user && !leaveGuard.current()) return;
+    if (!session.user) {
+      // Application-localized inline feedback replaces native browser bubbles.
+      const nextLoginIssue = login.trim() ? "" : "loginRequired";
+      const nextPasswordIssue = password ? "" : "passwordRequired";
+      setLoginIssue(nextLoginIssue);
+      setPasswordIssue(nextPasswordIssue);
+      if (nextLoginIssue || nextPasswordIssue) return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -83,6 +95,7 @@ export function Authentication({
           });
       if (result.data) {
         accept(result.data);
+        setRecovering(false);
         setPassword("");
       } else {
         setError(apiErrorMessage(result.error.error.code));
@@ -99,10 +112,11 @@ export function Authentication({
       aria-label={t("auth.account")}
       aria-busy={busy}
     >
-      {error && <p role="alert">{error}</p>}
+      {error && session?.user && <p role="alert">{error}</p>}
       {!session && (
         <>
           <p>{t(busy ? "auth.loading" : "auth.unavailable")}</p>
+          {error && <p role="alert">{error}</p>}
           {!busy && (
             <button onClick={() => setAttempt((value) => value + 1)}>
               {t("auth.retry")}
@@ -124,29 +138,55 @@ export function Authentication({
       {session && !session.user && (
         <form onSubmit={(event) => void submit(event)}>
           <h2>{t("auth.login")}</h2>
+          {/* Reserved feedback row: the invalid-credentials alert appears
+              inside the card without shifting the surrounding layout. */}
+          <div
+            className="login-feedback"
+            role={error ? "alert" : undefined}
+          >
+            {error}
+          </div>
           <label>
             {t("auth.identifier")}
             <input
               type="text"
               autoComplete="username"
-              required
               maxLength={254}
               value={login}
-              onChange={(event) => setLogin(event.target.value)}
+              aria-invalid={loginIssue ? true : undefined}
+              aria-describedby={loginIssue ? loginIssueId : undefined}
+              onChange={(event) => {
+                setLogin(event.target.value);
+                setLoginIssue("");
+              }}
             />
           </label>
+          {loginIssue && (
+            <p className="field-issue" id={loginIssueId}>
+              {t(`auth.${loginIssue}`)}
+            </p>
+          )}
           <label>
             {t("auth.password")}
             <input
               type="password"
               autoComplete="current-password"
-              required
               maxLength={1024}
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              aria-invalid={passwordIssue ? true : undefined}
+              aria-describedby={passwordIssue ? passwordIssueId : undefined}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setPasswordIssue("");
+              }}
             />
           </label>
-          <button type="submit" className="primary" disabled={busy}>
+          {passwordIssue && (
+            <p className="field-issue" id={passwordIssueId}>
+              {t(`auth.${passwordIssue}`)}
+            </p>
+          )}
+          <button type="submit" className="primary" disabled={busy || childBusy || recovering}>
             {t("auth.login")}
           </button>
         </form>

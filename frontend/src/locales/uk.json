@@ -42,6 +42,8 @@
   "auth.login": "Увійти",
   "auth.identifier": "Логін",
   "auth.password": "Пароль",
+  "auth.loginRequired": "Введіть логін.",
+  "auth.passwordRequired": "Введіть пароль.",
   "auth.logout": "Вийти",
   "auth.signedIn": "Ви увійшли як {{name}}.",
   "errors.current_password_invalid": "Поточний пароль неправильний.",
