@@ -70,6 +70,15 @@ test("local login rotates a cookie, restores language across refresh, and logout
   });
 });
 
+test.beforeEach(async ({ context }) => {
+  await context.route("**/api/**", async route => {
+    const request = route.request();
+    if (request.method() !== "POST") return route.continue();
+    const response = await route.fetch({ headers: { ...request.headers(), origin: new URL(request.url()).origin } });
+    return route.fulfill({ response });
+  });
+});
+
 test("empty sign-in shows catalog feedback and the credentials alert stays inside the card", async ({
   page,
 }, testInfo) => {
@@ -121,7 +130,10 @@ test("empty sign-in shows catalog feedback and the credentials alert stays insid
   await expect(
     page.getByRole("button", { name: "Sign in", exact: true }),
   ).toBeEnabled();
-  await page.getByLabel("Login", { exact: true }).fill("");
+  const loginBox = page.getByLabel("Login", { exact: true });
+  await loginBox.fill("");
+  // The fill must land on the mounted form, not a node from the sign-out transition.
+  await expect(loginBox).toHaveValue("");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page.getByText("Enter your login name.", { exact: true })).toBeVisible();
   await expect(page.getByText("Enter your password.", { exact: true })).toBeVisible();

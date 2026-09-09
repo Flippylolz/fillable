@@ -95,6 +95,7 @@ export function Authentication({
           });
       if (result.data) {
         accept(result.data);
+        setRecovering(false);
         setPassword("");
       } else {
         setError(apiErrorMessage(result.error.error.code));
@@ -185,7 +186,7 @@ export function Authentication({
               {t(`auth.${passwordIssue}`)}
             </p>
           )}
-          <button type="submit" className="primary" disabled={busy}>
+          <button type="submit" className="primary" disabled={busy || childBusy || recovering}>
             {t("auth.login")}
           </button>
         </form>
