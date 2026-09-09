@@ -99,6 +99,7 @@
   "profile.confirmPassword": "Підтвердьте новий пароль",
   "profile.changePassword": "Змінити пароль",
   "profile.passwordMismatch": "Нові паролі не збігаються.",
+  "profile.passwordTooShort": "Новий пароль має містити щонайменше 10 символів.",
   "profile.passwordSaved": "Пароль змінено. Інші сеанси завершено.",
   "profile.storage": "Сховище",
   "profile.usageLoading": "Завантаження використання сховища…",

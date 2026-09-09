@@ -17,6 +17,10 @@ Two environment caveats affect interpretation and are recorded so the next agent
 
 ### F1 — Password minimum length is not enforced by the backend (high; contract violation)
 
+**Resolution (E10.1, 2026-09-09): finding withdrawn — the repro evidence miscounted the password length.** `short9char` has ten characters (s‑h‑o‑r‑t‑9‑c‑h‑a‑r), so the observed `200`/`completed` outcomes are correct boundary behavior: passwords of exactly 10 characters are accepted. Enforcement of the 10–1024 range has existed on all three paths since E08.6 (PR #77, merged before this test pass): the profile endpoint's `new_password` field rejects shorter values with `422 invalid_request`, and `validate_password` gates both `provision` and `reset_password`. The `qa-minlen` account therefore demonstrates acceptance of a valid 10-character password, not a gap. E10.1 added the previously missing 9-reject/10-accept boundary tests for the provisioning and reset CLI paths, made the CLI print the specific `invalid_password` code instead of generic `invalid_input`, and replaced the profile form's native `minLength` bubble with a catalog-based inline minimum message in both languages. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (superseded):
+
 `POST /api/profile/password` accepted a 9-character `new_password` and returned 200; the new password then logged in successfully. The provisioning CLI also accepts passwords shorter than 10 characters (`app.accounts.cli provision --password-stdin` created account `qa-minlen` with `short9char`).
 
 - Contract: [Product](PRODUCT.md) — "New passwords require at least 10 characters"; [Local development](LOCAL_DEVELOPMENT.md) — "a password of at least 10 characters".

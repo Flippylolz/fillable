@@ -38,7 +38,14 @@ def main() -> int:
         else:
             reset_password(options.login, password)
     except (ValueError, ValidationError, AppError) as error:
-        code = error.detail.code if isinstance(error, AppError) else "invalid_input"
+        code: str
+        if isinstance(error, AppError):
+            code = error.detail.code
+        elif isinstance(error, ValidationError):
+            code = "invalid_input"
+        else:
+            # Credential ValueErrors carry fixed codes such as invalid_password.
+            code = str(error) or "invalid_input"
         print(code, file=sys.stderr)
         return 1
     print("completed")
