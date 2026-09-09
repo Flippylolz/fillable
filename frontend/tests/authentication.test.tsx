@@ -56,6 +56,8 @@ test("login sends CSRF, restores account language, preserves failed inputs, and 
   await credentials();
   fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("Неправильний логін або пароль.");
+  // The credentials alert renders inside the sign-in card, not at the page edge.
+  expect(screen.getByRole("alert").closest("form")).not.toBeNull();
   expect(screen.getByLabelText("Пароль")).toHaveValue("Synthetic-їжак-2026");
   const request = fetcher.mock.calls[1][0] as Request;
   expect(request.headers.get("X-CSRF-Token")).toBe("anonymous-csrf");
@@ -127,6 +129,33 @@ test("a rejected login request retains the form and prevents duplicate submissio
   await act(async () => reject(new Error("offline")));
   expect(screen.getByRole("alert")).toBeVisible();
   expect(screen.getByLabelText("Пароль")).toHaveValue("Synthetic-їжак-2026");
+});
+
+test("empty sign-in shows localized inline feedback without native bubbles or requests", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json(anonymous));
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  await screen.findByLabelText("Логін");
+  expect(screen.getByLabelText("Логін")).not.toHaveAttribute("required");
+  expect(screen.getByLabelText("Пароль")).not.toHaveAttribute("required");
+  fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
+  expect(await screen.findByText("Введіть логін.")).toBeVisible();
+  expect(screen.getByText("Введіть пароль.")).toBeVisible();
+  expect(screen.getByLabelText("Логін")).toHaveAttribute("aria-invalid", "true");
+  expect(screen.getByLabelText("Логін")).toHaveAccessibleDescription("Введіть логін.");
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  fireEvent.change(screen.getByLabelText("Логін"), { target: { value: "client@example.test" } });
+  expect(screen.queryByText("Введіть логін.")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
+  expect(await screen.findByText("Введіть пароль.")).toBeVisible();
+  fireEvent.change(screen.getByLabelText("Пароль"), { target: { value: "Synthetic-їжак-2026" } });
+  fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+  expect((fetcher.mock.calls[1][0] as Request).url).toContain("/api/auth/login");
+  await act(async () => setLanguage("en"));
+  fireEvent.change(screen.getByLabelText("Password"), { target: { value: "" } });
+  fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+  expect(await screen.findByText("Enter your password.")).toBeVisible();
 });
 
 test.each([true, false])(

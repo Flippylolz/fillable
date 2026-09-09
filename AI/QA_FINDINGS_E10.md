@@ -54,12 +54,20 @@ On a freshly opened document (no edits), both "Скасувати" and "Повт
 
 ### F4 — Login error alert is placed far from the sign-in card (low; UX)
 
+**Resolution (E10.4, 2026-09-09): fixed.** The invalid-credentials alert now renders inside the sign-in card in a reserved feedback row (stable card geometry — asserted by bounding-box checks in the browser spec), directly under the card heading. Desktop/mobile screenshots in both locales are captured by `frontend/e2e/authentication.spec.ts` and retained in the CI browser artifacts. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
+
 A failed login renders the localized alert at the top-left of the page viewport, disconnected from the centered card the user is interacting with, and the card shifts down when the alert inserts.
 
 - Evidence: [t03-login-wrong-credentials.png](qa-evidence-e10/t03-login-wrong-credentials.png).
 - Direction: render the alert inside or directly above the sign-in card and reserve space or animate to avoid the layout jump.
 
 ### F5 — Empty-submit login feedback relies on native browser bubbles (low; i18n/UX)
+
+**Resolution (E10.4, 2026-09-09): fixed.** The sign-in inputs no longer use native `required` bubbles: empty submits validate in the form and show `auth.loginRequired`/`auth.passwordRequired` inline under each field in the active UI language (with `aria-invalid`/`aria-describedby` wiring), and no request is sent. Component tests cover both catalogs; the browser spec asserts the messages and captures screenshots in both locales and viewports. The server-side contract is unchanged. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
 
 Both login inputs are `required`, so submitting empty fields shows the browser-native validation bubble, which follows the browser's locale rather than the application's Ukrainian/English catalogs, and is invisible in some environments.
 
@@ -80,6 +88,10 @@ Original finding text (context for the resolution above):
 An operator therefore cannot attribute upload/copy/restore events or identify who requested a deletion. Direction: extend audit coverage to allocation-backed operations and record the acting session's user on deletion requests.
 
 ### F7 — 422 `invalid_request` responses do not identify the offending parameter (informational; API ergonomics)
+
+**Resolution (E10.6, 2026-09-09): fixed.** Schema-validation 422s now carry `{"parameter": <name>, "reason": <machine-readable reason>}` in `parameters` (for example `kind`/`missing` for the documented repro). Only names and bounded machine reasons leave the server — submitted values, exception text and internal messages are never included; request-supplied names are bounded to 64 printable characters. The OpenAPI/TypeScript contract was regenerated (byte-identical — `parameters` was already typed `dict[string|integer]`, so no schema drift exists and CI's drift check confirms it). The frontend interpolates the name where available: `errors.invalid_request_parameter` ("Перевірте значення поля {{parameter}}." / "Check the {{parameter}} field.") is used by the profile forms when the API names a parameter, with the generic catalog message remaining the fallback everywhere else. Covered by error-contract and profile component tests in both languages. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
 
 Schema violations (for example, `GET /api/documents` without the required `kind` query parameter, empty display name, unknown fields) all return `{"error":{"code":"invalid_request","parameters":{}}}` with empty `parameters`. The OpenAPI contract documents the constraints, but clients and the localized UI can only show a generic message. Direction: include a machine-readable parameter name/reason in `parameters` where safe (no submitted values), and surface it in the localized error text.
 
