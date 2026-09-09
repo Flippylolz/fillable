@@ -3,6 +3,8 @@ import { StrictMode, useCallback, useState } from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import { Workspace } from "../src/workspace/Workspace";
+import { WorkspaceSettings } from "../src/workspace/WorkspaceSettings";
+import type { Resource } from "../src/library/useLibrary";
 import { i18n, setLanguage } from "../src/i18n";
 import corpus from "../prototype/document.json";
 
@@ -125,6 +127,33 @@ test("a new saved revision requires explicit discard before reopening and retain
   confirm.mockReturnValue(true);
   fireEvent.click(screen.getByRole("button", { name: "Reopen saved document" }));
   await waitFor(() => expect(screen.getByRole("textbox", { name: "Title", hidden: true })).toHaveValue(resource.title));
+});
+
+test("workspace-held open state keeps the settings panel expanded across remounts", () => {
+  const onOpenChange = vi.fn();
+  const item = resource as Resource;
+  function view(open: boolean, key = 1) {
+    return <I18nextProvider i18n={i18n}><WorkspaceSettings key={key} open={open} onOpenChange={onOpenChange}
+      item={item} csrfToken="csrf" zoom={1} highlight onZoom={vi.fn()} onHighlight={vi.fn()}
+      onResource={vi.fn()} onDirty={vi.fn()} onReopen={vi.fn()} /></I18nextProvider>;
+  }
+  const mounted = render(view(false));
+  const details = () => mounted.container.querySelector(".workspace-settings") as HTMLDetailsElement;
+  expect(details().open).toBe(false);
+  fireEvent.click(screen.getByText("Workspace settings"));
+  // jsdom flips the attribute without dispatching toggle; real browsers dispatch it from the click.
+  act(() => { details().open = true; details().dispatchEvent(new Event("toggle")); });
+  expect(onOpenChange).toHaveBeenCalledWith(true);
+  mounted.rerender(view(true));
+  expect(details().open).toBe(true);
+  expect(screen.getByRole("textbox", { name: "Title" })).toBeVisible();
+  // The editor epoch remounts the panel after restore/reopen; the workspace keeps it expanded.
+  mounted.rerender(view(true, 2));
+  expect(details().open).toBe(true);
+  expect(screen.getByRole("textbox", { name: "Title" })).toBeVisible();
+  mounted.rerender(view(false));
+  expect(details().open).toBe(false);
+  mounted.unmount();
 });
 
 test("network/session failures retain drafts and unmount aborts a late rename", async () => {
