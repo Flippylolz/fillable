@@ -16,7 +16,7 @@ import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
 export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 export type ReviewOptions = { label: string; key: string; type: string };
-export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean; glyphCheckbox: boolean };
+export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean; glyphCheckbox: boolean; canUndo: boolean; canRedo: boolean };
 export type EditorSnapshot = { document: object; revision: number; fieldValuesValid: boolean; composing: boolean };
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
@@ -28,6 +28,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
 }) {
   const source = editorSchema.nodeFromJSON(structuredClone(initialDocument));
   let revision = 0, unsupported = false, settling = false;
+  const historyPlugin = history();
   const allowed = () => callbacks.canEdit?.() !== false;
   let compositionSource: EditorState | null = null;
   let compositionChanges: Transaction | null = null;
@@ -38,7 +39,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     nodeViews: { lockedInline: sourceNodeView(callbacks.presentation), lockedBlock: sourceNodeView(callbacks.presentation) },
     editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
-      plugins: [history(), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
+      plugins: [historyPlugin, keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
         " ": toggleSelectedCheckbox, ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
     }),
     handleTextInput: (view, from, to, value) => !allowed() && !compositionSource || fieldTextInput(view, from, to, value),
@@ -116,9 +117,11 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     const occurrences = fields(editor.state.doc);
     const active = occurrences.find(field => editor.state.selection.from > field.pos && editor.state.selection.from < field.pos + field.size)?.id ?? "";
     const summaries = occurrences.map(({ id, key, label, value }) => ({ id, key, label, value, issue: fieldValueIssue(value) }));
+    const history = historyPlugin.getState(editor.state);
     callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
       active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null,
-      glyphCheckbox: allowed() && glyphCheckboxReady(editor.state) });
+      glyphCheckbox: allowed() && glyphCheckboxReady(editor.state),
+      canUndo: (history?.done.eventCount ?? 0) > 0, canRedo: (history?.undone.eventCount ?? 0) > 0 });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {
     if (!transaction || (transaction.docChanged && !allowed())) return false;
