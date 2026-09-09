@@ -23,6 +23,7 @@ from app.infrastructure import database
 from app.jobs.schema import jobs
 from app.jobs.service import intent
 from app.storage.configuration import configured
+from app.storage.maintenance import audit
 from app.storage.schema import files
 from app.storage.service import StorageError
 
@@ -200,6 +201,16 @@ def upload(state, metadata, data, key):
         )
         intent(
             connection, state.user.id, {"id": identity, "current_version_id": version}
+        )
+        audit(
+            connection,
+            "original_uploaded",
+            state.user.id,
+            actor=state.user.id,
+            event_id=uuid5(NAMESPACE_URL, "fillable:upload-audit:" + str(result.id)),
+            document_id=identity,
+            version_id=version,
+            file_id=result.id,
         )
 
     result = store.store(

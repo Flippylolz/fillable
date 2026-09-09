@@ -20,7 +20,7 @@ from app.documents.schema import resources, versions
 from app.infrastructure import database
 from app.storage.configuration import configured
 from app.storage.quotas import set_override
-from app.storage.schema import accounts
+from app.storage.schema import accounts, audit_events
 from app.storage.service import Storage, StorageError
 
 
@@ -111,6 +111,23 @@ def test_copy_uses_saved_revision_and_independent_bytes_schema_and_replay():
     with database().connect() as connection:
         rows = connection.execute(select(resources)).mappings().all()
         assert len({row["original_file_id"] for row in rows}) == 2
+        target_file_id = connection.execute(
+            select(resources.c.original_file_id).where(
+                resources.c.id == UUID(target["id"])
+            )
+        ).scalar_one()
+        events = connection.execute(
+            select(audit_events).where(audit_events.c.action == "document_copied")
+        ).mappings().all()
+    assert len(events) == 1
+    assert events[0]["owner_id"] == owner.id and events[0]["actor_id"] == owner.id
+    assert events[0]["details"] == {
+        "source_document_id": saved["id"],
+        "source_version_id": saved["current_version_id"],
+        "document_id": target["id"],
+        "version_id": target["current_version_id"],
+        "file_id": str(target_file_id),
+    }
     assert web.delete(f"/api/documents/{saved['id']}").json()["status"] == "complete"
     assert web.get(url + "/download").content == data
     assert web.get(url + "/content").json()["document"] == model
