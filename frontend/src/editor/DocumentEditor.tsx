@@ -55,8 +55,8 @@ export function DocumentEditor({
   validity.current = onFieldValidityChange;
   const composition = useRef(onCompositionChange);
   composition.current = onCompositionChange;
-  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false, glyphCheckbox: false });
-  const { fields: occurrences, active, review, unsupported, glyphCheckbox } = presentation;
+  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false, glyphCheckbox: false, canUndo: false, canRedo: false });
+  const { fields: occurrences, active, review, unsupported, glyphCheckbox, canUndo, canRedo } = presentation;
   const [date, setDate] = useState("");
   const [dateIssue, setDateIssue] = useState<ReturnType<EditorAdapter["fillDate"]>>(null);
   const dateHelp = useId();
@@ -101,12 +101,12 @@ export function DocumentEditor({
         >
           {t("editor.createField")}
         </button>
-        <button disabled={readOnly}
+        <button disabled={readOnly || !canUndo}
           onClick={() => view.current!.undo()}
         >
           {t("editor.undo")}
         </button>
-        <button disabled={readOnly}
+        <button disabled={readOnly || !canRedo}
           onClick={() => view.current!.redo()}
         >
           {t("editor.redo")}
