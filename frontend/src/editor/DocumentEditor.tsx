@@ -78,7 +78,10 @@ export function DocumentEditor({
     return () => { snapshots.current.onReader?.(null); editor.destroy(); view.current = null; };
   }, []);
   useEffect(() => { view.current!.refreshAccess(); }, [readOnly, canEdit]);
-  useEffect(() => { view.current!.setDocumentLabel(t("editor.document")); }, [t]);
+  useEffect(() => {
+    view.current!.setDocumentLabel(t("editor.document"));
+    view.current!.setPageBreakLabel(page => t("editor.pageBreak", { page }));
+  }, [t]);
   useEffect(() => {
     if (discoverySnapshot && sourceVersion) setReviewStale(!view.current!.attachDiscovery(discoverySnapshot, sourceVersion, reviewSaved));
   }, [discoverySnapshot, sourceVersion, reviewSaved]);

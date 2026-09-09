@@ -27,7 +27,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
-| E09 | Post-release user-requested improvements and automation | E08 | in_progress: E09.1–E09.11 sections below |
+| E09 | Post-release user-requested improvements and automation | E08 | in_progress: E09.1–E09.15 sections below |
 | E10 | Manual QA findings and corrections | E00–E08 delivered; findings in [QA findings](QA_FINDINGS_E10.md) | done: E10.1–E10.7 merged (PRs #110–#116); E10.7's own record tracked by the closing docs PR |
 
 E01 can start without selecting an editor. E04 uses deterministic detection only; there is no AI provider/key decision to wait for. E00 must finish before editor-dependent implementation is considered ready. Local and production are the only persistent environments, and backups are outside MVP under D018.
@@ -2738,6 +2738,10 @@ Renumbered from a provisional E09.10 ID now used by the merged Dependabot Python
 ## E09.13 — Checkbox fidelity and toggling for form documents
 
 Status: in_progress. User-reported on a real Ukrainian form: checkbox graphics render misaligned and cannot be modified. Acceptance: native `w14:checkbox` content controls import as bounded, accessible checkbox nodes whose checked state toggles by direct click or Space on the selection with single-step undo; export rewrites only that control's state value and state glyph while an unchanged document stays byte-identical and malformed controls remain protected as unsupported; a localized selection action toggles one unambiguous ballot-box character (U+2610/U+2612) preserving run formatting, with Wingdings-style private-use codes excluded because run fonts are outside the editing model; inline DrawingML rectangles and VML rectangles are extracted as bounded read-only shapes rendered in the text flow at their anchor position instead of disappearing, and anchored shapes keep their documented paragraph-relative placement; supported structure is recorded in [Workspace](WORKSPACE.md) and [Editor feasibility](EDITOR_FEASIBILITY.md). Both catalogs stay complete and the independent 90% gates hold. Deliver a dedicated PR with required CI, then deploy through Actions while preserving existing services.
+
+## E09.15 — Visible page breaks in the editor
+
+Status: in_progress. User feedback: the document does not show where one page ends and the next begins. Acceptance: the mounted workspace and historical editors show approximate page boundaries derived from the source page geometry already delivered for layout (page height/margins), as dashed, localized "Сторінка N"/"Page N" markers between blocks that begin a new page; markers are purely visual ProseMirror decorations — never in the document model, review metadata, save payload or exports — recompute after edits, zoom and layout/font changes, honor the zoom scale, and stay hidden from assistive technology; documents without page geometry show no markers; breaks fall on block boundaries only, exact Word pagination stays unclaimed and recorded as unproved in [Editor feasibility](EDITOR_FEASIBILITY.md) and [Workspace](WORKSPACE.md); both catalogs stay complete and the independent 90% gates hold. Deliver a dedicated PR with required CI, then deploy through Actions while preserving existing services.
 
 
 ## E10 — Manual QA findings and corrections
