@@ -2,16 +2,20 @@
 
 import hashlib
 import io
+import re
 from copy import deepcopy
 from typing import Any
 from zipfile import ZipFile
 
 from lxml import etree
 
+from app.documents.drawing_presentation import recolor_targets
 from app.documents.package import DocxPackage, InvalidDocument, Node, W
 
 W14 = "{http://schemas.microsoft.com/office/word/2010/wordml}"
 XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
+COLOR = re.compile(r"#[0-9a-fA-F]{6}")
+SHAPE_OVERRIDES_LIMIT = 16
 
 
 def comparable(value: Any) -> Any:
@@ -19,7 +23,10 @@ def comparable(value: Any) -> Any:
         return {
             key: comparable(item)
             for key, item in value.items()
+            # Empty content lists and shape overrides are serialization defaults
+            # of the editing schema; their absence keeps originals byte-identical.
             if not (key == "content" and item == [])
+            and not (key == "shapes" and item == {})
         }
     if isinstance(value, list):
         return [comparable(item) for item in value]
@@ -242,6 +249,44 @@ class DocxExport:
             raise InvalidDocument("unsupported_change")
         self.locked.add(node["attrs"]["id"])
 
+    def shape_run(self, node: Node, part: str) -> Any:
+        """Emit a locked run; only bounded, explicit shape fill recolors change."""
+        identity = node["attrs"]["id"]
+        original = self.known.get(identity)
+        attrs = node["attrs"]
+        overrides = attrs.get("shapes") or {}
+        if (
+            original is None
+            or original["type"] != "lockedInline"
+            or {k: v for k, v in attrs.items() if k != "shapes"} != original["attrs"]
+            or not identity.startswith(part + ":")
+            or identity in self.seen
+            or not isinstance(overrides, dict)
+            or len(overrides) > SHAPE_OVERRIDES_LIMIT
+            or any(
+                not isinstance(key, str)
+                or not key.isdecimal()
+                or not isinstance(value, str)
+                for key, value in overrides.items()
+            )
+        ):
+            raise InvalidDocument("invalid_anchor")
+        element = deepcopy(self.package.elements[identity])
+        if overrides:
+            targets = recolor_targets(element)
+            for key, color in overrides.items():
+                index = int(key)
+                if (
+                    index >= len(targets)
+                    or targets[index] is None
+                    or not COLOR.fullmatch(color)
+                ):
+                    raise InvalidDocument("invalid_anchor")
+                targets[index](color[1:].lower())
+        self.seen.add(identity)
+        self.locked.add(identity)
+        return element
+
     def checkbox(self, node: Node, part: str) -> Any:
         """Emit the anchored checkbox SDT; only its checked state may change."""
         identity = node["attrs"]["id"]
@@ -326,8 +371,7 @@ class DocxExport:
                     if placeholder is not None:
                         placeholder.getparent().remove(placeholder)
             elif kind == "lockedInline":
-                element = self.anchor(node, part)
-                self.preserve_locked(node, self.known[node["attrs"]["id"]])
+                element = self.shape_run(node, part)
             elif kind == "checkbox":
                 element = self.checkbox(node, part)
             else:

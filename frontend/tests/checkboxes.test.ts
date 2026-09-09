@@ -1,7 +1,7 @@
 import { EditorState, TextSelection, NodeSelection } from "prosemirror-state";
 import { history, undo } from "prosemirror-history";
 import { editorSchema as schema } from "../src/editor/model";
-import { toggleGlyphCheckbox, glyphSwap, glyphCheckboxReady, toggleSelectedCheckbox } from "../src/editor/checkboxes";
+import { toggleGlyphCheckbox, glyphSwap, glyphCheckboxReady, toggleSelectedCheckbox, shapeToggleFill, DRAWN_CHECKED_FALLBACK, DRAWN_UNCHECKED_FILL } from "../src/editor/checkboxes";
 import { sourceNodeView } from "../src/editor/sourceNodes";
 import type { SourcePresentation } from "../src/editor/SourceLayout";
 
@@ -108,7 +108,7 @@ test("inline shape placements render in flow; anchored ones stay absolutely posi
     },
   };
   const host = document.createElement("div");
-  const nodeView = sourceNodeView(presentation)(schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" }));
+  const nodeView = sourceNodeView(presentation, () => "")(schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" }));
   host.append(nodeView.dom);
   const boxes = (nodeView.dom as HTMLElement).querySelectorAll("span[style]");
   expect(boxes.length).toBe(2);
@@ -116,6 +116,48 @@ test("inline shape placements render in flow; anchored ones stay absolutely posi
   expect((boxes[0] as HTMLElement).style.position).not.toBe("absolute");
   expect((boxes[1] as HTMLElement).style.position).toBe("absolute");
   expect((nodeView.dom as HTMLElement).classList.contains("document-quiet")).toBe(true);
-  const labelled = sourceNodeView({locked:{"word/document.xml:1":{text:"note",shapes:[{width:10,height:10,fill:"transparent",placement:"inline"}]}}})(schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" }));
+  const labelled = sourceNodeView({locked:{"word/document.xml:1":{text:"note",shapes:[{width:10,height:10,fill:"transparent",placement:"inline"}]}}}, () => "")(schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" }));
   expect((labelled.dom as HTMLElement).classList.contains("document-quiet")).toBe(false);
+});
+
+test("explicitly filled shapes render as togglable checkboxes with overrides", () => {
+  const presentation: SourcePresentation = {
+    nodes: {},
+    section: {},
+    locked: {
+      "word/document.xml:1": {
+        text: "",
+        shapes: [
+          { x: 4, y: 4, width: 9, height: 9, fill: "#938953", placement: "absolute" },
+          { x: 8, y: 4, width: 9, height: 9, fill: "#ffffff", placement: "absolute" },
+        ],
+      },
+    },
+  };
+  const node = schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "", shapes: { "1": "#595959" } });
+  const dom = sourceNodeView(presentation, () => "Прапорець форми")(node).dom as HTMLElement;
+  const boxes = dom.querySelectorAll<HTMLElement>("span.document-shape");
+  expect(boxes.length).toBe(2);
+  expect(boxes[0].dataset.fill).toBe("#938953");
+  expect(boxes[0].getAttribute("aria-checked")).toBe("true");
+  expect(boxes[0].getAttribute("aria-label")).toBe("Прапорець форми");
+  expect(boxes[0].style.pointerEvents).toBe("auto");
+  // The stored override replaces the authored fill of the second rectangle.
+  expect(boxes[1].dataset.fill).toBe("#595959");
+  expect(boxes[1].getAttribute("aria-checked")).toBe("true");
+  const rendered = node.type.spec.toDOM!(node) as [string, Record<string, string>, string];
+  expect(rendered[1]["data-shapes"]).toBe('{"1":"#595959"}');
+  const plain = schema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" });
+  const plainRendered = plain.type.spec.toDOM!(plain) as [string, Record<string, string>, string];
+  expect(plainRendered[1]["data-shapes"]).toBeUndefined();
+});
+
+test("toggling a drawn rectangle flips light to the form's dark fill and back", () => {
+  // A light box takes the dark fill used by its sibling rectangles.
+  expect(shapeToggleFill("#ffffff", ["#938953", "#ffffff"])).toBe("#938953");
+  // Without any dark sibling the bounded default marks the box as checked.
+  expect(shapeToggleFill("#ffffff", ["#ffffff"])).toBe(DRAWN_CHECKED_FALLBACK);
+  // A dark box returns to the cleared appearance.
+  expect(shapeToggleFill("#938953", ["#938953"])).toBe(DRAWN_UNCHECKED_FILL);
+  expect(shapeToggleFill("#595959", [])).toBe(DRAWN_UNCHECKED_FILL);
 });

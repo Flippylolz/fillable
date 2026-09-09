@@ -7,8 +7,10 @@ from zipfile import ZipFile
 
 import pytest
 
+from app.documents.drawing_presentation import MC, WP, A, V
 from app.documents.export import DocxExport
 from app.documents.package import DocxPackage, W
+from app.documents.presentation import Layout
 from app.fields.working import validate_working
 
 W14 = "http://schemas.microsoft.com/office/word/2010/wordml"
@@ -140,6 +142,141 @@ def test_checkbox_export_rejects_malformed_nodes():
         mutation()
         with pytest.raises(InvalidDocument, match="invalid_anchor"):
             exporter.render(model, package.digest)
+
+
+def shape_run(color):
+    return f'''<w:r xmlns:mc="{MC[1:-1]}" xmlns:wp="{WP[1:-1]}" xmlns:a="{A[1:-1]}"
+  xmlns:v="{V[1:-1]}"><mc:AlternateContent><mc:Choice Requires="wps"><w:drawing>
+  <wp:anchor>
+  <wp:positionH relativeFrom="column"><wp:posOffset>127000</wp:posOffset></wp:positionH>
+  <wp:positionV relativeFrom="paragraph"><wp:posOffset>25400</wp:posOffset>
+  </wp:positionV>
+  <wp:extent cx="127000" cy="127000"/><a:prstGeom prst="rect"/>
+  <a:solidFill><a:srgbClr val="{color}"/></a:solidFill>
+  </wp:anchor></w:drawing></mc:Choice>
+  <mc:Fallback><w:pict><v:rect style="width:10pt;height:10pt"
+  fillcolor="#{color}"/></w:pict></mc:Fallback></mc:AlternateContent></w:r>'''
+
+
+def shape_document(fill="938953"):
+    return archive(
+        f"<w:p>{shape_run(fill)}<w:r><w:t>ч</w:t></w:r></w:p>"
+    )
+
+
+def locked_runs(model):
+    return [node for node in walk(model) if node["type"] == "lockedInline"]
+
+
+def test_drawn_shape_renders_once_and_stays_byte_identical_unchanged():
+    data = shape_document()
+    package = DocxPackage(data)
+    runs = locked_runs(package.model)
+    assert len(runs) == 1
+    layout = Layout(package).render()
+    shapes = layout["locked"][runs[0]["attrs"]["id"]]["shapes"]
+    assert len(shapes) == 1
+    assert shapes[0]["placement"] == "absolute"
+    assert shapes[0]["fill"] == "#938953"
+    assert DocxExport(package).render(package.model, package.digest) == data
+    # The editing schema serializes an empty override map; it stays byte-identical.
+    model = copy.deepcopy(package.model)
+    locked_runs(model)[0]["attrs"]["shapes"] = {}
+    assert DocxExport(package).render(model, package.digest) == data
+
+
+def test_toggled_shape_fill_export_updates_choice_and_fallback():
+    data = shape_document()
+    package = DocxPackage(data)
+    model = copy.deepcopy(package.model)
+    locked_runs(model)[0]["attrs"]["shapes"] = {"0": "#FF0000"}
+    changed = DocxExport(package).render(model, package.digest)
+    with ZipFile(io.BytesIO(changed)) as saved:
+        xml = saved.read("word/document.xml").decode("utf-8")
+    assert 'val="ff0000"' in xml
+    assert 'fillcolor="#ff0000"' in xml
+    reopened = DocxPackage(changed)
+    runs = locked_runs(reopened.model)
+    shapes = Layout(reopened).render()["locked"][runs[0]["attrs"]["id"]]["shapes"]
+    assert shapes[0]["fill"] == "#ff0000"
+    # Reverting to the authored color presents the source appearance again.
+    reverted = copy.deepcopy(reopened.model)
+    locked_runs(reverted)[0]["attrs"]["shapes"] = {"0": "#938953"}
+    again = DocxPackage(DocxExport(reopened).render(reverted, reopened.digest))
+    runs = locked_runs(again.model)
+    shapes = Layout(again).render()["locked"][runs[0]["attrs"]["id"]]["shapes"]
+    assert shapes[0]["fill"] == "#938953"
+
+
+def test_shape_fill_export_rejects_malformed_overrides():
+    from app.documents.package import InvalidDocument
+
+    package = DocxPackage(shape_document())
+    for overrides in [
+        {"0": "red"},
+        {"7": "#ff0000"},
+        {"0": 5},
+        {"-1": "#ff0000"},
+        "x",
+        {"0": "#ff0000", **{str(i): "#ff0000" for i in range(1, 40)}},
+    ]:
+        model = copy.deepcopy(package.model)
+        locked_runs(model)[0]["attrs"]["shapes"] = overrides
+        with pytest.raises(InvalidDocument, match="invalid_anchor"):
+            DocxExport(package).render(model, package.digest)
+    # A run without an explicit fill offers no recolor target at all.
+    stripped = shape_run("938953").replace(
+        '<a:solidFill><a:srgbClr val="938953"/></a:solidFill>', ""
+    )
+    empty = DocxPackage(
+        archive(f"<w:p>{stripped}<w:r><w:t>ч</w:t></w:r></w:p>")
+    )
+    model = copy.deepcopy(empty.model)
+    locked_runs(model)[0]["attrs"]["shapes"] = {"0": "#ff0000"}
+    with pytest.raises(InvalidDocument, match="invalid_anchor"):
+        DocxExport(empty).render(model, empty.digest)
+    # Identity stays immutable: label changes stay rejected even with overrides.
+    model = copy.deepcopy(package.model)
+    locked_runs(model)[0]["attrs"].update(label="x", shapes={"0": "#ff0000"})
+    with pytest.raises(InvalidDocument, match="invalid_anchor"):
+        DocxExport(package).render(model, package.digest)
+
+
+def test_working_model_accepts_bounded_shape_overrides():
+    source = uuid4()
+    model = {
+        "type": "doc",
+        "attrs": {},
+        "content": [
+            {
+                "type": "section",
+                "attrs": {"part": "word/document.xml"},
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "attrs": {
+                            "id": "word/document.xml:1",
+                            "align": "left",
+                            "numbered": False,
+                        },
+                        "content": [
+                            {
+                                "type": "lockedInline",
+                                "attrs": {
+                                    "id": "word/document.xml:2",
+                                    "label": "",
+                                    "shapes": {"0": "#938953"},
+                                },
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    document, _ = validate_working(model, source)
+    kinds = [node["type"] for node in walk(document)]
+    assert "lockedInline" in kinds
 
 
 def test_working_model_accepts_checkbox_only_inside_paragraphs():

@@ -43,3 +43,28 @@ export const toggleSelectedCheckbox: Command = (state, dispatch) => {
   dispatch?.(state.tr.setNodeMarkup(state.selection.from, undefined, { ...node.attrs, checked: !node.attrs.checked }));
   return true;
 };
+
+/** Drawn form rectangles use white for cleared; dark authored fills mark checked. */
+export const DRAWN_UNCHECKED_FILL = "#ffffff";
+export const DRAWN_CHECKED_FALLBACK = "#595959";
+
+function lightness(fill: string): number | null {
+  if (!/^#[0-9a-fA-F]{6}$/.test(fill)) return null;
+  return (0.299 * parseInt(fill.slice(1, 3), 16) + 0.587 * parseInt(fill.slice(3, 5), 16) + 0.114 * parseInt(fill.slice(5, 7), 16)) / 255;
+}
+
+/** Whether a rendered shape fill reads as an unmarked box (white or cleared). */
+export function isLightFill(fill: string): boolean {
+  const value = lightness(fill);
+  return value === null || value >= 0.6;
+}
+
+/**
+ * The fill after toggling one drawn rectangle: a light box takes the dark fill
+ * the form itself uses for checked boxes, a dark box returns to a cleared one.
+ */
+export function shapeToggleFill(rendered: string, siblingRendered: string[]): string {
+  if (!isLightFill(rendered)) return DRAWN_UNCHECKED_FILL;
+  const dark = siblingRendered.find(fill => !isLightFill(fill));
+  return dark ?? DRAWN_CHECKED_FALLBACK;
+}

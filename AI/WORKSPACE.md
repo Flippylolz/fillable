@@ -423,7 +423,15 @@ Inline DrawingML rectangles and VML rectangles — the way many converted forms 
 checkboxes — are extracted as bounded, read-only shapes rendered in the text flow
 at their anchor position, matching Word's inline rendering; anchored shapes keep
 their source offsets relative to the paragraph box. Their geometry is presentation
-only and never becomes editable text or a filled value.
+only and never becomes editable text or a filled value. An `AlternateContent` run
+carries its DrawingML choice and VML fallback as one drawing, so each rectangle
+renders once. Rectangles with an explicit fill color additionally toggle like
+checkboxes: clicking swaps the fill between the form's own dark color and a
+cleared white box, stored as a bounded per-run override (`shapes`) on the locked
+run in the editor model; export rewrites only that rectangle's fill value in the
+DrawingML choice and its duplicate VML fallback, an unchanged or empty-override
+document stays byte-identical, and shapes with implicit fills (no color, `noFill`)
+together with run identity remain immutable.
 
 ### Visual page breaks (E09.15)
 

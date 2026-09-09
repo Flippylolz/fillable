@@ -1,5 +1,5 @@
 import { fillBoxedDate, type DateBoxIssue } from "./boxedDates";
-import { glyphCheckboxReady, toggleGlyphCheckbox, toggleSelectedCheckbox, type CheckboxIssue } from "./checkboxes";
+import { glyphCheckboxReady, shapeToggleFill, toggleGlyphCheckbox, toggleSelectedCheckbox, type CheckboxIssue } from "./checkboxes";
 import { sourceNodeView } from "./sourceNodes";
 import type { SourcePresentation } from "./SourceLayout";
 import { EditorState, type Transaction } from "prosemirror-state";
@@ -31,6 +31,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
   const source = editorSchema.nodeFromJSON(structuredClone(initialDocument));
   let revision = 0, unsupported = false, settling = false;
   let pageBreakLabel: ((page: number) => string) | null = null;
+  let shapeCheckboxLabel = "";
   const pageBreaks: { refresh: (force?: boolean) => void } = { refresh: () => {} };
   const historyPlugin = history();
   const allowed = () => callbacks.canEdit?.() !== false;
@@ -40,7 +41,10 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
   let compositionTimer: ReturnType<typeof setTimeout> | undefined;
   source.descendants(node => { if (node.type.name.startsWith("locked")) unsupported = true; });
   const editor = new EditorView(host, {
-    nodeViews: { lockedInline: sourceNodeView(callbacks.presentation), lockedBlock: sourceNodeView(callbacks.presentation) },
+    nodeViews: {
+      lockedInline: sourceNodeView(callbacks.presentation, () => shapeCheckboxLabel),
+      lockedBlock: sourceNodeView(callbacks.presentation, () => shapeCheckboxLabel),
+    },
     editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
       plugins: [historyPlugin, pageBreakPlugin(() => pageBreakLabel ?? (page => String(page)), pageBreaks), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
@@ -54,14 +58,17 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       },
       click(view, event) {
         // Leaf checkbox controls are uneditable DOM; route direct clicks to a toggle.
-        const box = (event.target as HTMLElement | null)?.closest?.("span.document-checkbox");
-        if (!box || !view.dom.contains(box)) return false;
-        const position = view.posAtDOM(box, 0);
-        const node = view.state.doc.nodeAt(position);
-        if (!node || node.type.name !== "checkbox" || !allowed() || compositionSource) return false;
-        editor.dispatch(closeHistory(editor.state.tr.setNodeMarkup(position, undefined, { ...node.attrs, checked: !node.attrs.checked })));
-        event.preventDefault();
-        return true;
+        const target = event.target as HTMLElement | null;
+        const box = target?.closest?.("span.document-checkbox");
+        if (box && view.dom.contains(box)) {
+          const position = view.posAtDOM(box, 0);
+          const node = view.state.doc.nodeAt(position);
+          if (!node || node.type.name !== "checkbox" || !allowed() || compositionSource) return false;
+          editor.dispatch(closeHistory(editor.state.tr.setNodeMarkup(position, undefined, { ...node.attrs, checked: !node.attrs.checked })));
+          event.preventDefault();
+          return true;
+        }
+        return toggleShape(target, event as MouseEvent);
       },
       compositionstart(_view, event) {
         if (!allowed()) { event.preventDefault(); return true; }
@@ -94,6 +101,24 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       publish();
     },
   });
+  function toggleShape(target: HTMLElement | null, event: MouseEvent): boolean {
+    // Drawn form rectangles toggle like checkboxes: one bounded fill change.
+    const shape = target?.closest?.<HTMLElement>("span.document-shape");
+    if (!shape || !editor.dom.contains(shape) || !allowed() || compositionSource) return false;
+    const holder = shape.closest<HTMLElement>("[data-locked]");
+    if (!holder || !editor.dom.contains(holder)) return false;
+    const position = editor.posAtDOM(holder, 0);
+    const node = editor.state.doc.nodeAt(position);
+    if (!node || node.type.name !== "lockedInline") return false;
+    const boxes = Array.from(holder.querySelectorAll<HTMLElement>("span.document-shape"));
+    const index = boxes.indexOf(shape);
+    if (index < 0) return false;
+    const fills = boxes.map(element => element.dataset.fill ?? "");
+    const overrides = { ...(node.attrs.shapes as Record<string, string>), [String(index)]: shapeToggleFill(fills[index], fills) };
+    editor.dispatch(closeHistory(editor.state.tr.setNodeMarkup(position, undefined, { ...node.attrs, shapes: overrides })));
+    event.preventDefault();
+    return true;
+  }
   function finishComposition() {
     clearTimeout(compositionTimer);
     const source = compositionSource;
@@ -156,6 +181,11 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     setPageBreakLabel(formatter: (page: number) => string) {
       pageBreakLabel = formatter;
       pageBreaks.refresh(true);
+    },
+    setShapeCheckboxLabel(label: string) {
+      shapeCheckboxLabel = label;
+      for (const element of editor.dom.querySelectorAll<HTMLElement>("span.document-shape"))
+        element.setAttribute("aria-label", label);
     },
     attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string, reviewSaved = false): boolean {
       if (compositionSource) return false;

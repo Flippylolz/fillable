@@ -112,3 +112,42 @@ test("identical sidebar echoes terminate without revisions or history and meanin
   expect(editor.exportSnapshot().revision).toBe(3);
   editor.destroy(); host.remove();
 });
+
+test("clicking a drawn form rectangle toggles its fill in one undo step", () => {
+  const locked = editorSchema.nodes.lockedInline.create({ id: "word/document.xml:1", label: "" });
+  const source = editorSchema.nodes.doc.create(null, editorSchema.nodes.section.create({ part: "word/document.xml" }, [
+    editorSchema.nodes.paragraph.create({ id: "p" }, [locked]),
+  ])).toJSON();
+  const host = document.createElement("div"); document.body.append(host);
+  const presentation = { nodes: {}, section: {}, locked: { "word/document.xml:1": { text: "", shapes: [
+    { x: 4, y: 4, width: 9, height: 9, fill: "#938953", placement: "absolute" },
+    { x: 8, y: 4, width: 9, height: 9, fill: "#ffffff", placement: "absolute" },
+  ] } } };
+  const changed = vi.fn();
+  let editable = true;
+  const editor = mountEditor(host, source, { presentation, canEdit: () => editable, onChange: changed, onUpdate: () => {} });
+  const boxes = () => Array.from(host.querySelectorAll<HTMLElement>("span.document-shape"));
+  expect(boxes().map(box => box.dataset.fill)).toEqual(["#938953", "#ffffff"]);
+  editor.setShapeCheckboxLabel("Прапорець форми");
+  expect(boxes()[0].getAttribute("aria-label")).toBe("Прапорець форми");
+  // A read-only document ignores clicks on the drawn controls.
+  editable = false; editor.refreshAccess();
+  boxes()[1].dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+  expect(changed).not.toHaveBeenCalled();
+  editable = true; editor.refreshAccess();
+  boxes()[1].dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+  expect(changed).toHaveBeenCalledTimes(1);
+  expect(boxes()[1].dataset.fill).toBe("#938953");
+  const findShapes = () => {
+    const found: Record<string, unknown>[] = [];
+    editorSchema.nodeFromJSON(editor.exportSnapshot().document).descendants(node => {
+      if (node.type.name === "lockedInline") found.push(node.attrs.shapes as Record<string, unknown>);
+    });
+    return found;
+  };
+  expect(findShapes()).toEqual([{ "1": "#938953" }]);
+  expect(editor.undo()).toBe(true);
+  expect(findShapes()).toEqual([{}]);
+  expect(boxes()[1].dataset.fill).toBe("#ffffff");
+  editor.destroy(); host.remove();
+});

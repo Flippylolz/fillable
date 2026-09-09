@@ -14,6 +14,7 @@ V = "{urn:schemas-microsoft-com:vml}"
 W14 = "{http://schemas.microsoft.com/office/word/2010/wordml}"
 
 SHAPES_LIMIT = 32
+COLOR = re.compile(r"#[0-9a-fA-F]{6}")
 
 
 def _offset(anchor, axis):
@@ -92,14 +93,58 @@ def _vml_shape(rect):
     return shape
 
 
-def display(element):
-    # AlternateContent carries duplicate fallback text. Use one representation.
-    texts = [
-        e.text or ""
-        for e in element.iter(W + "t")
-        if not any(p.tag == MC + "Fallback" for p in e.iterancestors())
-    ]
-    shapes = []
+def _drawing_recolor(container):
+    """Recolor one DrawingML shape and its duplicate VML fallback, if explicit."""
+    geometry = container.find(".//" + A + "prstGeom")
+    if geometry is None:
+        return None
+    shape_properties = geometry.getparent()
+    if shape_properties.find(A + "noFill") is not None:
+        return None
+    solid = shape_properties.find(A + "solidFill/" + A + "srgbClr")
+    if solid is None:
+        return None
+    content = container.getparent()
+    while content is not None and content.tag != MC + "AlternateContent":
+        content = content.getparent()
+    fallback = (
+        None
+        if content is None
+        else content.find(MC + "Fallback//" + V + "rect")
+    )
+
+    def apply(color: str):
+        solid.set("val", color)
+        if fallback is not None:
+            fallback.set("fillcolor", "#" + color)
+
+    return apply
+
+
+def _vml_recolor(rect):
+    """Recolor one standalone VML rectangle, if it has an explicit fill color."""
+    if not COLOR.fullmatch(rect.get("fillcolor", "")):
+        return None
+
+    def apply(color: str):
+        rect.set("fillcolor", "#" + color)
+
+    return apply
+
+
+def _in_fallback(element):
+    return any(p.tag == MC + "Fallback" for p in element.iterancestors())
+
+
+def _iter_shapes(element):
+    """Every represented drawing once, in stable display order.
+
+    AlternateContent carries a DrawingML choice plus a duplicate VML fallback;
+    the fallback only stands in when no DrawingML shape survives the bounds.
+    Yields (shape, recolor) pairs; recolor is None where the fill is implicit.
+    """
+    count = 0
+    drawing = 0
     for anchor in element.iter(WP + "anchor"):
         shape = _shape(anchor.find(".//" + A + "prstGeom"), anchor.find(WP + "extent"))
         if shape is None:
@@ -113,24 +158,46 @@ def display(element):
         if not all(-2000 <= v <= 2000 for v in (shape["x"], shape["y"])):
             continue
         shape["placement"] = "absolute"
-        shapes.append(shape)
-        if len(shapes) == SHAPES_LIMIT:
-            return {"text": "".join(texts), "shapes": shapes}
+        yield shape, _drawing_recolor(anchor)
+        count += 1
+        drawing += 1
+        if count == SHAPES_LIMIT:
+            return
     for inline in element.iter(WP + "inline"):
         shape = _shape(inline.find(".//" + A + "prstGeom"), inline.find(WP + "extent"))
         if shape is None:
             continue
         # Word renders inline drawings in the text flow at the anchor position.
         shape["placement"] = "inline"
-        shapes.append(shape)
-        if len(shapes) == SHAPES_LIMIT:
-            return {"text": "".join(texts), "shapes": shapes}
+        yield shape, _drawing_recolor(inline)
+        count += 1
+        drawing += 1
+        if count == SHAPES_LIMIT:
+            return
     for rect in element.iter(V + "rect"):
+        if drawing and _in_fallback(rect):
+            continue
         shape = _vml_shape(rect)
         if shape is None:
             continue
         shape["placement"] = "inline"
-        shapes.append(shape)
-        if len(shapes) == SHAPES_LIMIT:
-            break
+        yield shape, _vml_recolor(rect)
+        count += 1
+        if count == SHAPES_LIMIT:
+            return
+
+
+def display(element):
+    # AlternateContent carries duplicate fallback text. Use one representation.
+    texts = [
+        e.text or ""
+        for e in element.iter(W + "t")
+        if not any(p.tag == MC + "Fallback" for p in e.iterancestors())
+    ]
+    shapes = [shape for shape, _ in _iter_shapes(element)]
     return {"text": "".join(texts), "shapes": shapes}
+
+
+def recolor_targets(element):
+    """One bounded recolor callable per displayed shape, in display order."""
+    return [recolor for _, recolor in _iter_shapes(element)]
