@@ -23,6 +23,23 @@
   text-align: center;
   font-size: 1.35rem;
 }
+.authentication > form h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 1.35rem;
+}
+/* Reserved feedback row: an alert appears inside the card without shifting it. */
+.authentication > form .login-feedback {
+  min-height: 1.45rem;
+  margin: -0.3rem 0 0;
+  color: #a22020;
+  font-size: 0.95rem;
+}
+.authentication .field-issue {
+  margin: -0.55rem 0 0;
+  color: #a22020;
+  font-size: 0.9rem;
+}
 .authentication label {
   display: grid;
   gap: 0.35rem;

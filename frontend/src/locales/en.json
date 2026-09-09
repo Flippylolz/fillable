@@ -43,6 +43,8 @@
   "auth.login": "Sign in",
   "auth.identifier": "Login",
   "auth.password": "Password",
+  "auth.loginRequired": "Enter your login name.",
+  "auth.passwordRequired": "Enter your password.",
   "auth.logout": "Sign out",
   "auth.signedIn": "Signed in as {{name}}.",
   "errors.current_password_invalid": "The current password is incorrect.",

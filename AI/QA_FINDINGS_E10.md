@@ -54,12 +54,20 @@ On a freshly opened document (no edits), both "Скасувати" and "Повт
 
 ### F4 — Login error alert is placed far from the sign-in card (low; UX)
 
+**Resolution (E10.4, 2026-09-09): fixed.** The invalid-credentials alert now renders inside the sign-in card in a reserved feedback row (stable card geometry — asserted by bounding-box checks in the browser spec), directly under the card heading. Desktop/mobile screenshots in both locales are captured by `frontend/e2e/authentication.spec.ts` and retained in the CI browser artifacts. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
+
 A failed login renders the localized alert at the top-left of the page viewport, disconnected from the centered card the user is interacting with, and the card shifts down when the alert inserts.
 
 - Evidence: [t03-login-wrong-credentials.png](qa-evidence-e10/t03-login-wrong-credentials.png).
 - Direction: render the alert inside or directly above the sign-in card and reserve space or animate to avoid the layout jump.
 
 ### F5 — Empty-submit login feedback relies on native browser bubbles (low; i18n/UX)
+
+**Resolution (E10.4, 2026-09-09): fixed.** The sign-in inputs no longer use native `required` bubbles: empty submits validate in the form and show `auth.loginRequired`/`auth.passwordRequired` inline under each field in the active UI language (with `aria-invalid`/`aria-describedby` wiring), and no request is sent. Component tests cover both catalogs; the browser spec asserts the messages and captures screenshots in both locales and viewports. The server-side contract is unchanged. Merge evidence: [Epics](EPICS.md).
+
+Original finding text (context for the resolution above):
 
 Both login inputs are `required`, so submitting empty fields shows the browser-native validation bubble, which follows the browser's locale rather than the application's Ukrainian/English catalogs, and is invisible in some environments.
 
