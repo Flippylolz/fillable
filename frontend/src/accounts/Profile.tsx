@@ -55,6 +55,10 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
       setError("password_mismatch");
       return;
     }
+    if (kind === "password" && (password.length < 10 || password.length > 1024)) {
+      setError("password_length");
+      return;
+    }
     const controller = lifetime.current;
     setBusy(true); onBusy(true);
     try {
@@ -89,7 +93,7 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
 
   return <section className="profile" aria-labelledby="profile-title">
     <h2 id="profile-title">{t("profile.title")}</h2>
-    {error && <p role="alert">{error === "password_mismatch" ? t("profile.passwordMismatch") : apiErrorMessage(error)}</p>}
+    {error && <p role="alert">{error === "password_mismatch" ? t("profile.passwordMismatch") : error === "password_length" ? t("profile.passwordTooShort") : apiErrorMessage(error)}</p>}
     {notice && <p role="status">{t(notice)}</p>}
     <form className="profile-card" aria-labelledby="profile-account" onSubmit={event => void submit("name", event)}>
       <h3 id="profile-account">{t("profile.account")}</h3>
@@ -101,8 +105,8 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
       <h3 id="profile-security">{t("profile.security")}</h3>
       <p>{t("profile.passwordHint")}</p>
       <label>{t("profile.currentPassword")}<input type="password" value={current} onChange={event => setCurrent(event.target.value)} required maxLength={1024} disabled={busy || disabled} autoComplete="current-password" /></label>
-      <label>{t("profile.newPassword")}<input type="password" value={password} onChange={event => setPassword(event.target.value)} required minLength={10} maxLength={1024} disabled={busy || disabled} autoComplete="new-password" /></label>
-      <label>{t("profile.confirmPassword")}<input type="password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required minLength={10} maxLength={1024} disabled={busy || disabled} autoComplete="new-password" /></label>
+      <label>{t("profile.newPassword")}<input type="password" value={password} onChange={event => setPassword(event.target.value)} required maxLength={1024} disabled={busy || disabled} autoComplete="new-password" /></label>
+      <label>{t("profile.confirmPassword")}<input type="password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required maxLength={1024} disabled={busy || disabled} autoComplete="new-password" /></label>
       <button className="primary" disabled={busy || disabled} type="submit">{t("profile.changePassword")}</button>
     </form>
     <form className="profile-card" aria-labelledby="profile-language" onSubmit={event => void submit("language", event)}>
