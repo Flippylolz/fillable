@@ -1,7 +1,7 @@
 import { EditorState, TextSelection, NodeSelection } from "prosemirror-state";
 import { history, undo } from "prosemirror-history";
 import { editorSchema as schema } from "../src/editor/model";
-import { toggleGlyphCheckbox, glyphSwap, glyphCheckboxReady, toggleSelectedCheckbox, shapeToggleFill, DRAWN_CHECKED_FALLBACK, DRAWN_UNCHECKED_FILL } from "../src/editor/checkboxes";
+import { toggleGlyphCheckbox, glyphSwap, glyphCheckboxReady, toggleSelectedCheckbox, shapeToggleFill, lineSnapDelta, DRAWN_CHECKED_FALLBACK, DRAWN_UNCHECKED_FILL } from "../src/editor/checkboxes";
 import { sourceNodeView } from "../src/editor/sourceNodes";
 import type { SourcePresentation } from "../src/editor/SourceLayout";
 
@@ -160,4 +160,19 @@ test("toggling a drawn rectangle flips light to the form's dark fill and back", 
   // A dark box returns to the cleared appearance.
   expect(shapeToggleFill("#938953", ["#938953"])).toBe(DRAWN_UNCHECKED_FILL);
   expect(shapeToggleFill("#595959", [])).toBe(DRAWN_UNCHECKED_FILL);
+});
+
+test("line snap centers a drifted checkbox on the nearest label line", () => {
+  const lines = [
+    { top: 84, bottom: 100 },
+    { top: 100, bottom: 116 },
+  ];
+  // A top edge one pixel below the label line centers the box on that line.
+  expect(lineSnapDelta(lines, 109, 12, 1)).toBeCloseTo(100 + (16 - 12) / 2 - 109);
+  // The correction is divided back out of the zoom factor.
+  expect(lineSnapDelta(lines, 109, 12, 2)).toBeCloseTo((100 + 2 - 109) / 2);
+  // A drawing anchored far from any line keeps its exact offset.
+  expect(lineSnapDelta(lines, 200, 12, 1)).toBeNull();
+  expect(lineSnapDelta([], 109, 12, 1)).toBeNull();
+  expect(lineSnapDelta(lines, 109, 12, 0)).toBeNull();
 });

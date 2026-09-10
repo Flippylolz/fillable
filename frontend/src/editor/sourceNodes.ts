@@ -1,7 +1,57 @@
 import type { Node } from "prosemirror-model";
 import type { NodeView } from "prosemirror-view";
-import { isLightFill } from "./checkboxes";
+import { isLightFill, lineSnapDelta, type LineBox } from "./checkboxes";
 import type { SourcePresentation } from "./SourceLayout";
+
+/** Checkbox-sized rectangles may follow the reflowed label line, frames do not. */
+const SNAP_LIMIT = 24;
+
+/** Vertical bands of the paragraph's rendered text lines, one per wrapped row. */
+function textLines(paragraph: Element): LineBox[] {
+  const lines: LineBox[] = [];
+  const range = document.createRange();
+  const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    range.selectNodeContents(node);
+    for (const rect of range.getClientRects()) {
+      if (rect.width <= 0 || rect.height <= 0) continue;
+      const line = lines.find(candidate => candidate.top < rect.bottom && rect.top < candidate.bottom);
+      if (line) {
+        line.top = Math.min(line.top, rect.top);
+        line.bottom = Math.max(line.bottom, rect.bottom);
+      } else {
+        lines.push({ top: rect.top, bottom: rect.bottom });
+      }
+    }
+  }
+  return lines;
+}
+
+/**
+ * Anchored offsets are measured against Word's line stacking; the editor wraps
+ * and leads lines slightly differently, so checkbox-sized rectangles drift
+ * below their labels. Once laid out, re-anchor such a box onto the text line
+ * nearest the offset Word chose. Absent layout (tests, hidden views) is a no-op.
+ */
+function scheduleLineSnap(box: HTMLElement, anchoredTopPt: number): void {
+  let attempts = 0;
+  const measure = () => {
+    const paragraph = box.closest("p");
+    if (!paragraph || !box.isConnected || getComputedStyle(paragraph).position !== "relative") return;
+    const rect = box.getBoundingClientRect();
+    const lines = rect.height > 0 ? textLines(paragraph) : [];
+    // The editor canvas may not be laid out yet on the first frame; wait for it.
+    if (!lines.length) {
+      if (++attempts < 60) requestAnimationFrame(measure);
+      return;
+    }
+    const zoom = parseFloat(getComputedStyle(paragraph).zoom) || 1;
+    const delta = lineSnapDelta(lines, rect.top, rect.height, zoom);
+    if (delta) box.style.top = `${(anchoredTopPt * 4) / 3 + delta}px`;
+  };
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(measure);
+  else measure();
+}
 
 export function sourceNodeView(presentation: SourcePresentation | undefined, shapeLabel: () => string) {
   return (node: Node): NodeView => {
@@ -37,6 +87,8 @@ export function sourceNodeView(presentation: SourcePresentation | undefined, sha
       } else {
         box.setAttribute("aria-hidden", "true");
       }
+      if (!inline && togglable && (shape.width as number) <= SNAP_LIMIT && (shape.height as number) <= SNAP_LIMIT)
+        scheduleLineSnap(box, shape.y as number);
       dom.append(box);
     });
     if (!dom.textContent && dom.querySelector("span[style]")) dom.classList.add("document-quiet");

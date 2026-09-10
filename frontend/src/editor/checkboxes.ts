@@ -68,3 +68,26 @@ export function shapeToggleFill(rendered: string, siblingRendered: string[]): st
   const dark = siblingRendered.find(fill => !isLightFill(fill));
   return dark ?? DRAWN_CHECKED_FALLBACK;
 }
+
+export type LineBox = { top: number; bottom: number };
+
+/**
+ * Viewport-px delta that centers a box on the text line nearest the offset Word
+ * anchored it to. Reflowed editor lines stack differently from Word's, so the
+ * anchored top can drift below its label; the nearest line restores the row.
+ * Returns the correction in CSS px (already divided by the zoom factor).
+ */
+export function lineSnapDelta(lines: LineBox[], anchoredTop: number, boxHeight: number, zoom: number): number | null {
+  if (!Number.isFinite(anchoredTop) || boxHeight <= 0 || !(zoom > 0) || !lines.length) return null;
+  let nearest: LineBox | undefined;
+  let distance = Infinity;
+  for (const line of lines) {
+    const gap = Math.max(line.top - anchoredTop, anchoredTop - line.bottom, 0);
+    if (gap < distance) {
+      distance = gap;
+      nearest = line;
+    }
+  }
+  if (!nearest || distance > boxHeight * 2) return null;
+  return (nearest.top + (nearest.bottom - nearest.top - boxHeight) / 2 - anchoredTop) / zoom;
+}

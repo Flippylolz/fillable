@@ -431,7 +431,10 @@ cleared white box, stored as a bounded per-run override (`shapes`) on the locked
 run in the editor model; export rewrites only that rectangle's fill value in the
 DrawingML choice and its duplicate VML fallback, an unchanged or empty-override
 document stays byte-identical, and shapes with implicit fills (no color, `noFill`)
-together with run identity remain immutable.
+together with run identity remain immutable. Checkbox-sized anchored rectangles
+are re-anchored after layout onto the rendered text line nearest their Word
+offset, so they stay level with their labels when the editor wraps a line
+differently; larger drawings keep the exact anchored offset.
 
 ### Visual page breaks (E09.15)
 
