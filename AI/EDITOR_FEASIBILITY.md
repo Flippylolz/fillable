@@ -310,13 +310,14 @@ unambiguous ballot-box pair (U+2610/U+2612) as text; Wingdings-style private-use
 codes are excluded because the editing model does not carry run fonts. Inline
 DrawingML and VML rectangles render in flow like Word's inline drawings, so
 checkbox graphics from converted forms are visible at their anchor position;
-anchored shapes keep paragraph-relative offsets as an explicit approximation that
-can differ from Word's line-relative placement. Each `AlternateContent` drawing
-renders once (the DrawingML choice preferred, its VML fallback used only when the
-choice yields no bounded shape), and rectangles with an explicit fill toggle their
-fill as a bounded per-run override; vertical placement still follows the reflowed
-editor paragraph, so a label line that wraps differently from Word can sit a few
-pixels away from its anchored box.
+anchored shapes keep paragraph-relative offsets as an explicit approximation.
+Each `AlternateContent` drawing renders once (the DrawingML choice preferred, its
+VML fallback used only when the choice yields no bounded shape), and rectangles
+with an explicit fill toggle their fill as a bounded per-run override. Because
+the editor wraps and leads lines differently from Word, small anchored checkbox
+rectangles are re-anchored after layout onto the rendered text line nearest the
+offset Word chose, which keeps them level with their labels under reflow; larger
+frames keep their exact offsets, and exact Word line placement stays unclaimed.
 
 E09.15 adds approximate visual page breaks on the same boundary. The editor measures
 block flow against the retained source page height/margins and draws localized,
