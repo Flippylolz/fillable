@@ -108,6 +108,19 @@ records rather than silently relabeling them as native controls or retaining inv
 Copied saved revisions must carry independently rebased metadata. No claim of those E06
 behaviors is made by this transaction subtask.
 
+## Manual creation naming (E09.21)
+
+Creating a field from a selection keeps the chosen range visible while the
+naming input holds focus: a presentation-only decoration mirrors the retained
+selection and clears itself when the document selection changes or the field
+is created; it never enters the model, review state, saves or undo history.
+The input prefills from the nearest preceding text of the selection's
+paragraph — whitespace-collapsed, stripped of a short leading numbering
+marker, bounded by the label limit and validity rules — without ever
+overwriting a user-typed name; selections inside existing fields suggest
+nothing. The suggestion is a default, never a decision: the name stays fully
+editable and creation keeps validating the selection and label as before.
+
 ## Manual controls and missing locations
 
 E05.4 records each manually created control as an accepted manual location, preserving

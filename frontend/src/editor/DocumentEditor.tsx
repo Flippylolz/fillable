@@ -68,7 +68,7 @@ export function DocumentEditor({
   validity.current = onFieldValidityChange;
   const composition = useRef(onCompositionChange);
   composition.current = onCompositionChange;
-  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false, glyphCheckbox: false, canUndo: false, canRedo: false });
+  const [presentation, setPresentation] = useState<EditorPresentation>({ fields: [], active: "", review: null, unsupported: false, fieldValuesValid: true, composing: false, glyphCheckbox: false, canUndo: false, canRedo: false, suggestLabel: "" });
   const { fields: occurrences, active, review, unsupported, glyphCheckbox, canUndo, canRedo } = presentation;
   const [date, setDate] = useState("");
   const [dateIssue, setDateIssue] = useState<ReturnType<EditorAdapter["fillDate"]>>(null);
@@ -76,6 +76,17 @@ export function DocumentEditor({
   const [checkboxIssue, setCheckboxIssue] = useState<ReturnType<EditorAdapter["toggleGlyph"]>>(null);
   const checkboxHelp = useId();
   const [label, setLabel] = useState("");
+  const labelRef = useRef("");
+  labelRef.current = label;
+  const previousSuggestion = useRef("");
+  // Prefill the naming input from the preceding label text without clobbering edits.
+  useEffect(() => {
+    const next = presentation.suggestLabel;
+    if (next === previousSuggestion.current) return;
+    const previous = previousSuggestion.current;
+    previousSuggestion.current = next;
+    if (next && (labelRef.current === "" || labelRef.current === previous)) setLabel(next);
+  }, [presentation.suggestLabel]);
   const [creationIssue, setCreationIssue] = useState<ReturnType<EditorAdapter["createField"]>>(null);
   const creationErrorId = useId();
   const [reviewStale, setReviewStale] = useState(false);
@@ -150,6 +161,7 @@ export function DocumentEditor({
             aria-describedby={creationIssue === "invalid_label" ? creationErrorId : undefined}
             disabled={readOnly}
             value={label}
+            onFocus={() => view.current!.retainSelection(true)}
             onChange={(event) => setLabel(event.target.value)}
           />
         </label>

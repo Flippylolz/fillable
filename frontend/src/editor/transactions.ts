@@ -235,3 +235,20 @@ export function removeField(
     node.content,
   );
 }
+
+export const LEADING_NUMBERING = /^\s*(?:\d{1,3}|[a-zA-Zа-яА-ЯІіЇїЄєҐґ])\s*[.)]\s+/;
+
+/** The preceding label text for a manual field, from the paragraph before the selection. */
+export function suggestFieldLabel(state: EditorState): string {
+  const { from, $from, empty } = state.selection;
+  if (empty || $from.parent.type.name !== "paragraph" || from < $from.start()) return "";
+  for (let depth = $from.depth; depth > 0; depth -= 1)
+    if ($from.node(depth).type.name === "field") return "";
+  // Node.textBetween takes node-relative positions, not document positions.
+  const preceding = $from.parent.textBetween(0, from - $from.start(), undefined, "\ufffc")
+    .replace(/\s+/g, " ").trim();
+  if (!preceding) return "";
+  const suggestion = Array.from(preceding.replace(LEADING_NUMBERING, ""))
+    .slice(0, FIELD_LABEL_LIMIT).join("").trim();
+  return validFieldProperty(suggestion, FIELD_LABEL_LIMIT) ? suggestion : "";
+}
