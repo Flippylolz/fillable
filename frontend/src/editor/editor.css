@@ -111,3 +111,5 @@
 .document-workbench[data-mode="fill"] .document-canvas,
 .document-workbench[data-mode="fill"] aside { display: none; }
 .document-workbench[data-mode="fill"] { display: block; }
+
+.document-selection-retained { background-color: #b3d7ff; border-radius: 2px; }

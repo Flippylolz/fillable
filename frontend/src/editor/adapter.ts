@@ -2,13 +2,14 @@ import { fillBoxedDate, type DateBoxIssue } from "./boxedDates";
 import { glyphCheckboxReady, shapeToggleFill, toggleGlyphCheckbox, toggleSelectedCheckbox, type CheckboxIssue } from "./checkboxes";
 import { sourceNodeView } from "./sourceNodes";
 import type { SourcePresentation } from "./SourceLayout";
-import { EditorState, type Transaction } from "prosemirror-state";
-import { EditorView } from "prosemirror-view";
+import { EditorState, Plugin, PluginKey, type Transaction } from "prosemirror-state";
+import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { history, undo, redo, closeHistory } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import type { components } from "../../generated/api";
 import { editorSchema, fields, type FieldOccurrence } from "./model";
+import { suggestFieldLabel } from "./transactions";
 import { collapseFieldSelection, createField, fieldBeforeInput, fieldLineBreak, fieldPaste, fieldTextInput, focusField, linkedChanges, manualFieldIssue, newFieldId, paragraphIdentities, removeField, retainComposedField, updateField } from "./transactions";
 import { attachReview, configureCandidate, focusCandidate, reviewCandidate, reviewChanges, reviewState, type ReviewState } from "./review";
 import { fieldValueIssue, type FieldValueIssue } from "./fieldValues";
@@ -18,8 +19,33 @@ import { pageBreakPlugin } from "./pagination";
 export type FieldSummary = Pick<FieldOccurrence, "id" | "key" | "label" | "value"> & { type: FieldType; issue: FieldValueIssue };
 export type ReviewAction = "accept" | "dismiss" | "configure" | "focus";
 export type ReviewOptions = { label: string; key: string; type: string };
-export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean; glyphCheckbox: boolean; canUndo: boolean; canRedo: boolean };
+export type EditorPresentation = { fields: FieldSummary[]; active: string; review: ReviewState | null; unsupported: boolean; fieldValuesValid: boolean; composing: boolean; glyphCheckbox: boolean; canUndo: boolean; canRedo: boolean; suggestLabel: string };
 export type EditorSnapshot = { document: object; revision: number; fieldValuesValid: boolean; composing: boolean };
+
+const retainedSelectionKey = new PluginKey<{ range: { from: number; to: number } | null }>("retain-selection");
+type RetainedRange = { range: { from: number; to: number } | null };
+
+/** Keeps the chosen document range highlighted while the naming input holds focus. */
+function retainedSelectionPlugin() {
+  return new Plugin<RetainedRange>({
+    key: retainedSelectionKey,
+    state: {
+      init: () => ({ range: null }),
+      apply(tr, previous) {
+        if (tr.getMeta("retain-selection") !== undefined) return { range: tr.getMeta("retain-selection") };
+        if (tr.selectionSet || !previous.range) return { range: null };
+        return { range: { from: tr.mapping.map(previous.range.from), to: tr.mapping.map(previous.range.to) } };
+      },
+    },
+    props: {
+      decorations(state: EditorState): DecorationSet | undefined {
+        const range = retainedSelectionKey.getState(state)?.range;
+        if (!range || range.to <= range.from) return undefined;
+        return DecorationSet.create(state.doc, [Decoration.inline(range.from, range.to, { class: "document-selection-retained" })]);
+      },
+    },
+  });
+}
 
 /** The mounted editor owns document state. Callers receive detached snapshots only. */
 export function mountEditor(host: HTMLElement, initialDocument: object, callbacks: {
@@ -47,7 +73,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     },
     editable: () => allowed() || compositionSource !== null,
     state: EditorState.create({ schema: editorSchema, doc: source,
-      plugins: [historyPlugin, pageBreakPlugin(() => pageBreakLabel ?? (page => String(page)), pageBreaks), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
+      plugins: [historyPlugin, retainedSelectionPlugin(), pageBreakPlugin(() => pageBreakLabel ?? (page => String(page)), pageBreaks), keymap({ "Mod-z": undo, "Mod-Shift-z": redo, "Mod-y": redo, Enter: fieldLineBreak, "Shift-Enter": fieldLineBreak,
         " ": toggleSelectedCheckbox, ArrowRight: collapseFieldSelection(true), ArrowLeft: collapseFieldSelection(false) }), keymap(baseKeymap)],
     }),
     handleTextInput: (view, from, to, value) => !allowed() && !compositionSource || fieldTextInput(view, from, to, value),
@@ -163,7 +189,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
       active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null,
       glyphCheckbox: allowed() && glyphCheckboxReady(editor.state),
-      canUndo: (history?.done.eventCount ?? 0) > 0, canRedo: (history?.undone.eventCount ?? 0) > 0 });
+      canUndo: (history?.done.eventCount ?? 0) > 0, canRedo: (history?.undone.eventCount ?? 0) > 0,
+      suggestLabel: suggestFieldLabel(editor.state) });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {
     if (!transaction || (transaction.docChanged && !allowed())) return false;
@@ -186,6 +213,11 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       shapeCheckboxLabel = label;
       for (const element of editor.dom.querySelectorAll<HTMLElement>("span.document-shape"))
         element.setAttribute("aria-label", label);
+    },
+    retainSelection(retain: boolean) {
+      const { from, to, empty } = editor.state.selection;
+      const range = retain && !empty && to > from ? { from, to } : null;
+      editor.dispatch(editor.state.tr.setMeta("retain-selection", range).setMeta("addToHistory", false));
     },
     attachDiscovery(snapshot: components["schemas"]["FieldSnapshot"], sourceVersion: string, reviewSaved = false): boolean {
       if (compositionSource) return false;

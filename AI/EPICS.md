@@ -27,7 +27,7 @@ Planning task P03: prepare a reusable autonomous implementation prompt in one do
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
-| E09 | Post-release user-requested improvements and automation | E08 | in_progress: E09.1–E09.20 sections below |
+| E09 | Post-release user-requested improvements and automation | E08 | in_progress: E09.1–E09.21 sections below |
 | E10 | Manual QA findings and corrections | E00–E08 delivered; findings in [QA findings](QA_FINDINGS_E10.md) | done: E10.1–E10.7 merged (PRs #110–#116); E10.7's own record tracked by the closing docs PR |
 | E11 | Reviewable field types (text/number/date) | E00–E10 delivered; D026 | done: E11.1 merged (PR #121); completion record tracked by the closing docs PR |
 
@@ -2782,6 +2782,10 @@ Local Docker verification: frontend ESLint, catalog/copy checks and the TypeScri
 ## E09.20 — Track host tool versions in the repository
 
 Status: in_review. The repository root carried an untracked local `.tool-versions` (`python 3.13.2`), so version-manager users (asdf/mise) had a working host `python3` only in their original checkout and not in fresh clones or additional worktrees, which broke convenience commands run outside Docker. Acceptance: the existing `.tool-versions` is tracked at the repository root so every checkout and worktree provisions the same host Python version; [Local development](LOCAL_DEVELOPMENT.md) records that host tools remain optional and that Docker stays the standard and sufficient environment, with host `python3` used only for ad-hoc convenience scripts. No application source, generated artifacts, or lockfiles change; coverage and required checks are unchanged. Delivered through its own PR based on the E09.16–E09.19 planning branch because both touch this ledger; no runtime behavior changes.
+
+## E09.21 — Keep the selection visible and suggest the label when creating fields
+
+Status: in_review. User feedback on manual field creation: clicking the label input hides the document selection, so the text being named becomes invisible, and the name should default to the preceding statement instead of empty. Acceptance: while the naming input holds focus, the chosen document range stays visibly highlighted through a presentation-only ProseMirror decoration that never enters the document model, review state, save payload or undo history; it clears itself when the document selection changes or the field is created and works identically on read-only selections; when a valid single-paragraph selection is made, the naming input prefills with the nearest preceding text of that paragraph — whitespace-collapsed, stripped of a short leading numbering marker such as "3. " or "a)", clipped to the label limit and validity-checked — while a user-typed name is never clobbered by later selections and everything remains fully editable; selections inside existing fields suggest nothing. Component tests cover the suggestion rules, the retained-range decoration lifecycle (appear, explicit clear, selection-change clear, no document dirtying) and the unchanged creation flow. Deliver a dedicated PR with required CI, then deploy through Actions while preserving existing services.
 
 ## E10 — Manual QA findings and corrections
 
