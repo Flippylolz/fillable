@@ -453,3 +453,87 @@ marker shows the last block boundary before Word's exact break position. Documen
 whose presentation lacks page geometry (and header/footer sections) show no markers.
 This is deliberate flow approximation, not Word pagination; exact break positions,
 floating-object interactions and print layout remain outside the proven support matrix.
+
+### Save a template to documents (E09.16)
+
+A template workspace offers a localized "Save to documents" action beside the other
+toolbar actions; document workspaces do not show it. The action opens a small prompt
+for the new document's title. The default is the template's current title, plus —
+when at least one field carries a nonempty value — the first such field's value in
+document order after an em dash, whitespace-collapsed and clipped so the suggestion
+never exceeds the 160-code-point title metadata bound; with no filled value the
+default is just the template title. The user can edit the name before confirming.
+
+Unsaved template content is saved first through the ordinary manual-save path with
+all existing contracts (editing lease, field validity, settled composition, revision
+fence); a failed save aborts the copy and surfaces the existing save error, and a
+clean template copies without a redundant revision. Creation reuses the idempotent,
+quota-checked template-copy endpoint (`POST /api/documents/{identity}/copies`), so
+[Library](LIBRARY.md) copy semantics govern: the new resource is an independent
+document holding a snapshot of the saved template revision and its field metadata,
+and the source template, its history and its quota accounting are unchanged beyond
+the new copy's own allocation. Definitive failures rotate the idempotency key;
+success shows a localized confirmation with the created title and opens the document
+through the same guarded navigation as a library card, including the explicit
+discard decision when the template workspace has become dirty again. The library
+card's "Use template" action is unchanged.
+
+### Printing the current document (E09.17)
+
+Template and document workspaces offer a localized "Print" action. Printing first
+guarantees that the printed content is the saved content: unsaved document changes
+go through the ordinary manual-save path, and a failed or refused save (invalid
+field values, pending composition, lost lease, revision conflict, quota) shows the
+existing localized save error and starts no print. Printing itself creates no
+revision beyond that save, never autosaves, and does not touch the document model,
+review state, selection or draft.
+
+The app renders the settled working document alone into a print-only view at 100%
+zoom with the retained source presentation — no toolbar, sidebar or application
+chrome — and invokes the browser's print dialog scoped to that view. If in-page
+printing is unavailable or fails, a localized suggestion offers saving the file
+locally through the existing saved-download action. The printed output is the
+browser's rendering of the document flow: approximate pagination, no Word-exact
+print layout and no server-side PDF conversion; [Product](PRODUCT.md) keeps PDF
+export deferred, and the browser's own "Save as PDF" destination remains the user's
+PDF path.
+
+### Compact values sidebar (E09.18)
+
+The values sidebar's per-field cards are restyled for density after user feedback
+that they were too massive: tighter spacing and typography, a smaller type marker,
+condensed per-field actions, and multiline inputs that start small and grow with
+their content. No information or control is removed — labels, typed text/number/
+date inputs, validation and inconsistent-occurrence messages, focus/remove actions,
+position navigation and the active-field marker all remain, keyboard reachable
+without hover-only affordances, and nothing overflows the fixed sidebar column on
+desktop or mobile. This is presentation only: field identities, values, review
+metadata, saves and exports are unchanged.
+
+### Fill mode with a small live preview (E09.19)
+
+The workspace gains a localized two-mode view switch. Document mode is the default
+and is the current workbench: editor canvas, selection tools and sidebar. Fill mode
+is a filling-focused form: the working fields — exactly the occurrences the sidebar
+already lists, so dismissed entries and unaccepted proposals stay out and review
+remains a document-mode activity — appear in document order, each with a readable
+label, its type, the same typed input and validation as the sidebar, its
+inconsistent-occurrence note, per-entry focus/remove, and participation in the same
+active-field selection.
+
+Fill-mode edits go through the same editor transactions as sidebar edits: two-way
+consistency, the single undo/redo history, the local revision counter, autosave,
+lease/read-only enforcement and draft preservation across language changes are
+unchanged. Undo/redo stay available in fill mode; selection-only tools (create
+field, boxed date, glyph checkbox) remain document-mode features. A small,
+non-interactive preview of the live working document sits beside the form (below it
+on mobile), reuses the retained source presentation, and follows edits with a
+bounded refresh; it is never editable, never saves, and exact pagination stays
+unclaimed as for every rendering.
+
+The mode switch is disabled while the history panel is open, and review-stale and
+access banners stay visible in both modes. Switching modes preserves the draft,
+selection and undo stack. The chosen mode is a display preference of the mounted
+workspace, like zoom: it survives language changes and profile navigation within
+the same mount, and is not an account setting. An empty field list shows a
+localized empty state pointing back to document mode.
