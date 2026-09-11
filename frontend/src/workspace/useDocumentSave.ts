@@ -8,6 +8,7 @@ import type { EditingCredentials } from "./useEditingLease";
 
 type Body = paths["/api/documents/{identity}/versions"]["post"]["requestBody"]["content"]["application/json"];
 type Attempt = { key: string; body: Body; revision: number; review: boolean };
+export type SaveOutcome = "saved" | "clean" | "failed";
 const initial = () => ({ busy: false, pending: false, error: "", acknowledged: 0, reviewSaved: false, conflict: false });
 
 /** A retry owns its original detached snapshot even when the live draft advances. */
@@ -28,16 +29,16 @@ export function useDocumentSave({ identity, csrfToken, read, credentials, onSave
     lifetime.current.abort(); lifetime.current = new AbortController();
     pending.current = null; running.current = false; setState(initial());
   }
-  async function save() {
-    if (running.current || state.conflict) return;
+  async function save(): Promise<SaveOutcome> {
+    if (running.current || state.conflict) return "failed";
     let attempt = pending.current;
     if (!attempt) {
       const snapshot = read(), lease = credentials();
-      if (!snapshot || !lease) { setState(previous => ({ ...previous, error: "lease_lost" })); return; }
+      if (!snapshot || !lease) { setState(previous => ({ ...previous, error: "lease_lost" })); return "failed"; }
       if (snapshot.composing || !snapshot.fieldValuesValid) {
-        setState(previous => ({ ...previous, error: snapshot.composing ? "composing" : "invalid_fields" })); return;
+        setState(previous => ({ ...previous, error: snapshot.composing ? "composing" : "invalid_fields" })); return "failed";
       }
-      if (snapshot.revision === state.acknowledged) return;
+      if (snapshot.revision === state.acknowledged) return "clean";
       const document = snapshot.document as Record<string, unknown>;
       attempt = { key: newKey(), body: { ...lease, document }, revision: snapshot.revision,
         review: !!(document.attrs as { review?: unknown } | undefined)?.review };
@@ -54,16 +55,17 @@ export function useDocumentSave({ identity, csrfToken, read, credentials, onSave
         params: { path: { identity }, header: { "idempotency-key": attempt.key } }, headers: { "X-CSRF-Token": csrfToken },
         body: attempt.body, signal: controller.signal,
       });
-      if (session.signal.aborted) return;
+      if (session.signal.aborted) return "failed";
       if (result.data) {
         pending.current = null;
         if (result.data.saved_version_id !== result.data.resource.current_version_id) {
           setState(previous => ({ ...previous, pending: false, error: "revision", conflict: true }));
-          onAccessLost("revision"); return;
+          onAccessLost("revision"); return "failed";
         }
         setState(previous => ({ ...previous, pending: false, acknowledged: attempt.revision,
           reviewSaved: previous.reviewSaved || attempt.review }));
         onSaved(result.data.resource);
+        return "saved";
       } else {
         const failure = result.error.error;
         const error = failure.code === "operation_conflict" ? String(failure.parameters?.reason ?? "revision") : failure.code;
@@ -71,9 +73,11 @@ export function useDocumentSave({ identity, csrfToken, read, credentials, onSave
         if (!uncertain) pending.current = null;
         setState(previous => ({ ...previous, pending: uncertain, error, conflict: error === "revision" }));
         if (["revision", "lease_lost", "authentication_required", "forbidden"].includes(error)) onAccessLost(error);
+        return "failed";
       }
     } catch {
       if (!session.signal.aborted) setState(previous => ({ ...previous, error: "internal_error" }));
+      return "failed";
     } finally {
       clearTimeout(timeout); session.signal.removeEventListener("abort", cancel);
       if (!session.signal.aborted) { running.current = false; setState(previous => ({ ...previous, busy: false })); }

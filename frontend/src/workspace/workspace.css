@@ -57,3 +57,10 @@
 .workspace-autosave-option { flex: 1 1 16rem; max-width: 26rem; }
 .workspace-settings .workspace-autosave-option .workspace-highlight { padding-top: 0; }
 .workspace-settings input[type="checkbox"] { width: auto; flex: 0 0 auto; margin: 0; }
+.workspace-copy { display: flex; flex-wrap: wrap; align-items: end; gap: 0.8rem; margin-top: 0.8rem; padding: 0.8rem 1rem; background: #fff; border: 1px solid #e3e7ed; border-radius: 0.75rem; }
+.workspace-copy > p { flex-basis: 100%; margin: 0; font-size: 0.85rem; color: #5f6368; }
+.workspace-copy label { display: grid; gap: 0.35rem; flex: 1 1 16rem; min-width: 0; font-size: 0.85rem; color: #3c4043; }
+.workspace-copy input { box-sizing: border-box; width: 100%; padding: 0.5rem; border: 1px solid #bdc1c6; border-radius: 0.35rem; background: #fff; color: #202124; font: inherit; }
+.workspace-copy [role="alert"] { flex-basis: 100%; margin: 0; font-size: 0.85rem; }
+.workspace-copy-created { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin-top: 0.8rem; padding: 0.6rem 1rem; background: #e6f4ea; border: 1px solid #ceead6; border-radius: 0.75rem; }
+.workspace-copy-created p { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 0.85rem; color: #137333; overflow-wrap: anywhere; }
