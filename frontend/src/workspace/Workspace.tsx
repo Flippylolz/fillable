@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { api, apiErrorMessage } from "../api";
 import { formatNumber } from "../i18n";
-import { DocumentEditor } from "../editor/DocumentEditor";
+import { DocumentEditor, type PrintSource } from "../editor/DocumentEditor";
 import type { EditorSnapshot, FieldSummary } from "../editor/adapter";
 import { DownloadSaved } from "../library/DownloadSaved";
 import { newKey } from "../library/operationKey";
@@ -11,6 +11,7 @@ import type { Resource } from "../library/useLibrary";
 import "./workspace.css";
 import { CopyPrompt } from "./CopyPrompt";
 import { defaultCopyTitle } from "./copyTitle";
+import { printDocumentNode } from "./printView";
 import { useDiscovery } from "./useDiscovery";
 import { useEditingLease } from "./useEditingLease";
 import { WorkspaceSettings } from "./WorkspaceSettings";
@@ -37,10 +38,13 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
   const [valid, setValid] = useState(true), [composing, setComposing] = useState(false);
   const [copyOpen, setCopyOpen] = useState(false), [copyBusy, setCopyBusy] = useState(false);
   const [copyDefault, setCopyDefault] = useState(""), [copyError, setCopyError] = useState(""), [copyCreated, setCopyCreated] = useState<Resource | null>(null);
+  const [printFallback, setPrintFallback] = useState(false);
   const reader = useRef<(() => EditorSnapshot) | null>(null);
   const fieldsReader = useRef<(() => FieldSummary[]) | null>(null);
+  const printReader = useRef<(() => PrintSource | null) | null>(null);
   const registerReader = useCallback((read: (() => EditorSnapshot) | null) => { reader.current = read; }, []);
   const registerFieldsReader = useCallback((read: (() => FieldSummary[]) | null) => { fieldsReader.current = read; }, []);
+  const registerPrintReader = useCallback((read: (() => PrintSource | null) | null) => { printReader.current = read; }, []);
   const savedRef = useRef(saved);
   savedRef.current = saved;
   const copyKey = useRef(newKey()), copyLifetime = useRef(new AbortController());
@@ -84,7 +88,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
     if ((dirty || unsaved) && !window.confirm(t(restoring.pending ? "history.discardPending" : saving.pending ? "save.discardPending" : "workspace.discard"))) return;
     saving.reset(); restoring.reset(); setHistoryOpen(false); setEditorEpoch(value => value + 1); setRevision(0); setTitleDirty(false);
     setSaved(null); onDirty(false); setAttempt(value => value + 1);
-    setCopyOpen(false); setCopyCreated(null); setCopyError("");
+    setCopyOpen(false); setCopyCreated(null); setCopyError(""); setPrintFallback(false);
   }
   function openCopyPrompt() {
     if (!saved || mutating || saving.pending || saving.conflict || composing) return;
@@ -115,6 +119,14 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
       if (!copyLifetime.current.signal.aborted) setCopyError("internal_error");
     } finally { setCopyBusy(false); }
   }
+  async function printDocument() {
+    if (!saved || mutating || saving.pending || saving.conflict || composing) return;
+    setPrintFallback(false);
+    // The printed content must be the saved content: persist the draft first.
+    if (revision !== saving.acknowledged && await saving.save() === "failed") return;
+    const print = printReader.current?.();
+    if (!print || !printDocumentNode(print.node, { rules: print.rules, scope: print.scope })) setPrintFallback(true);
+  }
   useEffect(() => {
     const controller = new AbortController();
     setError("");
@@ -139,9 +151,15 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
       {saved.resource.kind === "template" && !historyOpen && <button type="button" disabled={mutating || saving.pending || saving.conflict || !!restoring.pending || restoring.conflict || composing}
         onClick={openCopyPrompt}>{t("workspace.saveToDocuments")}</button>}
       {!historyOpen && <DownloadSaved item={saved.resource} disabled={false} />}
+      {!historyOpen && <button type="button" disabled={mutating || saving.pending || saving.conflict || !!restoring.pending || restoring.conflict || composing}
+        onClick={() => void printDocument()}>{t("workspace.print")}</button>}
       <button type="button" disabled={mutating || composing} aria-expanded={historyOpen} onClick={() => { setHistoryOpen(value => !value); setCopyOpen(false); }}>{t(historyOpen ? "history.close" : "history.open")}</button></div>}</div>
     {copyOpen && !historyOpen && saved?.resource.kind === "template" && <CopyPrompt initialTitle={copyDefault} busy={copyBusy} error={copyError}
       disabled={saving.conflict || !!restoring.pending || restoring.conflict} onSubmit={title => void createCopy(title)} onCancel={() => setCopyOpen(false)} />}
+    {printFallback && !historyOpen && <div className="workspace-print-fallback" role="alert">
+      <p>{t("workspace.printUnavailable")}</p>
+      {saved && <DownloadSaved item={saved.resource} disabled={mutating} />}
+    </div>}
     {copyCreated && <div className="workspace-copy-created" role="status">
       <p>{t("workspace.copyCreated", { title: copyCreated.title })}</p>
       {onOpenResource && <button type="button" onClick={() => onOpenResource(copyCreated.id)}>{t("workspace.copyOpen")}</button>}
@@ -186,7 +204,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
       <DocumentEditor key={editorEpoch} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
-          onSnapshot={markDocument} onReader={registerReader} onFieldsReader={registerFieldsReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
+          onSnapshot={markDocument} onReader={registerReader} onFieldsReader={registerFieldsReader} onPrintReader={registerPrintReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
         canEdit={access.canEdit} readOnly={access.status !== "active" || restoring.busy} zoom={zoom} highlight={highlight} /></div></>}
   </section>;
 }
