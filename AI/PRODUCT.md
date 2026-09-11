@@ -52,6 +52,9 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 
 - Render the uploaded DOCX inside a real editor and allow editing supported document content directly.
 - Include a small toolbar with back-to-library, document title, save, download, history, and visible saving/saved/error state.
+- Template workspaces offer **Save to documents**: it prompts for the new document's name — defaulting to the template name plus the first filled field's value — saves unsaved template work first, and creates an independent document from the saved template revision with the library copy's guarantees.
+- A **Print** action saves unsaved work and opens the browser print dialog for the document content alone; when in-page printing is unavailable it suggests saving the file locally. Printing renders the browser's approximate flow, and PDF export stays deferred.
+- A two-mode view switch: **Document** mode shows the editor canvas and sidebar for selecting fields; **Fill** mode shows a filling form of the already-selected fields with labels and a small live document preview. Modes share one draft, undo history and save path.
 - Keep settings within this page: rename, zoom, and field highlighting are the initial defaults. Do not add a separate settings page.
 - Display detected fields in a sidebar with labels, inputs, and review state. Users can rename, dismiss, or manually add a missing field from a selection.
 - Sidebar edits update the document; direct edits to document fields update the sidebar.

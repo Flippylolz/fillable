@@ -54,6 +54,12 @@ retry and delete keep their own click targets. Middle-click and modified clicks 
 the browser's native link semantics; a blocked (busy/disabled) session swallows the
 activation; deletion-pending cards keep a plain-text title and never open.
 
+E09.16 adds the same copy path to template workspaces: a "Save to documents" action
+prompts for the new document's title (defaulting to the template name plus the first
+filled field's value) and creates the copy through the same idempotent, quota-checked
+endpoint and independence rules described above; the card's "Use template" action is
+unchanged. The workspace contract lives in [Workspace](WORKSPACE.md).
+
 Library sizes and profile usage share a locale-aware formatter: values below 1000
 retain byte plurals; larger values use decimal kB/MB/GB/TB/PB with at most two decimal
 places. For example, 1,073,741,824 bytes displays as 1.07 GB in English. These are
