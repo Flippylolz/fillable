@@ -37,14 +37,17 @@ export function FieldSidebar({ fields, active, update, focus, remove, readOnly =
               aria-label={t("editor.fieldValue", { label: field.label })}
               aria-invalid={field.issue ? true : undefined} aria-describedby={described}
               onChange={event => update(field.key, event.target.value)} />
-            : <textarea disabled={readOnly} rows={3} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
+            // Compact cards start at the content's line count instead of a tall fixed box.
+            : <textarea disabled={readOnly} rows={Math.min(4, Math.max(1, field.value.split("\n").length))} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
               aria-invalid={field.issue ? true : undefined} aria-describedby={described}
               onChange={event => update(field.key, event.target.value)} />;
         return <article key={field.id} className="field-value-card" data-active={active === field.id}
           aria-current={active === field.id ? true : undefined}
           aria-label={t("editor.occurrence", { number: numbers.format(number + 1), label: field.label })}>
-          <p className="field-type">{t(`review.${field.type}`)}</p>
-          {active === field.id && <p className="field-active">{t("editor.activeField")}</p>}
+          <div className="field-card-header">
+            <span className="field-type">{t(`review.${field.type}`)}</span>
+            {active === field.id && <span className="field-active">{t("editor.activeField")}</span>}
+          </div>
           <label>{field.label}{input}</label>
           {field.issue && <p role="alert" id={described} className="field-conflict">{t(`editor.value.${field.issue}`, { limit: numbers.format(FIELD_VALUE_LIMIT) })}</p>}
           <div className="field-actions">
