@@ -222,6 +222,8 @@
   "workspace.copyCreate": "Create document",
   "workspace.copyCreated": "Document “{{title}}” was created in the Documents tab.",
   "workspace.copyOpen": "Open document",
+  "workspace.print": "Print",
+  "workspace.printUnavailable": "The browser print dialog could not be opened. Save the document locally and print it from the file.",
   "lease.checking": "Checking editing access…",
   "lease.active": "Editing enabled.",
   "lease.paused": "Editing is paused. Your draft is kept in this workspace.",

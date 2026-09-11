@@ -9,6 +9,9 @@ import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
 import { useSourceLayout, type SourcePresentation } from "./SourceLayout";
 
+/** The rendered canvas plus its scoped presentation rules, for print-only output. */
+export type PrintSource = { node: HTMLElement; rules: string; scope: string };
+
 export function DocumentEditor({
   initialDocument,
   sourcePresentation,
@@ -16,6 +19,7 @@ export function DocumentEditor({
   onSnapshot,
   onReader,
   onFieldsReader,
+  onPrintReader,
   reviewSaved = false,
   onFieldValidityChange,
   onCompositionChange,
@@ -33,6 +37,7 @@ export function DocumentEditor({
   onSnapshot?: (snapshot: EditorSnapshot) => void;
   onReader?: (read: (() => EditorSnapshot) | null) => void;
   onFieldsReader?: (read: (() => FieldSummary[]) | null) => void;
+  onPrintReader?: (read: (() => PrintSource | null) | null) => void;
   reviewSaved?: boolean;
   onFieldValidityChange?: (valid: boolean) => void;
   onCompositionChange?: (composing: boolean) => void;
@@ -52,8 +57,9 @@ export function DocumentEditor({
   const access = useRef({ canEdit, readOnly }); access.current = { canEdit, readOnly };
   const change = useRef(onDocumentChange);
   change.current = onDocumentChange;
-  const snapshots = useRef({ onSnapshot, onReader, onFieldsReader }); snapshots.current = { onSnapshot, onReader, onFieldsReader };
+  const snapshots = useRef({ onSnapshot, onReader, onFieldsReader, onPrintReader }); snapshots.current = { onSnapshot, onReader, onFieldsReader, onPrintReader };
   const fields = useRef<FieldSummary[]>([]);
+  const layoutRef = useRef(layout); layoutRef.current = layout;
   const validity = useRef(onFieldValidityChange);
   validity.current = onFieldValidityChange;
   const composition = useRef(onCompositionChange);
@@ -82,7 +88,11 @@ export function DocumentEditor({
     view.current = editor;
     snapshots.current.onReader?.(editor.exportSnapshot);
     snapshots.current.onFieldsReader?.(() => fields.current);
-    return () => { snapshots.current.onReader?.(null); snapshots.current.onFieldsReader?.(null); editor.destroy(); view.current = null; };
+    snapshots.current.onPrintReader?.(() => {
+      const node = host.current?.querySelector<HTMLElement>(".ProseMirror");
+      return node ? { node, rules: layoutRef.current.rules, scope: layoutRef.current.scope } : null;
+    });
+    return () => { snapshots.current.onReader?.(null); snapshots.current.onFieldsReader?.(null); snapshots.current.onPrintReader?.(null); editor.destroy(); view.current = null; };
   }, []);
   useEffect(() => { view.current!.refreshAccess(); }, [readOnly, canEdit]);
   useEffect(() => {
