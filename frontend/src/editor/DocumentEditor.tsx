@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
-import { mountEditor, type EditorAdapter, type EditorPresentation, type EditorSnapshot } from "./adapter";
+import { mountEditor, type EditorAdapter, type EditorPresentation, type EditorSnapshot, type FieldSummary } from "./adapter";
 import { ReviewPanel } from "./ReviewPanel";
 import { FieldSidebar } from "./FieldSidebar";
 import { FIELD_LABEL_LIMIT, FIELD_RECORD_LIMIT } from "./fieldProperties";
@@ -15,6 +15,7 @@ export function DocumentEditor({
   onDocumentChange,
   onSnapshot,
   onReader,
+  onFieldsReader,
   reviewSaved = false,
   onFieldValidityChange,
   onCompositionChange,
@@ -31,6 +32,7 @@ export function DocumentEditor({
   onDocumentChange?: (document: object) => void;
   onSnapshot?: (snapshot: EditorSnapshot) => void;
   onReader?: (read: (() => EditorSnapshot) | null) => void;
+  onFieldsReader?: (read: (() => FieldSummary[]) | null) => void;
   reviewSaved?: boolean;
   onFieldValidityChange?: (valid: boolean) => void;
   onCompositionChange?: (composing: boolean) => void;
@@ -50,7 +52,8 @@ export function DocumentEditor({
   const access = useRef({ canEdit, readOnly }); access.current = { canEdit, readOnly };
   const change = useRef(onDocumentChange);
   change.current = onDocumentChange;
-  const snapshots = useRef({ onSnapshot, onReader }); snapshots.current = { onSnapshot, onReader };
+  const snapshots = useRef({ onSnapshot, onReader, onFieldsReader }); snapshots.current = { onSnapshot, onReader, onFieldsReader };
+  const fields = useRef<FieldSummary[]>([]);
   const validity = useRef(onFieldValidityChange);
   validity.current = onFieldValidityChange;
   const composition = useRef(onCompositionChange);
@@ -71,11 +74,15 @@ export function DocumentEditor({
       presentation: sourcePresentation,
       canEdit: () => !access.current.readOnly && access.current.canEdit?.() !== false,
       onChange: snapshot => { change.current?.(snapshot.document); snapshots.current.onSnapshot?.(snapshot); },
-      onUpdate: presentation => { setPresentation(presentation); validity.current?.(presentation.fieldValuesValid); composition.current?.(presentation.composing); },
+      onUpdate: presentation => {
+        fields.current = presentation.fields; setPresentation(presentation);
+        validity.current?.(presentation.fieldValuesValid); composition.current?.(presentation.composing);
+      },
     });
     view.current = editor;
     snapshots.current.onReader?.(editor.exportSnapshot);
-    return () => { snapshots.current.onReader?.(null); editor.destroy(); view.current = null; };
+    snapshots.current.onFieldsReader?.(() => fields.current);
+    return () => { snapshots.current.onReader?.(null); snapshots.current.onFieldsReader?.(null); editor.destroy(); view.current = null; };
   }, []);
   useEffect(() => { view.current!.refreshAccess(); }, [readOnly, canEdit]);
   useEffect(() => {

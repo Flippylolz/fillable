@@ -4,9 +4,13 @@ import type { components } from "../../generated/api";
 import { api, apiErrorMessage } from "../api";
 import { formatNumber } from "../i18n";
 import { DocumentEditor } from "../editor/DocumentEditor";
-import type { EditorSnapshot } from "../editor/adapter";
+import type { EditorSnapshot, FieldSummary } from "../editor/adapter";
 import { DownloadSaved } from "../library/DownloadSaved";
+import { newKey } from "../library/operationKey";
+import type { Resource } from "../library/useLibrary";
 import "./workspace.css";
+import { CopyPrompt } from "./CopyPrompt";
+import { defaultCopyTitle } from "./copyTitle";
 import { useDiscovery } from "./useDiscovery";
 import { useEditingLease } from "./useEditingLease";
 import { WorkspaceSettings } from "./WorkspaceSettings";
@@ -15,10 +19,10 @@ import { useRestore } from "./useRestore";
 import { useAutosave } from "./useAutosave";
 import { HistoryPanel } from "./HistoryPanel";
 
-export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChanged, onBusy, operationsPaused = false, authPaused = false }: {
+export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenResource, onChanged, onBusy, operationsPaused = false, authPaused = false }: {
   identity: string; dirty: boolean; onDirty: (dirty: boolean) => void; csrfToken: string;
   operationsPaused?: boolean; authPaused?: boolean;
-  onBack?: () => void; onChanged?: () => void; onBusy?: (busy: boolean) => void;
+  onBack?: () => void; onOpenResource?: (identity: string) => void; onChanged?: () => void; onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
   const [saved, setSaved] = useState<components["schemas"]["ContentInfo"] | null>(null);
@@ -31,19 +35,33 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [revision, setRevision] = useState(0), [titleDirty, setTitleDirty] = useState(false);
   const [valid, setValid] = useState(true), [composing, setComposing] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false), [copyBusy, setCopyBusy] = useState(false);
+  const [copyDefault, setCopyDefault] = useState(""), [copyError, setCopyError] = useState(""), [copyCreated, setCopyCreated] = useState<Resource | null>(null);
   const reader = useRef<(() => EditorSnapshot) | null>(null);
+  const fieldsReader = useRef<(() => FieldSummary[]) | null>(null);
   const registerReader = useCallback((read: (() => EditorSnapshot) | null) => { reader.current = read; }, []);
+  const registerFieldsReader = useCallback((read: (() => FieldSummary[]) | null) => { fieldsReader.current = read; }, []);
+  const savedRef = useRef(saved);
+  savedRef.current = saved;
+  const copyKey = useRef(newKey()), copyLifetime = useRef(new AbortController());
+  useEffect(() => {
+    copyLifetime.current = new AbortController();
+    return () => copyLifetime.current.abort();
+  }, [identity]);
   const markDocument = useCallback((snapshot: EditorSnapshot) => setRevision(snapshot.revision), []);
   const access = useEditingLease(saved?.resource ?? null, csrfToken, !authPaused);
   const discovery = useDiscovery(saved?.resource ?? null, csrfToken);
   const saving = useDocumentSave({ identity, csrfToken, read: () => reader.current?.() ?? null, credentials: access.credentials,
-    onAccessLost: access.invalidate, onSaved: resource => { setSaved(current => current ? { ...current, resource } : current); onChanged?.(); } });
+    onAccessLost: access.invalidate, onSaved: resource => {
+      savedRef.current = savedRef.current ? { ...savedRef.current, resource } : savedRef.current;
+      setSaved(current => current ? { ...current, resource } : current); onChanged?.();
+    } });
   const restoring = useRestore({ identity, csrfToken, credentials: access.credentials, onAccessLost: access.invalidate,
     onRestored: content => {
       saving.reset(); setRevision(0); setTitleDirty(false); setValid(true); setComposing(false);
       setSaved(content); setHistoryOpen(false); setEditorEpoch(value => value + 1); onDirty(false); onChanged?.();
     } });
-  const mutating = settingsBusy || saving.busy || restoring.busy;
+  const mutating = settingsBusy || saving.busy || restoring.busy || copyBusy;
   const unsaved = revision !== saving.acknowledged || titleDirty || saving.pending || saving.conflict || !!restoring.pending || restoring.conflict;
   const autosavePaused = operationsPaused || historyOpen || mutating || saving.pending || saving.conflict || !!saving.error
     || !!restoring.pending || restoring.conflict || !valid || composing || access.status !== "active";
@@ -66,6 +84,36 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
     if ((dirty || unsaved) && !window.confirm(t(restoring.pending ? "history.discardPending" : saving.pending ? "save.discardPending" : "workspace.discard"))) return;
     saving.reset(); restoring.reset(); setHistoryOpen(false); setEditorEpoch(value => value + 1); setRevision(0); setTitleDirty(false);
     setSaved(null); onDirty(false); setAttempt(value => value + 1);
+    setCopyOpen(false); setCopyCreated(null); setCopyError("");
+  }
+  function openCopyPrompt() {
+    if (!saved || mutating || saving.pending || saving.conflict || composing) return;
+    setCopyCreated(null); setCopyError("");
+    setCopyDefault(defaultCopyTitle(saved.resource.title, (fieldsReader.current?.() ?? []).map(field => field.value)));
+    setCopyOpen(true);
+  }
+  async function createCopy(title: string) {
+    if (copyBusy || !savedRef.current) return;
+    setCopyBusy(true); setCopyError("");
+    try {
+      // The template draft is saved first; the copy snapshots the saved revision.
+      if (await saving.save() === "failed") return;
+      const version = savedRef.current.resource.current_version_id;
+      if (!version) return;
+      const result = await api.POST("/api/documents/{identity}/copies", {
+        params: { path: { identity }, header: { "idempotency-key": copyKey.current } },
+        headers: { "X-CSRF-Token": csrfToken }, signal: copyLifetime.current.signal,
+        body: { title, source_version_id: version },
+      });
+      if (copyLifetime.current.signal.aborted) return;
+      if (result.data) { setCopyCreated(result.data); setCopyOpen(false); copyKey.current = newKey(); }
+      else {
+        const code = result.error.error.code; setCopyError(code);
+        if (["operation_aborted", "operation_conflict", "rate_limited", "quota_exceeded"].includes(code)) copyKey.current = newKey();
+      }
+    } catch {
+      if (!copyLifetime.current.signal.aborted) setCopyError("internal_error");
+    } finally { setCopyBusy(false); }
   }
   useEffect(() => {
     const controller = new AbortController();
@@ -88,8 +136,16 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
     </div>{saved && <div className="workspace-save-actions">
       <button type="button" className="primary" disabled={historyOpen || mutating || !!restoring.pending || restoring.conflict || saving.conflict || (!saving.pending && (revision === saving.acknowledged || !valid || composing || access.status !== "active"))}
         onClick={() => void saving.save()}>{t(saving.busy ? "save.saving" : saving.pending ? "save.retry" : "save.action")}</button>
+      {saved.resource.kind === "template" && !historyOpen && <button type="button" disabled={mutating || saving.pending || saving.conflict || !!restoring.pending || restoring.conflict || composing}
+        onClick={openCopyPrompt}>{t("workspace.saveToDocuments")}</button>}
       {!historyOpen && <DownloadSaved item={saved.resource} disabled={false} />}
-      <button type="button" disabled={mutating || composing} aria-expanded={historyOpen} onClick={() => setHistoryOpen(value => !value)}>{t(historyOpen ? "history.close" : "history.open")}</button></div>}</div>
+      <button type="button" disabled={mutating || composing} aria-expanded={historyOpen} onClick={() => { setHistoryOpen(value => !value); setCopyOpen(false); }}>{t(historyOpen ? "history.close" : "history.open")}</button></div>}</div>
+    {copyOpen && !historyOpen && saved?.resource.kind === "template" && <CopyPrompt initialTitle={copyDefault} busy={copyBusy} error={copyError}
+      disabled={saving.conflict || !!restoring.pending || restoring.conflict} onSubmit={title => void createCopy(title)} onCancel={() => setCopyOpen(false)} />}
+    {copyCreated && <div className="workspace-copy-created" role="status">
+      <p>{t("workspace.copyCreated", { title: copyCreated.title })}</p>
+      {onOpenResource && <button type="button" onClick={() => onOpenResource(copyCreated.id)}>{t("workspace.copyOpen")}</button>}
+    </div>}
     {error && <div role="alert"><p>{apiErrorMessage(error)}</p><button onClick={() => setAttempt(value => value + 1)}>{t("workspace.retry")}</button></div>}
     {!saved && !error && <p role="status">{t("workspace.loading")}</p>}
     {saved && <><div className="workspace-access">
@@ -130,7 +186,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onChang
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
       <DocumentEditor key={editorEpoch} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
-        onSnapshot={markDocument} onReader={registerReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
+          onSnapshot={markDocument} onReader={registerReader} onFieldsReader={registerFieldsReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
         canEdit={access.canEdit} readOnly={access.status !== "active" || restoring.busy} zoom={zoom} highlight={highlight} /></div></>}
   </section>;
 }

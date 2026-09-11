@@ -68,7 +68,7 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
       <a href="/profile" className="page-nav-account" aria-current={page === "profile" ? "page" : undefined} aria-disabled={busy || authBusy || authPaused} onClick={event => navigate(event, "/profile")}>{t("profile.title")}</a>
     </nav>
     <div hidden={page !== "documents"}><Library csrfToken={session.csrf_token} disabled={busy || authBusy || authPaused} onBusy={updateBusy} onDirty={setFileDirty} onSaved={saved} onOpen={identity => go(`/editor/${identity}`)} refreshRevision={usageRevision} /></div>
-    {opened && <div hidden={page !== "editor"}><Workspace key={opened} identity={opened} dirty={editorDirty} onDirty={setEditorDirty} operationsPaused={busy || authBusy || authPaused} authPaused={authPaused} csrfToken={session.csrf_token} onBack={() => go("/documents")} onChanged={saved} onBusy={updateBusy} /></div>}
+    {opened && <div hidden={page !== "editor"}><Workspace key={opened} identity={opened} dirty={editorDirty} onDirty={setEditorDirty} operationsPaused={busy || authBusy || authPaused} authPaused={authPaused} csrfToken={session.csrf_token} onBack={() => go("/documents")} onOpenResource={identity => go(`/editor/${identity}`)} onChanged={saved} onBusy={updateBusy} /></div>}
     <div hidden={page !== "profile"}><Profile user={session.user} csrfToken={session.csrf_token} onSession={accept} onBusy={updateBusy} disabled={busy || authBusy || authPaused} usageRevision={usageRevision} /></div>
   </>;
 }

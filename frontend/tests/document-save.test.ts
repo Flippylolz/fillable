@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { useDocumentSave } from "../src/workspace/useDocumentSave";
 import type { EditorSnapshot } from "../src/editor/adapter";
 import type { EditingCredentials } from "../src/workspace/useEditingLease";
+import type { SaveOutcome } from "../src/workspace/useDocumentSave";
 
 const credentials: EditingCredentials = { source_version_id: "22222222-2222-4222-8222-222222222222", client_id: "33333333-3333-4333-8333-333333333333", lease_id: "44444444-4444-4444-8444-444444444444" };
 const saved = () => Response.json({ saved_version_id: "new", resource: { current_version_id: "new" } });
@@ -41,7 +42,7 @@ test("timeout keeps one immutable attempt, rejects concurrent requests and retri
     state.fetcher.mockImplementationOnce(request => new Promise((_resolve, reject) => {
       request.signal.addEventListener("abort", () => reject(new Error("timed out")));
     }));
-    let running!: Promise<void>;
+    let running!: Promise<SaveOutcome>;
     await act(async () => { running = state.result.current.save(); });
     await act(() => state.result.current.save()); expect(state.fetcher).toHaveBeenCalledTimes(1);
     await act(async () => { await vi.advanceTimersByTimeAsync(45000); await running; });
@@ -81,7 +82,7 @@ test("unknown conflict blocks fresh saves until explicit reopen reset", async ()
 test.each(["reset", "unmount"] as const)("%s aborts a pending request and ignores a late result", async action => {
   const state = setup(); let finish!: (response: Response) => void;
   state.fetcher.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
-  let running!: Promise<void>;
+  let running!: Promise<SaveOutcome>;
   await act(async () => { running = state.result.current.save(); });
   const request = state.fetcher.mock.calls[0][0];
   act(() => { if (action === "reset") state.result.current.reset(); else state.unmount(); });
