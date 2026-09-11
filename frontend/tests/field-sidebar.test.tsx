@@ -97,3 +97,26 @@ test("unparsable dates and non-numeric amounts surface localized issues", async 
   ]);
   view.unmount();
 });
+
+test("compact cards size multiline inputs to their content and keep markers inline", async () => {
+  const update = vi.fn(), focus = vi.fn(), remove = vi.fn();
+  const fields: FieldSummary[] = [
+    { id: "a", key: "a", label: "Адреса", value: "Однорядкове значення", type: "text", issue: null },
+    { id: "b", key: "b", label: "Довіра", value: "рядок один\nрядок два\nрядок три", type: "text", issue: null },
+  ];
+  render(<I18nextProvider i18n={i18n}><FieldSidebar fields={fields} active="a" focus={focus} update={update} remove={remove} /></I18nextProvider>);
+  const cards = screen.getAllByRole("article");
+  expect(cards).toHaveLength(2);
+  const header = cards[0].querySelector(".field-card-header")!;
+  expect(header.querySelector(".field-type")!.textContent).toBe("Text");
+  expect(header.querySelector(".field-active")!.textContent).toBe("Selected location");
+  expect(header.querySelector(".field-type")!.tagName).toBe("SPAN");
+  expect(within(cards[0]).getByRole("textbox")).toHaveAttribute("rows", "1");
+  expect(within(cards[1]).getByRole("textbox")).toHaveAttribute("rows", "3");
+  expect(within(cards[1]).getByRole("textbox")).not.toHaveAttribute("aria-current");
+  const navigation = screen.getByRole("group", { name: "Field navigation" });
+  expect(navigation.querySelector("p")).not.toBeNull();
+  expect(within(navigation).getAllByRole("button")).toHaveLength(2);
+  fireEvent.change(within(cards[0]).getByRole("textbox"), { target: { value: "Київ\nЦентр" } });
+  expect(update).toHaveBeenCalledWith("a", "Київ\nЦентр");
+});
