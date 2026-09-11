@@ -2,8 +2,10 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { mountEditor, type EditorAdapter, type EditorPresentation, type EditorSnapshot, type FieldSummary } from "./adapter";
+import { PAGE_BREAK_CLASS } from "./pagination";
 import { ReviewPanel } from "./ReviewPanel";
 import { FieldSidebar } from "./FieldSidebar";
+import { FillForm } from "./FillForm";
 import { FIELD_LABEL_LIMIT, FIELD_RECORD_LIMIT } from "./fieldProperties";
 import "prosemirror-view/style/prosemirror.css";
 import "./editor.css";
@@ -15,6 +17,7 @@ export type PrintSource = { node: HTMLElement; rules: string; scope: string };
 export function DocumentEditor({
   initialDocument,
   sourcePresentation,
+  mode = "document",
   onDocumentChange,
   onSnapshot,
   onReader,
@@ -33,6 +36,7 @@ export function DocumentEditor({
 }: {
   initialDocument: object;
   sourcePresentation?: SourcePresentation;
+  mode?: "document" | "fill";
   onDocumentChange?: (document: object) => void;
   onSnapshot?: (snapshot: EditorSnapshot) => void;
   onReader?: (read: (() => EditorSnapshot) | null) => void;
@@ -75,6 +79,8 @@ export function DocumentEditor({
   const [creationIssue, setCreationIssue] = useState<ReturnType<EditorAdapter["createField"]>>(null);
   const creationErrorId = useId();
   const [reviewStale, setReviewStale] = useState(false);
+  const previewHost = useRef<HTMLDivElement | null>(null);
+  const [previewTick, setPreviewTick] = useState(0);
   useEffect(() => {
     const editor = mountEditor(host.current!, initial.current, {
       presentation: sourcePresentation,
@@ -103,9 +109,39 @@ export function DocumentEditor({
   useEffect(() => {
     if (discoverySnapshot && sourceVersion) setReviewStale(!view.current!.attachDiscovery(discoverySnapshot, sourceVersion, reviewSaved));
   }, [discoverySnapshot, sourceVersion, reviewSaved]);
+  // The fill mode's preview follows the live document with a bounded refresh.
+  useEffect(() => {
+    if (mode !== "fill") return;
+    const timer = setTimeout(() => setPreviewTick(value => value + 1), 700);
+    return () => clearTimeout(timer);
+  }, [mode, presentation]);
+  useEffect(() => {
+    if (mode !== "fill" || !previewHost.current) return;
+    const canvas = host.current?.querySelector(".ProseMirror");
+    if (!canvas) return;
+    const clone = canvas.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll(`.${PAGE_BREAK_CLASS}`).forEach(marker => marker.remove());
+    previewHost.current.innerHTML = "";
+    previewHost.current.appendChild(clone);
+  }, [previewTick, mode]);
+  // Returning from the hidden canvas recomputes the visual page breaks.
+  useEffect(() => {
+    if (mode !== "fill") view.current!.setPageBreakLabel(page => t("editor.pageBreak", { page }));
+  }, [mode, t]);
 
   return (
-    <div className="document-workbench" data-highlight-fields={highlight} style={{ "--document-zoom": zoom } as CSSProperties}>
+    <div className="document-workbench" data-highlight-fields={highlight} data-mode={mode} style={{ "--document-zoom": zoom } as CSSProperties}>
+      {mode === "fill" && <div className="fill-layout">
+        <style>{layout.rules}</style>
+        {reviewStale && <div role="alert" className="fill-review-stale"><p>{t("review.stale")}</p>{onReopen && <button type="button" onClick={onReopen}>{t("review.reopen")}</button>}</div>}
+        <FillForm fields={occurrences} active={active} readOnly={readOnly}
+          update={(key, value) => { view.current!.updateField(key, value); }}
+          focus={id => { view.current!.focusField(id); }} remove={id => { view.current!.removeField(id); }}
+          undo={() => view.current!.undo()} redo={() => view.current!.redo()} canUndo={canUndo} canRedo={canRedo} />
+        <div className="fill-preview" data-layout={layout.scope} aria-hidden="true">
+          <div className="fill-preview-content" ref={previewHost} />
+        </div>
+      </div>}
       <div className="document-tools">
         <label>
           {t("editor.fieldLabel")}

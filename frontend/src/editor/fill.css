@@ -1,0 +1,20 @@
+.fill-layout { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 1rem; align-items: start; }
+.fill-form { display: grid; gap: 0.4rem; min-width: 0; }
+.fill-form h3 { margin: 0 0 0.2rem; font-size: 0.95rem; }
+.fill-tools { display: flex; gap: 0.3rem; }
+.fill-entry { border: 1px solid #e3e7ed; border-radius: 0.5rem; padding: 0.4rem 0.55rem; background: #fff; }
+.fill-entry[data-active="true"] { border-color: #1a73e8; }
+.fill-entry-header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.fill-entry-header h4 { margin: 0; font-size: 0.85rem; font-weight: 600; overflow-wrap: anywhere; }
+.fill-entry-actions { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
+.fill-entry-actions button, .fill-tools button { margin: 0; border: 1px solid #dadce0; border-radius: 0.8rem; padding: 0.08rem 0.55rem; font-size: 0.74rem; background: #fff; color: #174ea6; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+.fill-entry-actions button:disabled, .fill-tools button:disabled { opacity: 0.5; cursor: default; }
+.fill-review-stale { padding: 0.5rem 0.7rem; border: 1px solid #fde293; background: #fef7e0; border-radius: 0.5rem; }
+.fill-review-stale p { display: inline; margin: 0 0.5rem 0 0; font-size: 0.85rem; }
+.fill-preview { border: 1px solid #e3e7ed; border-radius: 0.5rem; background: #edf0f5; padding: 0.6rem; max-height: 80vh; overflow: auto; }
+.fill-preview-content { zoom: 0.55; pointer-events: none; }
+.fill-preview-content .ProseMirror { min-height: 0 !important; box-shadow: none !important; background: #fff !important; }
+@media (max-width: 48rem) {
+  .fill-layout { grid-template-columns: minmax(0, 1fr); }
+  .fill-preview { max-height: 55vh; }
+}
