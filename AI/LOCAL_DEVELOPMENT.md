@@ -9,7 +9,10 @@ See [Epics](EPICS.md) for verified task and PR evidence.
 ## Requirements and startup
 
 Install Git and Docker with Compose and use a POSIX shell. Host Node, Python,
-PostgreSQL, Redis and browser installations are not required. From the repository:
+PostgreSQL, Redis and browser installations are not required. The tracked root
+`.tool-versions` optionally provisions the same host Python for version managers
+(asdf/mise) so ad-hoc convenience scripts run outside Docker in any checkout or
+worktree; Docker remains the standard and sufficient environment. From the repository:
 
 ```sh
 test -f .env || cp .env.example .env
