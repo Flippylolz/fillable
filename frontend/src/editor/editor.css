@@ -106,3 +106,8 @@
 }
 /* HTML tables reset inherited whitespace; Word line breaks must remain visible. */
 .document-canvas .ProseMirror p { white-space: pre-wrap; }
+
+.document-workbench[data-mode="fill"] .document-tools,
+.document-workbench[data-mode="fill"] .document-canvas,
+.document-workbench[data-mode="fill"] aside { display: none; }
+.document-workbench[data-mode="fill"] { display: block; }

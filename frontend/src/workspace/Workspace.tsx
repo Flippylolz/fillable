@@ -39,6 +39,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
   const [copyOpen, setCopyOpen] = useState(false), [copyBusy, setCopyBusy] = useState(false);
   const [copyDefault, setCopyDefault] = useState(""), [copyError, setCopyError] = useState(""), [copyCreated, setCopyCreated] = useState<Resource | null>(null);
   const [printFallback, setPrintFallback] = useState(false);
+  const [viewMode, setViewMode] = useState<"document" | "fill">("document");
   const reader = useRef<(() => EditorSnapshot) | null>(null);
   const fieldsReader = useRef<(() => FieldSummary[]) | null>(null);
   const printReader = useRef<(() => PrintSource | null) | null>(null);
@@ -145,6 +146,12 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
         <h2 id="workspace-title">{saved ? saved.resource.title : t("workspace.title")}</h2>
         {saved && <p>{t(saved.resource.kind === "template" ? "workspace.template" : "workspace.document")}</p>}
       </div>
+      {saved && <div className="workspace-view-switch" role="group" aria-label={t("workspace.viewSwitch")}>
+        <button type="button" aria-pressed={viewMode === "document"} disabled={historyOpen}
+          onClick={() => setViewMode("document")}>{t("workspace.viewDocument")}</button>
+        <button type="button" aria-pressed={viewMode === "fill"} disabled={historyOpen}
+          onClick={() => setViewMode("fill")}>{t("workspace.viewFill")}</button>
+      </div>}
     </div>{saved && <div className="workspace-save-actions">
       <button type="button" className="primary" disabled={historyOpen || mutating || !!restoring.pending || restoring.conflict || saving.conflict || (!saving.pending && (revision === saving.acknowledged || !valid || composing || access.status !== "active"))}
         onClick={() => void saving.save()}>{t(saving.busy ? "save.saving" : saving.pending ? "save.retry" : "save.action")}</button>
@@ -204,6 +211,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
       <DocumentEditor key={editorEpoch} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
+          mode={viewMode}
           onSnapshot={markDocument} onReader={registerReader} onFieldsReader={registerFieldsReader} onPrintReader={registerPrintReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
         canEdit={access.canEdit} readOnly={access.status !== "active" || restoring.busy} zoom={zoom} highlight={highlight} /></div></>}
   </section>;

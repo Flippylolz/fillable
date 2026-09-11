@@ -67,3 +67,6 @@
 .print-frame { position: fixed; right: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; }
 .workspace-print-fallback { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin-top: 0.8rem; padding: 0.6rem 1rem; background: #fef7e0; border: 1px solid #fde293; border-radius: 0.75rem; }
 .workspace-print-fallback p { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 0.85rem; color: #8a6d1a; overflow-wrap: anywhere; }
+.workspace-view-switch { display: flex; border: 1px solid #dadce0; border-radius: 0.5rem; overflow: hidden; flex-shrink: 0; }
+.workspace-view-switch button { border: none; border-radius: 0; padding: 0.35rem 0.8rem; background: #fff; color: #3c4043; cursor: pointer; font-size: 0.85rem; }
+.workspace-view-switch button[aria-pressed="true"] { background: #e8f0fe; color: #174ea6; font-weight: 600; }
