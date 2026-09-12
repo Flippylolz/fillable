@@ -1,6 +1,6 @@
 # Project guide
 
-Last updated: 2026-09-07.
+Last updated: 2026-09-12.
 
 Fillable is a self-hosted application for editing Word documents with a synchronized sidebar of detected fields.
 
@@ -50,6 +50,7 @@ provisioning and isolated fresh/recovery verification commands.
 | [Diagnostics](DIAGNOSTICS.md) | Content-free job/capacity/audit operator commands |
 | [MVP acceptance](MVP_ACCEPTANCE.md) | Four-page workflow and verification evidence |
 | [Product](PRODUCT.md) | Four MVP pages, templates/results, version history, and success criteria |
+| [Redesign plan](REDESIGN_PLAN.md) | User-supplied gallery-style interface proposal, locked visual system, and design-prototype preview link |
 | [Decisions](DECISIONS.md) | Accepted choices, proposed defaults, and open decisions |
 | [Architecture](ARCHITECTURE.md) | Components, data ownership, editing, and processing |
 | [Authentication](AUTHENTICATION.md) | Local accounts, sessions, CSRF/origin protection, private provisioning and verification |
