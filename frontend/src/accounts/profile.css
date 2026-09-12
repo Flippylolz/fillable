@@ -14,10 +14,10 @@
   max-width: none;
   min-width: 0;
   padding: 1.25rem;
-  border: 1px solid #a9b6c6;
+  border: 1px solid var(--fillable-line-strong);
   border-radius: 0.65rem;
-  background: Canvas;
-  color: CanvasText;
+  background: var(--fillable-surface);
+  color: var(--fillable-ink);
 }
 .profile h3 {
   margin: 0 0 0.75rem;
