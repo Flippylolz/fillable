@@ -2,6 +2,7 @@ import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
+import { openNavigation, openUploadPanel } from "./navigation";
 
 test("library uploads both kinds, retries safely, and keeps drafts across a language change", async ({ page }, testInfo) => {
   const bytes = await readFile("/fixtures/upload.docx");
@@ -37,6 +38,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
     }
     await route.continue();
   });
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles(file);
   await page.getByLabel("Назва документа", { exact: true }).fill(templateTitle);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
@@ -106,15 +108,19 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("button", { name: "Перейменувати", exact: true }).click();
   await expect(page.getByRole("heading", { name: templateTitle, exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("workspace-uk.png"), fullPage: true });
-  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Мої документи", exact: true }).click();
 
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles(file);
   await page.getByLabel("Назва документа", { exact: true }).fill(documentTitle);
   await page.getByRole("combobox", { name: "Зберегти як", exact: true }).selectOption("document");
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу" }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову" }).click();
   await expect(page.getByText("Your language preference has been saved.", { exact: true })).toBeVisible();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   const editor = page.getByRole("textbox", { name: "Editable document", exact: true });
   await expect(editor).toContainText(draft);
@@ -131,7 +137,8 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("checkbox", { name: "Highlight fields", exact: true }).check();
   await page.getByText("Workspace settings", { exact: true }).click();
   await page.screenshot({ path: testInfo.outputPath("workspace-en.png"), fullPage: true });
-  await page.getByRole("link", { name: "Document library", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "My documents", exact: true }).click();
   await expect(page.getByLabel("Document title", { exact: true })).toHaveValue(documentTitle);
   await expect(page.getByRole("combobox", { name: "Save as", exact: true })).toHaveValue("document");
   await page.getByRole("button", { name: "Upload and save", exact: true }).click();
@@ -146,7 +153,8 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByRole("article", { name: documentTitle }).getByRole("link", { name: documentTitle, exact: true }).click();
   await expect(page.getByRole("heading", { name: documentTitle, exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: documentTitle, exact: true }).getByText("Individual document", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Document library", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "My documents", exact: true }).click();
   expect(keys[2]).not.toBe(keys[1]);
   await expect(page.getByRole("tab", { name: "Documents", exact: true })).toHaveAttribute("aria-selected", "true");
   await page.screenshot({ path: testInfo.outputPath("library-en.png"), fullPage: true });
@@ -180,11 +188,13 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.reload();
   await page.getByRole("tab", { name: "Documents", exact: true }).click();
   await expect(card).toHaveCount(0);
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click();
   await page.getByRole("combobox", { name: "Interface language" }).selectOption("uk");
   await page.getByRole("button", { name: "Save language" }).click();
   await expect(page.getByText("Мову інтерфейсу збережено.", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Мої документи", exact: true }).click();
   await page.getByRole("tab", { name: "Шаблони", exact: true }).click();
 
   const copyTitle = `Незалежний документ — ${testInfo.project.name}`;
@@ -218,7 +228,8 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
   await manualSaving(page);
   await page.screenshot({ path: testInfo.outputPath("template-copy-workspace-uk.png"), fullPage: true });
-  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Мої документи", exact: true }).click();
   await page.getByRole("tab", { name: "Шаблони", exact: true }).click();
   await templateCard.getByRole("button", { name: "Видалити", exact: true }).click();
   await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
@@ -230,10 +241,12 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   const copyCard = page.getByRole("article", { name: copyTitle });
   await copyCard.getByRole("link", { name: copyTitle, exact: true }).click();
   await expect(page.getByRole("heading", { name: copyTitle, exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Мої документи", exact: true }).click();
   await copyCard.getByRole("button", { name: "Видалити", exact: true }).click();
   await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
   await expect(copyCard).toHaveCount(0);
+  await openNavigation(page);
   await page.getByRole("button", { name: "Вийти", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
 });

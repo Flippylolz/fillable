@@ -41,8 +41,9 @@ test("direct workspace opens a verified model, preserves the live editor across 
   fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
   expect(confirm).toHaveBeenCalled();
   expect(fetcher.mock.calls.some(([request]) => typeof request !== "string" && new URL(request.url).pathname === "/api/auth/logout")).toBe(false);
-  fireEvent.click(screen.getByRole("link", { name: "Document library" }));
-  const otherCard = screen.getByRole("article", { name: "Інша заява" });
+  fireEvent.click(screen.getByRole("link", { name: "My documents" }));
+  // The section link preselects the documents tab, so the gallery refetches.
+  const otherCard = await screen.findByRole("article", { name: "Інша заява" });
   const openLink = within(otherCard).getByRole("link", { name: "Інша заява" });
   fireEvent.click(openLink);
   expect(window.location.pathname).toBe("/documents");

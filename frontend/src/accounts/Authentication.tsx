@@ -11,6 +11,7 @@ export type Session = components["schemas"]["SessionInfo"];
 
 export function Authentication({
   children,
+  onPresenceChange,
 }: {
   children: (session: Session, actions: {
     accept: (session: Session) => void;
@@ -18,7 +19,9 @@ export function Authentication({
     paused: boolean;
     setBusy: (busy: boolean) => void;
     setLeaveGuard: (guard: () => boolean) => void;
+    logout: () => void;
   }) => ReactNode;
+  onPresenceChange?: (present: boolean) => void;
 }) {
   const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
@@ -40,6 +43,7 @@ export function Authentication({
     if (value.user) void setLanguage(value.user.ui_language);
   }, []);
   const userId = session?.user?.id, csrf = session?.csrf_token;
+  useEffect(() => { onPresenceChange?.(Boolean(session?.user)); }, [session?.user, onPresenceChange]);
   useLayoutEffect(() => {
     if (userId) return protectSession(() => setRecovering(true), recovering);
   }, [userId, csrf, recovering]);
@@ -112,7 +116,6 @@ export function Authentication({
       aria-label={t("auth.account")}
       aria-busy={busy}
     >
-      {error && session?.user && <p role="alert">{error}</p>}
       {!session && (
         <>
           <p>{t(busy ? "auth.loading" : "auth.unavailable")}</p>
@@ -126,13 +129,9 @@ export function Authentication({
       )}
       {session?.user && (
         <>
-          <div className="account-strip"><p>{t("auth.signedIn", { name: session.user.display_name })}</p>
-          <button disabled={busy || childBusy || recovering} onClick={() => void submit()}>
-            {t("auth.logout")}
-          </button>
-          </div>
+          {error && <p role="alert">{error}</p>}
           {recovering && <Reauthentication owner={session.user} onRecovered={recovered} allowDiscard={() => leaveGuard.current()} />}
-          <div hidden={recovering} inert={recovering}>{children(session, { accept, busy, paused: recovering, setBusy: setChildBusy, setLeaveGuard })}</div>
+          <div hidden={recovering} inert={recovering}>{children(session, { accept, busy, paused: recovering, setBusy: setChildBusy, setLeaveGuard, logout: () => { void submit(); } })}</div>
         </>
       )}
       {session && !session.user && (

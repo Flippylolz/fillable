@@ -2,6 +2,7 @@ import { manualSaving } from "./autosave-setting";
 import { randomUUID } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { openNavigation } from "./navigation";
 
 async function open(page: Page, kind: "template" | "document") {
   await page.goto("/");
@@ -136,9 +137,11 @@ test("native composition, lost-response retry after lease pause and quota failur
   await expect(page.getByRole("button", { name: "Зберегти документ", exact: true })).toBeEnabled();
   expect(requests[1]).toEqual(requests[0]);
   await expect(page.locator(".workspace-save-state")).toContainText("Є незбережені зміни");
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу", exact: true }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову", exact: true }).click();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   expect(await page.getByRole("textbox", { name: "Editable document", exact: true }).evaluate((node, original) => node === original, retained)).toBe(true);
   mode = "quota";
@@ -151,9 +154,11 @@ test("native composition, lost-response retry after lease pause and quota failur
   await page.getByRole("button", { name: "Save document", exact: true }).click();
   await expect(page.getByText("All document changes saved.", { exact: true })).toBeVisible();
   expect(requests[3].key).not.toBe(requests[2].key);
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click();
   await page.getByRole("combobox", { name: "Interface language", exact: true }).selectOption("uk");
   await page.getByRole("button", { name: "Save language", exact: true }).click();
+  await openNavigation(page);
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
   await cdp.detach();
 });

@@ -1,0 +1,71 @@
+/* Gallery application shell: fixed left rail on desktop, off-canvas drawer on
+   narrow screens. Uses only the semantic tokens from base.css. */
+.app-shell { display: flex; align-items: stretch; min-height: 100vh; }
+.app-content { flex: 1; min-width: 0; padding: 1.5rem 2rem 3rem; }
+
+.app-sidebar {
+  display: flex; flex-direction: column; gap: 1.1rem;
+  width: 15.5rem; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  box-sizing: border-box; padding: 1.1rem 0.9rem;
+  background: var(--fillable-ink); color: var(--fillable-canvas);
+}
+
+.shell-brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; color: inherit; border-radius: 0.5rem; padding: 0.35rem; transition: background-color var(--fillable-motion-quick) ease; }
+.shell-brand:hover { background: #ffffff14; }
+.shell-brand-name { margin: 0; font-size: 1.25rem; font-weight: 600; color: #fff; }
+.shell-brand-sub { display: block; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #ffffffa8; }
+
+.shell-nav { display: flex; flex-direction: column; gap: 0.2rem; }
+.shell-nav a {
+  display: block; padding: 0.5rem 0.7rem; border-radius: 0.5rem;
+  color: #ffffffcc; text-decoration: none; font-size: 0.9rem; font-weight: 600;
+  transition: background-color var(--fillable-motion-quick) ease, color var(--fillable-motion-quick) ease;
+}
+.shell-nav a:hover:not([aria-disabled="true"]) { background: #ffffff14; color: #fff; }
+.shell-nav a[aria-current="page"] { background: var(--fillable-accent); color: #fff; }
+.shell-nav a[aria-disabled="true"] { opacity: 0.55; cursor: wait; }
+.shell-nav a:focus-visible { outline-offset: -3px; }
+
+.shell-storage {
+  margin-top: auto; display: grid; gap: 0.3rem;
+  padding: 0.75rem; border: 1px solid #ffffff24; border-radius: 0.6rem;
+  font-size: 0.72rem; color: #ffffffc9;
+}
+.shell-storage-title { margin: 0; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #ffffff91; }
+.shell-storage p { margin: 0; }
+.shell-storage meter { display: block; width: 100%; height: 0.5rem; accent-color: var(--fillable-accent); }
+
+.shell-footer { display: grid; gap: 0.5rem; font-size: 0.75rem; color: #ffffffc9; }
+.shell-footer .shell-session { margin: 0; }
+.shell-footer button { width: 100%; background: transparent; color: #ffffffcc; border-color: #ffffff3d; }
+.shell-footer button:hover:not(:disabled) { background: #ffffff14; border-color: #ffffff80; color: #fff; }
+.shell-connection { margin: 0; font-size: 0.68rem; color: #ffffff91; }
+.shell-connection-error { color: #ffb4ab; }
+
+/* Narrow screens: the rail leaves the flow and slides in over a scrim. */
+.shell-mobilebar { display: none; }
+.shell-scrim { display: none; }
+@media (max-width: 48rem) {
+  /* The menu bar stacks above the content; the rail leaves the row flow. */
+  .app-shell { flex-direction: column; }
+  .shell-mobilebar {
+    display: flex; align-items: center; gap: 0.7rem; position: sticky; top: 0; z-index: 30;
+    padding: 0.55rem 0.9rem; background: var(--fillable-ink); color: #fff;
+  }
+  .shell-menu { display: inline-flex; flex-direction: column; justify-content: center; gap: 0.22rem; width: 2.4rem; height: 2.4rem; padding: 0.5rem 0.55rem; border-radius: 0.5rem; background: transparent; border-color: #ffffff3d; color: #fff; }
+  .shell-menu:hover:not(:disabled) { background: #ffffff14; }
+  .shell-menu i { display: block; height: 2px; background: currentColor; border-radius: 1px; }
+  .shell-brand-compact { display: flex; align-items: center; gap: 0.5rem; color: #fff; text-decoration: none; font-family: var(--fillable-font-heading); font-weight: 600; }
+  .app-content { padding: 1rem 1rem 2.5rem; }
+  .app-sidebar {
+    position: fixed; z-index: 40; top: 0; left: 0; height: 100dvh; height: 100vh;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform var(--fillable-motion-base) ease, visibility 0s linear var(--fillable-motion-base);
+    box-shadow: 0 0 3rem #17203380;
+  }
+  .app-sidebar-open { transform: translateX(0); visibility: visible; transition: transform var(--fillable-motion-base) ease; }
+  .shell-scrim { display: block; position: fixed; z-index: 35; inset: 0; background: #17203399; }
+  /* The author rule above beats the hidden attribute's UA style, so the
+     closed scrim is hidden again explicitly. */
+  .shell-scrim[hidden] { display: none; }
+}

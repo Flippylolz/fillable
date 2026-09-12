@@ -313,5 +313,18 @@
   "editor.checkboxHelp": "Select one empty ballot box ☐ or a crossed one ☒ in the document, then toggle it. Native checkbox controls and drawn checkbox rectangles can also be switched by clicking them.",
   "editor.checkbox.select_box": "Select exactly one checkbox character ☐ or ☒ in the document.",
   "editor.checkbox.read_only": "Editing is unavailable. Your document has not changed.",
-  "editor.shapeCheckbox": "Form checkbox"
+  "editor.shapeCheckbox": "Form checkbox",
+  "navigation.documents": "My documents",
+  "navigation.templates": "Templates",
+  "shell.library": "Library",
+  "shell.menu": "Menu",
+  "library.search": "Search documents…",
+  "library.searchEmpty": "Nothing found. Change the search query.",
+  "library.sort": "Sort",
+  "library.sortNewest": "Newest first",
+  "library.sortOldest": "Oldest first",
+  "library.sortTitleAsc": "Title A–Z",
+  "library.sortTitleDesc": "Title Z–A",
+  "library.uploadAction": "Upload DOCX",
+  "library.format": "DOCX"
 }

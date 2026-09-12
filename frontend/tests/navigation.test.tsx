@@ -21,26 +21,35 @@ beforeEach(async () => {
 test("the brand is a home link to the document library", async () => {
   vi.stubGlobal("fetch", vi.fn((request: Request) => Promise.resolve(defaults(request))));
   render(<I18nextProvider i18n={i18n}><App /></I18nextProvider>);
-  const home = await screen.findByRole("link", { name: "Fillable — на головну" });
+  await screen.findByText(/Шаблонів ще немає/);
+  // The public header link hands over to the sidebar brand once signed in.
+  const home = screen.getByRole("link", { name: "Fillable — на головну" });
   expect(home).toHaveAttribute("href", "/documents");
   expect(home).toHaveTextContent("Fillable");
 });
 
-test("navigation separates content tabs from the account link and marks the current page", async () => {
+test("the sidebar marks the active section and hosts identity and sign-out", async () => {
   vi.stubGlobal("fetch", vi.fn((request: Request) => Promise.resolve(defaults(request))));
   render(<I18nextProvider i18n={i18n}><App /></I18nextProvider>);
   await screen.findByText(/Шаблонів ще немає/);
-  const documents = screen.getByRole("link", { name: "Бібліотека документів" });
+  const templates = screen.getByRole("link", { name: "Шаблони" });
+  const documents = screen.getByRole("link", { name: "Мої документи" });
   const profile = screen.getByRole("link", { name: "Профіль" });
-  expect(documents).toHaveAttribute("aria-current", "page");
+  expect(templates).toHaveAttribute("aria-current", "page");
+  expect(documents).not.toHaveAttribute("aria-current");
   expect(profile).not.toHaveAttribute("aria-current");
-  expect(profile).toHaveClass("page-nav-account");
   fireEvent.click(profile);
   await screen.findByRole("heading", { name: "Профіль" });
   expect(window.location.pathname).toBe("/profile");
   expect(profile).toHaveAttribute("aria-current", "page");
-  expect(documents).not.toHaveAttribute("aria-current", "page");
-  // The signed-in strip keeps identity and logout only; session recovery is automatic.
+  expect(templates).not.toHaveAttribute("aria-current");
+  fireEvent.click(documents);
+  await screen.findByRole("tab", { name: "Документи", selected: true });
+  expect(window.location.pathname).toBe("/documents");
+  expect(documents).toHaveAttribute("aria-current", "page");
+  expect(templates).not.toHaveAttribute("aria-current");
+  // The sidebar footer keeps identity and logout; session recovery is automatic.
+  expect(screen.getByText(/увійшли як Ґанна/)).toBeVisible();
   expect(screen.queryByRole("button", { name: "Увійти знову" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Вийти" })).toBeEnabled();
 });

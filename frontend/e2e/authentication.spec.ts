@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openNavigation } from "./navigation";
 
 test("local login rotates a cookie, restores language across refresh, and logout revokes it", async ({
   page,
@@ -23,6 +24,8 @@ test("local login rotates a cookie, restores language across refresh, and logout
     .getByLabel("Пароль", { exact: true })
     .fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  // The identity line lives in the sidebar; the drawer opens on narrow screens.
+  await openNavigation(page);
   await expect(
     page.getByText("Signed in as Тестовий користувач."),
   ).toBeVisible();
@@ -46,6 +49,7 @@ test("local login rotates a cookie, restores language across refresh, and logout
   expect(usage.available_bytes).toBe(usage.limit_bytes - usage.used_bytes);
   expect(usage.over_limit).toBe(false);
   await page.reload();
+  await openNavigation(page);
   await expect(
     page.getByRole("button", { name: "Sign out", exact: true }),
   ).toBeVisible();
@@ -54,6 +58,7 @@ test("local login rotates a cookie, restores language across refresh, and logout
     headers: { Origin: "http://gateway:8180", "X-CSRF-Token": "wrong" },
   });
   expect(badOrigin.status()).toBe(403);
+  await openNavigation(page);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Sign in", exact: true }),
@@ -123,6 +128,7 @@ test("empty sign-in shows catalog feedback and the credentials alert stays insid
   // Signing in applies the account language; the signed-out form follows it.
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await openNavigation(page);
   await expect(
     page.getByText("Signed in as Тестовий користувач."),
   ).toBeVisible();

@@ -2,6 +2,7 @@ import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
+import { openNavigation, openUploadPanel } from "./navigation";
 
 async function savedContent(page: Page, identity: string) {
   let content: { document: unknown; resource: Record<string, unknown> } | undefined;
@@ -28,6 +29,7 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   const title = `Доступ Їжака ${testInfo.project.name} ${randomUUID().slice(0, 8)}`;
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "Їжак.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: await readFile("/fixtures/upload.docx") });
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
@@ -77,9 +79,11 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await editor.focus(); await page.keyboard.type("Blocked");
   await expect(editor).not.toContainText("Blocked");
   await page.locator(".workspace-access").screenshot({ path: testInfo.outputPath("lease-paused-uk.png") });
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу", exact: true }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову", exact: true }).click();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   await expect(page.getByText("Editing is paused. Your draft is kept in this workspace.", { exact: true })).toBeVisible();
   await page.locator(".workspace-access").screenshot({ path: testInfo.outputPath("lease-paused-en.png") });
@@ -95,9 +99,11 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   expect(after.document).toEqual(before.document);
   expect(after.resource).toEqual({ ...before.resource, processing_status: after.resource.processing_status });
   expect(await (await page.request.get("/api/storage/usage")).json()).toEqual(usage);
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click();
   await page.getByRole("combobox", { name: "Interface language", exact: true }).selectOption("uk");
   await page.getByRole("button", { name: "Save language", exact: true }).click();
+  await openNavigation(page);
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
   await cdp.detach();
 });
