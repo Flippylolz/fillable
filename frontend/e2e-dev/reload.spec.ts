@@ -23,8 +23,8 @@ test("source reload reaches the open browser and API", async ({
     await replaceFile(
       frontend,
       originalFrontend.replace(
-        "<main>",
-        '<main data-development-probe="updated">',
+        "<main",
+        '<main data-development-probe="updated"',
       ),
     );
     await expect(page.locator("main")).toHaveAttribute(
