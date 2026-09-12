@@ -1,6 +1,9 @@
 /* Gallery application shell: fixed left rail on desktop, off-canvas drawer on
    narrow screens. Uses only the semantic tokens from base.css. */
 .app-shell { display: flex; align-items: stretch; min-height: 100vh; }
+/* The session wrapper must not add the sign-in page's vertical margins
+   around the full-viewport shell. */
+.authentication:has(.app-shell) { margin-block: 0; }
 .app-content { flex: 1; min-width: 0; padding: 1.5rem 2rem 3rem; }
 
 .app-sidebar {

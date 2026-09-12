@@ -36,12 +36,12 @@ test("the sidebar brands the application and marks the active section", async ()
   expect(screen.getByRole("link", { name: "Профіль" })).not.toHaveAttribute("aria-current");
 });
 
-test("sidebar section links preselect the matching library tab", async () => {
+test("sidebar section links preselect the matching library gallery", async () => {
   vi.stubGlobal("fetch", vi.fn(async (request: Request) => defaults(request)));
   show();
   await screen.findByText(/Шаблонів ще немає/);
   fireEvent.click(screen.getByRole("link", { name: "Мої документи" }));
-  await waitFor(() => expect(screen.getByRole("tab", { name: "Документи" })).toHaveAttribute("aria-selected", "true"));
+  await screen.findByText(/Документів ще немає/);
   expect(screen.getByRole("link", { name: "Мої документи" })).toHaveAttribute("aria-current", "page");
   expect(screen.getByRole("link", { name: "Шаблони" })).not.toHaveAttribute("aria-current");
   expect(window.location.pathname).toBe("/documents");
@@ -86,6 +86,7 @@ test("the sidebar session footer signs out through the injected action", async (
   expect(base.logout).toHaveBeenCalledTimes(1);
   view.rerender(<I18nextProvider i18n={i18n}><SessionPages {...base} authBusy={true} /></I18nextProvider>);
   expect(screen.getByRole("button", { name: "Вийти" })).toBeDisabled();
+  expect(screen.getByRole("link", { name: "Шаблони" })).toHaveAttribute("aria-disabled", "true");
 });
 
 test("the connection status and retry live in the shell footer", async () => {
