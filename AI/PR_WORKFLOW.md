@@ -45,4 +45,4 @@ E01 must establish minimum Docker test/coverage CI and required repository rules
 
 ## Deployment remains separate
 
-Every merge to the protected default branch is deployed automatically after that exact commit's required CI succeeds (E09.6): `.github/workflows/deploy-main.yml` awaits `ci-required` and dispatches the gated [release workflow](.github/workflows/deploy.yml). Merging a task PR therefore ships it once CI is green; a commit whose CI fails is never deployed. The release workflow itself is still delivered and changed only through its own reviewed PRs.
+Every merge to the protected default branch is deployed automatically after that exact commit's required CI succeeds (E09.6): `.github/workflows/deploy-main.yml` awaits `ci-required` and dispatches the gated [release workflow](../.github/workflows/deploy.yml). Merging a task PR therefore ships it once CI is green; a commit whose CI fails is never deployed. The release workflow itself is still delivered and changed only through its own reviewed PRs.
