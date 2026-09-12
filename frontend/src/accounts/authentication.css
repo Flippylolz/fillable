@@ -6,43 +6,43 @@
   gap: 1rem;
   max-width: 24rem;
 }
-/* The signed-out sign-in card sits centered below the header. */
+/* The signed-out sign-in card sits centered below the header, in the gallery
+   card style (white surface, quiet line border, tactile shadow). */
 .authentication > form {
   box-sizing: border-box;
   width: 100%;
   margin-inline: auto;
   margin-block: 2.75rem 0;
-  padding: 1.6rem 1.6rem 1.8rem;
-  border: 1px solid #dadce0;
+  padding: 1.8rem 1.6rem 2rem;
+  border: 1px solid var(--fillable-line);
   border-radius: 0.9rem;
-  background: #fff;
-  box-shadow: 0 1px 4px #3c40431a;
+  background: var(--fillable-surface);
+  box-shadow: 0 2px 12px #17203314;
 }
 .authentication > form h2 {
   margin: 0;
   text-align: center;
-  font-size: 1.35rem;
-}
-.authentication > form h2 {
-  margin: 0;
-  text-align: center;
+  font-family: var(--fillable-font-heading);
+  color: var(--fillable-ink);
   font-size: 1.35rem;
 }
 /* Reserved feedback row: an alert appears inside the card without shifting it. */
 .authentication > form .login-feedback {
   min-height: 1.45rem;
   margin: -0.3rem 0 0;
-  color: #a22020;
+  color: var(--fillable-danger);
   font-size: 0.95rem;
 }
 .authentication .field-issue {
   margin: -0.55rem 0 0;
-  color: #a22020;
+  color: var(--fillable-danger);
   font-size: 0.9rem;
 }
 .authentication label {
   display: grid;
   gap: 0.35rem;
+  font-weight: 600;
+  color: var(--fillable-ink);
 }
 .authentication input,
 .authentication select,
@@ -54,6 +54,17 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
+  border: 1px solid var(--fillable-line-strong);
+  border-radius: 0.5rem;
+  background: var(--fillable-surface);
+  color: var(--fillable-ink);
+  font-weight: 400;
+  transition: border-color var(--fillable-motion-quick) ease, box-shadow var(--fillable-motion-quick) ease;
+}
+.authentication input:focus {
+  border-color: var(--fillable-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--fillable-accent-soft);
 }
 .authentication button {
   cursor: pointer;
@@ -63,9 +74,9 @@
 }
 .authentication [role="alert"] {
   max-width: 32rem;
-  color: #a22020;
+  color: var(--fillable-danger);
 }
 
-.reauthentication { max-width: 34rem; padding: 1rem; border: 1px solid #dadce0; border-radius: 0.75rem; background: #fff; }
+.reauthentication { max-width: 34rem; padding: 1rem; border: 1px solid var(--fillable-line-strong); border-radius: 0.75rem; background: var(--fillable-surface); }
 .reauthentication h2 { font-size: 1.2rem; font-weight: 500; }
 .reauthentication > button { margin-top: 1rem; }

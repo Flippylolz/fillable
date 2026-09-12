@@ -13,6 +13,12 @@
   --fillable-line: #dde3ec;
   --fillable-line-strong: #c3cddd;
   --fillable-danger: #b3261e;
+  --fillable-success: #176e3c;
+  --fillable-success-soft: #e2f2e6;
+  --fillable-success-line: #b9dcc3;
+  --fillable-warning: #8a6d1a;
+  --fillable-warning-soft: #fdf3d7;
+  --fillable-warning-line: #eddfa8;
   --fillable-motion-quick: 120ms;
   --fillable-motion-base: 180ms;
   --fillable-font-interface: "Manrope Variable", system-ui, sans-serif;
