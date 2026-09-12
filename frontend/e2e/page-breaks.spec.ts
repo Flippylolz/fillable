@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { openNavigation, openUploadPanel } from "./navigation";
 
 test("the workspace shows where one page ends and the next begins", async ({ page }, testInfo) => {
   const bytes = await readFile("/fixtures/upload.docx");
@@ -9,11 +10,14 @@ test("the workspace shows where one page ends and the next begins", async ({ pag
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   // The saved profile language survives sessions; run this flow in Ukrainian.
+  await openNavigation(page);
   await page.getByRole("link", { name: /Профіль|Profile/ }).click();
   await page.getByRole("combobox").selectOption("uk");
   await page.getByRole("button", { name: /Зберегти мову|Save language/ }).click();
   await expect(page.getByText(/Мову інтерфейсу збережено|language preference has been saved/)).toBeVisible();
-  await page.getByRole("link", { name: /Бібліотека документів|Document library/ }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: /Мої документи|My documents/ }).click();
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({
     name: "Межі-сторінок.docx",
     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -51,10 +55,12 @@ test("the workspace shows where one page ends and the next begins", async ({ pag
   expect(await label.allTextContents()).toEqual(labels);
   await page.getByText("Налаштування робочого простору", { exact: true }).click();
   // Labels follow the interface language without losing the document.
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу" }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову" }).click();
   await expect(page.getByText("Your language preference has been saved.", { exact: true })).toBeVisible();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Editable document", exact: true })).toBeVisible();
   const english = page.locator(".document-page-break-label");

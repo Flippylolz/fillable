@@ -32,6 +32,8 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 ### 2. Document library
 
 - One page with **Templates** and **Documents** tabs. Documents contains individual working copies and saved processed results.
+- Signed-in navigation uses a collapsible left sidebar (sections, storage meter, sign-out); on narrow screens it is a drawer.
+- A top-bar search field filters the loaded cards by title or filename, and a sort control orders the gallery by date or title.
 - An upload button accepts DOCX and lets the user choose a reusable template or a one-off document.
 - Show name, last updated time, processing/save state, and relevant actions. Include empty, loading, failure, and quota-exceeded states.
 - Template actions: **Edit template**, **Use template**, **Download**, and **Delete**.

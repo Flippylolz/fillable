@@ -15,6 +15,7 @@ const empty = () => Response.json({ items: [], next_cursor: null });
 function show(disabled = false) { return render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={disabled} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} /></I18nextProvider>); }
 function file(name = "Заява Ґанни.docx", bytes: BlobPart[] = ["Original Ukrainian bytes: Їжак"]) { return new NodeFile(bytes as ConstructorParameters<typeof NodeFile>[0], name) as unknown as File; }
 function choose(value: File) { fireEvent.change(screen.getByLabelText("Файл DOCX"), { target: { files: [value] } }); }
+function openUpload() { fireEvent.click(screen.getByRole("button", { name: "Завантажити DOCX" })); }
 function submit() { fireEvent.submit(screen.getByRole("form", { name: "Завантажити файл DOCX" })); }
 function defaults(request: Request) {
   const path = new URL(typeof request === "string" ? request : request.url, window.location.origin).pathname;
@@ -46,6 +47,7 @@ test.each(["operation_aborted", "operation_conflict", "rate_limited"])("ambiguou
   vi.stubGlobal("fetch", fetcher);
   show();
   await screen.findByText(/Шаблонів ще немає/);
+  openUpload();
   const original = file(); choose(original);
   fireEvent.change(screen.getByLabelText("Назва документа"), { target: { value: "Чернетка Їжак" } });
   fireEvent.change(screen.getByLabelText("Зберегти як"), { target: { value: "document" } });
@@ -72,7 +74,7 @@ test.each(["operation_aborted", "operation_conflict", "rate_limited"])("ambiguou
 
 test("client validation and quota failure never claim saved work or discard the draft", async () => {
   const fetcher = vi.fn(async (request: Request) => request.method === "POST" ? fail("quota_exceeded") : defaults(request));
-  vi.stubGlobal("fetch", fetcher); show(); await screen.findByText(/Шаблонів ще немає/);
+  vi.stubGlobal("fetch", fetcher); show(); await screen.findByText(/Шаблонів ще немає/); openUpload();
   submit(); expect(await screen.findByRole("alert")).toBeVisible();
   choose(file("legacy.doc")); submit(); expect(screen.getByRole("alert")).toHaveTextContent(i18n.t("errors.unsupported_document"));
   choose(file("large.docx", [new Uint8Array(10 * 1024 * 1024 + 1)])); submit();
@@ -88,14 +90,10 @@ test("client validation and quota failure never claim saved work or discard the 
   expect(onDirty).toHaveBeenLastCalledWith(false);
 });
 
-test("list and quota errors retry, cursor failures keep saved rows, and pagination deduplicates", async () => {
-  let lists = 0; let quotas = 0; let more = 0;
+test("list errors retry, cursor failures keep saved rows, and pagination deduplicates", async () => {
+  let lists = 0; let more = 0;
   const fetcher = vi.fn(async (request: Request) => {
     const url = new URL(request.url);
-    if (url.pathname === "/api/storage/usage") {
-      quotas++; if (quotas === 1) throw new Error("offline");
-      return Response.json({ ...usage, limit_bytes: 0, available_bytes: 0, over_limit: true });
-    }
     if (url.searchParams.has("cursor")) {
       more++; if (more === 1) return fail("dependencies_unavailable");
       if (more === 2) throw new Error("offline");
@@ -105,11 +103,9 @@ test("list and quota errors retry, cursor failures keep saved rows, and paginati
     return Response.json({ items: [item], next_cursor: "cursor" });
   });
   vi.stubGlobal("fetch", fetcher); show();
-  await waitFor(() => expect(screen.getAllByRole("alert")).toHaveLength(2));
+  await screen.findByRole("alert");
   fireEvent.click(screen.getByRole("button", { name: "Оновити бібліотеку" }));
   expect(await screen.findByRole("article", { name: item.title })).toBeVisible();
-  expect(screen.getByText(/Використання перевищує/)).toBeVisible();
-  expect(screen.getByRole("meter")).toHaveAttribute("max", "1");
   expect(document.querySelector("script")).toBeNull();
   for (let attempt = 1; attempt <= 3; attempt++) {
     fireEvent.click(screen.getByRole("button", { name: "Завантажити ще" }));
@@ -122,20 +118,19 @@ test("list and quota errors retry, cursor failures keep saved rows, and paginati
   expect(screen.queryByRole("button", { name: "Завантажити ще" })).toBeNull();
 });
 
-test("tab changes ignore old list/usage results, support keyboard tabs, and abort on unmount", async () => {
+test("tab changes ignore stale list results, support keyboard tabs, and abort on unmount", async () => {
   const finish: ((response: Response) => void)[] = [];
   const fetcher = vi.fn((request: Request) => {
-    if (finish.length < 2) return new Promise<Response>(resolve => finish.push(resolve));
+    if (finish.length < 1) return new Promise<Response>(resolve => finish.push(resolve));
     return Promise.resolve(defaults(request));
   });
   vi.stubGlobal("fetch", fetcher); const view = show();
-  await waitFor(() => expect(finish).toHaveLength(2));
+  await waitFor(() => expect(finish).toHaveLength(1));
   const templates = screen.getByRole("tab", { name: "Шаблони" });
   fireEvent.keyDown(templates, { key: "ArrowRight" });
   expect(await screen.findByText(/Документів ще немає/)).toBeVisible();
-  await act(async () => { finish[0](Response.json({ items: [item] })); finish[1](Response.json({ ...usage, used_bytes: 999 })); });
+  await act(async () => finish[0](Response.json({ items: [item] })));
   expect(screen.queryByRole("article")).toBeNull();
-  expect(screen.queryByText(/999/)).toBeNull();
   fireEvent.keyDown(screen.getByRole("tab", { name: "Документи" }), { key: "Home" });
   await screen.findByText(/Шаблонів ще немає/);
   fireEvent.keyDown(templates, { key: "End" });
@@ -150,7 +145,11 @@ test("pending uploads block duplicate submits and late success cannot revive unm
   let finish!: (response: Response) => void;
   const fetcher = vi.fn((request: Request) => request.method === "POST" ? new Promise<Response>(resolve => { finish = resolve; }) : Promise.resolve(defaults(request)));
   vi.stubGlobal("fetch", fetcher); const view = show(true);
-  await screen.findByText(/Шаблонів ще немає/); submit();
+  await screen.findByText(/Шаблонів ще немає/);
+  view.rerender(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} /></I18nextProvider>);
+  openUpload();
+  view.rerender(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={true} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} /></I18nextProvider>);
+  submit();
   expect(fetcher.mock.calls.filter(([request]) => request.method === "POST")).toHaveLength(0);
   view.rerender(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} /></I18nextProvider>);
   choose(file()); submit();
@@ -177,7 +176,7 @@ test("authenticated navigation and language saves preserve the upload draft and 
   fireEvent.change(screen.getByRole("combobox", { name: "Мова інтерфейсу" }), { target: { value: "en" } });
   fireEvent.click(screen.getByRole("button", { name: "Зберегти мову" }));
   expect(await screen.findByText("Your language preference has been saved.")).toBeVisible();
-  fireEvent.click(screen.getByRole("link", { name: "Document library" }));
+  fireEvent.click(screen.getByRole("link", { name: "My documents" }));
   expect(screen.getByLabelText("Document title")).toHaveValue("Незбережена заява");
   expect((screen.getByLabelText("DOCX file") as HTMLInputElement).files?.[0].name).toBe("Заява Ґанни.docx");
   expect(document.documentElement.lang).toBe("en");
@@ -187,7 +186,7 @@ test("authenticated navigation and language saves preserve the upload draft and 
 
 test("a missing session never mounts private library/profile content", () => {
   vi.stubGlobal("fetch", vi.fn());
-  const view = render(<SessionPages session={{ user: null, csrf_token: "x" }} accept={vi.fn()} authBusy={false} setAuthBusy={vi.fn()} />);
+  const view = render(<I18nextProvider i18n={i18n}><SessionPages session={{ user: null, csrf_token: "x" }} accept={vi.fn()} authBusy={false} setAuthBusy={vi.fn()} logout={vi.fn()} connection="ok" onRetry={vi.fn()} /></I18nextProvider>);
   expect(view.container).toBeEmptyDOMElement();
   expect(fetch).not.toHaveBeenCalled();
 });
@@ -202,6 +201,7 @@ test("an in-flight upload prevents logout/navigation and refreshes profile usage
   }));
   render(<I18nextProvider i18n={i18n}><App /></I18nextProvider>);
   await screen.findByText(/Шаблонів ще немає/);
+  openUpload();
   choose(file()); submit();
   await waitFor(() => expect(finish).toBeTypeOf("function"));
   expect(screen.getByRole("button", { name: "Вийти" })).toBeDisabled();
@@ -255,4 +255,72 @@ test("pending deletion keeps the title as plain text and offers no open link", a
   expect(await screen.findByRole("article", { name: item.title })).toBeVisible();
   expect(screen.queryByRole("link", { name: item.title })).toBeNull();
   expect(screen.getByRole("heading", { name: item.title })).toHaveTextContent(item.title);
+});
+
+test("the upload toggle reveals the form and reports its expanded state", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => defaults(request)));
+  show();
+  await screen.findByText(/Шаблонів ще немає/);
+  const toggle = screen.getByRole("button", { name: "Завантажити DOCX" });
+  const form = document.getElementById("library-upload")!;
+  expect(form).toHaveAttribute("aria-labelledby", "upload-title");
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  expect(toggle).toHaveAttribute("aria-controls", "library-upload");
+  expect(form).not.toBeVisible();
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
+  expect(form).toBeVisible();
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  expect(form).not.toBeVisible();
+});
+
+test("search filters loaded cards by title and filename and reports an empty result", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => {
+    if (new URL(request.url).pathname === "/api/documents") return Response.json({ items: [item, { ...item, id: "other", title: "Довідка", original_filename: "help.docx" }], next_cursor: null });
+    return defaults(request);
+  }));
+  show();
+  await screen.findByRole("article", { name: item.title });
+  const search = screen.getByRole("searchbox", { name: "Пошук документів…" });
+  fireEvent.change(search, { target: { value: "ДОВІДКА" } });
+  expect(screen.queryByRole("article", { name: item.title })).toBeNull();
+  expect(screen.getByRole("article", { name: "Довідка" })).toBeVisible();
+  fireEvent.change(search, { target: { value: "заява.docx" } });
+  expect(screen.getByRole("article", { name: item.title })).toBeVisible();
+  expect(screen.queryByRole("article", { name: "Довідка" })).toBeNull();
+  fireEvent.change(search, { target: { value: "ніхто не шукав" } });
+  expect(screen.getByText("Нічого не знайдено. Змініть запит пошуку.")).toBeVisible();
+  fireEvent.change(search, { target: { value: "  " } });
+  expect(screen.getAllByRole("article")).toHaveLength(2);
+});
+
+test("sorting reorders the visible gallery by date and title", async () => {
+  const older = { ...item, id: "older", title: "Анна", updated_at: "2026-09-01T10:00:00Z" };
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => {
+    if (new URL(request.url).pathname === "/api/documents") return Response.json({ items: [item, older], next_cursor: null });
+    return defaults(request);
+  }));
+  const { container } = show();
+  await screen.findByRole("article", { name: item.title });
+  const order = () => Array.from(container.querySelectorAll(".library-items article"), node => node.getAttribute("aria-label"));
+  expect(order()).toEqual(["Ґанна <script>", "Анна"]);
+  fireEvent.change(screen.getByRole("combobox", { name: "Сортування" }), { target: { value: "oldest" } });
+  expect(order()).toEqual(["Анна", "Ґанна <script>"]);
+  fireEvent.change(screen.getByRole("combobox", { name: "Сортування" }), { target: { value: "titleAsc" } });
+  expect(order()).toEqual(["Анна", "Ґанна <script>"]);
+  fireEvent.change(screen.getByRole("combobox", { name: "Сортування" }), { target: { value: "titleDesc" } });
+  expect(order()).toEqual(["Ґанна <script>", "Анна"]);
+});
+
+test("an external tab request selects the matching gallery and reports changes", async () => {
+  const onTabChange = vi.fn();
+  vi.stubGlobal("fetch", vi.fn(async (request: Request) => defaults(request)));
+  const view = render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} tab="document" onTabChange={onTabChange} /></I18nextProvider>);
+  await screen.findByText(/Документів ще немає/);
+  expect(screen.getByRole("tab", { name: "Документи" })).toHaveAttribute("aria-selected", "true");
+  fireEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
+  expect(onTabChange).toHaveBeenCalledWith("template");
+  view.rerender(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} tab="template" onTabChange={onTabChange} /></I18nextProvider>);
+  expect(screen.getByRole("tab", { name: "Шаблони" })).toHaveAttribute("aria-selected", "true");
 });

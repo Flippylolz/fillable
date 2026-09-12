@@ -66,3 +66,28 @@ places. For example, 1,073,741,824 bytes displays as 1.07 GB in English. These a
 rounded display values only; quotas, meter values, API responses and accounting
 continue to use exact integer bytes. Decimal units avoid labeling binary quantities
 as MB or GB. Zero availability remains visibly zero.
+
+## Tactile Document Gallery shell (E09.22)
+
+The user's redesign plan ([Redesign plan](REDESIGN_PLAN.md), recorded as P04) is now
+implemented for the authenticated application. Signed-in pages render a left rail in
+the locked ink color with the brand, section links (Мої документи, Шаблони, the open
+workspace when one exists, Профіль), the storage meter and sign-out; on narrow
+screens the rail becomes an off-canvas drawer opened from the menu bar and closed by
+Escape, the scrim, or a selection. The library page carries the gallery composition:
+a top bar with the title, a client-side search field, refresh and the prominent DOCX
+upload button; tabs and a sort control (newest, oldest, or by title) sit above a
+responsive grid of tactile document cards. Search filters the loaded cards by title
+or original filename and reports a localized empty result; sorting orders the visible
+cursor page client-side. The upload form keeps its file/title/kind fields and exact
+idempotent behavior behind the toolbar toggle; the quota section moved into the
+sidebar, and deletion-pending cards keep their retry control in the actions row.
+
+The locked palette (#F7F8FA, #172033, #2563EB, #DCE6F7), interface fonts and the
+120–180ms motion band are semantic CSS custom properties in `base.css`. Manrope and
+Sora are self-hosted through pinned @fontsource-variable packages (no runtime CDN);
+Sora ships Latin only, so Ukrainian headings fall back to Manrope, which carries the
+full Cyrillic set. `prefers-reduced-motion` renders state changes immediately.
+Workspace, profile and login keep their layouts and inherit the global tokens; page
+metadata (description and social previews) lives in `index.html`. The shared version
+badge keeps its exact D022 styling.

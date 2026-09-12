@@ -2,6 +2,7 @@ import { manualSaving } from "./autosave-setting";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { openNavigation } from "./navigation";
 
 async function downloadedBytes(page: Page, endpoint: string) {
   let bytes: Buffer | undefined;
@@ -134,9 +135,11 @@ test("uncertain restore survives newer draft and locale; quota failure keeps his
   await page.getByRole("button", { name: "Повернутися до редагування", exact: true }).click();
   await expect(values.first()).toHaveValue("Чернетка перед відновленням");
   await values.first().fill("Новіша чернетка Єви 🙂");
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу", exact: true }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову", exact: true }).click();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   const englishEditor = page.getByRole("textbox", { name: "Editable document", exact: true });
   expect(await englishEditor.evaluate((node, original) => node === original, retained)).toBe(true);
@@ -162,8 +165,10 @@ test("uncertain restore survives newer draft and locale; quota failure keeps his
   await page.screenshot({ path: testInfo.outputPath("history-quota-en.png"), fullPage: true });
   await page.getByRole("button", { name: "Return to editing", exact: true }).click();
   await expect(englishEditor).toContainText("Чернетка після відновлення");
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click();
   await page.getByRole("combobox", { name: "Interface language", exact: true }).selectOption("uk");
   await page.getByRole("button", { name: "Save language", exact: true }).click();
+  await openNavigation(page);
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
 });

@@ -26,7 +26,14 @@ const show = () =>
   render(
     <I18nextProvider i18n={i18n}>
       <Authentication>
-        {(session) => <span data-testid="account">{session.user?.login}</span>}
+        {(session, actions) => (
+          <span data-testid="account">
+            {session.user?.login}
+            {session.user && (
+              <button onClick={() => actions.logout()}>Sign out</button>
+            )}
+          </span>
+        )}
       </Authentication>
     </I18nextProvider>,
   );
@@ -66,8 +73,9 @@ test("login sends CSRF, restores account language, preserves failed inputs, and 
     password: "Synthetic-їжак-2026",
   });
   fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
-  expect(await screen.findByText("Signed in as Ґанна Їжак.")).toBeVisible();
-  expect(screen.getByTestId("account")).toHaveTextContent(
+  // The identity strip moved into the application shell; the session and the
+  // saved account language apply on acceptance.
+  expect(await screen.findByTestId("account")).toHaveTextContent(
     "client@example.test",
   );
   // Session recovery is automatic on expiry; the signed-in strip offers no manual trigger.
@@ -103,7 +111,7 @@ test("session restoration takes the saved locale and network failures offer retr
   fireEvent.click(
     screen.getByRole("button", { name: "Повторити завантаження" }),
   );
-  expect(await screen.findByText("Signed in as Ґанна Їжак.")).toBeVisible();
+  expect(await screen.findByTestId("account")).toBeVisible();
   expect(i18n.language).toBe("en");
 });
 

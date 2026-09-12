@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openNavigation } from "./navigation";
 
 const originalPassword = "Synthetic-browser-Їжак-2026";
 const nextPassword = "Changed-profile-Ґанна-2026";
@@ -7,6 +8,7 @@ async function login(page: Page) {
   await page.getByLabel("Логін", { exact: true }).fill("profile@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill(originalPassword);
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Профіль", exact: true })).toBeVisible();
 }
@@ -50,9 +52,11 @@ test("profile edits persist, passwords require current credentials and revoke an
     await expect(page.getByText("Ім’я для відображення збережено.", { exact: true })).toBeVisible();
     await password(page, nextPassword, originalPassword);
     await expect(page.getByText("Пароль змінено. Інші сеанси завершено.", { exact: true })).toBeVisible();
+  await openNavigation(page);
     await page.getByRole("button", { name: "Вийти", exact: true }).click();
     await expect(page.getByRole("button", { name: "Увійти", exact: true })).toBeEnabled();
     await login(page);
+  await openNavigation(page);
     await page.getByRole("button", { name: "Вийти", exact: true }).click();
   } finally {
     await peer.close();
@@ -92,6 +96,7 @@ test("language saves preserve drafts and restore the account preference across b
     await other.getByLabel("Логін", { exact: true }).fill("profile@example.test");
     await other.getByLabel("Пароль", { exact: true }).fill(originalPassword);
     await other.getByRole("button", { name: "Увійти", exact: true }).click();
+  await openNavigation(other);
     await other.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(other.getByRole("combobox", { name: "Interface language" })).toHaveValue("en");
     await page.getByRole("combobox", { name: "Interface language" }).selectOption("uk");

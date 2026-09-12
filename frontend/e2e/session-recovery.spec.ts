@@ -2,6 +2,7 @@ import { manualSaving } from "./autosave-setting";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { closeNavigation, openNavigation } from "./navigation";
 
 async function open(page: Page) {
   await page.goto("/");
@@ -115,7 +116,9 @@ test("explicit recovery discard resolves unsaved work and a fresh account login 
   await page.getByLabel("Логін", { exact: true }).fill("browser-user");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await openNavigation(page);
   await expect(page.getByRole("link", { name: "Profile", exact: true })).toBeVisible();
+  await closeNavigation(page);
   await expect(page).toHaveURL(/\/documents$/);
   expect((await page.request.get(endpoint)).status()).toBe(404);
   // Exercise the English recovery layout after an explicit logout in another tab.

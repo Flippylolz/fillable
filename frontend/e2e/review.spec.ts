@@ -1,6 +1,7 @@
 import { manualSaving } from "./autosave-setting";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { openNavigation, openUploadPanel } from "./navigation";
 
 test("owned worker suggestions support draft review, grouping, undo and locale changes", async ({ page }, testInfo) => {
   const bytes = await readFile("/fixtures/upload.docx");
@@ -12,6 +13,7 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   await page.getByLabel("Логін", { exact: true }).fill("review@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "Перевірка.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: bytes });
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
   await page.getByRole("button", { name: "Завантажити та зберегти", exact: true }).click();
@@ -75,10 +77,12 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   await sidebar.evaluate(element => { element.scrollTop = 0; });
   await sidebar.screenshot({ path: testInfo.outputPath("review-uk.png") });
   await page.screenshot({ path: testInfo.outputPath("workspace-review-uk.png") });
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу" }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову" }).click();
   await expect(page.getByText("Your language preference has been saved.", { exact: true })).toBeVisible();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   await expect(page.getByRole("article", { name: "Field suggestion: Контактна особа", exact: true }).getByLabel("Field label", { exact: true })).toHaveValue("Незастосована назва");
   await expect(page.getByRole("textbox", { name: "Field value: Місце зустрічі", exact: true })).toHaveValue(meetingValue);
@@ -93,15 +97,19 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   expect(await (await page.request.get(`/api/documents/${identity}/download`)).body()).toEqual(bytes);
   const persisted = await (await page.request.get(`/api/documents/${identity}/fields`)).json();
   expect(persisted.snapshot.decisions).toHaveLength(5); // Working review persistence is E06.
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click();
   await page.getByRole("combobox", { name: "Interface language" }).selectOption("uk");
   await page.getByRole("button", { name: "Save language" }).click();
   await expect(page.getByText("Мову інтерфейсу збережено.", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Бібліотека документів", exact: true }).click();
+  // The uploaded review resource is a template; the section link preselects it.
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Шаблони", exact: true }).click();
   await libraryCard.getByRole("button", { name: "Видалити", exact: true }).click();
   await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
   await expect(libraryCard).toHaveCount(0);
   page.once("dialog", dialog => dialog.accept());
+  await openNavigation(page);
   await page.getByRole("button", { name: "Вийти", exact: true }).click();
   await expect(page.getByRole("button", { name: "Увійти", exact: true })).toBeVisible();
   expect(errors).toEqual([]);

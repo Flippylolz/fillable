@@ -323,5 +323,18 @@
   "editor.checkboxHelp": "Виділіть у документі один порожній прапорець ☐ або перекреслений ☒, а потім перемкніть його. Рідні чекбокси та намальовані прямокутники прапорців також можна перемикати клацанням.",
   "editor.checkbox.select_box": "Виділіть у документі рівно один символ прапорця ☐ або ☒.",
   "editor.checkbox.read_only": "Редагування недоступне. Документ не змінено.",
-  "editor.shapeCheckbox": "Прапорець форми"
+  "editor.shapeCheckbox": "Прапорець форми",
+  "navigation.documents": "Мої документи",
+  "navigation.templates": "Шаблони",
+  "shell.library": "Бібліотека",
+  "shell.menu": "Меню",
+  "library.search": "Пошук документів…",
+  "library.searchEmpty": "Нічого не знайдено. Змініть запит пошуку.",
+  "library.sort": "Сортування",
+  "library.sortNewest": "Найсвіжіші",
+  "library.sortOldest": "Найстаріші",
+  "library.sortTitleAsc": "За назвою А→Я",
+  "library.sortTitleDesc": "За назвою Я→А",
+  "library.uploadAction": "Завантажити DOCX",
+  "library.format": "DOCX"
 }

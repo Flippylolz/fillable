@@ -10,14 +10,22 @@ import { DeleteResource } from "./DeleteResource";
 import { UseTemplate } from "./UseTemplate";
 import { newKey } from "./operationKey";
 
-export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen, refreshRevision = 0 }: {
+type SortOrder = "newest" | "oldest" | "titleAsc" | "titleDesc";
+
+export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen, refreshRevision = 0, tab: tabProp, onTabChange }: {
   csrfToken: string; disabled: boolean; onBusy: (value: boolean) => void;
   onDirty: (value: boolean) => void; onSaved: () => void;
   onOpen?: (identity: string) => void;
   refreshRevision?: number;
+  tab?: Kind; onTabChange?: (tab: Kind) => void;
 }) {
-  const { t } = useTranslation();
-  const [tab, setTab] = useState<Kind>("template");
+  const { t, i18n } = useTranslation();
+  const [internalTab, setInternalTab] = useState<Kind>("template");
+  const tab = tabProp ?? internalTab;
+  function setTab(next: Kind) { setInternalTab(next); onTabChange?.(next); }
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortOrder>("newest");
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [kind, setKind] = useState<Kind>("template");
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -37,6 +45,18 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
     return () => { lifetime.current.abort(); onBusy(false); };
   }, [onBusy]);
   useEffect(() => { onDirty(file !== null); }, [file, onDirty]);
+
+  // Search narrows the loaded cards by title or original filename; sorting
+  // orders the visible gallery client-side on top of the API cursor page.
+  const needle = query.trim().toLowerCase();
+  const visible = needle
+    ? data.items.filter(item => item.title.toLowerCase().includes(needle) || item.original_filename.toLowerCase().includes(needle))
+    : data.items;
+  const items = [...visible];
+  if (sort === "newest") items.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  if (sort === "oldest") items.sort((a, b) => a.updated_at.localeCompare(b.updated_at));
+  if (sort === "titleAsc") items.sort((a, b) => a.title.localeCompare(b.title, i18n.language));
+  if (sort === "titleDesc") items.sort((a, b) => b.title.localeCompare(a.title, i18n.language));
 
   function changed() { key.current = newKey(); setError(""); setSaved(""); }
   function choose(next: File | null) {
@@ -93,18 +113,23 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
   const bytes = formatBytes;
 
   return <section className="library" aria-labelledby="library-title">
-    <div className="library-heading"><div><h2 id="library-title">{t("library.title")}</h2><p>{t("library.description")}</p></div>
-      <button type="button" disabled={blocked} onClick={() => setRevision(value => value + 1)}>{t("library.refresh")}</button>
-    </div>
-    <section className="library-quota" aria-label={t("profile.storage")}>
-      {data.usage ? <>
-        <p>{t("library.usage", { used: bytes(data.usage.used_bytes), limit: bytes(data.usage.limit_bytes) })}</p>
-        <meter aria-label={t("profile.storage")} min={0} max={Math.max(1, data.usage.limit_bytes)} value={Math.min(data.usage.used_bytes + data.usage.reserved_bytes, data.usage.limit_bytes)} />
-        <p>{t("library.available", { available: bytes(data.usage.available_bytes), reserved: bytes(data.usage.reserved_bytes) })}</p>
-        {data.usage.over_limit && <p role="status">{t("profile.overLimit")}</p>}
-      </> : <p role={data.usageError ? "alert" : "status"}>{data.usageError ? apiErrorMessage(data.usageError) : t("profile.usageLoading")}</p>}
-    </section>
-    <form className="library-upload" aria-labelledby="upload-title" onSubmit={event => void upload(event)}>
+    <header className="library-topbar">
+      <div className="library-titles">
+        <h2 id="library-title">{t("library.title")}</h2>
+        <p>{t("library.description")}</p>
+      </div>
+      <div className="library-tools">
+        <input type="search" className="library-search" aria-label={t("library.search")}
+          placeholder={t("library.search")} value={query} disabled={blocked}
+          onChange={event => setQuery(event.target.value)} />
+        <button type="button" className="library-refresh" disabled={blocked}
+          onClick={() => setRevision(value => value + 1)}>{t("library.refresh")}</button>
+        <button type="button" className="primary library-upload-toggle" disabled={blocked}
+          aria-expanded={uploadOpen} aria-controls="library-upload"
+          onClick={() => setUploadOpen(open => !open)}>{t("library.uploadAction")}</button>
+      </div>
+    </header>
+    <form id="library-upload" className="library-upload" hidden={!uploadOpen} aria-labelledby="upload-title" onSubmit={event => void upload(event)}>
       <h3 id="upload-title">{t("library.uploadTitle")}</h3>
       <p>{t("library.uploadHint")}</p>
       <label>{t("library.file")}<input ref={input} type="file" accept=".docx" disabled={blocked} onChange={event => choose(event.target.files?.[0] ?? null)} /></label>
@@ -116,21 +141,35 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
       {error && <p role="alert">{apiErrorMessage(error)}</p>}
       {saved && <p role="status">{t("library.uploadSaved", { title: saved })}</p>}
     </form>
-    <div role="tablist" aria-label={t("library.title")} className="library-tabs">
-      {(["template", "document"] as const).map((value, index) => <button key={value} ref={node => { tabs.current[index] = node; }} type="button" role="tab" id={`library-tab-${value}`} aria-controls="library-list" aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} disabled={blocked} onKeyDown={event => keyboard(event, index)} onClick={() => setTab(value)}>{t(value === "template" ? "library.templates" : "library.documents")}</button>)}
+    <div className="library-viewbar">
+      <div role="tablist" aria-label={t("library.title")} className="library-tabs">
+        {(["template", "document"] as const).map((value, index) => <button key={value} ref={node => { tabs.current[index] = node; }} type="button" role="tab" id={`library-tab-${value}`} aria-controls="library-list" aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} disabled={blocked} onKeyDown={event => keyboard(event, index)} onClick={() => setTab(value)}>{t(value === "template" ? "library.templates" : "library.documents")}</button>)}
+      </div>
+      <label className="library-sort">
+        {t("library.sort")}
+        <select value={sort} disabled={blocked} onChange={event => setSort(event.target.value as SortOrder)}>
+          <option value="newest">{t("library.sortNewest")}</option>
+          <option value="oldest">{t("library.sortOldest")}</option>
+          <option value="titleAsc">{t("library.sortTitleAsc")}</option>
+          <option value="titleDesc">{t("library.sortTitleDesc")}</option>
+        </select>
+      </label>
     </div>
     <section id="library-list" role="tabpanel" aria-labelledby={`library-tab-${tab}`} aria-busy={data.loading || data.more}>
       {data.loading && <p role="status">{t("library.loading")}</p>}
       {data.error && <p role="alert">{apiErrorMessage(data.error)}</p>}
-      {!data.loading && !data.error && data.items.length === 0 && <p className="library-empty">{t(tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
-      <div className="library-items">{data.items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
-        <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span></div>
+      {!data.loading && !data.error && ((needle ? items.length === 0 : data.items.length === 0)) &&
+        <p className="library-empty">{t(needle ? "library.searchEmpty" : tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
+      <div className="library-items">{items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
+        <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span><span className="library-format">{t("library.format")}</span></div>
         <h3>{item.deletion_pending ? item.title : <a className="library-card-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => openCard(event, item.id)}>{item.title}</a>}</h3><p className="library-filename">{item.original_filename}</p>
         {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><ProcessingStatus key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} /></>}
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>
-        {!item.deletion_pending && <DownloadSaved item={item} disabled={blocked} />}
-        {!item.deletion_pending && item.kind === "template" && <UseTemplate key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onCreated={created => { setTab("document"); setRevision(value => value + 1); onSaved(); onOpen?.(created.id); }} />}
-        <DeleteResource item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
+        <div className="library-actions">
+          {!item.deletion_pending && item.kind === "template" && <UseTemplate key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onCreated={created => { setTab("document"); setRevision(value => value + 1); onSaved(); onOpen?.(created.id); }} />}
+          {!item.deletion_pending && <DownloadSaved item={item} disabled={blocked} />}
+          <DeleteResource item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
+        </div>
       </article>)}</div>
       {data.next && <button type="button" disabled={data.more || blocked} onClick={() => void data.loadMore()}>{t(data.more ? "library.loading" : "library.more")}</button>}
     </section>

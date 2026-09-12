@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { openNavigation } from "./navigation";
 
 async function open(page: Page) {
   await page.goto("/");
@@ -49,17 +50,21 @@ test("default autosave debounces edits, preserves the editor across locale, and 
   await toggle.check(); await saved(page); expect(writes).toHaveLength(2);
   await page.getByRole("textbox", { name: "Назва", exact: true }).fill("Окрема назва чернетки");
   await idle(page); expect(writes).toHaveLength(2);
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click();
   await page.getByRole("combobox", { name: "Мова інтерфейсу", exact: true }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову", exact: true }).click();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Document workspace", exact: true }).click();
   await expect(page.getByRole("checkbox", { name: "Autosave document", exact: true })).toBeChecked();
   expect(await page.getByRole("textbox", { name: "Editable document", exact: true }).evaluate((node, original) => node === original, retained)).toBe(true);
   await page.screenshot({ path: info.outputPath("autosave-settings-en.png"), fullPage: true });
   expect(writes).toHaveLength(2);
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click();
   await page.getByRole("combobox", { name: "Interface language", exact: true }).selectOption("uk");
   await page.getByRole("button", { name: "Save language", exact: true }).click();
+  await openNavigation(page);
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
 });
 

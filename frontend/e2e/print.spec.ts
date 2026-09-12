@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { openUploadPanel } from "./navigation";
 
 test("a clean document prints through a print-only frame and unavailable printing suggests a local save", async ({ page }, testInfo) => {
   testInfo.setTimeout(120000);
@@ -13,6 +14,7 @@ test("a clean document prints through a print-only frame and unavailable printin
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/);
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles(file);
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
   await page.getByLabel("Зберегти як").selectOption("document");

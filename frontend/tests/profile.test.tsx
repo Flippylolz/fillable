@@ -1,8 +1,19 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { I18nextProvider } from "react-i18next";
 import { Profile } from "../src/accounts/Profile";
 import { Authentication, type Session } from "../src/accounts/Authentication";
 import { i18n, setLanguage } from "../src/i18n";
+
+// The sign-out button lives in the application shell; these mounts reproduce
+// the shell wiring that pairs Profile's busy state with the injected logout.
+function ShellProfile({ state, actions }: { state: Session; actions: { accept: (session: Session) => void; busy: boolean; paused: boolean; setBusy: (busy: boolean) => void; logout: () => void } }) {
+  const [busy, setBusy] = useState(false);
+  return <>
+    {state.user && <Profile user={state.user} csrfToken={state.csrf_token} onSession={actions.accept} onBusy={setBusy} disabled={busy || actions.busy} />}
+    <button disabled={busy || actions.busy || actions.paused} onClick={() => actions.logout()}>Вийти</button>
+  </>;
+}
 
 const user = { id: "owner", login: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } as const;
 const session: Session = { user, csrf_token: "csrf" };
@@ -168,7 +179,7 @@ test("profile and authentication serialize saves with logout", async () => {
     .mockImplementationOnce(() => new Promise<Response>(resolve => { complete = resolve; }))
     .mockResolvedValueOnce(Response.json({ user: null, csrf_token: "anonymous" }));
   vi.stubGlobal("fetch", fetcher);
-  render(<I18nextProvider i18n={i18n}><Authentication>{(state, actions) => state.user && <Profile user={state.user} csrfToken={state.csrf_token} onSession={actions.accept} onBusy={actions.setBusy} disabled={actions.busy} />}</Authentication></I18nextProvider>);
+  render(<I18nextProvider i18n={i18n}><Authentication>{(state, actions) => state.user && <ShellProfile state={state} actions={{ accept: actions.accept, busy: actions.busy, paused: actions.paused, setBusy: actions.setBusy, logout: actions.logout }} />}</Authentication></I18nextProvider>);
   await screen.findByText("8 байтів");
   fireEvent.submit(nameForm());
   expect(screen.getByRole("button", { name: "Вийти" })).toBeDisabled();
@@ -188,9 +199,7 @@ test("language applies only after success, preserves drafts, and resets failed c
     .mockRejectedValueOnce(new Error("offline"))
     .mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
   vi.stubGlobal("fetch", fetcher);
-  render(<I18nextProvider i18n={i18n}><Authentication>{(value, actions) => value.user && <Profile
-    user={value.user} csrfToken={value.csrf_token} onSession={actions.accept} onBusy={actions.setBusy} disabled={actions.busy}
-  />}</Authentication></I18nextProvider>);
+  render(<I18nextProvider i18n={i18n}><Authentication>{(value, actions) => value.user && <ShellProfile state={value} actions={{ accept: actions.accept, busy: actions.busy, paused: actions.paused, setBusy: actions.setBusy, logout: actions.logout }} />}</Authentication></I18nextProvider>);
   await screen.findByText("8 байтів");
   fireEvent.change(screen.getByLabelText("Ім’я для відображення"), { target: { value: "Чернетка Ґанни" } });
   passwords();

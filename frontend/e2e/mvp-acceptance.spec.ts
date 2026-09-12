@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
 import { manualSaving } from "./autosave-setting";
+import { openNavigation, openUploadPanel } from "./navigation";
 
 const login = process.env.FILLABLE_INITIAL_LOGIN ?? "library@example.test";
 const password = process.env.FILLABLE_INITIAL_PASSWORD ?? "Synthetic-browser-Їжак-2026";
@@ -57,6 +58,7 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   await page.getByLabel("Пароль", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await expect(page).toHaveURL(/\/documents$/); await badge(page, "uk");
+  await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "Заява-Ґанни.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: original });
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
   await page.getByRole("combobox", { name: "Зберегти як", exact: true }).selectOption("template");
@@ -84,13 +86,15 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   await page.screenshot({ path: info.outputPath("acceptance-reviewed-template-uk.png"), fullPage: true });
   await page.getByRole("article").filter({ has: page.getByRole("textbox", { name: `Значення поля: ${label}`, exact: true }) }).screenshot({ path: info.outputPath("acceptance-long-label-uk.png") });
 
+  await openNavigation(page);
   await page.getByRole("link", { name: "Профіль", exact: true }).click(); await badge(page, "uk");
   await expect(page.locator(".profile-storage dd").nth(2)).toHaveText(/^\d+,\d{1,2}\s+ГБ$/);
   await page.getByRole("combobox", { name: "Мова інтерфейсу", exact: true }).selectOption("en");
   await page.getByRole("button", { name: "Зберегти мову", exact: true }).click();
   await expect(page.getByText("Your language preference has been saved.", { exact: true })).toBeVisible(); await badge(page, "en");
   await expect(page.locator(".profile-storage dd").nth(2)).toHaveText(/^\d+\.\d{1,2}\s+GB$/);
-  await page.getByRole("link", { name: "Document library", exact: true }).click(); await badge(page, "en");
+  await openNavigation(page);
+  await page.getByRole("link", { name: "My documents", exact: true }).click(); await badge(page, "en");
   await page.getByRole("tab", { name: "Templates", exact: true }).click();
   await card.getByRole("button", { name: "Use template", exact: true }).click();
   await card.getByRole("textbox", { name: "New document title", exact: true }).fill(copyTitle);
@@ -118,7 +122,8 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   await page.screenshot({ path: info.outputPath("acceptance-copy-history-en.png"), fullPage: true });
   await page.getByRole("button", { name: "Return to editing", exact: true }).click();
 
-  await page.getByRole("link", { name: "Document library", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "My documents", exact: true }).click();
   await page.getByRole("tab", { name: "Templates", exact: true }).click();
   await card.getByRole("link", { name: title, exact: true }).click();
   await expect(page.getByText("Editing enabled.", { exact: true })).toBeVisible();
@@ -134,14 +139,17 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   expect(copyHistory.items.map((item: { number: number }) => item.number)).toEqual([2, 1]);
   expect(await (await page.request.get(`/api/documents/${copyId}/download`)).body()).toEqual(copyBytes);
   expect((await (await page.request.get(`/api/documents/${copyId}`)).json()).current_version_id).toBe(copy.resource.current_version_id);
+  await openNavigation(page);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByLabel("Password", { exact: true })).toBeVisible(); await badge(page, "en");
   await page.getByLabel("Login", { exact: true }).fill(login);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await openNavigation(page);
   await page.getByRole("link", { name: "Profile", exact: true }).click(); await badge(page, "en");
   await page.getByRole("combobox", { name: "Interface language", exact: true }).selectOption("uk");
   await page.getByRole("button", { name: "Save language", exact: true }).click();
+  await openNavigation(page);
   await expect(page.getByRole("link", { name: "Профіль", exact: true })).toBeVisible();
   expect(errors).toEqual([]);
   await writeFile(info.outputPath("acceptance-state.json"), JSON.stringify({ version: process.env.EXPECTED_APP_VERSION ?? "development", resources: await retained(page, [templateId, copyId]) }));
