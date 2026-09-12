@@ -76,12 +76,18 @@ workspace when one exists, Профіль), the storage meter and sign-out; on n
 screens the rail becomes an off-canvas drawer opened from the menu bar and closed by
 Escape, the scrim, or a selection. The library page carries the gallery composition:
 a top bar with the title, a client-side search field, refresh and the prominent DOCX
-upload button; tabs and a sort control (newest, oldest, or by title) sit above a
+upload button; a sort control (newest, oldest, or by title) sits above a
 responsive grid of tactile document cards. Search filters the loaded cards by title
 or original filename and reports a localized empty result; sorting orders the visible
 cursor page client-side. The upload form keeps its file/title/kind fields and exact
 idempotent behavior behind the toolbar toggle; the quota section moved into the
 sidebar, and deletion-pending cards keep their retry control in the actions row.
+
+E09.23 removes the in-page tab list after user feedback that the sidebar and the
+tabs duplicated the same switcher: the sidebar sections (Мої документи, Шаблони)
+are now the only gallery switcher, they mark the active gallery with
+`aria-current`, and the view bar keeps only the sort control. The upload form and
+all card actions are unchanged.
 
 The locked palette (#F7F8FA, #172033, #2563EB, #DCE6F7), interface fonts and the
 120–180ms motion band are semantic CSS custom properties in `base.css`. Manrope and

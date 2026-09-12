@@ -95,7 +95,8 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   await expect(page.locator(".profile-storage dd").nth(2)).toHaveText(/^\d+\.\d{1,2}\s+GB$/);
   await openNavigation(page);
   await page.getByRole("link", { name: "My documents", exact: true }).click(); await badge(page, "en");
-  await page.getByRole("tab", { name: "Templates", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Templates", exact: true }).click();
   await card.getByRole("button", { name: "Use template", exact: true }).click();
   await card.getByRole("textbox", { name: "New document title", exact: true }).fill(copyTitle);
   await card.getByRole("button", { name: "Create and open document", exact: true }).click();
@@ -124,7 +125,8 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
 
   await openNavigation(page);
   await page.getByRole("link", { name: "My documents", exact: true }).click();
-  await page.getByRole("tab", { name: "Templates", exact: true }).click();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Templates", exact: true }).click();
   await card.getByRole("link", { name: title, exact: true }).click();
   await expect(page.getByText("Editing enabled.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Version history", exact: true }).click();

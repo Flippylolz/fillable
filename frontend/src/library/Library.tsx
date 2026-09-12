@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
 import { formatBytes, formatDate } from "../i18n";
@@ -35,7 +35,6 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
   const [revision, setRevision] = useState(0);
   const key = useRef(newKey());
   const input = useRef<HTMLInputElement>(null);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const lifetime = useRef(new AbortController());
   const data = useLibrary(tab, revision + refreshRevision);
   const blocked = busy || disabled;
@@ -62,12 +61,6 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
   function choose(next: File | null) {
     changed(); setFile(next);
     setTitle(next ? Array.from(next.name.replace(/\.docx$/i, "")).slice(0, 160).join("") : "");
-  }
-  function keyboard(event: KeyboardEvent, index: number) {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const next = event.key === "Home" ? 0 : event.key === "End" ? 1 : 1 - index;
-    setTab(next === 0 ? "template" : "document"); tabs.current[next]?.focus();
   }
   // The title link stretches over the whole card; modified clicks keep the
   // native new-tab behavior and blocked sessions swallow the activation.
@@ -142,9 +135,6 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
       {saved && <p role="status">{t("library.uploadSaved", { title: saved })}</p>}
     </form>
     <div className="library-viewbar">
-      <div role="tablist" aria-label={t("library.title")} className="library-tabs">
-        {(["template", "document"] as const).map((value, index) => <button key={value} ref={node => { tabs.current[index] = node; }} type="button" role="tab" id={`library-tab-${value}`} aria-controls="library-list" aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} disabled={blocked} onKeyDown={event => keyboard(event, index)} onClick={() => setTab(value)}>{t(value === "template" ? "library.templates" : "library.documents")}</button>)}
-      </div>
       <label className="library-sort">
         {t("library.sort")}
         <select value={sort} disabled={blocked} onChange={event => setSort(event.target.value as SortOrder)}>
@@ -155,7 +145,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
         </select>
       </label>
     </div>
-    <section id="library-list" role="tabpanel" aria-labelledby={`library-tab-${tab}`} aria-busy={data.loading || data.more}>
+    <section id="library-list" aria-label={t("library.title")} aria-busy={data.loading || data.more}>
       {data.loading && <p role="status">{t("library.loading")}</p>}
       {data.error && <p role="alert">{apiErrorMessage(data.error)}</p>}
       {!data.loading && !data.error && ((needle ? items.length === 0 : data.items.length === 0)) &&

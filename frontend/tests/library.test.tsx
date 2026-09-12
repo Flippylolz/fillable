@@ -5,14 +5,15 @@ import { Library } from "../src/library/Library";
 import { App } from "../src/App";
 import { SessionPages } from "../src/SessionPages";
 import { i18n, setLanguage } from "../src/i18n";
+import type { Kind } from "../src/library/useLibrary";
 
 const usage = { used_bytes: 10, reserved_bytes: 2, limit_bytes: 1000, available_bytes: 988, over_limit: false };
 const item = { id: "resource", kind: "template", title: "Ґанна <script>", original_filename: "Заява.docx", current_version_id: "version", size_bytes: 10, digest: "a".repeat(64), unsupported_count: 1, processing_status: "not_started", created_at: "2026-09-06T10:00:00Z", updated_at: "2026-09-06T10:00:00Z" };
 const session = { csrf_token: "csrf", user: { id: "owner", login: "owner@example.test", display_name: "Ґанна", role: "user", ui_language: "uk" } };
 const fail = (code: string) => Response.json({ error: { code, parameters: {} } }, { status: code === "rate_limited" ? 429 : 409 });
-const onBusy = vi.fn(); const onDirty = vi.fn(); const onSaved = vi.fn();
+const onBusy = vi.fn(); const onDirty = vi.fn(); const onSaved = vi.fn(); const onTabChange = vi.fn();
 const empty = () => Response.json({ items: [], next_cursor: null });
-function show(disabled = false) { return render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={disabled} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} /></I18nextProvider>); }
+function show(disabled = false) { return render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={disabled} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} onTabChange={onTabChange} /></I18nextProvider>); }
 function file(name = "Заява Ґанни.docx", bytes: BlobPart[] = ["Original Ukrainian bytes: Їжак"]) { return new NodeFile(bytes as ConstructorParameters<typeof NodeFile>[0], name) as unknown as File; }
 function choose(value: File) { fireEvent.change(screen.getByLabelText("Файл DOCX"), { target: { files: [value] } }); }
 function openUpload() { fireEvent.click(screen.getByRole("button", { name: "Завантажити DOCX" })); }
@@ -28,7 +29,7 @@ function defaults(request: Request) {
 beforeEach(async () => {
   // Match the accepted non-secure browser origin: randomUUID is unavailable.
   vi.stubGlobal("crypto", { getRandomValues: crypto.getRandomValues.bind(crypto) });
-  await setLanguage("uk"); window.history.replaceState(null, "", "/"); onBusy.mockClear(); onDirty.mockClear(); onSaved.mockClear();
+  await setLanguage("uk"); window.history.replaceState(null, "", "/"); onBusy.mockClear(); onDirty.mockClear(); onSaved.mockClear(); onTabChange.mockClear();
 });
 
 test.each(["operation_aborted", "operation_conflict", "rate_limited"])("ambiguous upload retries preserve bytes and key; %s starts a new attempt", async code => {
@@ -59,7 +60,7 @@ test.each(["operation_aborted", "operation_conflict", "rate_limited"])("ambiguou
   submit();
   expect(await screen.findByText("«Канонічна назва» збережено.")).toBeVisible();
   expect(await screen.findByRole("article", { name: "Канонічна назва" })).toBeVisible();
-  expect(screen.getByRole("tab", { name: "Документи" })).toHaveAttribute("aria-selected", "true");
+  expect(onTabChange).toHaveBeenCalledWith("document");
   expect(screen.getByLabelText("Назва документа")).toHaveValue("");
   expect(screen.getByLabelText("Файл DOCX")).toHaveValue("");
   expect(onSaved).toHaveBeenCalledTimes(1);
@@ -118,25 +119,24 @@ test("list errors retry, cursor failures keep saved rows, and pagination dedupli
   expect(screen.queryByRole("button", { name: "Завантажити ще" })).toBeNull();
 });
 
-test("tab changes ignore stale list results, support keyboard tabs, and abort on unmount", async () => {
+test("a requested tab switches the gallery, ignores stale list results, and aborts on unmount", async () => {
   const finish: ((response: Response) => void)[] = [];
   const fetcher = vi.fn((request: Request) => {
     if (finish.length < 1) return new Promise<Response>(resolve => finish.push(resolve));
     return Promise.resolve(defaults(request));
   });
-  vi.stubGlobal("fetch", fetcher); const view = show();
+  vi.stubGlobal("fetch", fetcher);
+  const library = (key: Kind) => <I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} onTabChange={onTabChange} tab={key} /></I18nextProvider>;
+  const view = render(library("template"));
   await waitFor(() => expect(finish).toHaveLength(1));
-  const templates = screen.getByRole("tab", { name: "Шаблони" });
-  fireEvent.keyDown(templates, { key: "ArrowRight" });
+  view.rerender(library("document"));
   expect(await screen.findByText(/Документів ще немає/)).toBeVisible();
   await act(async () => finish[0](Response.json({ items: [item] })));
   expect(screen.queryByRole("article")).toBeNull();
-  fireEvent.keyDown(screen.getByRole("tab", { name: "Документи" }), { key: "Home" });
+  view.rerender(library("template"));
   await screen.findByText(/Шаблонів ще немає/);
-  fireEvent.keyDown(templates, { key: "End" });
+  view.rerender(library("document"));
   await screen.findByText(/Документів ще немає/);
-  fireEvent.keyDown(screen.getByRole("tab", { name: "Документи" }), { key: "Tab" });
-  expect(screen.getByRole("tab", { name: "Документи" })).toHaveAttribute("aria-selected", "true");
   view.unmount();
   expect(fetcher.mock.calls.every(([request]) => request.signal.aborted)).toBe(true);
 });
@@ -155,7 +155,6 @@ test("pending uploads block duplicate submits and late success cannot revive unm
   choose(file()); submit();
   await waitFor(() => expect(finish).toBeTypeOf("function"));
   submit(); expect(fetcher.mock.calls.filter(([request]) => request.method === "POST")).toHaveLength(1);
-  expect(screen.getByRole("tab", { name: "Документи" })).toBeDisabled();
   view.unmount(); await act(async () => finish(Response.json(item)));
   expect(onSaved).not.toHaveBeenCalled(); expect(onBusy).toHaveBeenLastCalledWith(false);
 });
@@ -318,9 +317,7 @@ test("an external tab request selects the matching gallery and reports changes",
   vi.stubGlobal("fetch", vi.fn(async (request: Request) => defaults(request)));
   const view = render(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} tab="document" onTabChange={onTabChange} /></I18nextProvider>);
   await screen.findByText(/Документів ще немає/);
-  expect(screen.getByRole("tab", { name: "Документи" })).toHaveAttribute("aria-selected", "true");
-  fireEvent.click(screen.getByRole("tab", { name: "Шаблони" }));
-  expect(onTabChange).toHaveBeenCalledWith("template");
   view.rerender(<I18nextProvider i18n={i18n}><Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} tab="template" onTabChange={onTabChange} /></I18nextProvider>);
-  expect(screen.getByRole("tab", { name: "Шаблони" })).toHaveAttribute("aria-selected", "true");
+  await screen.findByText(/Шаблонів ще немає/);
+  expect(onTabChange).not.toHaveBeenCalled();
 });

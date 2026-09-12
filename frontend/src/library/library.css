@@ -23,11 +23,7 @@
 .library-upload input, .library-upload select { display: block; width: 100%; min-width: 0; box-sizing: border-box; margin-top: 0.3rem; padding: 0.5rem 0.65rem; border: 1px solid var(--fillable-line-strong); border-radius: 0.5rem; background: var(--fillable-surface); color: var(--fillable-ink); font-weight: 400; }
 .library-upload button[type="submit"] { justify-self: start; }
 
-.library-viewbar { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; border-bottom: 1px solid var(--fillable-line); padding-bottom: 0.7rem; }
-.library-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.library-tabs button { color: var(--fillable-ink-soft); background: transparent; border-color: transparent; border-radius: 0.5rem; font-weight: 600; }
-.library-tabs button:hover:not(:disabled) { background: var(--fillable-accent-soft); }
-.library-tabs [aria-selected="true"] { background: var(--fillable-accent-soft); color: var(--fillable-ink); }
+.library-viewbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap; border-bottom: 1px solid var(--fillable-line); padding-bottom: 0.7rem; }
 .library-sort { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 600; color: var(--fillable-ink-soft); }
 .library-sort select { padding: 0.45rem 0.6rem; border: 1px solid var(--fillable-line-strong); border-radius: 0.5rem; background: var(--fillable-surface); color: var(--fillable-ink); font-weight: 400; }
 

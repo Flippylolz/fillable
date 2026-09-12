@@ -44,7 +44,7 @@ test("the sidebar marks the active section and hosts identity and sign-out", asy
   expect(profile).toHaveAttribute("aria-current", "page");
   expect(templates).not.toHaveAttribute("aria-current");
   fireEvent.click(documents);
-  await screen.findByRole("tab", { name: "Документи", selected: true });
+  await screen.findByText(/Документів ще немає/);
   expect(window.location.pathname).toBe("/documents");
   expect(documents).toHaveAttribute("aria-current", "page");
   expect(templates).not.toHaveAttribute("aria-current");
