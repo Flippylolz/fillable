@@ -29,7 +29,7 @@ Planning task P04: record the user's Fillable redesign plan in one documentation
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
-| E09 | Post-release user-requested improvements and automation | E08 | done: E09.1–E09.24 verified and merged (PRs #81–#88, #97–#99, #103–#106, #108–#109, #118–#122, #124–#132, #135–#137); completion evidence recorded by the closing docs PR |
+| E09 | Post-release user-requested improvements and automation | E08 | in_review: E09.1–E09.25 merged; E09.26 gallery previews (#143), E09.27 documentation/QA sync, and E09.28 restore-key fix (#144) are follow-ups; see task sections and current PR states |
 | E10 | Manual QA findings and corrections | E00–E08 delivered; findings in [QA findings](QA_FINDINGS_E10.md) | done: E10.1–E10.7 merged (PRs #110–#116); E10.7's own record recorded by closing docs PR #117 |
 | E11 | Reviewable field types (text/number/date) | E00–E10 delivered; D026 | done: E11.1 merged (PR #121); completion record recorded by closing docs PR #123 |
 
@@ -2875,8 +2875,27 @@ Acceptance:
 
 ## E09.25 — Faithful, responsive fill-mode preview
 
-Status: in_progress. The fill preview must inherit the same document canvas styles
+Status: done — PR #142 merged as `882de80337353c0ae4c0b980f0b5580bf36831d5`, all required CI green. Local frontend coverage: 96.71% lines / 92.72% branches, 323 tests; desktop/mobile manual preview and undo/redo checks passed. The fill preview must inherit the same document canvas styles
 as the editor, preserve source page geometry, fit its available width independently
 of editor zoom, and remain inert and read-only. Preserve the existing live draft,
 undo/save behavior and bounded refresh. Verify desktop/mobile and both languages;
 deliver separately from gallery previews and the documentation status audit.
+
+## E09.27 — Synchronize current documentation and record manual preview QA
+
+Status: in_progress. Reconcile current guide, architecture, CI, deployment, editor,
+badge and agent-entry descriptions with verified implementation and GitHub settings;
+retain dated historical evidence. Record the requested manual control/preview checks,
+including failures and explicit limits. Documentation-only PR; no implementation or
+coverage measurement is attributed to this task.
+
+
+2026-09-15: E09.27 documentation audit synchronized current implementation/deployment
+statements across the guide, architecture, CI, decisions, local development, PR and
+agent prompts, editor feasibility, quotas, badge and redesign/QA status. Historical
+evidence remains explicitly dated. A live GitHub protection read confirmed strict
+`ci-required` with administrator enforcement false; no repository settings changed.
+All 232 local Markdown links in AI/ resolved and `git diff --check` passed. Manual
+control/preview evidence and explicit tool/approval limits are in
+[Preview QA](QA_PREVIEWS_2026_09_15.md). Documentation-only: no new application tests
+or coverage are claimed for this task.

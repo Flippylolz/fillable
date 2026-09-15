@@ -6,7 +6,7 @@ revision share one immutable file charged once. Subsequent versions and template
 copies must allocate their own retained files; this does not authorize cross-document
 sharing or mutation of the original.
 
-Status: proposed detailed design implementing accepted decisions D003 and D004.
+Status: implemented under D003 and D004; E02–E07 verified reservation, concurrency, cleanup, retention and recovery. The dated task sections below retain their original implementation sequence.
 
 ## Configuration and accounting
 

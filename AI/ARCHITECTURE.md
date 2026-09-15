@@ -1,6 +1,6 @@
 # Architecture
 
-Status: the four-page application, source-preserving editor, accounts, quotas, saves/history, recovery and maintenance are implemented. E07 completes operational verification before E08 deployment. See [Epics](EPICS.md) for verified task evidence.
+Status: the four-page application, source-preserving editor, accounts, quotas, saves/history, recovery and maintenance are implemented. E07 operational verification and E08 deployment are complete; E09 follow-ups preserve those boundaries. See [Epics](EPICS.md) for verified task evidence.
 
 ## Components
 

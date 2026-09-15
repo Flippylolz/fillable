@@ -1,6 +1,6 @@
 # CI, coverage, and final deployment
 
-Status: E01 implements the Docker/coverage/browser foundation below. The actual `main` protection requires up-to-date `ci-required`, including administrators; task PRs have merged through this gate. See the execution ledger and task checkpoints for measured evidence. No live deployment has occurred.
+Status: the Docker/coverage/browser foundation, E08 deployment and E09.6 automatic releases are implemented. A 2026-09-15 API audit confirmed strict up-to-date `ci-required` protection; `enforce_admins.enabled` was false. Agents must not use administrator overrides. Dated audits below describe their observed historical settings, not the current setting.
 
 Repository auto-merge was enabled on 2026-09-06. Each task is delivered through its own PR under [PR workflow](PR_WORKFLOW.md). Coverage enforcement and required checks are active; E01.7 audits the completed foundation gate.
 
@@ -11,13 +11,13 @@ Repository auto-merge was enabled on 2026-09-06. Each task is delivered through 
 - E07 verifies the complete MVP, coverage gate, and operations in local/CI Docker environments.
 - **E08 is the final task: deployment through GitHub Actions to `<DEPLOY_USER>@<DEPLOY_HOST>`.** It requires all earlier epics to pass and server access, port allocation, and shared nginx integration to be verified.
 
-Preparing and testing production images/Compose locally is foundation work. Connecting to the live server, configuring its deployment, and running the deployment workflow belong to E08. The target was inspected during E08.1; only isolated temporary port probes have run. See [Deployment target](DEPLOYMENT_TARGET.md), including the requirement to preserve existing services and investigate WEF as a possible nginx owner.
+Preparing and testing production images/Compose locally is foundation work. Connecting to the live server, configuring its deployment, and running the deployment workflow belong to E08. E08.1 inspected the target, and E08.4/E08.5 completed rollout and deployed acceptance. See [Deployment target](DEPLOYMENT_TARGET.md), including the requirement to preserve existing services and investigate WEF as a possible nginx owner.
 
 ## Mandatory coverage gate
 
 The user requires at least **90% test coverage as a CI blocker**. The implementation default is to apply this independently to backend and frontend, with both executable-line and branch coverage checked separately:
 
-| Scope | Line coverage | Branch coverage | Planned tooling |
+| Scope | Line coverage | Branch coverage | Tooling |
 | --- | --- | --- | --- |
 | First-party Python backend, workers, and maintenance commands | >= 90% | >= 90% | pytest, pytest-cov, coverage.py |
 | First-party React/TypeScript application and editor adapter | >= 90% | >= 90% | Vitest with coverage provider |
@@ -45,12 +45,12 @@ Implemented workflow: `.github/workflows/ci.yml`. Tests and coverage use the sam
 2. Check out the exact source revision and install/build from pinned dependencies and images.
 3. Run independent parallel jobs, each building only the images it needs: static `lint` checks (Ruff, mypy, ESLint, Ukrainian/English catalog validation, generated API/fixture/notice drift, Compose validation), `backend-tests` and `frontend-tests` with independent raw coverage gates and real negative probes, `browser` production-image Playwright flows, full development/persistence and previous-image recovery verification, and release/runtime contract checks.
 4. Produce separate backend/frontend coverage reports and browser/development evidence as Actions artifacts for diagnosis, including on failed runs where reports exist.
-5. Evaluate the coverage gates and produce a stable required check, proposed name `ci-required`, that succeeds only when every required job succeeded. It forwards each aggregated `needs` result to `scripts/require-ci-success.sh`, which fails on any missing, skipped, or cancelled prerequisite; a green summary must never mask a failed test job.
-6. During E01, once the workflow exists and its check name is established, configure branch rules in `Flippylolz/fillable` to require PRs and `ci-required` for merges to `main`, with up-to-date checks or a verified merge-queue equivalent. Establish this before the first application PR merges. Workflow YAML alone does not enable merge protection. Record the actual configured check name and evidence; the repository already exists.
+5. Evaluate the coverage gates and produce a stable required check, named `ci-required`, that succeeds only when every required job succeeded. It forwards each aggregated `needs` result to `scripts/require-ci-success.sh`, which fails on any missing, skipped, or cancelled prerequisite; a green summary must never mask a failed test job.
+6. Main requires PRs and strict up-to-date `ci-required` in `Flippylolz/fillable`. Recheck actual repository rules before arming each PR; workflow YAML alone does not establish protection. Record current API evidence rather than assuming older settings still apply.
 
 Keep required workflow scheduling reliable: do not skip the whole required check with path filters. Keep deployment credentials unavailable to untrusted pull-request jobs. Test reports must use synthetic fixtures and must not expose production documents or secrets.
 
-Localization is required under D021 and [Localization](I18N.md). E01 includes catalog validation and checks against hardcoded application copy in required CI: logical message-key parity, nonempty translations, interpolation-parameter parity, and valid language-specific plurals. Keep any nontranslatable literals explicitly documented and narrowly allowed; user data is not catalog copy. Missing English translations fail even if runtime Ukrainian fallback displays text. As pages arrive, required browser coverage includes both languages, profile preference persistence/failure, and preservation of drafts and document content when switching. These checks supplement the independent 90% coverage gates; they are not implemented at this planning stage.
+Localization is required under D021 and [Localization](I18N.md). E01 includes catalog validation and checks against hardcoded application copy in required CI: logical message-key parity, nonempty translations, interpolation-parameter parity, and valid language-specific plurals. Keep any nontranslatable literals explicitly documented and narrowly allowed; user data is not catalog copy. Missing English translations fail even if runtime Ukrainian fallback displays text. As pages arrive, required browser coverage includes both languages, profile preference persistence/failure, and preservation of drafts and document content when switching. These implemented checks supplement the independent 90% coverage gates.
 
 Arm auto-merge on each ready task PR only after verifying these actual gates. Failing, skipped, cancelled, or missing required jobs must prevent auto-merge. Never use an administrator override, lower thresholds, or make checks optional to complete a task. Ordinary task merges must not trigger deployment ahead of E08.
 
@@ -60,7 +60,7 @@ References: [GitHub Actions job dependencies](https://docs.github.com/en/actions
 
 ## E08 deployment workflow
 
-Implemented E08.2 workflow: `.github/workflows/deploy.yml`; rollout remains pending E08.3–E08.5. See [release artifacts](RELEASE_ARTIFACTS.md) for the exact gate and transport contract. Since E09.6 the user requested automatic deployment on merges to the protected default branch: `.github/workflows/deploy-main.yml` waits for that exact commit's successful required CI and then dispatches the unchanged `workflow_dispatch` release, which still verifies the dispatched current-main revision and its green `ci-required` before building and shipping. Manual `workflow_dispatch` remains available; a commit whose required CI fails or is missing is never deployed, and a newer merge always supersedes an older queued release.
+Implemented E08.2 workflow: `.github/workflows/deploy.yml`; E08.3–E08.5 rollout and acceptance are complete. See [release artifacts](RELEASE_ARTIFACTS.md) for the exact gate and transport contract. Since E09.6 the user requested automatic deployment on merges to the protected default branch: `.github/workflows/deploy-main.yml` waits for that exact commit's successful required CI and then dispatches the unchanged `workflow_dispatch` release, which still verifies the dispatched current-main revision and its green `ci-required` before building and shipping. Manual `workflow_dispatch` remains available; a commit whose required CI fails or is missing is never deployed, and a newer merge always supersedes an older queued release.
 
 Before rollout, complete the shared-server preflight in [Deployment target](DEPLOYMENT_TARGET.md). The Actions deployment must use the supplied SSH target, isolated Fillable resources, the verified Fillable-owned TCP relay port 3200, a private app upstream, and the existing owner-managed TLS listener. The public origin is `https://<DEPLOY_HOST>:3200` under D024. Local and production are the only persistent environments; no staging environment or backup system is required.
 
@@ -238,7 +238,7 @@ checked. Neither missing diagnostic artifacts nor a high coverage score can make
 failed test job pass. Actual `main` protection was reread during this task: strict
 up-to-date `ci-required`, GitHub Actions app 15368, administrator enforcement.
 
-No deployment workflow exists at this audit: there is no pipeline route from a
+At the historical E07 gate audit, no deployment workflow existed: there is no pipeline route from a
 failing coverage result to a rollout. E08 must introduce only a path bound to an
 exact successful required-CI revision and immutable artifacts, then verify its
 rejection behavior before production use. Current measured counts and final PR/CI
