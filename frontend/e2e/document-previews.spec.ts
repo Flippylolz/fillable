@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { manualSaving } from "./autosave-setting";
-import { openUploadPanel } from "./navigation";
+import { openNavigation, openUploadPanel } from "./navigation";
 
 test("saved previews populate on first render, persist, and follow saved fill-mode edits", async ({ page }, info) => {
   const title = `Превʼю Ґанни ${info.project.name}`;
@@ -9,6 +9,15 @@ test("saved previews populate on first render, persist, and follow saved fill-mo
   await page.getByLabel("Логін", { exact: true }).fill("pagebreaks@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
+  // This existing synthetic account is also used by the page-boundary flow,
+  // which finishes in English. Reset the locale before either viewport run.
+  await openNavigation(page);
+  await page.getByRole("link", { name: /Профіль|Profile/ }).click();
+  await page.getByRole("combobox").selectOption("uk");
+  await page.getByRole("button", { name: /Зберегти мову|Save language/ }).click();
+  await expect(page.getByText(/Мову інтерфейсу збережено|language preference has been saved/)).toBeVisible();
+  await openNavigation(page);
+  await page.getByRole("link", { name: "Шаблони", exact: true }).click();
   await openUploadPanel(page);
   await page.getByLabel("Файл DOCX", { exact: true }).setInputFiles({ name: "preview.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: await readFile("/fixtures/upload.docx") });
   await page.getByLabel("Назва документа", { exact: true }).fill(title);
