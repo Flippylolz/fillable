@@ -22,6 +22,7 @@ test("workspace starts legacy detection, retries failures and guards reopening a
     const path = new URL(request.url).pathname;
     if (path.endsWith("/editing-lease")) return leaseResponse(request);
     if (path.endsWith("/content")) { opens++; return Response.json({ resource, document: corpus }); }
+    if (path.endsWith("/preview")) return Response.json({ ...resource, preview_ready: true });
     if (request.method === "POST") {
       expect(request.headers.get("X-CSRF-Token")).toBe("csrf");
       if (++starts === 2) return Response.json({ error: { code: "dependencies_unavailable" } }, { status: 503 });

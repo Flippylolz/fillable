@@ -119,3 +119,8 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - A fresh checkout runs and tests through Docker without host Python or Node installations.
 - The complete MVP passes mandatory CI, including the independent 90% coverage gates, before its final GitHub Actions deployment.
 - The version badge remains unobtrusive across desktop/mobile and themes, allows clicks through, and identifies the deployed artifact's source commit. Missing metadata uses the documented development fallback; a controlled production release must provide and verify its commit.
+
+Gallery cards use a document placeholder until that saved revision first renders
+in the workspace. They then show its actual saved content and source presentation,
+including after refresh or on another device. A preview cannot display an older
+revision as the current one; unsaved edits appear only in the live fill preview.

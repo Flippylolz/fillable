@@ -85,7 +85,7 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
       connection={connection} onRetry={onRetry} navigate={navigate} />
     <div className="app-content">
       <div hidden={page !== "documents"}><Library csrfToken={session.csrf_token} disabled={locked} onBusy={updateBusy} onDirty={setFileDirty} onSaved={saved} onOpen={identity => go(`/editor/${identity}`)} refreshRevision={usageRevision} tab={libraryTab} onTabChange={setLibraryTab} /></div>
-      {opened && <div hidden={page !== "editor"}><Workspace key={opened} identity={opened} dirty={editorDirty} onDirty={setEditorDirty} operationsPaused={locked} authPaused={authPaused} csrfToken={session.csrf_token} onBack={() => go("/documents")} onOpenResource={identity => go(`/editor/${identity}`)} onChanged={saved} onBusy={updateBusy} /></div>}
+      {opened && <div hidden={page !== "editor"}><Workspace key={opened} identity={opened} dirty={editorDirty} onDirty={setEditorDirty} operationsPaused={locked} authPaused={authPaused} csrfToken={session.csrf_token} onBack={() => go("/documents")} onOpenResource={identity => go(`/editor/${identity}`)} onChanged={saved} onPreviewReady={saved} onBusy={updateBusy} /></div>}
       <div hidden={page !== "profile"}><Profile user={session.user} csrfToken={session.csrf_token} onSession={accept} onBusy={updateBusy} disabled={locked} usageRevision={usageRevision} /></div>
     </div>
   </div>;

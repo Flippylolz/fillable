@@ -29,7 +29,7 @@ Planning task P04: record the user's Fillable redesign plan in one documentation
 | E06 | Safe saves, version-history UI, restoration, and DOCX export | E02, E05.1–E05.6a | done: E06.1a–E06.7 verified and merged; autosave completed through PR #61 |
 | E07 | MVP acceptance and CI verification | E03–E06 | done: corrective browser selection merged in PR #70 |
 | E08 | Final deployment through GitHub Actions | All E00–E07 done; supplied target access/nginx/port verified | verified: HTTPS rollout and deployed MVP/persistence passed; final delivery tracked by PR #75 |
-| E09 | Post-release user-requested improvements and automation | E08 | in_review: E09.1–E09.25 merged; E09.26 gallery previews (#143), E09.27 documentation/QA sync, and E09.28 restore-key fix (#144) are follow-ups; see task sections and current PR states |
+| E09 | Post-release user-requested improvements and automation | E08 | in_review: E09.1–E09.26 and E09.28 merged; E09.27 documentation sync is in PR #145, with remaining manual QA limits recorded explicitly |
 | E10 | Manual QA findings and corrections | E00–E08 delivered; findings in [QA findings](QA_FINDINGS_E10.md) | done: E10.1–E10.7 merged (PRs #110–#116); E10.7's own record recorded by closing docs PR #117 |
 | E11 | Reviewable field types (text/number/date) | E00–E10 delivered; D026 | done: E11.1 merged (PR #121); completion record recorded by closing docs PR #123 |
 
@@ -2880,6 +2880,29 @@ as the editor, preserve source page geometry, fit its available width independen
 of editor zoom, and remain inert and read-only. Preserve the existing live draft,
 undo/save behavior and bounded refresh. Verify desktop/mobile and both languages;
 deliver separately from gallery previews and the documentation status audit.
+
+## E09.26 — Populate persistent gallery previews after the first render
+
+Status: done — PR #143 merged as `40c1d3486136c386622caae87064ca5e7321fddc`, with every required CI check successful. New and unopened saved revisions show a document placeholder.
+After the workspace first renders a saved revision, persist an owner-authorized,
+revision-fenced readiness marker. Gallery previews render the actual saved model
+and retained source presentation through the existing free document renderer.
+They survive browser refreshes/devices, stay noninteractive, and never display
+another revision's content. Saves/copies/restores begin with their own readiness;
+rendering does not create a revision or retained file, consume extra quota, or
+send document content to external services. Test ownership, stale requests,
+readiness, saved content and desktop/mobile rendering. Deliver separately from
+the fill-preview fix and documentation status audit.
+
+2026-09-15: E09.26 implementation verification: Docker frontend suite passed 333
+unit tests, 1880/1942 lines (96.81%) and 2064/2224 branches (92.81%), validated by
+the source-bound gate; backend passed 503 tests, 4377/4425 lines (98.92%) and
+1383/1434 branches (96.44%). Lints, catalog validation and TypeScript build passed.
+Manual Chrome checks on the isolated local stack verified the initial placeholder,
+real source-layout thumbnail after first workspace render, persistence after full
+refresh, library refresh/search/sort, and independent template copy creation. The
+new browser regression covers first render, saved fill edits, refresh persistence
+and responsive preview width on desktop/mobile; all 62 desktop/mobile browser cases and the complete required CI gate passed on synchronized head `6d348f8`.
 
 ## E09.27 — Synchronize current documentation and record manual preview QA
 

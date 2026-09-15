@@ -1,6 +1,6 @@
 # Preview and control acceptance — 2026-09-15
 
-Status: manual verification in progress for E09.25–E09.28. The local Docker app and
+Status: code changes merged; manual verification has the explicit limits below. The local Docker app and
 an isolated `fillable-gallery-qa` stack use the committed synthetic Ukrainian corpus
 and dedicated synthetic accounts. No private user documents were used. Browser
 control used Chrome; this is not a Microsoft Word compatibility test.
@@ -70,7 +70,7 @@ CI checks successful. Its local frontend suite passed 323 tests at 96.71% lines 
 in [Epics](EPICS.md) and their PRs. These measurements belong to those code changes,
 not to this documentation-only task.
 
-The E09.26 browser job at head `7c871a0` passed all 62 desktop/mobile cases,
-including the new preview regression and existing print behavior tests (CI run
-35022326687). Its development job was cancelled when the branch synchronized with
-main; the synchronized head must pass the complete gate before merging.
+E09.26 PR #143 merged as `40c1d3486136c386622caae87064ca5e7321fddc` after the
+complete gate passed on head `6d348f8` (CI run 35024876831), including all 62
+desktop/mobile browser cases. E09.28 PR #144 merged as
+`83250d65fedfaa5da8199e93a39eeecf3be3d8bb` with all required checks successful.
