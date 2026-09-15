@@ -2880,3 +2880,16 @@ as the editor, preserve source page geometry, fit its available width independen
 of editor zoom, and remain inert and read-only. Preserve the existing live draft,
 undo/save behavior and bounded refresh. Verify desktop/mobile and both languages;
 deliver separately from gallery previews and the documentation status audit.
+
+## E09.28 — Prevent duplicate settings after restoration
+
+Status: in_progress. Manual preview QA found that restoring a revision leaves two
+settings panels. WorkspaceSettings and DocumentEditor shared the same sibling key,
+so React could retain the wrong subtree when the epoch changed. Give each a
+component-specific key while keeping both tied to the restoration epoch. The
+history regression must assert exactly one settings panel and editor after restore;
+run frontend coverage and manually repeat the restore. Deliver in its own PR.
+
+2026-09-15: E09.28 local Docker validation passed all 323 frontend tests with
+96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
+The restore test now checks that exactly one settings panel and one editor remain.

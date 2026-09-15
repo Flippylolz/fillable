@@ -543,3 +543,7 @@ numbering and preserved whitespace), draws at retained page width (A4 fallback),
 and scales to its column on resize independently of workspace zoom. Only the live
 editor canvas is hidden in fill mode. The preview clone is inert, explicitly
 noneditable, and excludes page-break decorations and the editable textbox role.
+
+E09.28: restoration/reopen epochs use distinct settings and editor keys. A restored
+workspace contains exactly one settings panel and one editor; display preferences
+remain owned by the parent workspace and saved document state is remounted once.
