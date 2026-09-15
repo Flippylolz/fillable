@@ -54,9 +54,11 @@ DOM inspection confirmed exactly one settings panel and one editor afterward.
 - The historical-download action reported no application error, but the browser tool
   did not deliver a download event or a verifiable local file. Transfer completion
   remains unverified manually.
-- Final irreversible deletion, password-change submission and the native print dialog
-  have not been manually verified in this pass. Existing automated coverage does not
-  turn these into manual passes. Further control checks are recorded below as completed.
+- Final irreversible deletion awaits action-time confirmation; password-change
+  submission requires user handoff under the browser-control tool policy.
+- Print was clicked, but inspection of the resulting native print state timed out
+  and reset the browser tool. Native print completion remains unverified. Existing
+  automated coverage does not turn any of these limits into manual passes.
 - Gallery thumbnails and fill previews use the supported browser source presentation;
   exact Word pagination remains unclaimed.
 
@@ -67,3 +69,8 @@ CI checks successful. Its local frontend suite passed 323 tests at 96.71% lines 
 92.72% branches. E09.26 and E09.28 test/coverage and final PR evidence are recorded
 in [Epics](EPICS.md) and their PRs. These measurements belong to those code changes,
 not to this documentation-only task.
+
+The E09.26 browser job at head `7c871a0` passed all 62 desktop/mobile cases,
+including the new preview regression and existing print behavior tests (CI run
+35022326687). Its development job was cancelled when the branch synchronized with
+main; the synchronized head must pass the complete gate before merging.

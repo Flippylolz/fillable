@@ -2883,7 +2883,7 @@ deliver separately from gallery previews and the documentation status audit.
 
 ## E09.27 — Synchronize current documentation and record manual preview QA
 
-Status: in_progress. Reconcile current guide, architecture, CI, deployment, editor,
+Status: in_review — PR #145. Reconcile current guide, architecture, CI, deployment, editor,
 badge and agent-entry descriptions with verified implementation and GitHub settings;
 retain dated historical evidence. Record the requested manual control/preview checks,
 including failures and explicit limits. Documentation-only PR; no implementation or
