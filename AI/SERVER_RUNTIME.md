@@ -1,7 +1,7 @@
 # Isolated server runtime — E08.3
 
 Fillable installs a private receiver and fixed runtime under the supplied account's
-dedicated `fillable` directory. E08.3 prepares this boundary; E08.4 performs the first
+dedicated `fillable` directory. E08.3 established this boundary; E08.4 completed the first
 application rollout through Actions. D024 now requires HTTPS port 3200 through externally managed TLS.
 No shared service is restarted or recreated, and no certificate or TLS policy changes.
 
@@ -103,6 +103,10 @@ an image reverses a migration, or promise restoration of lost data. The current 
 intentionally does not deploy arbitrary older main revisions.
 
 ## Verification and deployed acceptance
+
+Current status: E08.4 rollout and E08.5 deployed acceptance are complete; see
+[Deployed acceptance](DEPLOYED_ACCEPTANCE.md). The following paragraphs retain the
+dated verification sequence and distinguish preliminary evidence from completion.
 
 Docker contract tests exercise receiver input/archive replay, installation retry/key
 preservation, failed-attempt records, scoped edits and competing processes. Required CI

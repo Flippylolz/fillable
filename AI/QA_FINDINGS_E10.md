@@ -1,6 +1,6 @@
 # Manual QA findings — E10 input
 
-Status: findings from a one-pass manual test; each finding needs its own fixing task in [Epics](EPICS.md) (epic E10). This document records what was tested, what passed, what failed, and what could not be checked. Evidence images live in [qa-evidence-e10](qa-evidence-e10).
+Status: historical findings from the 2026-09-08 manual test. E10 fixes and dispositions are merged; see their resolution notes and [Epics](EPICS.md). This document records what was tested, what passed, what failed, and what could not be checked. Evidence images live in [qa-evidence-e10](qa-evidence-e10).
 
 ## Scope and method
 

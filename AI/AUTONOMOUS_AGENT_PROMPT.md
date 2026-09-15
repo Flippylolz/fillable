@@ -12,8 +12,8 @@ Work in the existing Fillable checkout and verify its `origin` points to the rep
 
 1. Read root `AGENTS.md`, then [Agent rules](AGENT_RULES.md), [Project guide](README.md), [Decisions](DECISIONS.md), [Product](PRODUCT.md), [Epics](EPICS.md), and [PR workflow](PR_WORKFLOW.md). Follow their task-specific reading instructions, including architecture, Docker, CI, quotas, localization, editor feasibility, test corpus, version badge, and deployment constraints.
 2. Inspect Git status, remote/base commits, open PRs, CI results, and the execution ledger. Preserve existing changes and resume unfinished task work before creating duplicates. Resolve stale ledger entries from verified GitHub merge evidence.
-3. At this prompt's preparation, only planning documents and the synthetic Ukrainian DOCX baseline exist; no application or executable CI has been scaffolded. Verify this before acting because another agent may have advanced the project. E00.1's generated fixture already exists; do not redo it or wait for unavailable real documents.
-4. Start with E01.1 if still outstanding, establishing the Docker app/test foundation and minimum merge gate. E00.2's free-editor evaluation can proceed independently; runtime editor prototypes require the same application CI discipline. Complete E00 before editor-dependent implementation. Follow dependencies rather than task-number order alone.
+3. The MVP, Docker CI, synthetic corpus and initial deployment are implemented and verified. Inspect current GitHub/ledger state before acting; do not recreate the scaffold, corpus or completed tasks.
+4. Select the requested outstanding follow-up and honor its dependencies. Keep the established editor, CI and deployment contracts; do not reopen settled technology decisions without a new user requirement.
 
 ## Autonomous delivery loop
 

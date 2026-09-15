@@ -1,6 +1,6 @@
 # Fillable redesign plan
 
-Status: user-supplied planning document, recorded verbatim on 2026-09-12 as planning task P04. It describes a gallery-style interface direction ("Tactile Document Gallery") with a design-prototype preview. Recording it accepts no implementation scope: this repository's library, workspace, editor, and localization are already implemented and verified, while the plan's scope note ("only a blank front-end template") describes the prototype project it was written for. Any future implementation here needs its own task reconciled with the existing pages and accepted decisions (including D021 Ukrainian-default localization).
+Status: user-supplied planning document, recorded verbatim on 2026-09-12 as planning task P04. It describes a gallery-style interface direction ("Tactile Document Gallery") with a design-prototype preview. Recording it accepts no implementation scope: this repository's library, workspace, editor, and localization are already implemented and verified, while the plan's scope note ("only a blank front-end template") describes the prototype project it was written for. Implementation was subsequently delivered in E09.22–E09.24 (PRs #135–#137), including sidebar-only gallery switching. The proposal below remains verbatim historical input; [Product](PRODUCT.md) and [Library](LIBRARY.md) describe the implemented behavior under D021.
 
 ## Goal
 

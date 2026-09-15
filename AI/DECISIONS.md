@@ -67,13 +67,13 @@ Keep requirements, architecture, epics, decisions, agent rules, and handoff note
 
 ## D007 — Field identity and detection
 
-Status: **Proposed implementation approach.**
+Status: **Implemented through D008; original approach below.**
 
 Use tagged Word content controls as durable field occurrences when the selected editor supports reliable import, mutation, and export. A logical application field can map to several occurrences. Plain string replacement and screen coordinates are not durable field identities.
 
 Discover existing controls deterministically. Use rules for explicit placeholders and likely blanks, with user review and manual field creation for missed locations. AI and LLM inference are outside MVP under D009.
 
-E00 must verify this approach, including undo/redo and exported DOCX reopening, against a free solution or a project-owned implementation. No editor integration has been tested in this repository.
+E00 must verify this approach, including undo/redo and exported DOCX reopening, against a free solution or a project-owned implementation. E00 verified the content-control identity approach with the selected ProseMirror/Python adapter; see D008 and the editor support matrix.
 
 Reference: [Word content controls](https://learn.microsoft.com/en-us/office/client-developer/word/content-controls-in-word).
 
@@ -147,7 +147,7 @@ The user explicitly retained **version-history UI** in MVP. Place it in the work
 
 ## D012 — Templates and individual documents
 
-Status: **Template/result distinction accepted; detailed behavior is a proposed MVP default.**
+Status: **Template/result distinction accepted; detailed MVP behavior implemented in E05–E06.**
 
 Use private, owner-managed templates as reusable saved DOCX sources with field definitions. Use template creates an independent document from one saved template revision; direct uploads may also create one-off documents. The same workspace and history UI support either resource type with a clear template/document label.
 
@@ -157,7 +157,7 @@ Changes to, restoration of, or deletion of a template must not change or remove 
 
 Status: **Accepted — explicit user requirement, recorded 2026-09-06.**
 
-Deploy through GitHub Actions to the supplied target `<DEPLOY_USER>@<DEPLOY_HOST>`. E08 is the final implementation epic, after all earlier epics and their acceptance checks pass. The target is recorded; access and server configuration are not yet verified. Earlier development does not depend on live-server access.
+Deploy through GitHub Actions to the supplied target `<DEPLOY_USER>@<DEPLOY_HOST>`. E08 is the final implementation epic, after all earlier epics and their acceptance checks pass. Access, server configuration and deployment were verified in E08; see [Deployed acceptance](DEPLOYED_ACCEPTANCE.md). Earlier development does not depend on live-server access.
 
 Docker Compose remains the server runtime. CI and local production-build validation begin in E01; live-server setup and the deployment workflow belong to E08. The deployment trigger and connectivity details remain implementation decisions for the supplied environment. The proposed first trigger is a manual workflow dispatch for a verified default-branch commit.
 
@@ -169,7 +169,7 @@ Require at least 90% coverage from the first application scaffold. Apply the thr
 
 GitHub Actions must fail below the threshold, the CI check must be required for merging once its workflow/check is established during E01 in the repository recorded in D016, and deployment must depend on passing CI for the same source revision. Agents must not weaken thresholds or expand exclusions merely to make a check pass.
 
-[CI and deployment](CI_CD.md) defines measurement, exclusions, merge blocking, and deployment sequencing. These are recorded requirements; CI and repository rules are not configured yet.
+[CI and deployment](CI_CD.md) defines measurement, exclusions, merge blocking, and deployment sequencing. The independent gates and required `ci-required` repository rule are implemented; see the current CI contract and dated gate audits.
 
 ## D015 — Shared server, new port, existing nginx
 
@@ -251,7 +251,7 @@ UI language is separate from document language. Changing it preserves document t
 
 ## D022 — Fixed Git version badge
 
-Status: **Accepted — explicit user design; specification-only delivery confirmed 2026-09-06.**
+Status: **Accepted — explicit user design; implemented in E01.8 and deployed verification completed in E08.**
 
 Include a subtle, translucent badge across all four MVP pages on desktop/mobile. Show `version: <first seven commit characters>` or `version: development` when unavailable. Use the deployed artifact's source commit, injected during the frontend build. Preserve the user's fixed bottom-right positioning, safe-area handling, `2.75rem` bottom offset, explicit colors, and click-through CSS. Keep the hash monospace; no icon, link, tooltip, focus stop, or interaction.
 

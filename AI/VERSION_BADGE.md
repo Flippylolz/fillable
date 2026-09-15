@@ -1,6 +1,6 @@
 # Git version badge
 
-Status: E01.8 implements the shared shell badge and Docker build metadata. Live release wiring and verification remain E08; later page tasks preserve the shared mount.
+Status: E01.8 implements the shared shell badge and Docker build metadata. E08 verified the live release wiring and deployed badge; subsequent tasks preserve the shared mount and exact display contract.
 
 ## Display and behavior
 

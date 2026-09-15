@@ -3,7 +3,8 @@
 The four-page application is implemented: login, library, profile and document
 workspace with field review, synchronized editing, autosave and version history.
 Development and production-style checks run through pinned Docker images. Live
-server access and deployment belong to E08, after the remaining operational audit.
+server access and the initial deployment were completed in E08. Subsequent releases
+follow the exact-main CI gate; local development remains independent.
 See [Epics](EPICS.md) for verified task and PR evidence.
 
 ## Requirements and startup
