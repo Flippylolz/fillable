@@ -33,6 +33,10 @@ Additional completed checks:
 - Review focus, name configuration, Apply settings, Accept, Dismiss, accepted-from-
   dismissed, Undo and Save were exercised. The accepted named entry appeared in the
   field sidebar and the review changes used the same save/undo path.
+- Workspace Save to documents: Cancel closed the prompt; saving a named copy and
+  opening it succeeded. The original template retained its original linked values.
+- Delete opened its confirmation; Cancel closed it and retained the synthetic copy.
+- Sign out returned to login; signing in again restored the saved Ukrainian language.
 
 ## Finding and separate fix
 
