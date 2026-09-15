@@ -132,8 +132,28 @@ export function DocumentEditor({
     if (!canvas) return;
     const clone = canvas.cloneNode(true) as HTMLElement;
     clone.querySelectorAll(`.${PAGE_BREAK_CLASS}`).forEach(marker => marker.remove());
-    previewHost.current.innerHTML = "";
-    previewHost.current.appendChild(clone);
+    clone.setAttribute("contenteditable", "false");
+    clone.removeAttribute("role");
+    clone.removeAttribute("aria-label");
+    const preview = previewHost.current;
+    preview.replaceChildren(clone);
+    const viewport = preview.parentElement!;
+    const fit = () => {
+      // Measure in source pixels, independent of the workspace zoom. Without
+      // retained page geometry, use an A4-width canvas rather than reflowing
+      // the document to the narrow preview column.
+      preview.style.zoom = "1";
+      preview.style.width = "794px";
+      const page = clone.querySelector<HTMLElement>('section[data-part="word/document.xml"]');
+      const width = page?.offsetWidth || 794;
+      preview.style.width = `${width}px`;
+      preview.style.zoom = String(Math.min(1, (viewport.clientWidth || width) / Math.max(width, preview.scrollWidth)));
+    };
+    fit();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
+    observer?.observe(viewport);
+    window.addEventListener("resize", fit);
+    return () => { observer?.disconnect(); window.removeEventListener("resize", fit); };
   }, [previewTick, mode]);
   // Returning from the hidden canvas recomputes the visual page breaks.
   useEffect(() => {
@@ -150,7 +170,7 @@ export function DocumentEditor({
           focus={id => { view.current!.focusField(id); }} remove={id => { view.current!.removeField(id); }}
           undo={() => view.current!.undo()} redo={() => view.current!.redo()} canUndo={canUndo} canRedo={canRedo} />
         <div className="fill-preview" data-layout={layout.scope} aria-hidden="true">
-          <div className="fill-preview-content" ref={previewHost} />
+          <div className="fill-preview-viewport" inert><div className="fill-preview-content document-canvas" ref={previewHost} /></div>
         </div>
       </div>}
       <div className="document-tools">

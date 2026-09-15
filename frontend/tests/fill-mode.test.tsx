@@ -70,7 +70,35 @@ describe("fill mode layout", () => {
     expect(preview.querySelector(".ProseMirror")).not.toBeNull();
     expect(preview.textContent).toContain("Превʼю Ґанни");
     expect(preview.querySelector(".document-page-break")).toBeNull();
+    expect(preview).toHaveClass("document-canvas");
+    expect(preview.parentElement).toHaveAttribute("inert");
+    expect(preview.querySelector(".ProseMirror")).toHaveAttribute("contenteditable", "false");
+    expect(preview.querySelector('[role="textbox"]')).toBeNull();
     vi.useRealTimers();
+  });
+
+  test("the preview fits the retained page width and refits on resize without the editor zoom", () => {
+    let resized: () => void = () => {};
+    const disconnect = vi.fn();
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback: () => void) { resized = callback; }
+      observe() {}
+      disconnect = disconnect;
+    });
+    let available = 320;
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(function (this: HTMLElement) {
+      return this.classList.contains("fill-preview-viewport") ? available : 0;
+    });
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(800);
+    const { unmount } = render(<DocumentEditor initialDocument={corpus} mode="fill" zoom={1.5} />);
+    const preview = document.querySelector<HTMLElement>(".fill-preview-content")!;
+    expect(preview.style.width).toBe("800px");
+    expect(preview.style.zoom).toBe("0.4");
+    available = 240;
+    act(() => resized());
+    expect(preview.style.zoom).toBe("0.3");
+    unmount();
+    expect(disconnect).toHaveBeenCalled();
   });
 
   test("read-only fill mode disables the entries and undo", () => {
