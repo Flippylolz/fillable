@@ -75,7 +75,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await page.getByText("Налаштування робочого простору", { exact: true }).click();
   await page.getByRole("combobox", { name: "Масштаб", exact: true }).selectOption("1.25");
   await page.getByRole("checkbox", { name: "Підсвічувати поля", exact: true }).uncheck();
-  await expect(page.locator(".document-canvas .ProseMirror")).toHaveCSS("zoom", "1.25");
+  await expect(page.locator(".document-workbench > .document-canvas .ProseMirror")).toHaveCSS("zoom", "1.25");
   await expect(page.locator(".document-field").first()).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   const renamedTitle = `${templateTitle} — нова назва`;
   let lostRename = true;

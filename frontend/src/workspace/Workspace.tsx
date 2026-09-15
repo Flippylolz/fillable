@@ -1,3 +1,4 @@
+import { usePreviewReady } from "./usePreviewReady";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
@@ -20,10 +21,10 @@ import { useRestore } from "./useRestore";
 import { useAutosave } from "./useAutosave";
 import { HistoryPanel } from "./HistoryPanel";
 
-export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenResource, onChanged, onBusy, operationsPaused = false, authPaused = false }: {
+export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenResource, onChanged, onPreviewReady, onBusy, operationsPaused = false, authPaused = false }: {
   identity: string; dirty: boolean; onDirty: (dirty: boolean) => void; csrfToken: string;
   operationsPaused?: boolean; authPaused?: boolean;
-  onBack?: () => void; onOpenResource?: (identity: string) => void; onChanged?: () => void; onBusy?: (busy: boolean) => void;
+  onBack?: () => void; onOpenResource?: (identity: string) => void; onChanged?: () => void; onPreviewReady?: () => void; onBusy?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
   const [saved, setSaved] = useState<components["schemas"]["ContentInfo"] | null>(null);
@@ -42,10 +43,12 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
   const [viewMode, setViewMode] = useState<"document" | "fill">("document");
   const reader = useRef<(() => EditorSnapshot) | null>(null);
   const fieldsReader = useRef<(() => FieldSummary[]) | null>(null);
+  const [rendered, setRendered] = useState(false);
+  usePreviewReady(identity, saved?.resource.current_version_id, csrfToken, rendered, onPreviewReady);
   const printReader = useRef<(() => PrintSource | null) | null>(null);
   const registerReader = useCallback((read: (() => EditorSnapshot) | null) => { reader.current = read; }, []);
   const registerFieldsReader = useCallback((read: (() => FieldSummary[]) | null) => { fieldsReader.current = read; }, []);
-  const registerPrintReader = useCallback((read: (() => PrintSource | null) | null) => { printReader.current = read; }, []);
+  const registerPrintReader = useCallback((read: (() => PrintSource | null) | null) => { printReader.current = read; setRendered(read !== null); }, []);
   const savedRef = useRef(saved);
   savedRef.current = saved;
   const copyKey = useRef(newKey()), copyLifetime = useRef(new AbortController());

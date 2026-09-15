@@ -97,3 +97,25 @@ full Cyrillic set. `prefers-reduced-motion` renders state changes immediately.
 Workspace, profile and login keep their layouts and inherit the global tokens; page
 metadata (description and social previews) lives in `index.html`. The shared version
 badge keeps its exact D022 styling.
+
+## Saved document previews (E09.26)
+
+Cards initially show a plain document placeholder. After the workspace first renders
+a saved revision, an authenticated, CSRF-protected render receipt records readiness
+for that exact revision. Opening the gallery alone does not create previews. Ready
+cards lazily load the owned saved model and retained source presentation when visible,
+and draw a noninteractive miniature with the same document renderer. Preview reads
+are serialized with a 15-second bound so a gallery cannot saturate the shared
+document-read slots; queued cards cancelled by navigation are skipped. The thumbnail
+shows the beginning of the document; exact Word pagination remains unclaimed.
+
+Readiness survives refreshes and devices. Every new saved/copy/restored revision
+starts unready and receives its own receipt on workspace render. Old responses and
+revision mismatches never populate a newer card. Unavailable previews keep the
+placeholder and can be retried with Refresh library. The server accepts only a
+revision ID, never client HTML or arbitrary image bytes. It reuses existing immutable
+revision data; no extra retained file, revision, external conversion or quota charge
+is created. Readiness is an idempotent `document_rendered` event in the existing content-free
+audit store, keyed by the revision UUID for indexed lookups. There is no schema
+migration or receiver-policy change. Clearing disposable audit receipts would
+return the affected previews to placeholders until their next workspace render.
