@@ -537,3 +537,9 @@ selection and undo stack. The chosen mode is a display preference of the mounted
 workspace, like zoom: it survives language changes and profile navigation within
 the same mount, and is not an account setting. An empty field list shows a
 localized empty state pointing back to document mode.
+
+E09.25: the fill preview includes the document canvas styles (fonts, tables,
+numbering and preserved whitespace), draws at retained page width (A4 fallback),
+and scales to its column on resize independently of workspace zoom. Only the live
+editor canvas is hidden in fill mode. The preview clone is inert, explicitly
+noneditable, and excludes page-break decorations and the editable textbox role.
