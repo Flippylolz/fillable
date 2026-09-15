@@ -2885,3 +2885,11 @@ rendering does not create a revision or retained file, consume extra quota, or
 send document content to external services. Test ownership, stale requests,
 readiness, saved content and desktop/mobile rendering. Deliver separately from
 the fill-preview fix and documentation status audit.
+
+## E09.25 — Faithful, responsive fill-mode preview
+
+Status: done. PR #142 merged as `882de80337353c0ae4c0b980f0b5580bf36831d5` with all required checks green. Local Docker frontend checks passed 323 tests at 96.71% lines / 92.72% branches. Manual desktop and 390px mobile verification confirmed source layout, fit, inertness, linked edits and undo/redo. The fill preview must inherit the same document canvas styles
+as the editor, preserve source page geometry, fit its available width independently
+of editor zoom, and remain inert and read-only. Preserve the existing live draft,
+undo/save behavior and bounded refresh. Verify desktop/mobile and both languages;
+deliver separately from gallery previews and the documentation status audit.
