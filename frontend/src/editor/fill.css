@@ -12,8 +12,9 @@
 .fill-review-stale { padding: 0.5rem 0.7rem; border: 1px solid var(--fillable-warning-line); background: var(--fillable-warning-soft); border-radius: 0.5rem; }
 .fill-review-stale p { display: inline; margin: 0 0.5rem 0 0; font-size: 0.85rem; }
 .fill-preview { border: 1px solid var(--fillable-line); border-radius: 0.5rem; background: var(--fillable-canvas); padding: 0.6rem; max-height: 80vh; overflow: auto; }
-.fill-preview-content { zoom: 0.55; pointer-events: none; }
-.fill-preview-content .ProseMirror { min-height: 0 !important; box-shadow: none !important; background: var(--fillable-surface) !important; }
+.fill-preview-viewport { width: 100%; min-width: 0; overflow: hidden; }
+.fill-preview-content.document-canvas { --document-zoom: 1; padding: 0; overflow: visible; pointer-events: none; }
+.fill-preview-content .ProseMirror { min-height: 0; box-shadow: none; }
 @media (max-width: 48rem) {
   .fill-layout { grid-template-columns: minmax(0, 1fr); }
   .fill-preview { max-height: 55vh; }
