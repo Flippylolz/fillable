@@ -17,6 +17,7 @@ from app.documents import (
     deletion,
     history,
     leases,
+    previews,
     restores,
     saves,
     service,
@@ -30,6 +31,7 @@ from app.documents.schema import (
     ContentInfo,
     CopyRequest,
     DeletionResult,
+    PreviewRequest,
     RenameRequest,
     ResourceInfo,
     ResourceList,
@@ -279,6 +281,46 @@ def download(identity: UUID, user: UserInfo = Depends(current_user)) -> Response
         raise AppError(503, "storage_unavailable") from None
     finally:
         DOWNLOAD_SLOTS.release()
+
+
+@router.post("/{identity}/preview", response_model=ResourceInfo)
+def mark_preview(
+    identity: UUID,
+    payload: PreviewRequest,
+    response: Response,
+    state: SessionState = Depends(mutation_session),
+) -> ResourceInfo:
+    try:
+        result = previews.mark_rendered(state, identity, payload.source_version_id)
+    except SQLAlchemyError:
+        raise AppError(503, "dependencies_unavailable") from None
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+@router.get("/{identity}/preview", response_model=ContentInfo)
+def document_preview(
+    identity: UUID,
+    source_version_id: UUID,
+    response: Response,
+    user: UserInfo = Depends(current_user),
+) -> ContentInfo:
+    if not DOWNLOAD_SLOTS.acquire(blocking=False):
+        raise AppError(409, "operation_in_progress")
+    try:
+        result = previews.preview(user.id, identity, source_version_id)
+    except StorageError as error:
+        if error.code == "not_found":
+            raise AppError(404, "not_found") from None
+        if error.code == "operation_in_progress":
+            raise AppError(409, "operation_in_progress") from None
+        raise AppError(503, "storage_unavailable") from None
+    except SQLAlchemyError:
+        raise AppError(503, "storage_unavailable") from None
+    finally:
+        DOWNLOAD_SLOTS.release()
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 @router.get("/{identity}/content", response_model=ContentInfo)

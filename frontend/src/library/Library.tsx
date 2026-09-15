@@ -1,3 +1,4 @@
+import { DocumentCover } from "./DocumentCover";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
@@ -151,7 +152,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
       {!data.loading && !data.error && ((needle ? items.length === 0 : data.items.length === 0)) &&
         <p className="library-empty">{t(needle ? "library.searchEmpty" : tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
       <div className="library-items">{items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
-        <div className="library-document-cover" aria-hidden="true"><span className="library-paper"><i /><i /><i /><i /><i /></span><span className="library-format">{t("library.format")}</span></div>
+        <DocumentCover key={item.current_version_id} item={item} />
         <h3>{item.deletion_pending ? item.title : <a className="library-card-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => openCard(event, item.id)}>{item.title}</a>}</h3><p className="library-filename">{item.original_filename}</p>
         {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><ProcessingStatus key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} /></>}
         <p>{t("library.updated", { date: formatDate(new Date(item.updated_at), { dateStyle: "medium", timeStyle: "short" }) })}</p><p>{bytes(item.size_bytes)}</p>

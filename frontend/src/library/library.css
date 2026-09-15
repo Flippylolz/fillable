@@ -70,3 +70,8 @@
   .library-search { flex: 1; width: auto; min-width: 0; }
   .library .library-upload { grid-template-columns: 1fr; }
 }
+
+.library-preview { position: absolute; inset: 0.75rem 1rem 0; display: flex; justify-content: center; overflow: hidden; pointer-events: none; }
+.library-preview-content.document-canvas { --document-zoom: 1; flex: none; align-self: flex-start; padding: 0; overflow: visible; background: white; }
+.library-preview-content .ProseMirror { min-height: 1123px; }
+.library-preview-placeholder { opacity: 0.65; }

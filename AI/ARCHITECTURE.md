@@ -179,3 +179,14 @@ not handwritten application code. Required CI regenerates them and rejects drift
 References: [OpenAPI TypeScript generation](https://openapi-ts.dev/introduction),
 [typed fetch client](https://openapi-ts.dev/openapi-fetch/), and
 [FastAPI error handlers](https://fastapi.tiangolo.com/tutorial/handling-errors/).
+
+## Gallery render receipts (E09.26)
+
+The first workspace render records an idempotent, content-free `document_rendered`
+audit event for the exact owned current revision. Its event ID is the revision UUID,
+so library readiness uses an indexed existence lookup. The authenticated preview
+endpoint reuses that immutable revision's document model and original presentation;
+no HTML from the browser is stored. New revisions have no receipt until rendered.
+Visible ready cards draw a read-only miniature through the existing editor adapter,
+with source-node views, layout rules, inert interaction and revision-fenced requests.
+This metadata-only path leaves the storage quota and deployed schema unchanged.

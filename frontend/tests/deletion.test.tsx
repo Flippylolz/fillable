@@ -3,7 +3,7 @@ import { I18nextProvider } from "react-i18next";
 import { DeleteResource } from "../src/library/DeleteResource";
 import type { Resource } from "../src/library/useLibrary";
 import { i18n, setLanguage } from "../src/i18n";
-const item: Resource = { id: "id", kind: "document", title: "Заява Їжака", original_filename: "Заява.docx", current_version_id: "v1", created_at: "2026-09-06", updated_at: "2026-09-06", size_bytes: 3, digest: "hash", unsupported_count: 0, deletion_pending: false, processing_status: "not_started" };
+const item: Resource = { id: "id", kind: "document", title: "Заява Їжака", original_filename: "Заява.docx", current_version_id: "v1", created_at: "2026-09-06", updated_at: "2026-09-06", size_bytes: 3, digest: "hash", unsupported_count: 0, preview_ready: false, deletion_pending: false, processing_status: "not_started" };
 const changed = vi.fn(); const busy = vi.fn();
 function show(pending = false) { return render(<I18nextProvider i18n={i18n}><DeleteResource item={{ ...item, deletion_pending: pending }} csrfToken="csrf" disabled={false} onBusy={busy} onChanged={changed} /></I18nextProvider>); }
 beforeEach(async () => {
