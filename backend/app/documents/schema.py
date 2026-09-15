@@ -154,6 +154,11 @@ class RenameRequest(BaseModel):
         return value
 
 
+class PreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_version_id: UUID
+
+
 class ResourceInfo(BaseModel):
     id: UUID
     kind: Literal["template", "document"]
@@ -169,6 +174,7 @@ class ResourceInfo(BaseModel):
         "not_started", "queued", "running", "succeeded", "failed", "stale"
     ] = "not_started"
     deletion_pending: bool = False
+    preview_ready: bool = False
 
 
 class DeletionResult(BaseModel):

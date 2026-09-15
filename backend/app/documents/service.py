@@ -24,7 +24,7 @@ from app.jobs.schema import jobs
 from app.jobs.service import intent
 from app.storage.configuration import configured
 from app.storage.maintenance import audit
-from app.storage.schema import files
+from app.storage.schema import audit_events, files
 from app.storage.service import StorageError
 
 
@@ -88,6 +88,15 @@ def query(owner, include_deleting=False):
             files.c.size_bytes,
             files.c.digest,
             versions.c.unsupported_count,
+            select(audit_events.c.id)
+            .where(
+                audit_events.c.id == versions.c.id,
+                audit_events.c.owner_id == resources.c.owner_id,
+                audit_events.c.action == "document_rendered",
+            )
+            .correlate(resources, versions)
+            .exists()
+            .label("preview_ready"),
             (resources.c.state == "deleted").label("deletion_pending"),
             func.coalesce(
                 select(jobs.c.status)

@@ -2872,3 +2872,16 @@ Acceptance:
 2026-09-12: E09.24 submitted on branch `task/e09-24-full-token-sweep` from the user's request to update the sign-in page and sweep missed surfaces: `authentication.css` rewritten in the gallery card style (surface card, tokenized inputs with focus ring, danger feedback, heading font), and workspace/sidebar/review/fill/profile stylesheets mapped to the semantic tokens with derived success/warning tokens added in base.css. The version badge keeps its exact D022 colors. Validation: 322 unit tests, coverage gate (96.7% lines / 92.7% branches), lint/catalog/TypeScript clean, and authentication/profile/smoke browser cases green on an isolated production-style stack with desktop/mobile screenshots of the sign-in, profile, workspace, and library inspected. No backend changes.
 
 2026-09-14: Documentation sync and E09 closing record. P04 and every E09 task E09.1–E09.24 are now merged through protected PRs with required CI green, each merge deploying automatically through the E09.6 gated release. Newly recorded merge evidence: PR #134 `fd911e9` (P04 redesign plan), PR #135 `23c0979` (E09.22 tactile gallery), PR #136 `8de25a2` (E09.23 sidebar-only switching), and PR #137 `14fa942` (E09.24 token sweep) — their task sections above now carry done statuses. The ledger was also synced to the long-merged state of the earlier tasks whose sections still read in_progress/in_review: PR #81 `eb8bc4f` (E09.1 source layout), #82 `a5932cb` (E09.2 outlines/boxed dates), #83 `a690ec4` (E09.4 favicon), #84 `d36e687` (E09.3 UI polish), #85 `9e8884c` (E09.5 centered sign-in), #86 `ed57612` (E09.6 deploy on merge), #87 `158bafb` (E09.7 Dependabot), #88 `a3124e7` (E09.8 parallel CI), #97 `6674d54` (E09.9 dispatch contract), #98 `67e1852` (E09.10 pip ecosystem), #99 `e29aeba` (E09.12 restore check), #103 `af0f9f4` with follow-ups #104/#105/#108/#109 (E09.11 reconciliation), and #106 `a3ba96b` with follow-ups #124/#125 (E09.13 checkboxes). The stale "ready"-status duplicates of the E09.16/E09.17 sections left behind by the E09.16–E09.21 completion record were removed, the E09 epic row is closed as done, and the E10/E11 rows now cite their merged closing docs PRs #117/#123. Documentation-only change; no application source, tests, or coverage claimed.
+
+## E09.26 — Populate persistent gallery previews after the first render
+
+Status: in_progress. New and unopened saved revisions show a document placeholder.
+After the workspace first renders a saved revision, persist an owner-authorized,
+revision-fenced readiness marker. Gallery previews render the actual saved model
+and retained source presentation through the existing free document renderer.
+They survive browser refreshes/devices, stay noninteractive, and never display
+another revision's content. Saves/copies/restores begin with their own readiness;
+rendering does not create a revision or retained file, consume extra quota, or
+send document content to external services. Test ownership, stale requests,
+readiness, saved content and desktop/mobile rendering. Deliver separately from
+the fill-preview fix and documentation status audit.
