@@ -6,7 +6,7 @@ import { openUploadPanel } from "./navigation";
 test("saved previews populate on first render, persist, and follow saved fill-mode edits", async ({ page }, info) => {
   const title = `Превʼю Ґанни ${info.project.name}`;
   await page.goto("/");
-  await page.getByLabel("Логін", { exact: true }).fill("previews@example.test");
+  await page.getByLabel("Логін", { exact: true }).fill("pagebreaks@example.test");
   await page.getByLabel("Пароль", { exact: true }).fill("Synthetic-browser-Їжак-2026");
   await page.getByRole("button", { name: "Увійти", exact: true }).click();
   await openUploadPanel(page);
