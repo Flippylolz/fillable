@@ -108,6 +108,8 @@ test("cancelled restore and quota rejection retain the draft; successful restore
   fireEvent.click(screen.getByRole("button", { name: "Restore as a new revision" }));
   await waitFor(() => expect(state.changed).toHaveBeenCalledTimes(1));
   expect(editor.isConnected).toBe(false);
+  expect(document.querySelectorAll(".workspace-settings")).toHaveLength(1);
+  expect(document.querySelectorAll(".document-workbench")).toHaveLength(1);
   expect(await ready()).not.toHaveTextContent("Залишити чернетку");
   expect(screen.getByRole("button", { name: "Save document" })).toBeDisabled();
   expect(state.writes[1].headers.get("Idempotency-Key")).not.toBe(state.writes[0].headers.get("Idempotency-Key"));
