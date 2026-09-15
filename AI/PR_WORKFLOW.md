@@ -1,6 +1,6 @@
 # One task per pull request
 
-Status: the user requires every task to use its own PR and requested auto-merge. Repository-level `allow_auto_merge` was enabled and verified on `Flippylolz/fillable` on 2026-09-06. P00 publishes the planning documents through a dedicated PR; application CI and required branch checks remain E01 work.
+Status: the user requires every task to use its own PR and requested auto-merge. Repository-level `allow_auto_merge` was enabled and verified on `Flippylolz/fillable` on 2026-09-06. P00 and the application foundation are merged. Required `ci-required` protection and the independent coverage gates are active; every follow-up still uses its own PR.
 
 ## Task boundary
 

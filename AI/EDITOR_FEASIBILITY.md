@@ -1,6 +1,6 @@
 # Free editor feasibility
 
-Status: E00.1–E00.4 verified and merged. E00.5 adopts the project-owned ProseMirror/Python source-package implementation, with the explicit support matrix below. Production feature integration remains E03–E07.
+Status: E00.1–E00.4 verified and merged. E00.5 adopts the project-owned ProseMirror/Python source-package implementation, with the explicit support matrix below. Production feature integration, MVP verification and deployment are complete (E03–E08); the support matrix remains the compatibility boundary.
 
 ## Selection boundary
 

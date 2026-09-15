@@ -1,6 +1,6 @@
 # Project guide
 
-Last updated: 2026-09-12.
+Last updated: 2026-09-15.
 
 Fillable is a self-hosted application for editing Word documents with a synchronized sidebar of detected fields.
 
@@ -32,8 +32,8 @@ records the source, persistence and shared-service checks. [Epics](EPICS.md) con
   aggregator requires both standard checks and the separate upgrade/recovery job.
 - [The version badge](VERSION_BADGE.md) shows the built source commit or `development`
   with its specified fixed appearance and click-through behavior.
-- Every task has its own PR and verified exact-head auto-merge. Actual strict main
-  protection includes administrator enforcement.
+- Every task has its own PR and verified exact-head auto-merge. Strict main protection requires up-to-date `ci-required`. The 2026-09-15
+  API audit found administrator enforcement disabled; agents must still never bypass checks.
 - E08 deploys through Actions to `https://<DEPLOY_HOST>:3200`. Only Fillable’s TCP
   relay publishes host 3200; the existing shared nginx terminates TLS and forwards
   to its private gateway over `wef-edge`. Existing services and owner-managed ingress
@@ -48,6 +48,7 @@ provisioning and isolated fresh/recovery verification commands.
 | Document | Purpose |
 | --- | --- |
 | [Diagnostics](DIAGNOSTICS.md) | Content-free job/capacity/audit operator commands |
+| [Preview QA](QA_PREVIEWS_2026_09_15.md) | Manual preview/control checks, findings and verification limits |
 | [MVP acceptance](MVP_ACCEPTANCE.md) | Four-page workflow and verification evidence |
 | [Product](PRODUCT.md) | Four MVP pages, templates/results, version history, and success criteria |
 | [Redesign plan](REDESIGN_PLAN.md) | User-supplied gallery-style interface proposal, locked visual system, and design-prototype preview link |
@@ -72,13 +73,13 @@ provisioning and isolated fresh/recovery verification commands.
 | [Autonomous agent prompt](AUTONOMOUS_AGENT_PROMPT.md) | Ready-to-use implementation mandate, task/PR loop, escalation conditions, and resumption guidance |
 | [PR workflow](PR_WORKFLOW.md) | One branch/PR per task, auto-merge, CI prerequisites, and merged-state verification |
 
-## Starting implementation
+## Continuing development
 
-Read the decisions and the relevant epic before changing code. E01 establishes the Docker foundation. E00 resolves editor feasibility and licensing; editor-dependent epics require that decision. E01 and the editor-independent parts of the storage and account work can proceed while the editor is being evaluated.
+Read the decisions and the relevant task before changing code. The Docker foundation, free editor, MVP and deployment are complete. Continue only the requested follow-up work, with one branch/PR per task and the existing verification gates.
 
 Use the epic status table as the implementation ledger. Record completed work and evidence there; do not infer implementation from the existence of these planning documents.
 
-E01 establishes coverage-enforced CI early. E08 deploys last, after E00–E07 pass and access/routing on the supplied server are verified. Server preflight is underway in E08; application deployment is not yet complete.
+E01 established coverage-enforced CI; E08 deployed after E00–E07. Subsequent merges deploy automatically after exact-main CI under E09.6. See the deployed acceptance record for the original rollout and GitHub Actions for subsequent release results.
 
 - [Scheduled maintenance](MAINTENANCE.md): bounded reconciliation, retention and failure state.
 
