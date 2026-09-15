@@ -2893,3 +2893,13 @@ as the editor, preserve source page geometry, fit its available width independen
 of editor zoom, and remain inert and read-only. Preserve the existing live draft,
 undo/save behavior and bounded refresh. Verify desktop/mobile and both languages;
 deliver separately from gallery previews and the documentation status audit.
+
+2026-09-15: E09.26 implementation verification: Docker frontend suite passed 332
+unit tests, 1874/1936 lines (96.80%) and 2062/2222 branches (92.80%), validated by
+the source-bound gate; backend passed 503 tests, 4377/4425 lines (98.92%) and
+1383/1434 branches (96.44%). Lints, catalog validation and TypeScript build passed.
+Manual Chrome checks on the isolated local stack verified the initial placeholder,
+real source-layout thumbnail after first workspace render, persistence after full
+refresh, library refresh/search/sort, and independent template copy creation. The
+new browser regression covers first render, saved fill edits, refresh persistence
+and responsive preview width on desktop/mobile; required CI is pending submission.
