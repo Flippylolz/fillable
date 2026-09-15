@@ -2895,7 +2895,20 @@ statements across the guide, architecture, CI, decisions, local development, PR 
 agent prompts, editor feasibility, quotas, badge and redesign/QA status. Historical
 evidence remains explicitly dated. A live GitHub protection read confirmed strict
 `ci-required` with administrator enforcement false; no repository settings changed.
-All 232 local Markdown links in AI/ resolved and `git diff --check` passed. Manual
+All 233 local Markdown links in AI/ resolved and `git diff --check` passed. Manual
 control/preview evidence and explicit tool/approval limits are in
 [Preview QA](QA_PREVIEWS_2026_09_15.md). Documentation-only: no new application tests
 or coverage are claimed for this task.
+
+## E09.28 — Prevent duplicate settings after restoration
+
+Status: done — PR #144 merged as `83250d65fedfaa5da8199e93a39eeecf3be3d8bb` with all required checks green; the manual integration recheck retained one settings panel and one editor. Manual preview QA found that restoring a revision leaves two
+settings panels. WorkspaceSettings and DocumentEditor shared the same sibling key,
+so React could retain the wrong subtree when the epoch changed. Give each a
+component-specific key while keeping both tied to the restoration epoch. The
+history regression must assert exactly one settings panel and editor after restore;
+run frontend coverage and manually repeat the restore. Deliver in its own PR.
+
+2026-09-15: E09.28 local Docker validation passed all 323 frontend tests with
+96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
+The restore test now checks that exactly one settings panel and one editor remain.
