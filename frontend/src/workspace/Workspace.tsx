@@ -202,7 +202,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
         dirty={dirty || unsaved} blocked={saving.pending || saving.conflict || !!restoring.pending || restoring.conflict || access.status !== "active"}
         busy={mutating} onRestore={restoreSelected} onReopen={reopen} />}
       <div style={{ display: historyOpen ? "none" : undefined }}>
-      <WorkspaceSettings key={editorEpoch} open={settingsOpen} onOpenChange={setSettingsOpen} item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight} autosave={autosave} onAutosave={setAutosave}
+      <WorkspaceSettings key={`settings:${editorEpoch}`} open={settingsOpen} onOpenChange={setSettingsOpen} item={saved.resource} csrfToken={csrfToken} zoom={zoom} highlight={highlight} onZoom={setZoom} onHighlight={setHighlight} autosave={autosave} onAutosave={setAutosave}
         disabled={saving.pending || mutating || saving.conflict || !!restoring.pending || restoring.conflict} onDirty={setTitleDirty} onBusy={setSettingsBusy} onReopen={reopen}
         onResource={resource => { setSaved(current => current ? { ...current, resource } : current); onChanged?.(); }} />
       <div className="workspace-discovery">
@@ -213,7 +213,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
         {!discovery.error && (discovery.status === "failed" || discovery.status === "not_started") && <button type="button" disabled={discovery.busy} onClick={() => discovery.reload(true)}>{t(discovery.status === "failed" ? "processing.retry" : "processing.start")}</button>}
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
-      <DocumentEditor key={editorEpoch} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
+      <DocumentEditor key={`editor:${editorEpoch}`} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
           mode={viewMode}
           onSnapshot={markDocument} onReader={registerReader} onFieldsReader={registerFieldsReader} onPrintReader={registerPrintReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
         canEdit={access.canEdit} readOnly={access.status !== "active" || restoring.busy} zoom={zoom} highlight={highlight} /></div></>}

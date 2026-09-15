@@ -2875,7 +2875,7 @@ Acceptance:
 
 ## E09.26 — Populate persistent gallery previews after the first render
 
-Status: in_progress. New and unopened saved revisions show a document placeholder.
+Status: in_review — PR #143. New and unopened saved revisions show a document placeholder.
 After the workspace first renders a saved revision, persist an owner-authorized,
 revision-fenced readiness marker. Gallery previews render the actual saved model
 and retained source presentation through the existing free document renderer.
@@ -2894,12 +2894,25 @@ of editor zoom, and remain inert and read-only. Preserve the existing live draft
 undo/save behavior and bounded refresh. Verify desktop/mobile and both languages;
 deliver separately from gallery previews and the documentation status audit.
 
-2026-09-15: E09.26 implementation verification: Docker frontend suite passed 332
-unit tests, 1874/1936 lines (96.80%) and 2062/2222 branches (92.80%), validated by
+2026-09-15: E09.26 implementation verification: Docker frontend suite passed 333
+unit tests, 1880/1942 lines (96.81%) and 2064/2224 branches (92.81%), validated by
 the source-bound gate; backend passed 503 tests, 4377/4425 lines (98.92%) and
 1383/1434 branches (96.44%). Lints, catalog validation and TypeScript build passed.
 Manual Chrome checks on the isolated local stack verified the initial placeholder,
 real source-layout thumbnail after first workspace render, persistence after full
 refresh, library refresh/search/sort, and independent template copy creation. The
 new browser regression covers first render, saved fill edits, refresh persistence
-and responsive preview width on desktop/mobile; required CI is pending submission.
+and responsive preview width on desktop/mobile; the synchronized branch must pass required CI before merging.
+
+## E09.28 — Prevent duplicate settings after restoration
+
+Status: done — PR #144 merged as `83250d65fedfaa5da8199e93a39eeecf3be3d8bb` with all required checks green; the manual integration recheck retained one settings panel and one editor. Manual preview QA found that restoring a revision leaves two
+settings panels. WorkspaceSettings and DocumentEditor shared the same sibling key,
+so React could retain the wrong subtree when the epoch changed. Give each a
+component-specific key while keeping both tied to the restoration epoch. The
+history regression must assert exactly one settings panel and editor after restore;
+run frontend coverage and manually repeat the restore. Deliver in its own PR.
+
+2026-09-15: E09.28 local Docker validation passed all 323 frontend tests with
+96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
+The restore test now checks that exactly one settings panel and one editor remain.
