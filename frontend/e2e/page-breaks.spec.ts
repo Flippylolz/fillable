@@ -50,7 +50,7 @@ test("the workspace shows where one page ends and the next begins", async ({ pag
   // A zoom change re-measures the flow; markers stay between the same blocks.
   await page.getByText("Налаштування робочого простору", { exact: true }).click();
   await page.getByRole("combobox", { name: "Масштаб", exact: true }).selectOption("1.25");
-  await expect(page.locator(".document-canvas .ProseMirror")).toHaveCSS("zoom", "1.25");
+  await expect(page.locator(".document-workbench > .document-canvas .ProseMirror")).toHaveCSS("zoom", "1.25");
   await expect(label.first()).toBeVisible();
   expect(await label.allTextContents()).toEqual(labels);
   await page.getByText("Налаштування робочого простору", { exact: true }).click();

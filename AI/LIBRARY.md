@@ -104,7 +104,9 @@ Cards initially show a plain document placeholder. After the workspace first ren
 a saved revision, an authenticated, CSRF-protected render receipt records readiness
 for that exact revision. Opening the gallery alone does not create previews. Ready
 cards lazily load the owned saved model and retained source presentation when visible,
-and draw a noninteractive miniature with the same document renderer. The thumbnail
+and draw a noninteractive miniature with the same document renderer. Preview reads
+are serialized with a 15-second bound so a gallery cannot saturate the shared
+document-read slots; queued cards cancelled by navigation are skipped. The thumbnail
 shows the beginning of the document; exact Word pagination remains unclaimed.
 
 Readiness survives refreshes and devices. Every new saved/copy/restored revision

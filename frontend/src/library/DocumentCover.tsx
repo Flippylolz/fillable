@@ -9,6 +9,8 @@ import "../editor/editor.css";
 import "prosemirror-view/style/prosemirror.css";
 
 type Content = components["schemas"]["ContentInfo"];
+// Share the bounded document-read service with downloads and the live workspace.
+let pendingPreview: Promise<void> = Promise.resolve();
 
 function SavedCover({ content }: { content: Content }) {
   const host = useRef<HTMLDivElement>(null);
@@ -50,11 +52,17 @@ export function DocumentCover({ item }: { item: Resource }) {
     function load() {
       if (started) return;
       started = true;
-      void api.GET("/api/documents/{identity}/preview", {
-        params: { path: { identity: item.id }, query: { source_version_id: item.current_version_id } }, signal: controller.signal,
-      }).then(result => {
-        if (!controller.signal.aborted && result.data?.resource.id === item.id && result.data.resource.current_version_id === item.current_version_id) setContent(result.data);
-      }).catch(() => {});
+      pendingPreview = pendingPreview.then(async () => {
+        if (controller.signal.aborted) return;
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        try {
+          const result = await api.GET("/api/documents/{identity}/preview", {
+            params: { path: { identity: item.id }, query: { source_version_id: item.current_version_id } }, signal: controller.signal,
+          });
+          if (!controller.signal.aborted && result.data?.resource.id === item.id && result.data.resource.current_version_id === item.current_version_id) setContent(result.data);
+        } catch { /* Unavailable previews keep their placeholder. */ }
+        finally { clearTimeout(timeout); }
+      });
     }
     const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) { load(); observer?.disconnect(); }

@@ -53,7 +53,7 @@ test("offscreen cards wait until visible and stale in-flight responses are disca
   expect(fetch).not.toHaveBeenCalled();
   act(() => intersect([{ isIntersecting: false }]));
   expect(fetch).not.toHaveBeenCalled();
-  act(() => { intersect([{ isIntersecting: true }]); intersect([{ isIntersecting: true }]); });
+  await act(async () => { intersect([{ isIntersecting: true }]); intersect([{ isIntersecting: true }]); });
   expect(fetch).toHaveBeenCalledTimes(1);
   rerender(<DocumentCover item={{ ...resource, preview_ready: false }} />);
   await act(async () => resolve(Response.json(content)));
@@ -85,4 +85,17 @@ test.each([false, true])("failed render receipts are nonfatal (network=%s)", asy
   const ready = vi.fn();
   await act(async () => { render(<Receipt rendered version={resource.current_version_id} ready={ready} />); });
   expect(ready).not.toHaveBeenCalled();
+});
+
+
+test("visible gallery cards serialize preview reads and skip cancelled queued cards", async () => {
+  let finish: (value: Response) => void = () => {};
+  const fetch = vi.fn(() => new Promise<Response>(done => { finish = done; }));
+  vi.stubGlobal("fetch", fetch);
+  const { rerender } = render(<><DocumentCover item={resource} /><DocumentCover item={{ ...resource, id: "second" }} /></>);
+  await act(async () => {});
+  expect(fetch).toHaveBeenCalledTimes(1);
+  rerender(<DocumentCover item={resource} />);
+  await act(async () => finish(Response.json(content)));
+  expect(fetch).toHaveBeenCalledTimes(1);
 });
