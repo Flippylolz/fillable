@@ -165,9 +165,10 @@ jobs:
         run: docker compose -p fillable-checks -f compose.test.yaml build backend-test
       - name: Verify release, runtime and public release contracts
         run: |
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test sh -c 'python /checks/test_release_contract.py && python /checks/test_runtime_contract.py && python /checks/test_public_release.py && python /checks/test_public_persistence.py'
+          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test sh -c 'python /checks/test_coverage_badges.py && python /checks/test_release_contract.py && python /checks/test_runtime_contract.py && python /checks/test_public_release.py && python /checks/test_public_persistence.py'
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD:/source:ro" backend-test python /checks/test_deploy_dispatch_contract.py /source
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps -v "$PWD:/source:ro" backend-test python /checks/test_dependabot_automerge_contract.py /source
+          python3 scripts/test_publish_coverage_badges.py
           python3 scripts/test_smoke_transport.py
           sh scripts/verify-server-runtime.sh
   upgrade-checks:
@@ -186,6 +187,9 @@ jobs:
           path: reports/recovery/
           if-no-files-found: error
   ci-required:
+    permissions:
+      contents: read
+      actions: read
     if: always()
     needs: [lint, backend-tests, frontend-tests, browser, development, contracts, upgrade-checks]
     runs-on: ubuntu-24.04
@@ -202,3 +206,37 @@ jobs:
           CONTRACTS_RESULT: ${{ needs.contracts.result }}
           UPGRADE_RESULT: ${{ needs.upgrade-checks.result }}
         run: scripts/require-ci-success.sh "$LINT_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT" "$BROWSER_RESULT" "$DEVELOPMENT_RESULT" "$CONTRACTS_RESULT" "$UPGRADE_RESULT"
+
+      - name: Download and validate coverage badges
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --name coverage-backend --dir reports
+          gh run download "$GITHUB_RUN_ID" --name coverage-frontend --dir reports
+          mkdir -p backend/coverage frontend/coverage
+          cp reports/backend/* backend/coverage/
+          cp reports/frontend/* frontend/coverage/
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/source" -w /source \
+            python:3.13.12-slim-bookworm@sha256:a58daefb915e1e03ad48f3ca4df8832065412c5c35cacb9d39f4229184de12b6 \
+            python scripts/render_coverage_badges.py . coverage-badges "$GITHUB_SHA"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: coverage-badges
+          path: coverage-badges/
+          if-no-files-found: error
+  publish-coverage-badges:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ci-required]
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Publish verified main coverage
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --name coverage-badges --dir coverage-badges
+          scripts/publish-coverage-badges.sh coverage-badges "$GITHUB_SHA"
