@@ -21,6 +21,13 @@ async function password(page: Page, current: string, next: string) {
 
 test("profile edits persist, passwords require current credentials and revoke another browser", async ({ page, browser }, testInfo) => {
   await login(page);
+  const layout = await page.locator(".profile").evaluate(element => {
+    const profile = element.getBoundingClientRect();
+    const content = element.closest(".app-content")!.getBoundingClientRect();
+    return { center: profile.x + profile.width / 2, parentCenter: content.x + content.width / 2, width: profile.width, parentWidth: content.width };
+  });
+  expect(Math.abs(layout.center - layout.parentCenter)).toBeLessThan(2);
+  expect(layout.width).toBeLessThanOrEqual(layout.parentWidth);
   await expect(page.getByLabel("Логін", { exact: true })).toHaveAttribute("readonly", "");
   await expect(page.getByRole("heading", { name: "Сховище", exact: true })).toBeVisible();
   const peer = await browser.newContext({ baseURL: new URL(page.url()).origin });
