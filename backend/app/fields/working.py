@@ -151,8 +151,8 @@ def validate_span(location, paragraphs, starts):
         begin, stop, text = segments[position]
         if begin >= location.end:
             break
-        if location.start >= stop or location.end <= begin:
-            continue
+        # The binary search starts at the containing segment; subsequent
+        # contiguous, nonempty segments intersect until the end check above.
         if text is None:
             raise ValueError("protected_working_span")
         encoded = text

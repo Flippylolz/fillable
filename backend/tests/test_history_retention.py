@@ -57,6 +57,22 @@ def history(count=4):
     return owner, web, original, payload, saved
 
 
+def test_concurrently_removed_candidate_is_not_counted_as_newly_freed(monkeypatch):
+    owner, _, _, _, _ = history(3)
+    retention.configure(1)
+    original = retention.delete_file
+
+    def already_removed(*args, **kwargs):
+        assert original(*args, **kwargs) is True
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(retention, "delete_file", already_removed)
+    before = amounts(owner)
+    result = retention.prune()
+    assert result["versions"][0]["status"] == "already_deleted"
+    assert amounts(owner)[0] < before[0]
+
+
 def selected_file(identity):
     with database().connect() as connection:
         return connection.execute(

@@ -313,3 +313,42 @@ def test_abandoned_delivery_before_business_claim_is_retried_and_bounded():
                 delivery.set_status(JobStatus.FAILED)
         assert dispatcher.dispatch()["failed"] == (attempt == 3)
     assert web.get(url).json()["status"] == "failed"
+
+
+def test_dispatch_rechecks_jobs_changed_after_selection(monkeypatch):
+    _, _, _, _, job = start()
+    original = dispatcher.Queue
+
+    def claimed(*args, **kwargs):
+        with database().begin() as connection:
+            connection.execute(
+                update(jobs)
+                .where(jobs.c.id == UUID(job["id"]))
+                .values(status="running", lease_until=now() + timedelta(seconds=60))
+            )
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(dispatcher, "Queue", claimed)
+    assert dispatcher.dispatch() == {"examined": 1, "enqueued": 0, "failed": 0}
+    assert row(job["id"])["attempt"] == 1
+
+
+def test_stale_delivery_cannot_advance_a_new_business_attempt(monkeypatch):
+    from rq.job import JobStatus
+
+    _, _, _, _, job = start()
+    assert dispatcher.dispatch()["enqueued"] == 1
+    original = Job.fetch
+
+    def changed(*args, **kwargs):
+        delivery = original(*args, **kwargs)
+        delivery.set_status(JobStatus.FAILED)
+        with database().begin() as connection:
+            connection.execute(
+                update(jobs).where(jobs.c.id == UUID(job["id"])).values(attempt=2)
+            )
+        return delivery
+
+    monkeypatch.setattr(Job, "fetch", changed)
+    assert dispatcher.dispatch() == {"examined": 1, "enqueued": 0, "failed": 0}
+    assert row(job["id"])["attempt"] == 2

@@ -81,9 +81,7 @@ def test_validation_errors_name_the_parameter_without_exposing_values():
         "parameter": "kind",
         "reason": "missing",
     }
-    short = client.post(
-        "/body", json={"display_name": " Ґанна ", "nested": [1, "x"]}
-    )
+    short = client.post("/body", json={"display_name": " Ґанна ", "nested": [1, "x"]})
     assert short.json()["error"]["parameters"] == {
         "parameter": "nested",
         "reason": "int_parsing",
@@ -108,3 +106,19 @@ def test_validation_errors_name_the_parameter_without_exposing_values():
         {},
         {"parameter": "body", "reason": "json_invalid"},
     )
+
+
+def test_validation_details_skip_unnamed_errors_and_keep_only_safe_names():
+    from fastapi.exceptions import RequestValidationError
+
+    from app.errors import validation_parameters
+
+    unnamed = {"loc": (0, 1), "input": "private", "type": "invalid"}
+    whitespace = {"loc": ("\n\t ",), "type": "invalid"}
+    assert validation_parameters(RequestValidationError([])) == {}
+    assert validation_parameters(RequestValidationError([unnamed, whitespace])) == {}
+    named = {"loc": ("query", "kind"), "type": "missing", "input": "private"}
+    assert validation_parameters(RequestValidationError([unnamed, named])) == {
+        "parameter": "kind",
+        "reason": "missing",
+    }
