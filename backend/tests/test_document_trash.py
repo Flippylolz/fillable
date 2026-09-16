@@ -17,6 +17,7 @@ from app.documents import deletion, trash
 from app.documents.schema import resources, versions
 from app.errors import AppError
 from app.infrastructure import database
+from app.jobs.worker import process
 from app.storage.filesystem import FileSystem
 from app.storage.schema import accounts
 
@@ -177,8 +178,11 @@ def test_empty_trash_marks_every_page_irreversible_before_bounded_cleanup(monkey
     identities = []
     for number in range(21):
         saved = upload(web, key=f"batch-{number}").json()
+        assert "id" in saved, saved
         identities.append(saved["id"])
+        job = web.get(f"/api/documents/{saved['id']}/processing").json()
         assert web.post(f"/api/documents/{saved['id']}/trash").status_code == 200
+        process(job["id"], job["attempt"])
     with monkeypatch.context() as patch:
         patch.setattr(trash, "purge", lambda *args, **kwargs: None)
         assert web.delete("/api/documents/trash").json() == {"status": "pending"}
