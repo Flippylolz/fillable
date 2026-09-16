@@ -74,7 +74,8 @@ test("two tabs fence editing and preserve an IME draft, history and locale after
   await expect(values.first()).toHaveValue(draft);
   await expect(values.last()).toHaveValue(draft);
   await expect(editor).toHaveAttribute("contenteditable", "false");
-  await expect(values.first()).toBeDisabled();
+  await expect(values.first()).toHaveAttribute("readonly", "");
+  await expect(values.first()).not.toBeEditable();
   await expect(page.getByRole("button", { name: "Скасувати", exact: true })).toBeDisabled();
   await editor.focus(); await page.keyboard.type("Blocked");
   await expect(editor).not.toContainText("Blocked");

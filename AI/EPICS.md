@@ -3031,3 +3031,13 @@ Status: in_progress. Center the bounded profile grid horizontally in the space
 beside the sidebar while retaining full available width on narrow screens. Browser
 verification checks center alignment and bounds on desktop/mobile.
 
+
+
+## E09.38 — Preserve field focus during autosave
+
+Status: in_progress. Urgent user report: fill-mode autosave drops field focus.
+Saved revisions briefly reacquire editing access, and disabled native inputs blur.
+Use native read-only inputs during that access check, retaining the mounted input,
+focus and selection while preventing edits without a valid lease. Cover text,
+number and date fields, and verify delayed post-autosave lease acquisition in
+real desktop/mobile browsers with continued typing at the retained caret.
