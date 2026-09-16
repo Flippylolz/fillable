@@ -2990,7 +2990,7 @@ fallbacks were simplified without source exclusions or coverage-ignore pragmas.
 
 ## E09.32 — Require complete line and branch coverage
 
-Status: in_review. Following the user's 2026-09-16 request and the independent
+Status: done — PR #149 merged as `c616586d950cfe7e32b3659753499923fb27bbf3` with all required checks passing. Following the user's 2026-09-16 request and the independent
 backend (E09.29) and frontend (E09.31) coverage tasks, raise both executable-line
 and branch gates to 100% in each application. Preserve full source inclusion,
 source/report provenance, and required test success. Verify exact raw-count
@@ -3003,3 +3003,17 @@ Deliver this gate change in its own PR after both coverage prerequisites merge.
 tests passing but rejected the added unimported source: backend 4425/4429 lines,
 frontend 1935/1937 lines and 2187/2189 branches. All 233 local AI/ Markdown links
 resolve; `git diff --check` passes. Both prerequisites are merged with all required CI checks passing.
+
+## E09.33 — Automatically publish repository coverage badges
+
+Status: in_review. Add backend/frontend line and branch coverage badges to the
+root README. Generate their values from source-validated CI reports, validate badge
+generation on PRs, and publish only after successful main CI to a dedicated
+`coverage-badges` branch. Preserve required checks and verify generation failures,
+publication updates and stale-run handling. Deliver in a separate PR.
+
+2026-09-16: Docker badge generation tests passed for source provenance, invalid
+reports, accessible SVGs, raw counts and no-branch handling. A disposable local
+Git remote verified branch creation, updates, idempotence and stale-run skipping.
+Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
+and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.

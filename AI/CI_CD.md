@@ -37,6 +37,23 @@ Coverage supports the behavioral checks in the epics. Browser tests for editing,
 
 References: [coverage.py configuration](https://coverage.readthedocs.io/en/latest/config.html), [Vitest coverage configuration](https://vitest.dev/config/coverage.html).
 
+## Repository coverage badges
+
+The root README embeds generated backend/frontend SVG badges from the dedicated
+`coverage-badges` branch. Each displays executable-line and branch coverage from
+the latest successful main CI run, rather than a hardcoded percentage. A failed or
+cancelled run retains the last successful result; the badge links to main CI runs.
+GitHub's image cache can briefly delay visible updates.
+
+After all required jobs pass, `ci-required` downloads this run's coverage artifacts,
+revalidates their full source sets and provenance against the checkout, and renders
+both SVGs plus `coverage.json` containing raw counts and the source revision. PRs
+validate and upload these generated assets too. Missing, stale or below-gate reports
+fail generation. Only the dependent main-push publishing job has `contents: write`;
+it updates the badge branch without changing main or triggering another CI run.
+The publisher skips superseded main revisions and never force-pushes. No external
+coverage service, account or additional secret is needed.
+
 ## GitHub Actions CI contract
 
 Implemented workflow: `.github/workflows/ci.yml`. Tests and coverage use the same containerized commands locally and on Actions runners.
