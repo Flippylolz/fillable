@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { setLanguage } from "../src/i18n";
 import { FieldInput } from "../src/editor/FieldInput";
 import type { FieldSummary } from "../src/editor/adapter";
+
+beforeEach(async () => { await setLanguage("en"); });
 
 test.each(["text", "number", "date"] as const)("%s input stays mounted and focused across a temporary access check", type => {
   const field: FieldSummary = { id: "field", key: "key", label: "Name", type, value: type === "date" ? "16.09.2026" : "123", issue: null };
