@@ -2938,7 +2938,7 @@ The restore test now checks that exactly one settings panel and one editor remai
 
 ## E09.29 — Complete backend line and branch coverage
 
-Status: in_review. The user requested 100% coverage on 2026-09-16. Exercise all
+Status: done — PR #146 merged as `14c5182f83fe0b551eb15c515a1755b40b076ca9` with all required CI checks passing. The user requested 100% coverage on 2026-09-16. Exercise all
 remaining backend line and branch outcomes with behavioral tests, including error,
 recovery, document validation and operator-entry paths. Preserve the complete source
 measurement and meaningful assertions; do not add exclusions or ignore pragmas.
