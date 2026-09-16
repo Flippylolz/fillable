@@ -3012,7 +3012,14 @@ browser acceptance also passed. The upgrade driver now expects schema 0014.
 Production has an explicit 0013-to-0014 forward-only policy and a narrowly scoped,
 release-locked installer, verified by 16 Docker runtime contract tests.
 The local full upgrade rehearsal was blocked by exhausted Docker network pools;
-required isolated CI repeats the migration/persistence proof.
+The required isolated CI upgrade/persistence proof subsequently passed
+(run 35118320444), including the real restart and post-unlink crash checks.
+
+## E09.34 — Contextual library headings
+
+Status: in_review. The selected Templates or My documents section must have its
+own localized heading and concise description, including after sidebar navigation
+and uploads. Preserve document titles and the shared gallery behavior.
 
 ## E09.35 — Center the profile in the content pane
 
@@ -3023,7 +3030,9 @@ verification checks center alignment and bounds on desktop/mobile.
 
 ## E09.39 — Admit verified coverage-badge publication in release evidence
 
-Status: in_review. Main CI now has nine jobs after E09.33 added coverage-badge
+Status: done. PR [#156](https://github.com/Flippylolz/fillable/pull/156) merged as
+`a0e285eeb5fd5109d2b0968cc43861336dc0fa8e` with every required check passing.
+Main CI now has nine jobs after E09.33 added coverage-badge
 publication; the strict release verifier still expected eight and blocked release
 35115154996 despite successful exact-main CI 35113539550. Include badge publication
 in the required release evidence, retaining exact job identities, success, source

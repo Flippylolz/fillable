@@ -335,5 +335,9 @@
   "trash.emptyState": "Trash is empty.",
   "trash.deadline": "Recoverable until {{date}}. Permanent cleanup follows automatically.",
   "trash.confirmDelete": "Permanently delete “{{title}}” and all its versions? This cannot be undone.",
-  "trash.confirmEmpty": "Permanently delete everything in trash and all retained versions? This cannot be undone."
+  "trash.confirmEmpty": "Permanently delete everything in trash and all retained versions? This cannot be undone.",
+  "library.templateTitleHeading": "Templates",
+  "library.documentTitleHeading": "My documents",
+  "library.templateDescription": "Reusable starting points. Choose a template to create a separate document.",
+  "library.documentDescription": "Your individual documents and saved copies, ready to edit or download."
 }
