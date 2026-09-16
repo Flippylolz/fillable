@@ -43,7 +43,7 @@ Implemented workflow: `.github/workflows/ci.yml`. Tests and coverage use the sam
 
 1. Run on pull requests and pushes to `main`; add merge-queue events if a merge queue is enabled later.
 2. Check out the exact source revision and install/build from pinned dependencies and images.
-3. Run independent parallel jobs, each building only the images it needs: static `lint` checks (Ruff, mypy, ESLint, Ukrainian/English catalog validation, generated API/fixture/notice drift, Compose validation), `backend-tests` and `frontend-tests` with independent raw coverage gates and real negative probes, `browser` production-image Playwright flows, full development/persistence and previous-image recovery verification, and release/runtime contract checks.
+3. Run independent parallel jobs, each building only the images it needs: static `lint` checks (Ruff, mypy, ESLint, Ukrainian/English catalog validation, generated API/fixture drift, generated editor notice packaging, Compose validation), `backend-tests` and `frontend-tests` with independent raw coverage gates and real negative probes, `browser` production-image Playwright flows, full development/persistence and previous-image recovery verification, and release/runtime contract checks.
 4. Produce separate backend/frontend coverage reports and browser/development evidence as Actions artifacts for diagnosis, including on failed runs where reports exist.
 5. Evaluate the coverage gates and produce a stable required check, named `ci-required`, that succeeds only when every required job succeeded. It forwards each aggregated `needs` result to `scripts/require-ci-success.sh`, which fails on any missing, skipped, or cancelled prerequisite; a green summary must never mask a failed test job.
 6. Main requires PRs and strict up-to-date `ci-required` in `Flippylolz/fillable`. Recheck actual repository rules before arming each PR; workflow YAML alone does not establish protection. Record current API evidence rather than assuming older settings still apply.
@@ -391,3 +391,15 @@ release dispatches. Branch protection still requires only the single
 `ci-required` context, so no protection change is needed; the deployment gate
 validates the new exact job set at dispatch time per
 [Release artifacts](RELEASE_ARTIFACTS.md).
+
+## Build-generated editor notices (E09.30)
+
+`npm run build` and `npm run dev` generate `public/editor-notices.txt` from the
+installed, lockfile-pinned editor packages through their prebuild/predev hooks.
+The generator still rejects unexpected inventory counts, non-MIT packages and
+missing license files. The generated notices are ignored by Git and Docker build
+contexts; production builds regenerate them before Vite copies public assets.
+Required lint CI compares the generated source and `dist/editor-notices.txt` in
+the same build container, rejecting missing or changed packaged notices.
+Dependabot updates no longer require a follow-up notice-version commit; all
+existing required checks and independent coverage gates remain enforced.
