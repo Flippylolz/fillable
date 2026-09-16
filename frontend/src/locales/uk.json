@@ -341,5 +341,9 @@
   "editor.italic": "Курсив",
   "editor.underline": "Підкреслений",
   "editor.formatField": "Форматування поля: {{label}}",
-  "editor.formatSelection": "Форматування виділеного тексту"
+  "editor.formatSelection": "Форматування виділеного тексту",
+  "library.templateTitleHeading": "Шаблони",
+  "library.documentTitleHeading": "Мої документи",
+  "library.templateDescription": "Багаторазові шаблони. Виберіть шаблон, щоб створити окремий документ.",
+  "library.documentDescription": "Ваші окремі документи та збережені копії для редагування й завантаження."
 }

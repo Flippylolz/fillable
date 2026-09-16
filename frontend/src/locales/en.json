@@ -331,5 +331,9 @@
   "editor.italic": "Italic",
   "editor.underline": "Underline",
   "editor.formatField": "Format field: {{label}}",
-  "editor.formatSelection": "Format selected text"
+  "editor.formatSelection": "Format selected text",
+  "library.templateTitleHeading": "Templates",
+  "library.documentTitleHeading": "My documents",
+  "library.templateDescription": "Reusable starting points. Choose a template to create a separate document.",
+  "library.documentDescription": "Your individual documents and saved copies, ready to edit or download."
 }

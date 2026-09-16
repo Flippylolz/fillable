@@ -109,8 +109,8 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
   return <section className="library" aria-labelledby="library-title">
     <header className="library-topbar">
       <div className="library-titles">
-        <h2 id="library-title">{t("library.title")}</h2>
-        <p>{t("library.description")}</p>
+        <h2 id="library-title">{t(`library.${tab}TitleHeading`)}</h2>
+        <p>{t(`library.${tab}Description`)}</p>
       </div>
       <div className="library-tools">
         <input type="search" className="library-search" aria-label={t("library.search")}
@@ -146,7 +146,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
         </select>
       </label>
     </div>
-    <section id="library-list" aria-label={t("library.title")} aria-busy={data.loading || data.more}>
+    <section id="library-list" aria-label={t(`library.${tab}TitleHeading`)} aria-busy={data.loading || data.more}>
       {data.loading && <p role="status">{t("library.loading")}</p>}
       {data.error && <p role="alert">{apiErrorMessage(data.error)}</p>}
       {!data.loading && !data.error && ((needle ? items.length === 0 : data.items.length === 0)) &&
