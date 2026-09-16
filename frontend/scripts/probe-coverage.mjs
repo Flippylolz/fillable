@@ -5,13 +5,9 @@ import { spawnSync } from 'node:child_process';
 assert.equal(process.cwd(), '/app');
 const probe = 'src/coverage_probe.ts';
 assert.equal(fs.existsSync(probe), false);
-// Scale the deliberately uncovered source with the application so growth cannot
-// make this negative test pass the line gate while only failing the branch gate.
-const sourceLines = fs.readdirSync('src', { recursive: true })
-  .filter(path => /\.(ts|tsx)$/.test(path))
-  .reduce((total, path) => total + fs.readFileSync(`src/${path}`, 'utf8').split('\n').length, 0);
+// Even one unimported branch must fail the exact 100% contract.
 try {
-  fs.writeFileSync(probe, 'export function untested(value: number) {\n' + Array.from({ length: Math.max(30, sourceLines) }, (_, i) => `  if (value === ${i}) return ${i};\n`).join('') + '  return -1;\n}\n');
+  fs.writeFileSync(probe, 'export function untested(value: boolean) {\n  if (value) return 1;\n  return 0;\n}\n');
   fs.mkdirSync('coverage', { recursive: true });
   fs.writeFileSync('coverage/provenance.json', 'old successful stamp');
   const run = spawnSync(process.execPath, ['scripts/coverage-provenance.mjs', '--', '--reporter=json', '--outputFile=/tmp/probe-results.json'], { encoding: 'utf8' });
@@ -28,8 +24,8 @@ try {
   const report = JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));
   assert.ok(Object.keys(report).some(key => key.endsWith('/src/coverage_probe.ts')));
   const { lines, branches } = report.total;
-  assert.ok(lines.covered * 100 < lines.total * 90);
-  assert.ok(branches.covered * 100 < branches.total * 90);
+  assert.ok(lines.covered < lines.total);
+  assert.ok(branches.covered < branches.total);
   console.log(`PASS: real unimported frontend source blocked: lines ${lines.covered}/${lines.total}, branches ${branches.covered}/${branches.total}; ${results.numPassedTests} tests passed`);
 } finally {
   fs.unlinkSync(probe);

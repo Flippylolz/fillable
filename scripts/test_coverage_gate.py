@@ -9,11 +9,12 @@ from check_coverage import check, require_metric
 
 class CoverageGateTests(unittest.TestCase):
     def test_raw_boundary_and_invalid_counts(self):
-        for covered, total in [(90, 100), (0, 0), (100, 100)]:
+        for covered, total in [(1, 1), (0, 0), (100, 100)]:
             require_metric(covered, total)
         for covered, total in [
-            (8999, 10000),
-            (89, 100),
+            (9999, 10000),
+            (999999, 1000000),
+            (99, 100),
             (-1, 100),
             (101, 100),
             (90.0, 100),
@@ -38,9 +39,9 @@ class CoverageGateTests(unittest.TestCase):
             payload = {
                 "files": {},
                 "totals": {
-                    "covered_lines": 90,
+                    "covered_lines": 100,
                     "num_statements": 100,
-                    "covered_branches": 9,
+                    "covered_branches": 10,
                     "num_branches": 10,
                 },
             }
@@ -52,7 +53,7 @@ class CoverageGateTests(unittest.TestCase):
             report.write_text(json.dumps(payload))
             record("backend", root, snapshot("backend", root))
             check("backend", root)
-            payload["totals"]["covered_branches"] = 8
+            payload["totals"]["covered_branches"] = 9
             report.write_text(json.dumps(payload))
             record("backend", root, snapshot("backend", root))
             with self.assertRaises(ValueError):

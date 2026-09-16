@@ -161,11 +161,11 @@ Deploy through GitHub Actions to the supplied target `<DEPLOY_USER>@<DEPLOY_HOST
 
 Docker Compose remains the server runtime. CI and local production-build validation begin in E01; live-server setup and the deployment workflow belong to E08. The deployment trigger and connectivity details remain implementation decisions for the supplied environment. The proposed first trigger is a manual workflow dispatch for a verified default-branch commit.
 
-## D014 — Minimum 90% coverage blocks CI
+## D014 — Complete line and branch coverage blocks CI
 
-Status: **90% minimum and blocking CI accepted — explicit user requirement. Metric details below are implementation defaults.**
+Status: **100% executable-line and branch coverage accepted — explicit user request on 2026-09-16, superseding the original 90% minimum.**
 
-Require at least 90% coverage from the first application scaffold. Apply the threshold independently to backend and frontend and to line and branch coverage; do not average them together. Measure the complete eligible source set and fail on missing reports or failing tests.
+Require 100% executable-line and branch coverage (E09.32). The original scaffold required 90%; retain that figure only in historical audit evidence. Apply the threshold independently to backend and frontend and to line and branch coverage; do not average them together. Measure the complete eligible source set and fail on missing reports or failing tests.
 
 GitHub Actions must fail below the threshold, the CI check must be required for merging once its workflow/check is established during E01 in the repository recorded in D016, and deployment must depend on passing CI for the same source revision. Agents must not weaken thresholds or expand exclusions merely to make a check pass.
 

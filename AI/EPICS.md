@@ -2906,7 +2906,7 @@ and responsive preview width on desktop/mobile; all 62 desktop/mobile browser ca
 
 ## E09.27 — Synchronize current documentation and record manual preview QA
 
-Status: in_review — PR #145. Reconcile current guide, architecture, CI, deployment, editor,
+Status: done — PR #145 merged as `7b6c61a34b5927d1a4bb92c7412703c636dd6fc8` with required CI passing. Reconcile current guide, architecture, CI, deployment, editor,
 badge and agent-entry descriptions with verified implementation and GitHub settings;
 retain dated historical evidence. Record the requested manual control/preview checks,
 including failures and explicit limits. Documentation-only PR; no implementation or
@@ -2935,3 +2935,19 @@ run frontend coverage and manually repeat the restore. Deliver in its own PR.
 2026-09-15: E09.28 local Docker validation passed all 323 frontend tests with
 96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
 The restore test now checks that exactly one settings panel and one editor remain.
+
+## E09.32 — Require complete line and branch coverage
+
+Status: in_progress. Following the user's 2026-09-16 request and the independent
+backend (E09.29) and frontend (E09.31) coverage tasks, raise both executable-line
+and branch gates to 100% in each application. Preserve full source inclusion,
+source/report provenance, and required test success. Verify exact raw-count
+boundaries, missing/stale reports, and real unimported-source negative probes.
+Update the current coverage contract in AI/; preserve historical audit evidence.
+Deliver this gate change in its own PR after both coverage prerequisites merge.
+
+2026-09-16: Docker gate and provenance contracts passed, including both actual
+100% reports. Disposable negative probes kept all 543 backend and 423 frontend
+tests passing but rejected the added unimported source: backend 4425/4429 lines,
+frontend 1935/1937 lines and 2187/2189 branches. All 233 local AI/ Markdown links
+resolve; `git diff --check` passes. Delivery waits for E09.29 and E09.31 to merge.
