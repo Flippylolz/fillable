@@ -54,6 +54,13 @@ STATE_FORMAT = (
 )
 
 
+def validate_schema_transition(head, current):
+    if head not in SCHEMA_PREDECESSORS or current not in SCHEMA_PREDECESSORS[head]:
+        raise ValueError(
+            "Database schema is incompatible; preserve data for forward repair"
+        )
+
+
 def execute(arguments, *, environment=None, input=None):
     result = subprocess.run(
         arguments,
@@ -500,10 +507,7 @@ class Runtime:
         self.command(
             "up", "-d", "--no-build", "--wait", "--wait-timeout", "120", "db", "redis"
         )
-        if self.schema() not in SCHEMA_PREDECESSORS[head]:
-            raise ValueError(
-                "Database schema is incompatible; preserve data for forward repair"
-            )
+        validate_schema_transition(head, self.schema())
         self.progress("start_private_application")
         self.command(
             "up",

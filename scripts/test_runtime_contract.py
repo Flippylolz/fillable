@@ -2,6 +2,7 @@
 
 import ast
 import copy
+import hashlib
 import io
 import json
 import multiprocessing
@@ -27,8 +28,15 @@ from fillable_edge import (
     patched_manager,
 )
 from fillable_edge_lock import locked
-from fillable_runtime import FILES, Runtime, resolve_image, tls_status
+from fillable_runtime import (
+    FILES,
+    Runtime,
+    resolve_image,
+    tls_status,
+    validate_schema_transition,
+)
 from install_receiver import install, upgrade_https
+from install_trash_policy import upgrade as upgrade_trash
 from release_artifact import pack
 from release_receiver import parse_command, receive
 from test_release_contract import SOURCE, fixture
@@ -98,6 +106,76 @@ def hold_lock(root, ready, release):
 
 
 class RuntimeContracts(unittest.TestCase):
+    def test_trash_schema_transition_preserves_forward_only_policy(self):
+        old, new = "0013_maintenance_state", "0014_document_trash"
+        for head, current in (
+            (old, None),
+            (old, old),
+            (new, None),
+            (new, old),
+            (new, new),
+        ):
+            validate_schema_transition(head, current)
+        for head, current in (
+            (old, new),
+            (new, "0012_audit_chronology"),
+            (new, old + "\n" + new),
+            ("unknown", old),
+            (new, "unknown"),
+        ):
+            with self.assertRaisesRegex(ValueError, "incompatible"):
+                validate_schema_transition(head, current)
+
+    def test_trash_policy_install_is_locked_narrow_idempotent_and_recoverable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "installed"
+            source = Path(directory) / "source"
+            name = "scripts/fillable_runtime.py"
+            runtime, candidate = root / "ops" / name, source / name
+            runtime.parent.mkdir(parents=True)
+            candidate.parent.mkdir(parents=True)
+            runtime.write_bytes(b"old reviewed runtime")
+            candidate.write_bytes(b"new reviewed runtime")
+            runtime.chmod(0o600)
+            manifest = root / "installed-files.json"
+            old = hashlib.sha256(runtime.read_bytes()).hexdigest()
+            manifest.write_text(json.dumps({name: old, "unrelated": "preserved"}))
+            configuration = root / "runtime.env"
+            configuration.write_bytes(b"preserve private settings")
+            before, evidence = runtime.read_bytes(), manifest.read_bytes()
+            original_replace = Path.replace
+
+            def fail_manifest(path, target):
+                if target == manifest:
+                    raise OSError("synthetic manifest failure")
+                return original_replace(path, target)
+
+            with patch("install_trash_policy.PREVIOUS", old):
+                with patch("pathlib.Path.replace", new=fail_manifest):
+                    with self.assertRaisesRegex(OSError, "synthetic"):
+                        upgrade_trash(root, source, SOURCE)
+                self.assertEqual(runtime.read_bytes(), before)
+                self.assertEqual(manifest.read_bytes(), evidence)
+                for _ in range(2):
+                    self.assertTrue(upgrade_trash(root, source, SOURCE)["upgraded"])
+                self.assertEqual(runtime.read_bytes(), candidate.read_bytes())
+                self.assertEqual(runtime.stat().st_mode & 0o777, 0o600)
+                self.assertEqual(
+                    json.loads(manifest.read_text())["unrelated"], "preserved"
+                )
+                self.assertEqual(
+                    configuration.read_bytes(), b"preserve private settings"
+                )
+                with (root / "release.lock").open("a") as lock:
+                    import fcntl
+
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    with self.assertRaises(BlockingIOError):
+                        upgrade_trash(root, source, SOURCE)
+                runtime.write_bytes(b"unexpected concurrent runtime")
+                with self.assertRaisesRegex(ValueError, "Unexpected"):
+                    upgrade_trash(root, source, SOURCE)
+
     def test_classic_and_containerd_identities_require_verified_exact_metadata(self):
         expected = {
             "id": "sha256:" + "a" * 64,
