@@ -121,7 +121,9 @@ def tick(stop, *, batch=20):
                     break
                 cursor_name = f"{name}_cursor"
                 cursor = previous.get(cursor_name)
-                for attempt in range(1, 4):
+                attempt = 0
+                while True:
+                    attempt += 1
                     try:
                         # A reconnected guard no longer owns the lock.
                         if (

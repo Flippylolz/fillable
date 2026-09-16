@@ -301,3 +301,20 @@ def test_malformed_models_are_private_value_errors_and_budgets_include_metadata(
         working.index(model(paragraph(text("bounded"))))
     with pytest.raises(ValueError, match="working_model_limit"):
         working.bounded([None] * 41)
+
+
+@pytest.mark.parametrize("root", [None, {"type": "unknown"}])
+def test_index_rejects_malformed_root_nodes(root):
+    with pytest.raises(ValueError, match="invalid_working_node"):
+        working.index(root)
+
+
+@pytest.mark.parametrize("start,end,value", [(4, 6, "BB"), (3, 7, "ABBC")])
+def test_spans_at_and_across_source_run_boundaries_are_exact(start, end, value):
+    current = model(
+        paragraph(text("AA"), text("BB"), text("CC")),
+        items=[item({"kind": "span", "from": start, "to": end, "text": value})],
+    )
+    document, review = working.validate_working(current, SOURCE)
+    assert review["items"][0]["location"]["text"] == value
+    assert document["content"] == current["content"]

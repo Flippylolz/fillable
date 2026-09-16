@@ -275,6 +275,46 @@ def test_guard_loss_or_configuration_failure_stays_visible(storage, monkeypatch)
     assert status()["status"] == "running"
 
 
+def test_reconnected_guard_stops_before_any_maintenance_task(storage, monkeypatch):
+    from sqlalchemy.engine import Connection
+
+    original = Connection.exec_driver_sql
+    pid_reads = 0
+
+    def reconnected(connection, statement, *args, **kwargs):
+        nonlocal pid_reads
+        if statement == "SELECT pg_backend_pid()":
+            pid_reads += 1
+            if pid_reads == 2:
+                # Model a reconnect returning a different PostgreSQL session.
+                return original(connection, "SELECT -1", *args, **kwargs)
+        return original(connection, statement, *args, **kwargs)
+
+    monkeypatch.setattr(Connection, "exec_driver_sql", reconnected)
+    assert maintenance.tick(Event()) == "failed"
+    assert status()["summary"] == {}
+    assert status()["last_success_at"] is None
+
+
+def test_periodic_loop_runs_again_after_interval_and_stops_cleanly(monkeypatch, capsys):
+    class Stop:
+        waits = 0
+
+        def is_set(self):
+            return False
+
+        def wait(self, interval):
+            assert interval == 10
+            self.waits += 1
+            return self.waits == 2
+
+    monkeypatch.setattr(maintenance, "tick", lambda *args, **kwargs: "succeeded")
+    stop = Stop()
+    assert maintenance.run(stop, interval=10) == 0
+    assert stop.waits == 2
+    assert capsys.readouterr().out.count('"status": "succeeded"') == 2
+
+
 def test_persisted_operation_cursor_passes_poisoned_entry_and_wraps(storage):
     store, owner, _, root = storage
     for _ in range(3):

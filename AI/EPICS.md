@@ -2940,6 +2940,19 @@ run frontend coverage and manually repeat the restore. Deliver in its own PR.
 96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
 The restore test now checks that exactly one settings panel and one editor remain.
 
+## E09.29 — Complete backend line and branch coverage
+
+Status: in_review. The user requested 100% coverage on 2026-09-16. Exercise all
+remaining backend line and branch outcomes with behavioral tests, including error,
+recovery, document validation and operator-entry paths. Preserve the complete source
+measurement and meaningful assertions; do not add exclusions or ignore pragmas.
+Deliver separately from frontend coverage and the final 100% gate increase.
+
+2026-09-16: Docker validation passed 543 backend tests, Ruff and mypy.
+Coverage includes every backend application source: 4425/4425 executable lines
+and 1430/1430 branch outcomes (100% independently). Two unreachable loop/span
+paths were simplified while preserving retry limits and text-span behavior.
+
 ## E09.30 — Generate editor notices during frontend builds
 
 Status: done — PR #147 merged as `67e770a126642fabffde47a429897b39b9701279` with required CI passing. PR #141 needed a manual follow-up changing three generated

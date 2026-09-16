@@ -15,6 +15,29 @@ def package(text):
     return DocxPackage(archive(doc(text)))
 
 
+def test_nonparagraph_table_content_does_not_become_a_blank_field():
+    source = package(
+        "<w:tbl><w:tr><w:tc><w:p><w:r><w:t>Ім’я:</w:t></w:r></w:p></w:tc>"
+        "<w:tc><w:altChunk/><w:p/></w:tc></w:tr></w:tbl>"
+    )
+    assert not discover(source.model, uuid4()).candidates
+
+
+def test_separated_underlined_runs_keep_distinct_blank_spans():
+    from app.fields.blanks import underlined
+
+    node = {
+        "content": [
+            {
+                "type": "text",
+                "text": "   x   ",
+                "marks": [{"type": "source", "attrs": {"underline": True}}],
+            }
+        ]
+    }
+    assert list(underlined(node)) == [(0, 3), (4, 7)]
+
+
 def test_all_five_labeled_blanks_are_unaccepted_and_negative_cells_are_unchanged():
     source = DocxPackage(DATA)
     before = deepcopy(source.model)
