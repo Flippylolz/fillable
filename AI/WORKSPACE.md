@@ -547,3 +547,7 @@ noneditable, and excludes page-break decorations and the editable textbox role.
 E09.28: restoration/reopen epochs use distinct settings and editor keys. A restored
 workspace contains exactly one settings panel and one editor; display preferences
 remain owned by the parent workspace and saved document state is remounted once.
+
+E09.38: Temporary read-only access checks (including after autosave) retain the
+focused field and its caret. Native text, number and date inputs use readOnly
+instead of disabled; mutation actions remain disabled while access is unavailable.
