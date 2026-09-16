@@ -10,8 +10,8 @@ from coverage_provenance import verify
 def require_metric(covered, total):
     if type(covered) is not int or type(total) is not int:
         raise ValueError("Coverage counts must be integers")
-    if not 0 <= covered <= total or (total and 100 * covered < 90 * total):
-        raise ValueError(f"Coverage below 90% or invalid: {covered}/{total}")
+    if not 0 <= covered <= total or covered != total:
+        raise ValueError(f"Coverage below 100% or invalid: {covered}/{total}")
 
 
 def check(scope, root):

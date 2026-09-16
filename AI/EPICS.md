@@ -6,6 +6,10 @@ Scope: the four pages in [Product](PRODUCT.md), including version-history UI ins
 
 Delivery rule: each individual task ID below gets its own branch and PR, with auto-merge enabled when ready and actually protected by required checks. Follow [PR workflow](PR_WORKFLOW.md); record PR URLs and merge commits rather than marking an open PR done.
 
+Current coverage contract: E09.32 and D014 require 100% executable-line and
+branch coverage independently for backend and frontend. Older 90% thresholds
+in completed task acceptance records and dated measurements are historical.
+
 ## Roadmap
 
 Planning task P00: consolidate the accepted MVP decisions, architecture, epics, and agent rules in one documentation PR (`task/p00-mvp-plan`). Acceptance: linked documents agree on free-only editor components, deterministic detection without AI, local/production environments without backups, HTTP on a new shared-nginx port, and the existing four-page/history/coverage/PR requirements. Validate Markdown links and consistency; no application coverage is claimed for this documentation task. A separate empty Git-history bootstrap establishes `main` before opening the PR and contains no task files.
@@ -2906,7 +2910,7 @@ and responsive preview width on desktop/mobile; all 62 desktop/mobile browser ca
 
 ## E09.27 — Synchronize current documentation and record manual preview QA
 
-Status: in_review — PR #145. Reconcile current guide, architecture, CI, deployment, editor,
+Status: done — PR #145 merged as `7b6c61a34b5927d1a4bb92c7412703c636dd6fc8` with required CI passing. Reconcile current guide, architecture, CI, deployment, editor,
 badge and agent-entry descriptions with verified implementation and GitHub settings;
 retain dated historical evidence. Record the requested manual control/preview checks,
 including failures and explicit limits. Documentation-only PR; no implementation or
@@ -2951,7 +2955,7 @@ paths were simplified while preserving retry limits and text-span behavior.
 
 ## E09.30 — Generate editor notices during frontend builds
 
-Status: in_review. PR #141 needed a manual follow-up changing three generated
+Status: done — PR #147 merged as `67e770a126642fabffde47a429897b39b9701279` with required CI passing. PR #141 needed a manual follow-up changing three generated
 ProseMirror version strings because required CI rejected notice drift after the
 Dependabot update. Acceptance: generate full editor notices before development
 and production builds, remove the generated file from Git, preserve the existing
@@ -2971,7 +2975,7 @@ application source changes or new local coverage measurements are claimed.
 
 ## E09.31 — Complete frontend line and branch coverage
 
-Status: in_review. Exercise every remaining frontend line and branch outcome,
+Status: done — PR #148 merged as `49127d1cb110802a98a9526b166e930baa9cf3bd` with all required CI checks passing. Exercise every remaining frontend line and branch outcome,
 including real editor transactions, DOM presentation, asynchronous cancellation,
 read-only controls and failures. Keep the full authored source set and meaningful
 behavior assertions. Deliver separately from backend coverage and the final gate.
@@ -2983,3 +2987,19 @@ outcomes (100% independently). Tests cover editor transactions and rendering,
 request cancellation, recovery, history, navigation, gallery actions and workspace
 coordination. Redundant disabled-control checks and schema-proven unreachable
 fallbacks were simplified without source exclusions or coverage-ignore pragmas.
+
+## E09.32 — Require complete line and branch coverage
+
+Status: in_review. Following the user's 2026-09-16 request and the independent
+backend (E09.29) and frontend (E09.31) coverage tasks, raise both executable-line
+and branch gates to 100% in each application. Preserve full source inclusion,
+source/report provenance, and required test success. Verify exact raw-count
+boundaries, missing/stale reports, and real unimported-source negative probes.
+Update the current coverage contract in AI/; preserve historical audit evidence.
+Deliver this gate change in its own PR after both coverage prerequisites merge.
+
+2026-09-16: Docker gate and provenance contracts passed, including both actual
+100% reports. Disposable negative probes kept all 543 backend and 423 frontend
+tests passing but rejected the added unimported source: backend 4425/4429 lines,
+frontend 1935/1937 lines and 2187/2189 branches. All 233 local AI/ Markdown links
+resolve; `git diff --check` passes. Both prerequisites are merged with all required CI checks passing.

@@ -16,7 +16,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       reporter: ['text', 'json', 'json-summary'],
-      thresholds: { lines: 90, branches: 90 },
+      thresholds: { lines: 100, branches: 100 },
     },
   },
 });

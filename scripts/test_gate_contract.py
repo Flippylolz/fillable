@@ -66,9 +66,9 @@ class GateContractTests(unittest.TestCase):
                 with self.assertRaises(FileNotFoundError):
                     check(scope, root)
                 for lines, branches, passes in [
-                    (90, 90, True),
-                    (89, 100, False),
-                    (100, 89, False),
+                    (100, 100, True),
+                    (99, 100, False),
+                    (100, 99, False),
                 ]:
                     if scope == "backend":
                         payload = {

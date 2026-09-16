@@ -15,7 +15,7 @@ Status: the user requires every task to use its own PR and requested auto-merge.
 
 1. Read the task's scope, dependencies, and acceptance criteria. Check the existing branch and PR state before creating duplicates.
 2. Implement one task on its branch. Include behavior-focused tests and relevant `AI/` updates.
-3. Run applicable Docker checks. Application changes must meet the independent backend/frontend 90% line and branch gates in [CI and deployment](CI_CD.md).
+3. Run applicable Docker checks. Application changes must meet the independent backend/frontend 100% line and branch gates in [CI and deployment](CI_CD.md).
 4. Push the task branch and create a PR targeting `main`. Use a draft while work is incomplete; make it ready only when the result is reviewable.
 5. Title the PR with the task ID and concrete outcome. Explain the problem/result, relevant validation, measured coverage where applicable, limitations, and dependencies. Use a body file or structured API argument to preserve formatting.
 6. Inspect the actual repository rules and required CI check for this PR. Repository-level auto-merge availability does not itself enforce coverage or enable auto-merge on every PR.
@@ -41,7 +41,7 @@ Reference: [GitHub CLI auto-merge options](https://cli.github.com/manual/gh_pr_m
 
 The remote was verified empty before P00. Empty commit `3820bff` established the base `main` branch on 2026-09-06 and contains no files. P00 delivers the planning documents on `task/p00-mvp-plan` through a PR. This minimal Git-history bootstrap must not be reused to deliver application/task changes directly to `main`.
 
-E01 must establish minimum Docker test/coverage CI and required repository rules before the first application PR merges. Later E01 tasks may expand the checks, but the 90% requirement is not postponed until those tasks finish.
+E01 must establish minimum Docker test/coverage CI and required repository rules before the first application PR merges. Later E01 tasks may expand the checks, but the original 90% requirement was not postponed until those tasks finished. E09.32 raises the current requirement to 100% for both metrics.
 
 ## Deployment remains separate
 

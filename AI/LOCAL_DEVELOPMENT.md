@@ -161,7 +161,7 @@ Lints and tests run in separate fast steps against the same pinned images: Ruff
 and mypy for the backend, ESLint, catalog/copy checks and the TypeScript build
 for the frontend. The test services run real backend integration tests and raw
 coverage gates, and Vitest coverage for the frontend. Both independently need
-at least 90% lines and branches, including unimported application files and
+at least 100% lines and branches, including unimported application files and
 authored migrations. Tests discard old reports; the named frontend container
 retains its new reports. The gate contract test mounts the checked-out workflow
 so it validates the actual `ci-required` job list:

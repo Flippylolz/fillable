@@ -35,7 +35,7 @@ These instructions guide automated implementation in this repository. Direct use
 - Start from current `origin/main` after prerequisites merge. Include the task ID, concrete behavior, validation, and applicable coverage in the PR.
 - The user authorizes routine task branch pushes, PR creation, and enabling auto-merge. Use that standing authorization without repeatedly requesting confirmation for each PR.
 - Repository auto-merge is enabled. Enable it separately on each ready PR, using squash by default and checking the expected head commit.
-- Verify required CI/branch rules before arming a code PR. The 90% coverage blocker must be enforced; `--auto` alone does not create a gate. Do not bypass checks or use administrator merges.
+- Verify required CI/branch rules before arming a code PR. The 100% coverage blocker must be enforced; `--auto` alone does not create a gate. Do not bypass checks or use administrator merges.
 - Follow the PR through failures and updates, and verify that it merged before marking the task done. Record its URL and merge commit, then synchronize before dependent work.
 - Deployment is automated: merging to `main` dispatches the verified release after that commit's required CI succeeds (E09.6). Do not weaken the exact-main CI gate or bypass it with administrator merges.
 
@@ -96,7 +96,7 @@ These instructions guide automated implementation in this repository. Direct use
 ## Verification
 
 - Run checks relevant to the changed behavior and required CI checks. Add meaningful tests for document transformations, quotas, authorization, concurrency, migrations, and recovery.
-- Enforce a minimum 90% line and branch coverage independently for backend and frontend, including unimported application files. Follow D014 and the CI contract; missing reports fail and test failures cannot be overridden by coverage.
+- Enforce a minimum 100% line and branch coverage independently for backend and frontend, including unimported application files. Follow D014 and the CI contract; missing reports fail and test failures cannot be overridden by coverage.
 - Do not lower coverage thresholds, broaden exclusions, ignore authored code, or mark required jobs optional to make CI pass. Fix behavior or add meaningful tests.
 - Required CI must block merging and deployment once configured. A workflow file does not prove the GitHub repository's required-check rules are enabled; verify and report their actual state when the remote is available.
 - Use real PostgreSQL integration tests for reservation locking and concurrent allocations; mocks alone do not prove those properties.

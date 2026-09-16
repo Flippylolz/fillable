@@ -15,22 +15,22 @@ Preparing and testing production images/Compose locally is foundation work. Conn
 
 ## Mandatory coverage gate
 
-The user requires at least **90% test coverage as a CI blocker**. The implementation default is to apply this independently to backend and frontend, with both executable-line and branch coverage checked separately:
+The user requires **100% executable-line and branch coverage as a CI blocker** (2026-09-16). Apply this independently to backend and frontend, with both executable-line and branch coverage checked separately:
 
 | Scope | Line coverage | Branch coverage | Tooling |
 | --- | --- | --- | --- |
-| First-party Python backend, workers, and maintenance commands | >= 90% | >= 90% | pytest, pytest-cov, coverage.py |
-| First-party React/TypeScript application and editor adapter | >= 90% | >= 90% | Vitest with coverage provider |
+| First-party Python backend, workers, and maintenance commands | 100% | 100% | pytest, pytest-cov, coverage.py |
+| First-party React/TypeScript application and editor adapter | 100% | 100% | Vitest with coverage provider |
 
 - Neither a high frontend score nor a high line score may compensate for a failing backend or branch score. Do not average independent gates.
-- Check raw counts: `100 * covered >= 90 * total`. Display rounding must not turn a value below 90% into a pass. A valid source set with no branches reports branch coverage as not applicable; missing source/coverage data is an error.
+- Check raw counts: `covered == total`. Display rounding must not turn a value below 100% into a pass. A valid source set with no branches reports branch coverage as not applicable; missing source/coverage data is an error.
 - Measure all eligible application source files, including files no test imports. Do not measure only changed or executed files.
 - Limit exclusions to tests, fixtures, dependencies, build artifacts, and genuinely generated code with an explicit documented path list. Do not exclude authored logic, workers, editor integration, or difficult error paths to reach the target.
 - Schema migrations also need migration/upgrade checks; their measurement treatment must be explicit and documented during E01.
 - Backend unit/integration coverage may be combined for the same source revision. Instrument and combine subprocess/worker execution when it contributes to the measured suite.
 - Configure Python branch collection and separately evaluate line/branch counts from its machine-readable report; one combined `fail_under` percentage alone does not enforce both metrics.
 - Configure Vitest to include the whole application source set and enforce line/branch thresholds. Verify the gate uses the agreed unrounded counts.
-- Missing, empty, invalid, stale, or incompletely combined reports fail CI. Failing tests remain failures even if coverage exceeds 90%.
+- Missing, empty, invalid, stale, or incompletely combined reports fail CI. Failing tests remain failures even if coverage reaches 100%.
 - The gate starts with the first scaffolded application code. Do not use temporary reduced thresholds, `continue-on-error`, blanket ignore pragmas, or a placeholder passing job.
 
 Coverage supports the behavioral checks in the epics. Browser tests for editing, quotas, template copies, and history restoration remain required even if the numeric thresholds pass.
@@ -50,11 +50,11 @@ Implemented workflow: `.github/workflows/ci.yml`. Tests and coverage use the sam
 
 Keep required workflow scheduling reliable: do not skip the whole required check with path filters. Keep deployment credentials unavailable to untrusted pull-request jobs. Test reports must use synthetic fixtures and must not expose production documents or secrets.
 
-Localization is required under D021 and [Localization](I18N.md). E01 includes catalog validation and checks against hardcoded application copy in required CI: logical message-key parity, nonempty translations, interpolation-parameter parity, and valid language-specific plurals. Keep any nontranslatable literals explicitly documented and narrowly allowed; user data is not catalog copy. Missing English translations fail even if runtime Ukrainian fallback displays text. As pages arrive, required browser coverage includes both languages, profile preference persistence/failure, and preservation of drafts and document content when switching. These implemented checks supplement the independent 90% coverage gates.
+Localization is required under D021 and [Localization](I18N.md). E01 includes catalog validation and checks against hardcoded application copy in required CI: logical message-key parity, nonempty translations, interpolation-parameter parity, and valid language-specific plurals. Keep any nontranslatable literals explicitly documented and narrowly allowed; user data is not catalog copy. Missing English translations fail even if runtime Ukrainian fallback displays text. As pages arrive, required browser coverage includes both languages, profile preference persistence/failure, and preservation of drafts and document content when switching. These implemented checks supplement the independent 100% coverage gates.
 
 Arm auto-merge on each ready task PR only after verifying these actual gates. Failing, skipped, cancelled, or missing required jobs must prevent auto-merge. Never use an administrator override, lower thresholds, or make checks optional to complete a task. Ordinary task merges must not trigger deployment ahead of E08.
 
-Verify the gate with a controlled negative check: temporarily provide below-threshold coverage or introduce an uncovered branch in an isolated verification change, observe failure, then remove that change. Also verify missing-report and exactly-90% boundaries. Do not leave intentionally failing application code in the repository.
+Verify the gate with a controlled negative check: temporarily provide below-threshold coverage or introduce an uncovered branch in an isolated verification change, observe failure, then remove that change. Also verify missing-report and exactly-100% boundaries. Do not leave intentionally failing application code in the repository.
 
 References: [GitHub Actions job dependencies](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-jobs), [required status checks](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
 
@@ -64,7 +64,7 @@ Implemented E08.2 workflow: `.github/workflows/deploy.yml`; E08.3–E08.5 rollou
 
 Before rollout, complete the shared-server preflight in [Deployment target](DEPLOYMENT_TARGET.md). The Actions deployment must use the supplied SSH target, isolated Fillable resources, the verified Fillable-owned TCP relay port 3200, a private app upstream, and the existing owner-managed TLS listener. The public origin is `https://<DEPLOY_HOST>:3200` under D024. Local and production are the only persistent environments; no staging environment or backup system is required.
 
-1. Select one exact commit and run/reuse the mandatory CI contract for that commit. A manual trigger cannot bypass tests or the 90% gates.
+1. Select one exact commit and run/reuse the mandatory CI contract for that commit. A manual trigger cannot bypass tests or the 100% gates.
 2. Build production images from that verified revision and identify the delivered images by immutable digest/commit metadata. Pass the full source commit through Docker into the frontend build for the [Version badge](VERSION_BADGE.md); use the checked-out release revision, including for manual selection, and ensure build caching respects it. Deploy those artifacts; do not pull an unrelated `latest` image or rebuild arbitrary source on the server.
 3. Serialize deployments for the target environment and coordinate nginx changes with its shared configuration manager. Keep dedicated transport credentials in GitHub environment secrets and runtime application secrets on the server; initial account credentials stay with the private operator and are never uploaded to GitHub; do not embed them in images or commit them. Preserve SSH host-key verification.
 4. Validate target capacity, configured persistent paths, runtime configuration, and the tested migration/compatibility plan before changing the running release. D018 explicitly excludes backups; do not create or require one for deployment. Use non-destructive migration steps and preserve existing data/volumes.
@@ -86,6 +86,10 @@ Rollback must also be scoped to Fillable's nginx change and resources. Never rol
 - Image delivery mechanism and the final deployment trigger preference.
 
 The server address/user are already supplied and should not be requested again. E08.1 records verified access, topology and resource baselines in the deployment-target runbook; later E08 tasks deliver and verify the rollout.
+
+The dated audits below retain the thresholds and measurements that applied at
+the time. The mandatory coverage contract above and E09.32 supersede historical
+90% thresholds.
 
 ## E01.1 gate implementation (2026-09-06)
 
@@ -403,3 +407,22 @@ Required lint CI compares the generated source and `dist/editor-notices.txt` in
 the same build container, rejecting missing or changed packaged notices.
 Dependabot updates no longer require a follow-up notice-version commit; all
 existing required checks and independent coverage gates remain enforced.
+
+
+## E09.32 — Exact 100% coverage gates (2026-09-16)
+
+Both application scopes require every executable line and branch outcome to be
+covered. `scripts/check_coverage.py` compares integer counts exactly; the frontend
+Vitest thresholds are also 100/100. Neither rounding nor averaging can hide a
+missing outcome. A source set without branches may report 0/0 branches; executable
+source, complete manifests, current report provenance and successful tests remain
+mandatory. Function and statement percentages are diagnostic rather than separate
+merge metrics.
+
+Boundary contracts accept 100/100 and reject 99/100, 9999/10000 and 999999/1000000. Scope tests
+independently reject a line shortfall or a branch shortfall in either application.
+Disposable negative probes add one small unimported function with a branch, run
+the real suites, and require passing tests but failing coverage. They remove the
+probe afterward and cannot overwrite normal reports. No source exclusions or
+ignore pragmas are introduced. Existing strict `ci-required` protection and the
+same-commit deployment requirement continue to enforce this contract.

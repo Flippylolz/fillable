@@ -28,7 +28,7 @@ records the source, persistence and shared-service checks. [Epics](EPICS.md) con
   restores create new revisions, and retention keeps everything unless configured.
   Local and production are the only persistent environments; backups are excluded.
 - Docker is the development, verification and deployment runtime. Required CI checks
-  enforce raw >=90% lines and branches independently for frontend/backend. The
+  enforce raw >=100% lines and branches independently for frontend/backend. The
   aggregator requires both standard checks and the separate upgrade/recovery job.
 - [The version badge](VERSION_BADGE.md) shows the built source commit or `development`
   with its specified fixed appearance and click-through behavior.
