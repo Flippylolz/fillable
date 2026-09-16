@@ -124,6 +124,11 @@ backend dependencies with Docker and pinned `pip-tools==7.5.3`; use
 `pip-compile --generate-hashes`. Update frontend dependencies with the pinned Node
 image and `npm install --save-exact`. Commit locks and rebuild.
 
+Editor notices are generated automatically before `npm run dev` and
+`npm run build` from installed packages. Do not commit
+`frontend/public/editor-notices.txt`; production builds include the generated
+file in their static assets and reject unreviewed license/inventory changes.
+
 After API schema changes, generate both artifacts through Docker:
 
 ```sh
