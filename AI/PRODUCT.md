@@ -92,7 +92,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Enforce configurable per-user storage allowances for templates, documents, copies, saves, restorations, and retained outputs.
 - Retention is an explicit operator policy, communicated in history UI. Do not silently remove versions to resolve a failing save.
 - Backend permissions, bounded processing, safe saves, and cleanup are required infrastructure, not additional product pages.
-- CI blocks coverage below 90%; the measurement contract is in [CI and deployment](CI_CD.md).
+- CI blocks coverage below 100%; the measurement contract is in [CI and deployment](CI_CD.md).
 - Deployment is the final task, through GitHub Actions to the supplied server at `https://<DEPLOY_HOST>:3200` under D024. Fillable’s TCP relay alone publishes host 3200; existing shared nginx terminates TLS and forwards to the private gateway while preserving other services; see [Deployment target](DEPLOYMENT_TARGET.md). Local Docker development is independent of live-server access.
 
 ## Deferred beyond MVP
@@ -117,7 +117,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Field locations survive supported surrounding edits, and sidebar updates do not lose input or loop.
 - Concurrent allocations cannot bypass quotas, and users cannot access each other's files or historical versions.
 - A fresh checkout runs and tests through Docker without host Python or Node installations.
-- The complete MVP passes mandatory CI, including the independent 90% coverage gates, before its final GitHub Actions deployment.
+- The complete MVP passes mandatory CI, including the independent 100% coverage gates, before its final GitHub Actions deployment.
 - The version badge remains unobtrusive across desktop/mobile and themes, allows clicks through, and identifies the deployed artifact's source commit. Missing metadata uses the documented development fallback; a controlled production release must provide and verify its commit.
 
 Gallery cards use a document placeholder until that saved revision first renders

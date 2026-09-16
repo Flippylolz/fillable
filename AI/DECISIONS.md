@@ -199,7 +199,7 @@ Each individual task (for example, E02.3) gets its own branch and PR, including 
 
 The repository setting `allow_auto_merge` was changed from false to true and verified through GitHub's API. Existing merge methods and unrelated repository settings were preserved. Auto-merge still needs to be enabled on each ready PR; squash is the default task workflow, subject to repository policy.
 
-E01 must establish PR-only merging and the mandatory `ci-required`/90% coverage gate before the first application PR merges. Auto-merge must honor all actual required checks and any configured review rules. The user authorizes the routine task PR/auto-merge workflow; a task is delivered only after its PR is verified merged.
+E01 must establish PR-only merging and the mandatory `ci-required` coverage gate (originally 90%, now 100% under E09.32) before the first application PR merges. Auto-merge must honor all actual required checks and any configured review rules. The user authorizes the routine task PR/auto-merge workflow; a task is delivered only after its PR is verified merged.
 
 [PR workflow](PR_WORKFLOW.md) defines the operational process. No PR or CI gate was created by enabling this setting. Deployment remains E08 and is not triggered merely by merging ordinary tasks.
 

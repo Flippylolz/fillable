@@ -45,7 +45,7 @@ Cookies are not isolated by port; retain Fillable's distinct cookie name.
 Upgrade only the idle Fillable bootstrap using the reviewed guarded installer before
 applying the HTTPS release. Preserve generated database credentials, SSH keys and data.
 Deploy immutable passing artifacts into `fillable-production` with bounded resources,
-namespaced volumes and a dedicated document root. Enforce independent raw 90% line
+namespaced volumes and a dedicated document root. Enforce independent raw 100% line
 and branch gates for both application components and verified required CI before rollout.
 
 Compare unrelated identities, start times, restarts, health and route/HSTS observations

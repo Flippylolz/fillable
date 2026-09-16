@@ -6,6 +6,10 @@ Scope: the four pages in [Product](PRODUCT.md), including version-history UI ins
 
 Delivery rule: each individual task ID below gets its own branch and PR, with auto-merge enabled when ready and actually protected by required checks. Follow [PR workflow](PR_WORKFLOW.md); record PR URLs and merge commits rather than marking an open PR done.
 
+Current coverage contract: E09.32 and D014 require 100% executable-line and
+branch coverage independently for backend and frontend. Older 90% thresholds
+in completed task acceptance records and dated measurements are historical.
+
 ## Roadmap
 
 Planning task P00: consolidate the accepted MVP decisions, architecture, epics, and agent rules in one documentation PR (`task/p00-mvp-plan`). Acceptance: linked documents agree on free-only editor components, deterministic detection without AI, local/production environments without backups, HTTP on a new shared-nginx port, and the existing four-page/history/coverage/PR requirements. Validate Markdown links and consistency; no application coverage is claimed for this documentation task. A separate empty Git-history bootstrap establishes `main` before opening the PR and contains no task files.

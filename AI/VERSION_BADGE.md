@@ -81,7 +81,7 @@ Render the message's version interpolation through a safe component slot so only
 - The badge appears once across all four pages, stays fixed during scrolling, and retains the specified offset, colors, opacity, and monospace value at desktop/mobile viewport sizes and with safe-area insets.
 - Check light/dark theme styling and any global inline-code styles. Verify clicks/taps reach a real control beneath the badge and keyboard focus skips it; there is no tooltip, link, icon, or interaction.
 - Verify the built static frontend with supplied and missing metadata through Docker. For a controlled release, confirm the badge matches that artifact's source commit, including when deploying a selected older revision.
-- Use focused version-resolution/build checks and browser verification within the existing 90% coverage/CI contract. Do not add exhaustive tests mirroring every CSS declaration for this small presentation feature.
+- Use focused version-resolution/build checks and browser verification within the existing 100% coverage/CI contract. Do not add exhaustive tests mirroring every CSS declaration for this small presentation feature.
 
 Implementation is in `frontend/src/VersionBadge.tsx`, mounted beside the application
 outside page containers in `main.tsx`. Catalog component slots safely place only

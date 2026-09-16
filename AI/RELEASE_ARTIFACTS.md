@@ -9,7 +9,7 @@ the same completed run attempt. Missing,
 failed, cancelled, skipped, stale or mismatched evidence fails closed. The gate
 rechecks the latest run and main ref after retrieving jobs, and again after building.
 It does not fall back to an older successful run. The existing CI owns the independent
-raw 90% line and branch gates, source provenance and real negative coverage probes.
+raw 100% line and branch gates, source provenance and real negative coverage probes.
 
 Deployments use one non-cancelling concurrency group and the `production` environment.
 E08.3 must restrict that environment to main and install a dedicated restricted SSH
