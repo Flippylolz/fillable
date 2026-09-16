@@ -3018,6 +3018,7 @@ Git remote verified branch creation, updates, idempotence and stale-run skipping
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
+
 ## E09.37 — Thirty-day recoverable trash
 
 Status: in_progress. Move templates/documents to an owner-scoped library Trash
@@ -3035,3 +3036,10 @@ the isolated test database was rolled back through Alembic before verifying the
 finalized schema; no application data was reset. Added lifecycle tests cover
 restoration, owner isolation, expiry, irreversible empty intent, cleanup failures,
 races and migration guards. Browser acceptance follows in required CI.
+
+## E09.35 — Center the profile in the content pane
+
+Status: in_progress. Center the bounded profile grid horizontally in the space
+beside the sidebar while retaining full available width on narrow screens. Browser
+verification checks center alignment and bounds on desktop/mobile.
+

@@ -44,6 +44,9 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 
 ### 3. Simple profile
 
+The bounded profile card grid is centered within the main content pane and fills
+available width on narrow screens.
+
 - Show account login and allow changing the display name.
 - Allow password change after verifying the current password, and provide logout.
 - Include a language switcher: **Українська** (`uk`, default) and **English** (`en`). Save the account preference, apply it across the app without losing active state, and restore it after refresh or a new login. A failed save leaves the previous language selected and shows a recoverable localized error.
