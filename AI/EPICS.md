@@ -2935,3 +2935,18 @@ run frontend coverage and manually repeat the restore. Deliver in its own PR.
 2026-09-15: E09.28 local Docker validation passed all 323 frontend tests with
 96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
 The restore test now checks that exactly one settings panel and one editor remain.
+
+## E09.31 — Complete frontend line and branch coverage
+
+Status: in_review. Exercise every remaining frontend line and branch outcome,
+including real editor transactions, DOM presentation, asynchronous cancellation,
+read-only controls and failures. Keep the full authored source set and meaningful
+behavior assertions. Deliver separately from backend coverage and the final gate.
+
+2026-09-16: Docker validation on the current main dependency versions passed
+423 frontend tests, ESLint and the TypeScript/Vite production build. All authored
+application source is measured: 1935/1935 executable lines and 2187/2187 branch
+outcomes (100% independently). Tests cover editor transactions and rendering,
+request cancellation, recovery, history, navigation, gallery actions and workspace
+coordination. Redundant disabled-control checks and schema-proven unreachable
+fallbacks were simplified without source exclusions or coverage-ignore pragmas.

@@ -58,3 +58,10 @@ test("cancel and validation preserve title, and definitive edits change the retr
   fetcher.mockResolvedValueOnce(Response.json(target)); submit(); await waitFor(() => expect(onCreated).toHaveBeenCalled());
   expect(fetcher.mock.calls[0][0].headers.get("idempotency-key")).not.toBe(fetcher.mock.calls[1][0].headers.get("idempotency-key"));
 });
+
+test("uncertain server failure keeps the copy retry identity",async()=>{
+  const fetcher=vi.fn().mockResolvedValueOnce(Response.json({error:{code:"internal_error"}},{status:503})).mockResolvedValueOnce(Response.json(target));
+  vi.stubGlobal("fetch",fetcher);render(ui());fireEvent.click(screen.getByRole("button"));submit();await screen.findByRole("alert");
+  submit();await waitFor(()=>expect(onCreated).toHaveBeenCalled());
+  expect(fetcher.mock.calls[0][0].headers.get("idempotency-key")).toBe(fetcher.mock.calls[1][0].headers.get("idempotency-key"));
+});

@@ -48,3 +48,10 @@ test("plain historical preview is read-only with no fabricated fields", async ()
   fireEvent.click(screen.getByText("Saved fields"));
   expect(screen.getByText("No fields in this saved revision.")).toBeVisible();
 });
+
+test("historical download explains an operation still in progress",async()=>{
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({error:{code:"operation_in_progress"}},{status:409})));
+  render(<DownloadVersion identity="document" version="selected" filename="File.docx"/>);
+  fireEvent.click(screen.getByRole("button"));
+  expect(await screen.findByRole("alert")).toHaveTextContent(/progress|operation/i);
+});

@@ -59,3 +59,17 @@ test("print without a node reports unavailable without creating a frame", () => 
     expect(createElement).not.toHaveBeenCalledWith("iframe");
   } finally { createElement.mockRestore(); }
 });
+
+test("printing without afterprint events still removes its frame on timeout",()=>{
+  vi.useFakeTimers();const node=original("div");const print=vi.fn();
+  vi.spyOn(document,"createElement").mockImplementation((tag,options)=>{
+    const element=original(tag,options);
+    if(tag==="iframe"){
+      Object.defineProperty(element,"contentWindow",{value:{print,focus:vi.fn()}});
+      Object.defineProperty(element,"contentDocument",{value:{open:vi.fn(),write:vi.fn(),close:vi.fn()}});
+    }
+    return element;
+  });
+  try{expect(printDocumentNode(node,layout)).toBe(true);expect(print).toHaveBeenCalledOnce();const frame=[...document.querySelectorAll(".print-frame")].at(-1)!;vi.advanceTimersByTime(60000);expect(frame.isConnected).toBe(false);}
+  finally{vi.useRealTimers();}
+});

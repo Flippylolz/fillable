@@ -56,3 +56,10 @@ test("pending and disabled controls cannot duplicate downloads; unmount aborts a
   await act(async () => finish(new Response("late bytes")));
   expect(URL.createObjectURL).not.toHaveBeenCalled();
 });
+
+test("download ignores network rejection after unmount without creating a file",async()=>{
+  let reject!:(error:Error)=>void;vi.stubGlobal("fetch",vi.fn(()=>new Promise<Response>((_,no)=>{reject=no;})));
+  const view=show();fireEvent.click(screen.getByRole("button"));view.unmount();
+  await act(async()=>reject(new Error("cancelled")));
+  expect(URL.createObjectURL).not.toHaveBeenCalled();
+});

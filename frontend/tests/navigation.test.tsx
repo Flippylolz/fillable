@@ -53,3 +53,15 @@ test("the sidebar marks the active section and hosts identity and sign-out", asy
   expect(screen.queryByRole("button", { name: "Увійти знову" })).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Вийти" })).toBeEnabled();
 });
+
+test("signed-in connection retry and template navigation are wired through the shell",async()=>{
+  let healthy=false;
+  vi.stubGlobal("fetch",vi.fn(async(request:Request|string)=>{
+    if(request==="/api/health")return healthy?Response.json({status:"ok"}):Response.json({status:"failed"},{status:503});
+    return defaults(request as Request);
+  }));
+  render(<I18nextProvider i18n={i18n}><App/></I18nextProvider>);await screen.findByText(/Шаблонів ще немає/);
+  healthy=true;fireEvent.click(screen.getByRole("button",{name:"Спробувати знову"}));await screen.findByText("З’єднання із сервером встановлено");
+  fireEvent.click(screen.getByRole("link",{name:"Мої документи"}));fireEvent.click(screen.getByRole("link",{name:"Шаблони"}));
+  expect(screen.getByRole("link",{name:"Шаблони"})).toHaveAttribute("aria-current","page");
+});

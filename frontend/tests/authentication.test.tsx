@@ -238,3 +238,12 @@ test("expired-session recovery discards the old workspace only after its leave g
   await screen.findByRole("button", { name: "Sign in" });
   expect(screen.queryByText("Protect draft")).not.toBeInTheDocument(); expect(window.location.pathname).toBe("/login");
 });
+
+test("recovery can switch to another authenticated account after consent",async()=>{
+  const {api}=await import("../src/api");const other={...signedIn,user:{...signedIn.user!,id:"different",login:"different@example.test"}};
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValueOnce(Response.json(signedIn)).mockResolvedValueOnce(failure("authentication_required")).mockResolvedValueOnce(Response.json(other)));
+  render(<I18nextProvider i18n={i18n}><Authentication>{(session)=><><span>{session.user!.login}</span><button onClick={()=>void api.GET("/api/documents",{params:{query:{kind:"document"}}})}>Expire session</button></>}</Authentication></I18nextProvider>);
+  fireEvent.click(await screen.findByRole("button",{name:"Expire session"}));
+  fireEvent.click(await screen.findByRole("button",{name:/different@example.test/}));
+  await waitFor(()=>expect(window.location.pathname).toBe("/documents"));expect(screen.getByText("different@example.test")).toBeVisible();
+});

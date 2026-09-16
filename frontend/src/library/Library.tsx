@@ -91,7 +91,7 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
       if (result.data) {
         setSaved(result.data.title); setTab(result.data.kind);
         setFile(null); setTitle(""); key.current = newKey();
-        if (input.current) input.current.value = "";
+        input.current!.value = "";
         setRevision(value => value + 1); onSaved();
       } else {
         const code = result.error.error.code;
