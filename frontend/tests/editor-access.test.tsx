@@ -65,7 +65,7 @@ test("read-only React controls retain drafts while selection and review browsing
   const field = screen.getAllByRole("textbox", { name: "Field value: ПІБ клієнта" })[0];
   fireEvent.change(field, { target: { value: "Keep draft" } });
   await act(async () => view.rerender(<I18nextProvider i18n={i18n}><DocumentEditor initialDocument={corpus} readOnly /></I18nextProvider>));
-  expect(field).toHaveValue("Keep draft"); expect(field).toBeDisabled();
+  expect(field).toHaveValue("Keep draft"); expect(field).toHaveAttribute("readonly");
   expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled();
   expect(screen.getByRole("textbox", { name: "Editable document" })).toHaveAttribute("contenteditable", "false");
   expect(screen.getAllByRole("button", { name: "Go to field: ПІБ клієнта" })[0]).toBeEnabled();

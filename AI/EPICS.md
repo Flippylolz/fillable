@@ -3026,6 +3026,7 @@ beside the sidebar while retaining full available width on narrow screens. Brows
 verification checks center alignment and bounds on desktop/mobile.
 
 
+
 ## E09.39 — Admit verified coverage-badge publication in release evidence
 
 Status: in_review. Main CI now has nine jobs after E09.33 added coverage-badge
@@ -3034,3 +3035,16 @@ publication; the strict release verifier still expected eight and blocked releas
 in the required release evidence, retaining exact job identities, success, source
 and run-attempt validation. Docker release contract tests verify that missing or
 failed badge publication still blocks a release. No deployment gate is bypassed.
+
+## E09.38 — Preserve field focus during autosave
+
+Status: done. PR [#154](https://github.com/Flippylolz/fillable/pull/154) merged as
+`a4fc7cbaf557dcf98314c4ae79fefa374b11e8b2` with all required CI checks passing.
+Local Docker frontend: 426 tests, 100% lines and branches; the deliberate
+post-save focus/caret browser regression passed desktop/mobile locally and in CI.
+Urgent user report: fill-mode autosave drops field focus.
+Saved revisions briefly reacquire editing access, and disabled native inputs blur.
+Use native read-only inputs during that access check, retaining the mounted input,
+focus and selection while preventing edits without a valid lease. Cover text,
+number and date fields, and verify delayed post-autosave lease acquisition in
+real desktop/mobile browsers with continued typing at the retained caret.

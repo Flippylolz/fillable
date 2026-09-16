@@ -125,3 +125,29 @@ test("an uncertain autosave pauses retries and preserves newer typing until exac
   await page.getByRole("button", { name: "Зберегти документ", exact: true }).click(); await saved(page); expect(writes).toHaveLength(5);
   await expect(values(page).first()).toHaveValue("Ще новіша чернетка");
 });
+
+
+test("fill autosave retains focus and caret while the saved revision reacquires editing access", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: "Заповнення", exact: true }).click();
+  const input = page.locator(".fill-form").getByRole("textbox", { name: "Значення поля: ПІБ клієнта", exact: true }).first();
+  let resume!: () => void;
+  const held = new Promise<void>(resolve => { resume = resolve; });
+  await page.route("**/editing-lease", async route => {
+    if (route.request().postDataJSON().action === "acquire") await held;
+    await route.continue();
+  });
+  await input.fill("Ґанна");
+  await input.press("ArrowLeft");
+  await saved(page);
+  await expect(input).toHaveAttribute("readonly", "");
+  await expect(input).toBeFocused();
+  expect(await input.evaluate(node => [(node as HTMLTextAreaElement).selectionStart, (node as HTMLTextAreaElement).selectionEnd])).toEqual([4, 4]);
+  resume();
+  await expect(input).not.toHaveAttribute("readonly", "");
+  await expect(input).toBeFocused();
+  await page.keyboard.type("Ї");
+  await expect(input).toHaveValue("ҐаннЇа");
+  await saved(page);
+  await expect(input).toBeFocused();
+});
