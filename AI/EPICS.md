@@ -2936,6 +2936,26 @@ run frontend coverage and manually repeat the restore. Deliver in its own PR.
 96.71% line / 92.72% branch coverage; ESLint and the TypeScript/Vite build passed.
 The restore test now checks that exactly one settings panel and one editor remain.
 
+## E09.30 — Generate editor notices during frontend builds
+
+Status: in_review. PR #141 needed a manual follow-up changing three generated
+ProseMirror version strings because required CI rejected notice drift after the
+Dependabot update. Acceptance: generate full editor notices before development
+and production builds, remove the generated file from Git, preserve the existing
+license/inventory validation, and verify the production output contains the
+generated notices. Dependency updates must require no notice-only follow-up
+commit. Required CI and coverage gates remain unchanged. No application source
+or document storage changes.
+
+2026-09-16: Local pinned-Docker validation passed ESLint, 17 catalog checks,
+TypeScript/Vite build from an absent notices file, exact generated/distributed
+notice comparison, and the development generation hook. Disposable package
+probes confirmed automatic version refresh and rejection of non-MIT metadata,
+missing LICENSE files, and changed inventory counts. Docker address pools were
+full; these checks ran with no network and no shared-service changes. Full
+application suites and measured coverage are delegated to required PR CI; no
+application source changes or new local coverage measurements are claimed.
+
 ## E09.31 — Complete frontend line and branch coverage
 
 Status: in_review. Exercise every remaining frontend line and branch outcome,

@@ -23,7 +23,7 @@ jobs:
       - name: Lint and type-check backend
         run: docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps backend-test sh -c 'ruff check . && mypy app'
       - name: Lint, validate catalogs and build frontend
-        run: docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test sh -c 'npm run lint && npm run check:i18n && npm run build'
+        run: docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps frontend-test sh -c 'npm run lint && npm run check:i18n && npm run build && cmp public/editor-notices.txt dist/editor-notices.txt'
       - name: Check generated API drift
         run: |
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/generated:/output" backend-test python /checks/export_openapi.py /output/openapi.json
@@ -33,10 +33,6 @@ jobs:
         run: |
           docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/prototype:/output" backend-test python /checks/export_editor_fixture.py /output/document.json /output/fields.json
           git diff --exit-code -- frontend/prototype
-      - name: Check editor dependency notices
-        run: |
-          docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps --user "$(id -u):$(id -g)" -v "$PWD/frontend/public:/app/public" frontend-test node scripts/editor-notices.mjs
-          git diff --exit-code -- frontend/public/editor-notices.txt
       - name: Validate runtime Compose configurations
         run: |
           docker compose -f compose.yaml -f compose.dev.yaml config --quiet
