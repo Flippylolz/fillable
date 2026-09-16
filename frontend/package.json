@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/editor-notices.mjs",
     "dev": "vite --host 0.0.0.0",
+    "prebuild": "node scripts/editor-notices.mjs",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run --coverage",
     "check:i18n": "node --test scripts/check-i18n.test.mjs && node scripts/check-i18n.mjs",

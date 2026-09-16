@@ -139,7 +139,9 @@ Locked npm versions: model 1.25.4, state 1.4.4, view 1.41.7, commands 1.7.1,
 history 1.5.0, keymap 1.2.3, transform 1.12.1, orderedmap 2.1.1, rope-sequence 1.3.4,
 and w3c-keyname 2.2.8. All ten installed package licenses were inspected as MIT;
 `frontend/public/editor-notices.txt` retains their full notices in static assets.
-The required notice-regeneration check detects changes. Python's defusedxml 0.7.1
+E09.30 generates this ignored file before development/build commands; required CI
+checks that the built static asset matches, while the generator validates licenses
+and inventory. Python's defusedxml 0.7.1
 is hash-locked and its installed distribution retains its license. These obligations
 do not change Fillable's undecided project license.
 
@@ -249,7 +251,8 @@ service, project-license decision or product-page change.
 The locked browser packages are ProseMirror model 1.25.4, state 1.4.4, view 1.41.7,
 commands 1.7.1, history 1.5.0, keymap 1.2.3, transform 1.12.1, orderedmap 2.1.1,
 rope-sequence 1.3.4 and w3c-keyname 2.2.8. All ten are MIT and their complete notices
-are generated into the distributed static asset and drift-checked by CI. The Python
+are generated before each build into the distributed static asset; CI verifies
+that the packaged notices match the generated file (E09.30). The Python
 XML component is BSD-licensed lxml 6.1.3 with installed distribution/dependency
 notices retained. The QA-only LibreOffice/Poppler image has no production role and
 is not the canonical export path. Fillable's own license remains undecided.
