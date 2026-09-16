@@ -103,7 +103,7 @@ describe("fill mode layout", () => {
 
   test("read-only fill mode disables the entries and undo", () => {
     editorSetup("fill", true);
-    for (const entry of entries()) expect(within(entry).getByRole("textbox")).toBeDisabled();
+    for (const entry of entries()) expect(within(entry).getByRole("textbox")).toHaveAttribute("readonly");
     expect(fillForm().getByText("Undo", { exact: true })).toBeDisabled();
     expect(within(entries()[0]).getByRole("button", { name: "Remove field: ПІБ клієнта" })).toBeDisabled();
   });

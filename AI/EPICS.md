@@ -3035,7 +3035,13 @@ Ruff/mypy, ESLint, catalogs and TypeScript/Vite pass. The old draft migration in
 the isolated test database was rolled back through Alembic before verifying the
 finalized schema; no application data was reset. Added lifecycle tests cover
 restoration, owner isolation, expiry, irreversible empty intent, cleanup failures,
-races and migration guards. Browser acceptance follows in required CI.
+races and migration guards. CI then passed 548 backend tests at the same complete
+coverage after adding the 21-item empty-trash regression; full desktop/mobile
+browser acceptance also passed. The upgrade driver now expects schema 0014.
+Production has an explicit 0013-to-0014 forward-only policy and a narrowly scoped,
+release-locked installer, verified by 16 Docker runtime contract tests.
+The local full upgrade rehearsal was blocked by exhausted Docker network pools;
+required isolated CI repeats the migration/persistence proof.
 
 ## E09.35 — Center the profile in the content pane
 
@@ -3043,3 +3049,13 @@ Status: in_progress. Center the bounded profile grid horizontally in the space
 beside the sidebar while retaining full available width on narrow screens. Browser
 verification checks center alignment and bounds on desktop/mobile.
 
+
+
+## E09.38 — Preserve field focus during autosave
+
+Status: in_progress. Urgent user report: fill-mode autosave drops field focus.
+Saved revisions briefly reacquire editing access, and disabled native inputs blur.
+Use native read-only inputs during that access check, retaining the mounted input,
+focus and selection while preventing edits without a valid lease. Cover text,
+number and date fields, and verify delayed post-autosave lease acquisition in
+real desktop/mobile browsers with continued typing at the retained caret.
