@@ -3021,7 +3021,7 @@ and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
 ## E09.36 — Usable filling layout and text formatting
 
-Status: in_progress. Bound the field column, give the live preview the remaining
+Status: in_review. Bound the field column, give the live preview the remaining
 width, and size field inputs to their content. Expose localized bold, italic and
 underline controls for selected document text and linked field values. Preserve
 source identities, unrelated OOXML formatting, one draft, undo/redo and saved
@@ -3037,6 +3037,9 @@ Microsoft Word execution is not claimed.
 
 Local Playwright also passed the saved fill-formatting preview regression on
 desktop and mobile; screenshots verified compact inputs and the larger preview.
+After integrating merged E09.38, all 429 frontend tests passed with 100% lines
+and branches. The delayed-autosave focus/caret regression passed again against
+this layout on desktop/mobile.
 Mobile visual review additionally found the workspace title squeezed between
 buttons; the toolbar now wraps with a full-width title on narrow screens.
 
