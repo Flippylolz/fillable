@@ -336,5 +336,10 @@
   "library.sortTitleAsc": "За назвою А→Я",
   "library.sortTitleDesc": "За назвою Я→А",
   "library.uploadAction": "Завантажити DOCX",
-  "library.format": "DOCX"
+  "library.format": "DOCX",
+  "editor.bold": "Жирний",
+  "editor.italic": "Курсив",
+  "editor.underline": "Підкреслений",
+  "editor.formatField": "Форматування поля: {{label}}",
+  "editor.formatSelection": "Форматування виділеного тексту"
 }

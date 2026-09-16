@@ -1,4 +1,4 @@
-.fill-layout { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: 1rem; align-items: start; }
+.fill-layout { display: grid; grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr); gap: 1rem; align-items: start; }
 .fill-form { display: grid; gap: 0.4rem; min-width: 0; }
 .fill-form h3 { margin: 0 0 0.2rem; font-size: 0.95rem; }
 .fill-tools { display: flex; gap: 0.3rem; }
@@ -19,3 +19,10 @@
   .fill-layout { grid-template-columns: minmax(0, 1fr); }
   .fill-preview { max-height: 55vh; }
 }
+
+.fill-entry input, .fill-entry textarea { box-sizing: border-box; width: 100%; min-width: 0; padding: 0.45rem 0.55rem; font: inherit; border: 1px solid var(--fillable-line-strong); border-radius: 0.35rem; background: var(--fillable-surface); color: var(--fillable-ink); }
+.fill-entry textarea { resize: vertical; min-height: 2.4rem; }
+.fill-format-tools { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0.35rem 0; }
+.fill-format-tools button { font-size: 0.75rem; padding: 0.2rem 0.4rem; }
+.fill-preview { position: sticky; top: 1rem; }
+@media (max-width: 48rem) { .fill-preview { position: static; } }

@@ -326,5 +326,10 @@
   "library.sortTitleAsc": "Title A–Z",
   "library.sortTitleDesc": "Title Z–A",
   "library.uploadAction": "Upload DOCX",
-  "library.format": "DOCX"
+  "library.format": "DOCX",
+  "editor.bold": "Bold",
+  "editor.italic": "Italic",
+  "editor.underline": "Underline",
+  "editor.formatField": "Format field: {{label}}",
+  "editor.formatSelection": "Format selected text"
 }

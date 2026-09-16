@@ -30,12 +30,25 @@ def children(node):
             continue
         marks = child.get("marks", [])
         attrs = {}
+        formatting = {}
+        if marks and marks[-1].get("type") == "format":
+            formatting = marks[-1]["attrs"]
+            if set(formatting) != {"bold", "italic", "underline"} or any(
+                value is not None and type(value) is not bool
+                for value in formatting.values()
+            ):
+                raise ValueError("copy_format_mismatch")
+            marks = marks[:-1]
         if marks:
             if len(marks) != 1 or marks[0].get("type") != "source":
                 raise ValueError("copy_format_mismatch")
             attrs = marks[0]["attrs"]
             if set(attrs) != {"id", "bold", "italic", "underline"}:
                 raise ValueError("copy_format_mismatch")
+        attrs = {
+            **attrs,
+            **{key: value for key, value in formatting.items() if value is not None},
+        }
         style = tuple(attrs.get(key, False) for key in ("bold", "italic", "underline"))
         if any(type(value) is not bool for value in style):
             raise ValueError("copy_format_mismatch")

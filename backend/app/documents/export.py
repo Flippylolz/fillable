@@ -384,6 +384,19 @@ class DocxExport:
             raise InvalidDocument("invalid_text")
         marks = node.get("marks", [])
         element = etree.Element(W + "r")
+        formatting = None
+        if marks and marks[-1].get("type") == "format":
+            formatting = marks[-1].get("attrs")
+            if (
+                not isinstance(formatting, dict)
+                or set(formatting) != {"bold", "italic", "underline"}
+                or any(
+                    value is not None and type(value) is not bool
+                    for value in formatting.values()
+                )
+            ):
+                raise InvalidDocument("invalid_marks")
+            marks = marks[:-1]
         if marks:
             if len(marks) != 1 or marks[0].get("type") != "source":
                 raise InvalidDocument("invalid_marks")
@@ -395,6 +408,24 @@ class DocxExport:
             for child in list(element):
                 if child.tag != W + "rPr":
                     element.remove(child)
+        if formatting is not None:
+            properties = element.find(W + "rPr")
+            if properties is None:
+                properties = etree.Element(W + "rPr")
+                element.insert(0, properties)
+            for key, tag in (("bold", "b"), ("italic", "i"), ("underline", "u")):
+                selected = formatting[key]
+                if selected is None:
+                    continue
+                for old in list(properties.findall(W + tag)):
+                    properties.remove(old)
+                prop = etree.SubElement(properties, W + tag)
+                prop.set(
+                    W + "val",
+                    ("single" if selected else "none")
+                    if key == "underline"
+                    else ("1" if selected else "0"),
+                )
         for index, line in enumerate(value.split("\n")):
             if index:
                 etree.SubElement(element, W + "br")

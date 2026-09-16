@@ -1,3 +1,4 @@
+import { formatText, type TextFormat } from "./formatting";
 import { fillBoxedDate, type DateBoxIssue } from "./boxedDates";
 import { glyphCheckboxReady, shapeToggleFill, toggleGlyphCheckbox, toggleSelectedCheckbox, type CheckboxIssue } from "./checkboxes";
 import { sourceNodeView } from "./sourceNodes";
@@ -261,6 +262,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
       const transaction = updateField(editor.state, key, value);
       return transaction.docChanged && dispatch(transaction);
     },
+    format(format: TextFormat, key?: string) { return dispatch(formatText(editor.state, format, key)); },
     focusField(id: string) { return dispatch(focusField(editor.state, id), true); },
     removeField(id: string) { return dispatch(removeField(editor.state, id)); },
     undo() { if (!allowed()) return false; const changed = undo(editor.state, editor.dispatch); editor.focus(); return changed; },

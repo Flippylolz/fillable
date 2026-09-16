@@ -113,3 +113,5 @@
 .document-workbench[data-mode="fill"] { display: block; }
 
 .document-selection-retained { background-color: #b3d7ff; border-radius: 2px; }
+
+.document-canvas [data-source-run]:has(> [data-format-underline="false"]) { text-decoration: none !important; }

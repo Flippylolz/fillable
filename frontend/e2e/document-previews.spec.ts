@@ -30,6 +30,16 @@ test("saved previews populate on first render, persist, and follow saved fill-mo
   await page.getByRole("button", { name: "Заповнення", exact: true }).click();
   const input = page.locator(".fill-form").getByRole("textbox", { name: "Значення поля: ПІБ клієнта", exact: true }).first();
   await input.fill("Єва Ґалаган — превʼю");
+  const field = page.locator(".fill-entry").filter({ has: input });
+  await field.getByRole("button", { name: "Жирний", exact: true }).click();
+  await expect(page.locator('.fill-preview [data-text-format]').first()).toHaveCSS("font-weight", "700");
+  const widths = await page.locator(".fill-layout").evaluate(layout => ({
+    form: layout.querySelector(".fill-form")!.getBoundingClientRect().width,
+    preview: layout.querySelector(".fill-preview")!.getBoundingClientRect().width,
+    desktop: window.innerWidth > 1000,
+  }));
+  if (widths.desktop) expect(widths.preview).toBeGreaterThan(widths.form);
+  await page.screenshot({ path: info.outputPath("fill-formatting.png"), fullPage: true });
   await expect(page.locator(".fill-preview")).toContainText("Єва Ґалаган — превʼю");
   await expect(page.locator(".fill-preview .ProseMirror")).toHaveAttribute("contenteditable", "false");
   const fits = await page.locator(".fill-preview-viewport").evaluate(viewport => {

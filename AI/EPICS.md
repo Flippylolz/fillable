@@ -3017,3 +3017,19 @@ reports, accessible SVGs, raw counts and no-branch handling. A disposable local
 Git remote verified branch creation, updates, idempotence and stale-run skipping.
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
+
+## E09.36 — Usable filling layout and text formatting
+
+Status: in_progress. Bound the field column, give the live preview the remaining
+width, and size field inputs to their content. Expose localized bold, italic and
+underline controls for selected document text and linked field values. Preserve
+source identities, unrelated OOXML formatting, one draft, undo/redo and saved
+DOCX formatting through export/reopen. Verify responsive layout and invalid marks.
+
+2026-09-16: E09.36 local Docker checks passed 547 backend tests with 4451/4451
+lines and 1448/1448 branches; 426 frontend tests with 100% lines and branches.
+Ruff, mypy, ESLint, catalogs and TypeScript/Vite passed. DOCX structural export,
+reopen and semantic correspondence tests verify explicit formatting, unchanged
+source identities and retained unrelated run properties. Browser CI also checks
+visible bold preview, desktop column proportions and saved gallery rendering.
+Microsoft Word execution is not claimed.
