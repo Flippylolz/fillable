@@ -36,3 +36,6 @@ test-results/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Generated from installed editor packages before development and production builds
+/frontend/public/editor-notices.txt

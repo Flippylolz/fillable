@@ -2948,3 +2948,23 @@ Deliver separately from frontend coverage and the final 100% gate increase.
 Coverage includes every backend application source: 4425/4425 executable lines
 and 1430/1430 branch outcomes (100% independently). Two unreachable loop/span
 paths were simplified while preserving retry limits and text-span behavior.
+
+## E09.30 — Generate editor notices during frontend builds
+
+Status: in_review. PR #141 needed a manual follow-up changing three generated
+ProseMirror version strings because required CI rejected notice drift after the
+Dependabot update. Acceptance: generate full editor notices before development
+and production builds, remove the generated file from Git, preserve the existing
+license/inventory validation, and verify the production output contains the
+generated notices. Dependency updates must require no notice-only follow-up
+commit. Required CI and coverage gates remain unchanged. No application source
+or document storage changes.
+
+2026-09-16: Local pinned-Docker validation passed ESLint, 17 catalog checks,
+TypeScript/Vite build from an absent notices file, exact generated/distributed
+notice comparison, and the development generation hook. Disposable package
+probes confirmed automatic version refresh and rejection of non-MIT metadata,
+missing LICENSE files, and changed inventory counts. Docker address pools were
+full; these checks ran with no network and no shared-service changes. Full
+application suites and measured coverage are delegated to required PR CI; no
+application source changes or new local coverage measurements are claimed.

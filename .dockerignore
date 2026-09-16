@@ -9,3 +9,5 @@ AI/DEPLOYMENT.local.md
 **/.coverage
 **/dist
 var
+
+frontend/public/editor-notices.txt
