@@ -336,5 +336,9 @@
   "library.sortTitleAsc": "За назвою А→Я",
   "library.sortTitleDesc": "За назвою Я→А",
   "library.uploadAction": "Завантажити DOCX",
-  "library.format": "DOCX"
+  "library.format": "DOCX",
+  "library.templateTitleHeading": "Шаблони",
+  "library.documentTitleHeading": "Мої документи",
+  "library.templateDescription": "Багаторазові шаблони. Виберіть шаблон, щоб створити окремий документ.",
+  "library.documentDescription": "Ваші окремі документи та збережені копії для редагування й завантаження."
 }

@@ -165,7 +165,7 @@ test("authenticated navigation and language saves preserve the upload draft and 
     return defaults(request);
   }));
   render(<I18nextProvider i18n={i18n}><App /></I18nextProvider>);
-  await screen.findByRole("heading", { name: "Бібліотека документів" });
+  await screen.findByRole("heading", { name: "Шаблони" });
   expect(window.location.pathname).toBe("/documents");
   choose(file());
   fireEvent.change(screen.getByLabelText("Назва документа"), { target: { value: "Незбережена заява" } });
@@ -179,6 +179,11 @@ test("authenticated navigation and language saves preserve the upload draft and 
   expect(screen.getByLabelText("Document title")).toHaveValue("Незбережена заява");
   expect((screen.getByLabelText("DOCX file") as HTMLInputElement).files?.[0].name).toBe("Заява Ґанни.docx");
   expect(document.documentElement.lang).toBe("en");
+  expect(screen.getByRole("heading", { name: "My documents" })).toBeVisible();
+  expect(screen.getByText("Your individual documents and saved copies, ready to edit or download.")).toBeVisible();
+  fireEvent.click(screen.getByRole("link", { name: "Templates" }));
+  expect(screen.getByRole("heading", { name: "Templates" })).toBeVisible();
+  expect(screen.getByText("Reusable starting points. Choose a template to create a separate document.")).toBeVisible();
   act(() => { window.history.replaceState(null, "", "/profile"); window.dispatchEvent(new PopStateEvent("popstate")); });
   expect(screen.getByRole("heading", { name: "Profile" })).toBeVisible();
 });
