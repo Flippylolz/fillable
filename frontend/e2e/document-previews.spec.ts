@@ -26,6 +26,9 @@ test("saved previews populate on first render, persist, and follow saved fill-mo
   await expect(card.locator(".library-preview-placeholder")).toBeVisible();
   await card.getByRole("link", { name: title, exact: true }).click();
   await expect(page.getByText("Редагування дозволено.", { exact: true })).toBeVisible();
+  const heading = await page.locator("#workspace-title").boundingBox();
+  expect(heading!.width).toBeGreaterThan(200);
+  expect(heading!.height).toBeLessThan(100);
   await manualSaving(page);
   await page.getByRole("button", { name: "Заповнення", exact: true }).click();
   const input = page.locator(".fill-form").getByRole("textbox", { name: "Значення поля: ПІБ клієнта", exact: true }).first();
@@ -50,9 +53,11 @@ test("saved previews populate on first render, persist, and follow saved fill-mo
   await page.getByRole("button", { name: "Зберегти документ", exact: true }).click();
   await expect(page.getByText("Усі зміни документа збережено.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Назад до бібліотеки", exact: true }).click();
+  await card.scrollIntoViewIfNeeded();
   await expect(card.locator(".library-preview-content")).toContainText("Єва Ґалаган — превʼю");
   await page.reload();
   card = page.getByRole("article", { name: title, exact: true });
+  await card.scrollIntoViewIfNeeded();
   await expect(card.locator(".library-preview-content")).toContainText("Єва Ґалаган — превʼю");
   await expect(card.locator(".library-preview")).toHaveAttribute("inert", "");
   await page.screenshot({ path: info.outputPath("saved-gallery-preview.png"), fullPage: true });

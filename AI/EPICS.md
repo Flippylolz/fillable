@@ -3035,12 +3035,13 @@ source identities and retained unrelated run properties. Browser CI also checks
 visible bold preview, desktop column proportions and saved gallery rendering.
 Microsoft Word execution is not claimed.
 
+Local Playwright also passed the saved fill-formatting preview regression on
+desktop and mobile; screenshots verified compact inputs and the larger preview.
+Mobile visual review additionally found the workspace title squeezed between
+buttons; the toolbar now wraps with a full-width title on narrow screens.
+
 ## E09.35 — Center the profile in the content pane
 
 Status: in_progress. Center the bounded profile grid horizontally in the space
 beside the sidebar while retaining full available width on narrow screens. Browser
 verification checks center alignment and bounds on desktop/mobile.
-
-
-Local Playwright also passed the saved fill-formatting preview regression on
-desktop and mobile; screenshots verified compact inputs and the larger preview.
