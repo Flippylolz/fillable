@@ -368,3 +368,17 @@ retains all versions for 30 days; restore preserves identity and revisions.
 Permanent deletion and Empty trash are explicit confirmed actions. Empty trash
 records immediate irreversible intent across all pages, with bounded physical
 cleanup completed by maintenance. Retained bytes remain charged until removed.
+
+
+## D028 — Release-driven forward database migrations
+
+Status: **Accepted — explicit user requirement, 2026-09-16.**
+
+Migrations run automatically during the gated normal deployment. The installed
+runtime derives compatibility from the verified image's complete linear Alembic
+history, rather than a server-side list updated for every schema version. Stop
+Fillable writers before migrating and start the new app only after reaching its
+head. Reject unknown or backward paths before interruption; retain data and the
+last successful receipt on failure for forward repair. The deployment mechanism
+needs one bootstrap update; subsequent schema changes ship through ordinary PRs,
+CI and automatic releases. Shared services and ingress remain outside this operation.

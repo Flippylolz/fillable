@@ -35,8 +35,8 @@ from fillable_runtime import (
     tls_status,
     validate_schema_transition,
 )
+from install_migration_runtime import upgrade as upgrade_migrations
 from install_receiver import install, upgrade_https
-from install_trash_policy import upgrade as upgrade_trash
 from release_artifact import pack
 from release_receiver import parse_command, receive
 from test_release_contract import SOURCE, fixture
@@ -106,27 +106,148 @@ def hold_lock(root, ready, release):
 
 
 class RuntimeContracts(unittest.TestCase):
-    def test_trash_schema_transition_preserves_forward_only_policy(self):
-        old, new = "0013_maintenance_state", "0014_document_trash"
-        for head, current in (
-            (old, None),
-            (old, old),
-            (new, None),
-            (new, old),
-            (new, new),
-        ):
-            validate_schema_transition(head, current)
-        for head, current in (
-            (old, new),
-            (new, "0012_audit_chronology"),
-            (new, old + "\n" + new),
-            ("unknown", old),
-            (new, "unknown"),
-        ):
+    def test_migration_history_accepts_future_releases_without_host_updates(self):
+        graph = [
+            {"revision": "base", "parent": None, "dependencies": None},
+            {"revision": "next", "parent": "base", "dependencies": None},
+            {"revision": "future", "parent": "next", "dependencies": None},
+        ]
+        for current in (None, "base", "next", "future"):
+            self.assertEqual(validate_schema_transition(graph, current), "future")
+        for current in ("unknown", "", "base\nnext"):
             with self.assertRaisesRegex(ValueError, "incompatible"):
-                validate_schema_transition(head, current)
+                validate_schema_transition(graph, current)
+        with self.assertRaises(ValueError):
+            validate_schema_transition(graph[:-1], "future")
+        invalid = [
+            None,
+            {},
+            [],
+            [None],
+            [{"revision": "base"}],
+            graph + [graph[0]],
+            graph + [{"revision": "branch", "parent": "base", "dependencies": None}],
+            graph + [{"revision": "cycle", "parent": "cycle", "dependencies": None}],
+        ]
+        for key, value in (
+            ("parent", "missing"),
+            ("parent", ["base", "next"]),
+            ("revision", "bad\nrevision"),
+            ("revision", 7),
+            ("dependencies", "base"),
+        ):
+            changed = copy.deepcopy(graph)
+            changed[0][key] = value
+            invalid.append(changed)
+        for candidate in invalid:
+            with self.subTest(candidate=candidate), self.assertRaises(ValueError):
+                validate_schema_transition(candidate, None)
 
-    def test_trash_policy_install_is_locked_narrow_idempotent_and_recoverable(self):
+    def test_release_migrates_before_starting_and_never_publishes_failed_migration(
+        self,
+    ):
+        graph = [{"revision": "future", "parent": None, "dependencies": None}]
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = object.__new__(Runtime)
+            runtime.root = Path(directory)
+            runtime.environment = {}
+            runtime.baselines = Mock(return_value={})
+            runtime.attempt_source = SOURCE
+            runtime.start_relay = Mock()
+            images = {"backend": {"id": "verified-backend"}}
+            events = []
+
+            def command(*args):
+                events.append(args)
+                return "{}" if args[0] == "config" else ""
+
+            runtime.command = Mock(side_effect=command)
+            with (
+                patch("fillable_runtime.unpack", return_value={"images": images}),
+                patch("fillable_runtime.snapshot", return_value={}),
+                patch(
+                    "fillable_runtime.validate_image_archive",
+                    return_value={"backend": []},
+                ),
+                patch("fillable_runtime.resolve_image", return_value=images["backend"]),
+                patch("fillable_runtime.validate_compose"),
+                patch("fillable_runtime.execute", side_effect=["", json.dumps(graph)]),
+            ):
+                runtime.schema = Mock(side_effect=[None, "future", "future"])
+                runtime._apply(SOURCE, "b" * 64)
+            stop = next(i for i, call in enumerate(events) if call[0] == "stop")
+            migrate = events.index(("run", "--rm", "--no-deps", "migrate"))
+            start = next(
+                i
+                for i, call in enumerate(events)
+                if "gateway" in call and call[0] == "up"
+            )
+            self.assertLess(stop, migrate)
+            self.assertLess(migrate, start)
+            self.assertIn("maintenance", events[stop])
+            runtime.start_relay.assert_called_once()
+            receipt = (runtime.root / "state.json").read_bytes()
+            self.assertEqual(json.loads(receipt)["schema"], "future")
+
+            for schemas, fail_command in (
+                (["unknown"], False),
+                ([None], True),
+                ([None, None], False),
+            ):
+                events.clear()
+                runtime.start_relay.reset_mock()
+                runtime.schema = Mock(side_effect=schemas)
+
+                def failing_command(*args):
+                    result = command(*args)
+                    if fail_command and args[0] == "run":
+                        raise RuntimeError("migration failed")
+                    return result
+
+                runtime.command = Mock(side_effect=failing_command)
+                with (
+                    patch("fillable_runtime.unpack", return_value={"images": images}),
+                    patch("fillable_runtime.snapshot", return_value={}),
+                    patch(
+                        "fillable_runtime.validate_image_archive",
+                        return_value={"backend": []},
+                    ),
+                    patch(
+                        "fillable_runtime.resolve_image", return_value=images["backend"]
+                    ),
+                    patch("fillable_runtime.validate_compose"),
+                    patch(
+                        "fillable_runtime.execute", side_effect=["", json.dumps(graph)]
+                    ),
+                    self.assertRaises((RuntimeError, ValueError)),
+                ):
+                    runtime.apply(SOURCE, "b" * 64)
+                runtime.start_relay.assert_not_called()
+                self.assertFalse(
+                    any(call[0] == "up" and "gateway" in call for call in events)
+                )
+                self.assertEqual((runtime.root / "state.json").read_bytes(), receipt)
+                if schemas == ["unknown"]:
+                    self.assertFalse(any(call[0] in {"stop", "run"} for call in events))
+
+    def test_actual_alembic_history_is_read_without_a_database(self):
+        from fillable_runtime import SCHEMA_GRAPH_QUERY
+
+        result = subprocess.run(
+            ["python", "-c", SCHEMA_GRAPH_QUERY],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        graph = json.loads(result.stdout)
+        self.assertEqual(
+            validate_schema_transition(graph, "0013_maintenance_state"),
+            "0014_document_trash",
+        )
+
+    def test_migration_runtime_install_is_locked_narrow_idempotent_and_recoverable(
+        self,
+    ):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "installed"
             source = Path(directory) / "source"
@@ -150,14 +271,16 @@ class RuntimeContracts(unittest.TestCase):
                     raise OSError("synthetic manifest failure")
                 return original_replace(path, target)
 
-            with patch("install_trash_policy.PREVIOUS", old):
+            with patch("install_migration_runtime.PREVIOUS", old):
                 with patch("pathlib.Path.replace", new=fail_manifest):
                     with self.assertRaisesRegex(OSError, "synthetic"):
-                        upgrade_trash(root, source, SOURCE)
+                        upgrade_migrations(root, source, SOURCE)
                 self.assertEqual(runtime.read_bytes(), before)
                 self.assertEqual(manifest.read_bytes(), evidence)
                 for _ in range(2):
-                    self.assertTrue(upgrade_trash(root, source, SOURCE)["upgraded"])
+                    self.assertTrue(
+                        upgrade_migrations(root, source, SOURCE)["upgraded"]
+                    )
                 self.assertEqual(runtime.read_bytes(), candidate.read_bytes())
                 self.assertEqual(runtime.stat().st_mode & 0o777, 0o600)
                 self.assertEqual(
@@ -171,10 +294,10 @@ class RuntimeContracts(unittest.TestCase):
 
                     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                     with self.assertRaises(BlockingIOError):
-                        upgrade_trash(root, source, SOURCE)
+                        upgrade_migrations(root, source, SOURCE)
                 runtime.write_bytes(b"unexpected concurrent runtime")
                 with self.assertRaisesRegex(ValueError, "Unexpected"):
-                    upgrade_trash(root, source, SOURCE)
+                    upgrade_migrations(root, source, SOURCE)
 
     def test_classic_and_containerd_identities_require_verified_exact_metadata(self):
         expected = {

@@ -1,4 +1,4 @@
-"""Install the reviewed 0013-to-0014 runtime policy without touching live services."""
+"""Bootstrap automatic migration validation without touching live services."""
 
 import fcntl
 import hashlib

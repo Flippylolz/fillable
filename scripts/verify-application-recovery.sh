@@ -91,9 +91,19 @@ probe old write > "$verification_reports/manifest.json"
 probe old read < "$verification_reports/manifest.json"
 browser build browser
 badge previous "$(printf %s "$verification_baseline" | cut -c 1-7)"
-old down
 export VITE_APP_COMMIT_SHA="$verification_head"
-current up --build --wait --wait-timeout 120
+current build
+# Exercise the release policy and explicit migration before restarting any writer.
+verification_schema=$(old exec -T db psql -U fillable -d fillable -Atqc 'SELECT version_num FROM alembic_version')
+current run --rm --no-deps migrate python -c 'import json, subprocess, sys
+sys.path.insert(0, "/checks")
+from fillable_runtime import SCHEMA_GRAPH_QUERY, validate_schema_transition
+history = json.loads(subprocess.check_output(["python", "-c", SCHEMA_GRAPH_QUERY], text=True))
+print(validate_schema_transition(history, sys.argv[1]))' "$verification_schema" > "$verification_reports/migration-head.txt"
+old stop gateway api worker dispatcher maintenance
+current run --rm --no-deps migrate
+test "$(current exec -T db psql -U fillable -d fillable -Atqc 'SELECT version_num FROM alembic_version')" = "$(cat "$verification_reports/migration-head.txt")"
+current up --wait --wait-timeout 120
 install_probe current
 test "$(current exec -T db psql -U fillable -d fillable -At -c 'SELECT version_num FROM alembic_version')" = 0014_document_trash
 probe current read < "$verification_reports/manifest.json"
