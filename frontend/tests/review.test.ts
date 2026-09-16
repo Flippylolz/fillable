@@ -274,3 +274,10 @@ test("native review preserves an empty alias instead of adopting a discovery dis
   expect(reviewState(reviewed)!.items[0]).toMatchObject({ label: "", key: "Стала група", sourceKey: "Стала група", decision: "accepted" });
   expect(reviewed.content.eq(original.content)).toBe(true);
 });
+
+test("unknown discovery field types safely default to text",()=>{
+  const snapshot=structuredClone(generated);
+  snapshot.candidates[0].type="future-type";
+  const result=attachReview(editorSchema.nodeFromJSON(corpus),snapshot as components["schemas"]["FieldSnapshot"],snapshot.source_version_id);
+  expect(reviewState(result)!.items[0].type).toBe("text");
+});

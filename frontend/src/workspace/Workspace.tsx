@@ -95,18 +95,16 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
     setCopyOpen(false); setCopyCreated(null); setCopyError(""); setPrintFallback(false);
   }
   function openCopyPrompt() {
-    if (!saved || mutating || saving.pending || saving.conflict || composing) return;
     setCopyCreated(null); setCopyError("");
-    setCopyDefault(defaultCopyTitle(saved.resource.title, (fieldsReader.current?.() ?? []).map(field => field.value)));
+    setCopyDefault(defaultCopyTitle(saved!.resource.title, (fieldsReader.current?.() ?? []).map(field => field.value)));
     setCopyOpen(true);
   }
   async function createCopy(title: string) {
-    if (copyBusy || !savedRef.current) return;
     setCopyBusy(true); setCopyError("");
     try {
       // The template draft is saved first; the copy snapshots the saved revision.
       if (await saving.save() === "failed") return;
-      const version = savedRef.current.resource.current_version_id;
+      const version = savedRef.current!.resource.current_version_id;
       if (!version) return;
       const result = await api.POST("/api/documents/{identity}/copies", {
         params: { path: { identity }, header: { "idempotency-key": copyKey.current } },
@@ -124,7 +122,6 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
     } finally { setCopyBusy(false); }
   }
   async function printDocument() {
-    if (!saved || mutating || saving.pending || saving.conflict || composing) return;
     setPrintFallback(false);
     // The printed content must be the saved content: persist the draft first.
     if (revision !== saving.acknowledged && await saving.save() === "failed") return;

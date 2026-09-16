@@ -114,3 +114,11 @@ test.each(["bootstrap", "login"])("%s timeout aborts its request and offers reco
     else { expect(screen.getByLabelText("Password")).toHaveValue("retained"); expect(screen.getByLabelText("Login")).toHaveValue(owner.login); }
   } finally { vi.useRealTimers(); }
 });
+
+test("unmounting recovery ignores a rejected login request",async()=>{
+  let reject!:(error:Error)=>void;
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValueOnce(Response.json(anonymous)).mockImplementationOnce(()=>new Promise<Response>((_,no)=>{reject=no;})));
+  const view=show();fireEvent.change(await screen.findByLabelText("Password"),{target:{value:"secret"}});submit();
+  await waitFor(()=>expect(fetch).toHaveBeenCalledTimes(2));view.unmount();
+  await act(async()=>reject(new Error("cancelled")));expect(view.recovered).not.toHaveBeenCalled();
+});

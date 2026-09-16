@@ -56,3 +56,18 @@ test("unmount aborts a pending deletion and ignores its late result", async () =
   view.unmount(); await act(async () => finish(Response.json({ status: "complete" })));
   expect(changed).not.toHaveBeenCalled(); expect(busy).toHaveBeenLastCalledWith(false);
 });
+
+test("a confirmation already open cannot delete while another operation disables it",()=>{
+  vi.stubGlobal("fetch",vi.fn());const view=show();
+  fireEvent.click(screen.getByRole("button",{name:"Видалити"}));
+  view.rerender(<I18nextProvider i18n={i18n}><DeleteResource item={item} csrfToken="csrf" disabled onBusy={busy} onChanged={changed}/></I18nextProvider>);
+  fireEvent.click(screen.getByRole("button",{name:"Видалити назавжди"}));
+  expect(fetch).not.toHaveBeenCalled();expect(changed).not.toHaveBeenCalled();
+});
+
+test("deletion ignores a network failure after unmount",async()=>{
+  let reject!:(error:Error)=>void;vi.stubGlobal("fetch",vi.fn(()=>new Promise<Response>((_,no)=>{reject=no;})));
+  const view=show(true);fireEvent.click(screen.getByRole("button"));view.unmount();
+  await act(async()=>reject(new Error("cancelled")));
+  expect(changed).not.toHaveBeenCalled();expect(busy).toHaveBeenLastCalledWith(false);
+});

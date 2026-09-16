@@ -99,3 +99,20 @@ test("visible gallery cards serialize preview reads and skip cancelled queued ca
   await act(async () => finish(Response.json(content)));
   expect(fetch).toHaveBeenCalledTimes(1);
 });
+
+test("saved preview follows ResizeObserver changes and aborts requests that exceed the deadline",async()=>{
+  let resize=()=>{};const disconnect=vi.fn();
+  vi.stubGlobal("ResizeObserver",class{constructor(callback:()=>void){resize=callback;}observe(){}disconnect=disconnect;});
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json(content)));
+  const view=render(<DocumentCover item={resource}/>);
+  await waitFor(()=>expect(document.querySelector(".library-preview")).not.toBeNull());
+  act(()=>resize());expect(document.querySelector(".library-preview-content")).toHaveStyle({width:"794px"});
+  view.unmount();expect(disconnect).toHaveBeenCalled();
+  vi.useFakeTimers();
+  const fetcher=vi.fn((request:Request)=>new Promise<Response>((_,reject)=>request.signal.addEventListener("abort",()=>reject(new Error("timeout")))));
+  vi.stubGlobal("fetch",fetcher);
+  const slow=render(<DocumentCover item={resource}/>);
+  await act(async()=>{await vi.advanceTimersByTimeAsync(15001);});
+  expect(fetcher.mock.calls[0][0].signal.aborted).toBe(true);
+  expect(document.querySelector(".library-preview-placeholder")).not.toBeNull();slow.unmount();vi.useRealTimers();
+});

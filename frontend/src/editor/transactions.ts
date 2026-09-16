@@ -241,9 +241,8 @@ export const LEADING_NUMBERING = /^\s*(?:\d{1,3}|[a-zA-Zа-яА-ЯІіЇїЄєҐ
 /** The preceding label text for a manual field, from the paragraph before the selection. */
 export function suggestFieldLabel(state: EditorState): string {
   const { from, $from, empty } = state.selection;
-  if (empty || $from.parent.type.name !== "paragraph" || from < $from.start()) return "";
-  for (let depth = $from.depth; depth > 0; depth -= 1)
-    if ($from.node(depth).type.name === "field") return "";
+  if (empty || $from.parent.type.name !== "paragraph") return "";
+  // The schema allows only text inside fields, so a paragraph cannot be inside one.
   // Node.textBetween takes node-relative positions, not document positions.
   const preceding = $from.parent.textBetween(0, from - $from.start(), undefined, "\ufffc")
     .replace(/\s+/g, " ").trim();

@@ -119,10 +119,11 @@ export function breakDecorations(
   );
 }
 
+// Page numbers are assigned consecutively from 2 by measurePageBreaks.
 function sameSpecs(applied: PageBreakSpec[], measured: PageBreakSpec[]): boolean {
   return (
     applied.length === measured.length &&
-    applied.every((spec, index) => spec.pos === measured[index].pos && spec.page === measured[index].page)
+    applied.every((spec, index) => spec.pos === measured[index].pos)
   );
 }
 

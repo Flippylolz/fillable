@@ -20,7 +20,7 @@ export function useVersionHistory(identity: string) {
       if (controller.signal.aborted) return;
       if (result.data) {
         const data = result.data;
-        const items = more ? [...(current.current?.items ?? []), ...result.data.items] : result.data.items;
+        const items = more ? [...current.current!.items, ...result.data.items] : result.data.items;
         const unique = items.filter((item, index) => items.findIndex(other => other.id === item.id) === index);
         const updated = { ...result.data, items: unique.map(item => ({ ...item, is_current: item.id === data.current_version_id })) };
         current.current = updated; setPage(updated);

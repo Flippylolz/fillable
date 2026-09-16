@@ -90,3 +90,12 @@ test.each(["reset", "unmount"] as const)("%s aborts a pending request and ignore
   await act(async () => { finish(saved()); await running; });
   expect(state.onSaved).not.toHaveBeenCalled();
 });
+
+test("a network failure after reset cannot resurrect a pending save",async()=>{
+  const state=setup();let reject!:(error:Error)=>void;
+  state.fetcher.mockImplementationOnce(()=>new Promise<Response>((_,no)=>{reject=no;}));
+  let running!:Promise<SaveOutcome>;await act(async()=>{running=state.result.current.save();});
+  act(()=>state.result.current.reset());
+  await act(async()=>{reject(new Error("cancelled"));await running;});
+  expect(state.result.current.pending).toBe(false);expect(state.result.current.error).toBe("");expect(state.onSaved).not.toHaveBeenCalled();
+});

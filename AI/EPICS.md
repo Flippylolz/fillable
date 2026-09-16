@@ -2938,7 +2938,7 @@ The restore test now checks that exactly one settings panel and one editor remai
 
 ## E09.29 — Complete backend line and branch coverage
 
-Status: in_review. The user requested 100% coverage on 2026-09-16. Exercise all
+Status: done — PR #146 merged as `14c5182f83fe0b551eb15c515a1755b40b076ca9` with all required CI checks passing. The user requested 100% coverage on 2026-09-16. Exercise all
 remaining backend line and branch outcomes with behavioral tests, including error,
 recovery, document validation and operator-entry paths. Preserve the complete source
 measurement and meaningful assertions; do not add exclusions or ignore pragmas.
@@ -2968,3 +2968,18 @@ missing LICENSE files, and changed inventory counts. Docker address pools were
 full; these checks ran with no network and no shared-service changes. Full
 application suites and measured coverage are delegated to required PR CI; no
 application source changes or new local coverage measurements are claimed.
+
+## E09.31 — Complete frontend line and branch coverage
+
+Status: in_review. Exercise every remaining frontend line and branch outcome,
+including real editor transactions, DOM presentation, asynchronous cancellation,
+read-only controls and failures. Keep the full authored source set and meaningful
+behavior assertions. Deliver separately from backend coverage and the final gate.
+
+2026-09-16: Docker validation on the current main dependency versions passed
+423 frontend tests, ESLint and the TypeScript/Vite production build. All authored
+application source is measured: 1935/1935 executable lines and 2187/2187 branch
+outcomes (100% independently). Tests cover editor transactions and rendering,
+request cancellation, recovery, history, navigation, gallery actions and workspace
+coordination. Redundant disabled-control checks and schema-proven unreachable
+fallbacks were simplified without source exclusions or coverage-ignore pragmas.

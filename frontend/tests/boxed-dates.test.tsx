@@ -92,3 +92,20 @@ test("date boxes nested in a form cell are filled without touching surrounding f
   expect(result.issue).toBeUndefined();
   expect(selected.apply(result.transaction!).doc.textContent).toBe("Label290224");
 });
+
+test("a date selection ignores label cells outside its range", () => {
+  const current=state([table(["Before", "_", "_", "_", "_", "_", "_", "After"])]);
+  const positions: number[]=[];
+  current.doc.descendants((node,pos)=>{if(node.type.name==="paragraph") positions.push(pos);});
+  const selected=current.apply(current.tr.setSelection(TextSelection.create(current.doc,positions[1]+1,positions[6]+2)));
+  const result=fillBoxedDate(selected,"2024-02-29");
+  expect(result.issue).toBeUndefined();
+  expect(selected.apply(result.transaction!).doc.textContent).toBe("Before290224After");
+});
+
+test("an incomplete imported table cell cannot be filled as a date", () => {
+  const cells=[schema.nodes.tableCell.create({id:"empty"}), ...Array.from({length:6},(_,i)=>schema.nodes.tableCell.create({id:`cell${i}`},paragraph("_",`date${i}`)))];
+  const current=state([schema.nodes.table.create(null,schema.nodes.tableRow.create(null,cells))]);
+  const selected=current.apply(current.tr.setSelection(TextSelection.create(current.doc,4,current.doc.content.size-4)));
+  expect(fillBoxedDate(selected,"2024-02-29").issue).toBe("select_boxes");
+});

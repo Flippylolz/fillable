@@ -1,6 +1,8 @@
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
 import { mountEditor } from "../src/editor/adapter";
 import { editorSchema } from "../src/editor/model";
-import { PAGE_BREAK_CLASS, breakDecorations, pageStarts } from "../src/editor/pagination";
+import { PAGE_BREAK_CLASS, breakDecorations, pageStarts, measurePageBreaks } from "../src/editor/pagination";
 import corpus from "../prototype/document.json";
 
 type PageStyle = Partial<Record<"minHeight" | "paddingTop" | "paddingBottom", string>>;
@@ -222,4 +224,39 @@ test("break decorations ignore positions outside the document", () => {
   expect(valid.find()[0].from).toBe(3);
   const outside = breakDecorations(doc, [{ pos: 0, page: 2 }, { pos: doc.content.size + 5, page: 3 }], page => `P${page}`);
   expect(outside.find()).toHaveLength(0);
+});
+
+test("pagination uses timer fallback, ignores detached editors, and cancels queued work", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("requestAnimationFrame", undefined);
+  vi.stubGlobal("ResizeObserver", undefined);
+  const host = document.createElement("div");
+  document.body.append(host);
+  const layout = stubLayout("0", { minHeight: "1000px", paddingTop: "50px", paddingBottom: "50px" });
+  const editor = mountEditor(host, structuredClone(corpus), { onChange: vi.fn(), onUpdate: vi.fn() });
+  stackBlocks(layout, 6);
+  try {
+    await vi.advanceTimersByTimeAsync(25);
+    expect(markers(host)).toHaveLength(1);
+    host.remove();
+    editor.setPageBreakLabel(page => `Detached ${page}`);
+    expect(markers(host)[0].textContent).toBe("2");
+    editor.destroy();
+    const pending = mountEditor(host, structuredClone(corpus), { onChange: vi.fn(), onUpdate: vi.fn() });
+    pending.destroy();
+    await vi.advanceTimersByTimeAsync(30);
+    expect(host.children).toHaveLength(0);
+  } finally {
+    layout.restore();
+    vi.useRealTimers();
+  }
+});
+
+test("measurement ignores a stale body DOM when the model has no body section",()=>{
+  const host=document.createElement("div");document.body.append(host);
+  const layout=stubLayout("1",{minHeight:"1000px",paddingTop:"50px",paddingBottom:"50px"});
+  const doc=editorSchema.nodes.doc.create(null,editorSchema.nodes.section.create({part:"word/header1.xml"},editorSchema.nodes.paragraph.create({id:"header"},editorSchema.text("Header"))));
+  const view=new EditorView(host,{state:EditorState.create({doc})});
+  try{view.dom.querySelector("section")!.setAttribute("data-part","word/document.xml");expect(measurePageBreaks(view)).toEqual([]);}
+  finally{view.destroy();host.remove();layout.restore();}
 });
