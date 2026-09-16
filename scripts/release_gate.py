@@ -19,6 +19,7 @@ REQUIRED_JOBS = {
     "contracts",
     "upgrade-checks",
     "ci-required",
+    "publish-coverage-badges",
 }
 
 
