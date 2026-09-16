@@ -123,7 +123,7 @@
   "library.deleteTitle": "Move “{{title}}” to trash?",
   "library.deleteWarning": "You can restore this item and its versions from Trash for 30 days. It continues to use storage until permanently deleted.",
   "library.cancelDeletion": "Cancel",
-  "library.confirmDeletion": "Move to trash",
+  "library.confirmDeletion": "Confirm move to trash",
   "library.deletionPending": "Cleanup is pending. Remaining files still use storage. Retry cleanup.",
   "workspace.title": "Document workspace",
   "workspace.template": "Editing a template",

@@ -22,19 +22,19 @@ test("cancel never deletes; confirmed failure remains retryable in the selected 
     .mockRejectedValueOnce(new Error("offline"))
     .mockResolvedValueOnce(Response.json({ status: "complete" }));
   vi.stubGlobal("fetch", fetcher); show();
-  fireEvent.click(screen.getByRole("button", { name: "Видалити" }));
-  expect(screen.getByRole("dialog")).toHaveAccessibleName("Видалити «Заява Їжака»?");
+  fireEvent.click(screen.getByRole("button", { name: "До кошика" }));
+  expect(screen.getByRole("dialog")).toHaveAccessibleName("Перемістити «Заява Їжака» до кошика?");
   fireEvent.click(screen.getByRole("button", { name: "Скасувати" }));
   expect(fetcher).not.toHaveBeenCalled();
   for (let attempt = 0; attempt < 2; attempt++) {
-    fireEvent.click(screen.getByRole("button", { name: "Видалити" }));
-    fireEvent.click(screen.getByRole("button", { name: "Видалити назавжди" }));
+    fireEvent.click(screen.getByRole("button", { name: "До кошика" }));
+    fireEvent.click(screen.getByRole("button", { name: "Перемістити до кошика" }));
     await screen.findByRole("alert"); expect(changed).not.toHaveBeenCalled();
   }
   await act(() => setLanguage("en"));
-  fireEvent.click(screen.getByRole("button", { name: "Delete" }));
-  expect(screen.getByRole("dialog")).toHaveAccessibleDescription(/original and all saved versions/);
-  fireEvent.click(screen.getByRole("button", { name: "Delete permanently" }));
+  fireEvent.click(screen.getByRole("button", { name: "Move to trash" }));
+  expect(screen.getByRole("dialog")).toHaveAccessibleDescription(/restore this item and its versions/);
+  fireEvent.click(screen.getByRole("button", { name: "Confirm move to trash" }));
   await waitFor(() => expect(changed).toHaveBeenCalledTimes(1));
   expect(fetcher.mock.calls[2][0].headers.get("x-csrf-token")).toBe("csrf");
   expect(busy).toHaveBeenLastCalledWith(false);
@@ -59,9 +59,9 @@ test("unmount aborts a pending deletion and ignores its late result", async () =
 
 test("a confirmation already open cannot delete while another operation disables it",()=>{
   vi.stubGlobal("fetch",vi.fn());const view=show();
-  fireEvent.click(screen.getByRole("button",{name:"Видалити"}));
+  fireEvent.click(screen.getByRole("button",{name:"До кошика"}));
   view.rerender(<I18nextProvider i18n={i18n}><DeleteResource item={item} csrfToken="csrf" disabled onBusy={busy} onChanged={changed}/></I18nextProvider>);
-  fireEvent.click(screen.getByRole("button",{name:"Видалити назавжди"}));
+  fireEvent.click(screen.getByRole("button",{name:"Перемістити до кошика"}));
   expect(fetch).not.toHaveBeenCalled();expect(changed).not.toHaveBeenCalled();
 });
 
