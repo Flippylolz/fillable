@@ -400,7 +400,7 @@ docker compose -p fillable-checks -f compose.test.yaml run --rm --no-deps \
   backend-test python /checks/test_gate_contract.py
 ```
 
-`scripts/release_gate.py` requires the exact eight-job set from the same CI run
+`scripts/release_gate.py` requires the exact nine-job set (the eight required checks plus main coverage-badge publication) from the same CI run
 attempt, and `scripts/build-release.sh` builds the backend and gateway release
 images concurrently. Coverage roots, the independent raw 90% line/branch gates,
 provenance binding, both negative probes and fail-closed aggregation semantics

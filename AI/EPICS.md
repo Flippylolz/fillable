@@ -1027,7 +1027,6 @@ covered. No blank is auto-accepted. Existing volumes preserved. Required protect
 remains strict Actions `ci-required`, including administrators. Next: protected
 E04.3 PR and verified merge, then E04.4 per-detector accuracy evaluation.
 
-
 2026-09-06: E04.3 verified merged through [PR #38](https://github.com/Flippylolz/fillable/pull/38),
 commit `ff83cec3d4d507639360ea33b3970cf84b14eaec`; Actions 34054416368 passed both
 required checks for exact head `b319209b8a11f8f110439893021e848b69325729`.
@@ -1049,7 +1048,6 @@ fresh Docker, browsers, independent rendering and all failure probes. Next: prot
 E04.4 PR/verified merge, then E04.5 workspace review. Deployment stays last.
 The frontend real-unimported-source probe also passed: 613/2231 lines and 547/3802
 branches were rejected with all 78 tests passing.
-
 
 2026-09-06: E04.4 verified merged through [PR #39](https://github.com/Flippylolz/fillable/pull/39),
 commit `1f74de722a34c9f774d2d3abe708462c559d4b2a`; Actions 34055321934 passed both
@@ -1571,7 +1569,6 @@ no new historical UI, export transformation or Word compatibility is claimed. Ne
 individual E06.3a PR, actual strict gate verification and exact-head auto-merge,
 verified merge, then E06.4 exact historical downloads. Deployment remains E08, last.
 
-
 2026-09-07: E06.3a verified merged through [PR #56](https://github.com/Flippylolz/fillable/pull/56),
 merge `a470a2a4f5f91e0ff8fe0045cda4f3e9368c27b5`; Actions 34100793853 passed
 `checks` and `ci-required` for exact head `fcca84036cd22d40a77bf0b08f9bcb7c3972fc4b`.
@@ -1597,7 +1594,6 @@ No new DOCX transform or layout change; Microsoft Word is not claimed. Actual st
 Actions `ci-required` protection including administrators was rechecked. Next:
 individual PR/auto-merge and actual merged-state verification, then E06.6 restore.
 E06.3b history UI and E06.5/E06.7 remain unfinished. E08 deployment stays last.
-
 
 2026-09-07: E06.4 verified merged through [PR #57](https://github.com/Flippylolz/fillable/pull/57),
 merge `017d6599f10bb03caf1aad8df81a2f345996262b`; Actions 34102641718 passed
@@ -1667,7 +1663,6 @@ individual E06.3b PR, exact-head auto-merge and actual merge verification; then 
 operator retention. E05.6b history completion awaits this PR's merge. E06.7 autosave,
 E07 acceptance and final E08 deployment remain; unrelated services are untouched.
 
-
 2026-09-07: E06.3b verified merged through [PR #59](https://github.com/Flippylolz/fillable/pull/59),
 merge `0ce5e945abe1ff7f31cb1ee95d135d1983f64c63`; Actions 34108570911 passed
 `checks` and `ci-required` for exact head `ad1d2e01719a8cacea466fb39fb6cec4f5a7a27f`.
@@ -1676,7 +1671,6 @@ starts on `task/e06-5-version-retention`: explicit operator policy (all by defau
 bounded one-shot pruning, retained provenance, reader/restore coordination and
 visible localized policy. Configuration alone never deletes history. Scheduling
 remains E07.3, autosave E06.7 and deployment E08, last.
-
 
 E06.5 implementation checkpoint: explicit keep-all/default operator policy and bounded
 one-shot pruning now protect original/current/shared files, coordinate readers and
@@ -1703,7 +1697,6 @@ changed here; these checks do not claim Microsoft Word validation. Next: open th
 individual E06.5 PR and verify required CI/auto-merge through actual merge.
 Then E06.7 autosave; E07 and E08 remain unfinished. No server changes were made.
 
-
 E06.5 PR #60 is in review with squash auto-merge. Initial head
 `8ce1adfd37f15dbdaa199621b87a9d539e8793f8`, CI `34115861870`, failed the
 fresh production browser repeat (33/34): the existing mobile manual-save test used
@@ -1719,7 +1712,6 @@ production cases, including both mobile manual-save cases, in copy `3h0NNO`, pro
 coverage remains the measured 377 backend/195 frontend test result above. The PR's
 new head must pass the complete required CI before E06.7 implementation starts.
 
-
 Verified E06.5 completion: [PR #60](https://github.com/Flippylolz/fillable/pull/60)
 merged as `cf9faecd21e8a6c87b2a31410b3326457fb61437`, exact head
 `98fe5b13d58a0e6f0aa9fdf332fda49a0dd1322d`. CI `34116978818` succeeded;
@@ -1734,7 +1726,6 @@ No automatic retry of uncertain outcomes and no title-only/document writes. Pres
 newer drafts across acknowledgments and let explicit retry resolve the original
 attempt. Verify default-on browser flows, history/IME/error/toggle behavior and both
 coverage gates. E07 acceptance/recovery/diagnostics and E08 deployment remain later.
-
 
 E06.7 local checkpoint: the timer, workspace setting and both-language status/cost
 copy are implemented. Docker frontend lint/catalog/type/build and all 203 tests
@@ -1753,7 +1744,6 @@ Next: open the individual E06.7 PR,
 verify strict required checks and exact-head squash auto-merge, then verify MERGED
 before E07. Deployment remains last and no server work has begun.
 
-
 E06.7 review follow-up on PR #61: initial head
 `c0544ca3a37468dc8c39485f31da29099f6c6d3c`, CI `34119480377`. Auto-merge was
 held after finding that a hidden workspace could start autosave during another
@@ -1767,7 +1757,6 @@ negative probe: lines 1231/1242 (99.11%), branches 1405/1472 (95.45%); the probe
 blocked 1231/4007 lines and 1405/7000 branches with every test passing. The final
 fresh repeat passed 7 development and 40 production cases in `1eW6sJ`, project
 `fillable-verify-1534`, before updating PR61 and rearming exact-head auto-merge. Backend application source remains unchanged.
-
 
 Verified E06.7 completion: [PR #61](https://github.com/Flippylolz/fillable/pull/61)
 merged as `d42a463a64eddc9aff5a23290951f406251a402e`, exact head
@@ -1812,7 +1801,6 @@ preserved undo/redo; its full repeat and required CI must pass before auto-merge
 Actual main protection remains strict `ci-required` from Actions app 15368, enforced
 for administrators; repository squash auto-merge remains enabled. No server actions.
 
-
 Verified E07.1a completion: [PR #62](https://github.com/Flippylolz/fillable/pull/62)
 merged as `b60ba4185407ba38a478f9a9f87ad310a3bbd479`, exact head
 `4fcd54080f8b8f263ac486bd967311cb2700fe03`. Required CI `34125040520` succeeded,
@@ -1836,7 +1824,6 @@ will verify long Ukrainian labels. Application source is unchanged from PR62's
 backend 377/frontend 229 tests and measured 99.30%/97.60% backend,
 99.16%/95.60% frontend line/branch coverage. Required CI reruns both independently.
 Documentation links resolve. Final browser/visual verification precedes readiness.
-
 
 Verified E07.1b completion: [PR #63](https://github.com/Flippylolz/fillable/pull/63)
 merged as `71f6250dbe7b7fe8516187f689068a49abc031c3`, exact head
@@ -1892,7 +1879,6 @@ completion before its single-success retry assertion, still asserting no automat
 retry, identical key/body, a separate newer save and no duplicate history. Application
 save behavior is unchanged. Repeat the full frozen verification before readiness.
 
-
 Verified E07.2 completion: [PR #64](https://github.com/Flippylolz/fillable/pull/64)
 merged as `191282ce485d6f562be0cd8d0a8b183b7e2ebb1d`, exact head
 `814ba015383d87fc68b5356fa8ac7d4021ebf9f6`. CI `34132221304` passed `checks`
@@ -1930,7 +1916,6 @@ and required GitHub CI are running. Changed Markdown links and shell syntax pass
 Next: inspect final results, verify actual strict required rules, enable exact-head
 squash auto-merge, confirm MERGED, then begin E07.4. Deployment remains last.
 
-
 Verified E07.3 completion: [PR #65](https://github.com/Flippylolz/fillable/pull/65)
 merged as `e16fb5adbc63449ee96090c01e3af85bc9d31398`, exact head
 `38831e232df3ca36fcd98728267f2da35d632978`. CI `34135615841` passed `checks`
@@ -1966,7 +1951,6 @@ branch `task/e07-4-restart-upgrade-proof`. The completed local proof used candid
 `a198389`. The final frozen repeat and both required CI jobs are running. Before
 readiness, inspect those results and actual strict main protection, enable exact-head
 squash auto-merge, and verify MERGED before E07.5. No product decision is outstanding.
-
 
 Verified E07.4 completion: [PR #66](https://github.com/Flippylolz/fillable/pull/66)
 merged as `0750bd8eb32082692155d0292fcaeb87eabcb0b8`, exact head
@@ -2005,7 +1989,6 @@ previous-image recovery proofs run in separate unique projects with immutable dr
 Review their results and required CI, then enable exact-head squash auto-merge under
 verified strict protection and confirm MERGED before E07.6. Deployment remains last.
 
-
 Verified E07.5 completion: [PR #67](https://github.com/Flippylolz/fillable/pull/67)
 merged as `5b18bd53f09f8bf55d1668f0032c018119206279`, exact head
 `009e8314f7d1650af046277cb2a4717a9d7263e2`. CI `34141793505` passed `checks`,
@@ -2034,7 +2017,6 @@ also exercises the actual producer and verifies failed coverage removes an old s
 Full backend suite/probe and final frontend producer repeat are running. Required CI
 must pass for the final head; verify protection and exact-head auto-merge, then actual
 MERGED before E08 preflight. There is no external blocker or server access yet.
-
 
 Verified E07.6 completion: [PR #68](https://github.com/Flippylolz/fillable/pull/68)
 merged as `5e645f731f486772d8eee302c486957093251557`, exact head
@@ -2077,7 +2059,6 @@ Next: verify final required CI/protection, exact-head squash auto-merge and MERG
 then E08.2 creates the protected immutable-artifact workflow. The HTTP decision and
 port access are settled; do not ask again. No external dependency is outstanding.
 
-
 Verified E08.1 completion: [PR #69](https://github.com/Flippylolz/fillable/pull/69)
 merged as `0b38ea67f729ce9f37f36c3c296106b6e0cdfde4`, exact head
 `08341c7fe502b8facf7262143559768ed208293a`. Required CI `34146598548` passed
@@ -2110,7 +2091,6 @@ account provisioning and persisted storage/document checks. Required PR CI and
 repeated browser results remain pending. Before readiness, inspect results, verify
 strict protection, enable exact-head squash auto-merge and confirm MERGED. Then
 synchronize the E08.2 branch without discarding its preserved work.
-
 
 Verified E07.1c completion: [PR #70](https://github.com/Flippylolz/fillable/pull/70)
 merged as `1bc9fb95549abfb25810aa5d40cc1d2933dbbf35`, exact head
@@ -2582,7 +2562,6 @@ set the exact HTTPS origin, recheck existing-service baselines, deploy that veri
 release through Actions, privately create the requested normal user and complete
 E08.5 deployed browser/restart acceptance. Keep shared nginx untouched.
 
-
 E08.8 verified MERGED: PR #79 at `8497c82bf4fedf2c5b54ee2c1f71b45c9ea317da`.
 Required CI `34203848582` passed all three jobs with backend 3970/3999 lines and
 1174/1206 branches; frontend 1292/1303 lines and 1500/1569 branches. Real unimported
@@ -2648,7 +2627,6 @@ upgrade only the idle Fillable receiver from that reviewed source, wait for exac
 CI, then retry Actions with a fresh stable baseline and create/verify the requested
 administrator privately. Do not retry the old incompatible receiver or image-ID path.
 
-
 E08.9 verified MERGED: PR #80 at `141288bcb12215fb34aede79ac2d7b7e799654d3`.
 Required CI `34209282057` passed all three jobs and the unchanged raw coverage gates.
 The guarded idle receiver update from that exact merged source passed TLS preflight,
@@ -2658,7 +2636,6 @@ must pass before dispatching the corrected release. The failed old rollout creat
 no Fillable application containers, and its retry was cancelled. E08.5 resumes from
 this merged prerequisite; private admin-role proof passed locally, but actual account
 creation, public browser journeys and restart/persistence verification remain pending.
-
 
 E08.4 final rollout verified: Actions `34215081786` succeeded from protected-main
 `141288bcb12215fb34aede79ac2d7b7e799654d3` after exact-main CI `34211072187` passed
@@ -2838,9 +2815,7 @@ Acceptance:
 
 2026-09-09: E09.15 done — PR #119 (`task/e09-15-editor-page-breaks`, head `9f78b87`) merged as `4bccb016099a40647b4bea480e777d792f01b880` with every required job successful (lint, backend-tests, frontend-tests, browser, development, contracts, upgrade-checks; ci-required run 34358127389), and the merge deployed automatically ("Deploy verified release" run 34360840356 succeeded; the deployed bundle serves the page-break code, both catalog strings and the `4bccb0` version badge). The workspace and historical editors now draw approximate page boundaries: a ProseMirror widget-decoration plugin measures top-level blocks against the retained source page height/margins and renders dashed, localized "Сторінка N"/"Page N" markers between blocks that begin a new page. Markers recompute (rAF-throttled) after edits, zoom, resize and font loads, honor the zoom scale, exclude their own flow height, and never enter the document model, review state, save payload or exports; documents without source page geometry show no markers. Exact Word pagination stays unclaimed; [Workspace](WORKSPACE.md) and [Editor feasibility](EDITOR_FEASIBILITY.md) record the boundary and marker behavior. Local validation: frontend 261 tests passed with raw coverage 97.03% lines / 94.48% branches, ESLint/catalog/TypeScript build clean, gate contract OK, and the new `page-breaks.spec.ts` browser flow passing on desktop/mobile (uk/en) against a production-style stack with inspected screenshots. A dedicated `pagebreaks@example.test` browser account (provisioned in ci.yml and verify-development.sh) keeps the flow independent because saved per-account language changes otherwise leak between specs. Implementation note: a shared checkout carried a concurrent task's uncommitted work, so the task was implemented in an isolated `git worktree` (branch first misnumbered E09.14; renumbered E09.15 before any push).
 
-
 2026-09-09: E09.14 done — PR #118 (`task/e09-14-library-card-open`, merged head `4202995`) squash-merged as `4a329d007c68670af1e2fecb52ff8e7418384bcb` with every required job successful (lint, backend-tests, frontend-tests, browser 9m25s, development 11m36s, contracts, upgrade-checks; `ci-required` aggregated in run 34392205165), and the merge dispatched the automatic gated release per E09.6. The library card title is now an accessible link (`a.library-card-open`) stretched over the whole card, so a click anywhere outside the real controls opens the template or document in the workspace; the standalone "Відкрити" link and its `library.open` catalog entries are gone, download/use-template/processing/delete controls keep raised click targets, modified clicks keep native new-tab behavior, blocked sessions swallow activation, and deletion-pending cards keep a plain-text title. Component tests cover open/blocked/modified/deletion-pending behavior; library, lease, review, acceptance and copy browser flows open resources through the card link, with `library.spec.ts` proving the card-body (cover) click. Provenance-verified local frontend coverage at the merged sources: 98.20% lines (1419/1445) and 94.72% branches (1704/1799); 253/253 unit tests with ESLint, catalog and TypeScript build checks clean in an isolated clean worktree. First CI round (run 34354863800) failed browser/development for two spec-update reasons, both fixed in `2ce0574`: the English journey sections still clicked the removed "Open" link (the mvp-acceptance abort left the shared `library@example.test` account switched to English, so every later shared-account spec failed on Ukrainian expectations), and the new cover click required `force: true` because the stretched link intentionally intercepts pointer events. `origin/main` was merged twice (E09.15's code and ledger PRs) for the up-to-date protection gate.
-
 
 ## E11 — Reviewable field types
 
@@ -2857,11 +2832,9 @@ Acceptance:
 - Number and date entry uses the typed controls in both catalogs; empty values stay valid; nonempty unparsable values raise localized issues, remain in the draft, and block saving; the server adds no new save rejection path.
 - The measured corpus report is unchanged (type proposals are not acceptance decisions); the independent 90% backend/frontend line/branch gates and catalog completeness hold. Deliver a dedicated PR with required CI, then deploy through the existing automation.
 
-
 2026-09-09: E11.1 done — PR #121 (`task/e11-field-types`, final head `bc0b2f9`) squash-merged as `2b0e4d92e7d207edd6d28ce5751be9877233b719` with every required job successful (`ci-required` run 34396439672: lint, backend-tests, frontend-tests, browser, development, contracts, upgrade-checks). Fields now carry a reviewable fill-time type (`text` default, `number`, `date`) under D026: `app.fields.kinds.classify` proposes types deterministically from anchored value shapes and Ukrainian/English label keywords (date shapes first, then labels; contact/postal labels force text; document numbers stay text under «номер»/`№`), detection threads the proposal through snapshot candidates and native logical fields, the review dropdown offers all three kinds with accept/configure as single undoable review-attribute steps, and the sidebar renders a decimal input for numbers (exact user text preserved) and a datepicker reading day-first/ISO values and writing canonical `ДД.ММ.РРРР`. Nonempty unparsable number/date values raise localized `invalid_number`/`invalid_date` issues and block saving through the existing `fieldValuesValid` contract; the server keeps treating values as bounded text. The type is a defaulted optional property in the v1 snapshot/review records, so stored payloads, copies, restores, DOCX control properties and the measured corpus report are unchanged; the OpenAPI/TypeScript contract and editor prototype fixture were regenerated and re-exported byte-stable. Local validation: backend 486 passed (lines 4266/4309, branches 1350/1398), frontend 270 tests passed on the merged sources (lines 1558/1586, branches 1796/1900), ruff/mypy/ESLint/catalog/TypeScript build clean, the browser smoke suite passed on production images, and the full application-recovery proof passed. Two review findings were fixed in the PR: the sidebar's typed-value map keyed accepted controls by discovery occurrence identity instead of live control identity, and the recovery proof's payload needed normalization to the previous release's schema (`type` text) because the pinned baseline predates typed review records — typed records themselves are covered by current-image suites. `origin/main` was merged three times during review as E09.14/E09.15 landed concurrently, and one `pull_request` synchronize event was missed by GitHub without an explicit failure (CI ran on the next push). The merge dispatched the automatic gated release per E09.6: main-commit CI succeeded, the deploy dispatcher (run 34397707273) awaited it, and the verified release (run 34398919001, `verify` + `release` jobs) completed successfully for `2b0e4d9`.
 
 2026-09-11: E09.16–E09.19 planned on branch `task/e09-16-19-workspace-ui-docs` from the user's latest UI/UX feedback on the documents/templates pages: a "Save to documents" workspace action with a prompted name defaulting to the template name plus the first field's data (E09.16), a print action that saves and tries to print with a local-save suggestion when printing is inaccessible (E09.17), a compact restyle of the massive field cards so more fit in the sidebar (E09.18), and a two-mode view switch between the document editor and a filling form of the selected fields with a small live preview (E09.19). Acceptance criteria above; [Workspace](WORKSPACE.md) and [Product](PRODUCT.md) updated with the contracts. Documentation-only change; no application source, tests, or coverage claimed; implementation follows in separate per-task PRs.
-
 
 2026-09-11: E09.20 submitted on branch `task/e09-20-host-tool-versions` (based on the E09.16–E09.19 planning branch; both touch this ledger): the repository-root `.tool-versions` (`python 3.13.2`) becomes tracked so fresh clones and additional worktrees provision the same host Python for version-manager users, and [Local development](LOCAL_DEVELOPMENT.md) records that host tools stay optional while Docker remains the standard environment. Configuration/documentation only; no application source, tests, or coverage claimed.
 
@@ -2915,7 +2888,6 @@ badge and agent-entry descriptions with verified implementation and GitHub setti
 retain dated historical evidence. Record the requested manual control/preview checks,
 including failures and explicit limits. Documentation-only PR; no implementation or
 coverage measurement is attributed to this task.
-
 
 2026-09-15: E09.27 documentation audit synchronized current implementation/deployment
 statements across the guide, architecture, CI, decisions, local development, PR and
@@ -3018,24 +2990,37 @@ Git remote verified branch creation, updates, idempotence and stale-run skipping
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
-
 ## E09.34 — Contextual library headings
 
-Status: in_progress. The selected Templates or My documents section must have its
+Status: in_review. The selected Templates or My documents section must have its
 own localized heading and concise description, including after sidebar navigation
 and uploads. Preserve document titles and the shared gallery behavior.
 
 ## E09.35 — Center the profile in the content pane
 
-Status: in_progress. Center the bounded profile grid horizontally in the space
+Status: done. PR [#152](https://github.com/Flippylolz/fillable/pull/152) merged as
+`f9e60e02194d1145bfeb3e7b2114aa9a916af04e` with all required checks green. Center the bounded profile grid horizontally in the space
 beside the sidebar while retaining full available width on narrow screens. Browser
 verification checks center alignment and bounds on desktop/mobile.
 
+## E09.39 — Admit verified coverage-badge publication in release evidence
 
+Status: done. PR [#156](https://github.com/Flippylolz/fillable/pull/156) merged as
+`a0e285eeb5fd5109d2b0968cc43861336dc0fa8e` with every required check passing.
+Main CI now has nine jobs after E09.33 added coverage-badge
+publication; the strict release verifier still expected eight and blocked release
+35115154996 despite successful exact-main CI 35113539550. Include badge publication
+in the required release evidence, retaining exact job identities, success, source
+and run-attempt validation. Docker release contract tests verify that missing or
+failed badge publication still blocks a release. No deployment gate is bypassed.
 
 ## E09.38 — Preserve field focus during autosave
 
-Status: in_progress. Urgent user report: fill-mode autosave drops field focus.
+Status: done. PR [#154](https://github.com/Flippylolz/fillable/pull/154) merged as
+`a4fc7cbaf557dcf98314c4ae79fefa374b11e8b2` with all required CI checks passing.
+Local Docker frontend: 426 tests, 100% lines and branches; the deliberate
+post-save focus/caret browser regression passed desktop/mobile locally and in CI.
+Urgent user report: fill-mode autosave drops field focus.
 Saved revisions briefly reacquire editing access, and disabled native inputs blur.
 Use native read-only inputs during that access check, retaining the mounted input,
 focus and selection while preventing edits without a valid lease. Cover text,
