@@ -119,3 +119,6 @@ is created. Readiness is an idempotent `document_rendered` event in the existing
 audit store, keyed by the revision UUID for indexed lookups. There is no schema
 migration or receiver-policy change. Clearing disposable audit receipts would
 return the affected previews to placeholders until their next workspace render.
+
+E09.34: The gallery heading and description follow the selected sidebar section:
+Templates explains reusable sources; My documents describes individual saved copies.

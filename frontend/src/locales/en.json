@@ -326,5 +326,9 @@
   "library.sortTitleAsc": "Title A–Z",
   "library.sortTitleDesc": "Title Z–A",
   "library.uploadAction": "Upload DOCX",
-  "library.format": "DOCX"
+  "library.format": "DOCX",
+  "library.templateTitleHeading": "Templates",
+  "library.documentTitleHeading": "My documents",
+  "library.templateDescription": "Reusable starting points. Choose a template to create a separate document.",
+  "library.documentDescription": "Your individual documents and saved copies, ready to edit or download."
 }
