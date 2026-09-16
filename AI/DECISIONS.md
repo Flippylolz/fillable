@@ -143,7 +143,7 @@ The MVP consists of:
 
 The user explicitly retained **version-history UI** in MVP. Place it in the workspace rather than creating another top-level page. The initial design includes revision listing, read-only preview, download, and restoration as a new revision; advanced diffs and branching are deferred.
 
-[Product](PRODUCT.md) is the canonical page specification. Standalone administrator screens and a trash browser are deferred. Necessary backend authorization, quota configuration, persistence, history, and cleanup remain in scope. Keep settings and review controls within the four pages.
+[Product](PRODUCT.md) is the canonical page specification. Standalone administrator screens are deferred. D027 supersedes the initial trash deferral with a recoverable library Trash section. Necessary backend authorization, quota configuration, persistence, history, and cleanup remain in scope. Keep settings and review controls within the four pages.
 
 ## D012 — Templates and individual documents
 

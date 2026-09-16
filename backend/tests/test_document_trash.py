@@ -39,11 +39,12 @@ def test_trash_restore_preserves_bytes_versions_deadline_and_owner_isolation():
         web.post(endpoint + "/trash", headers={"X-CSRF-Token": "bad"}).status_code
         == 403
     )
-    account_service.provision(
-        AccountInput(login="peer", display_name="Peer", password=PASSWORD)
-    )
+    account_service.provision(AccountInput(login="peer", display_name="Peer"), PASSWORD)
     peer = browser()
-    peer.post("/api/auth/login", json={"login": "peer", "password": PASSWORD})
+    response = peer.post(
+        "/api/auth/login", json={"login": "peer", "password": PASSWORD}
+    )
+    peer.headers["X-CSRF-Token"] = response.json()["csrf_token"]
     assert peer.post(endpoint + "/trash").status_code == 404
     assert web.post(endpoint + "/trash").status_code == 200
     rows = web.get("/api/documents", params={"kind": "trash"}).json()["items"]
@@ -168,3 +169,22 @@ def test_trash_migration_downgrade_refuses_recoverable_documents():
     command.downgrade(Config("alembic.ini"), "0013_maintenance_state")
     command.upgrade(Config("alembic.ini"), "head")
     assert web.get(endpoint).status_code == 200
+
+
+def test_empty_trash_marks_every_page_irreversible_before_bounded_cleanup(monkeypatch):
+    owner = account()
+    web = client()
+    identities = []
+    for number in range(21):
+        saved = upload(web, key=f"batch-{number}").json()
+        identities.append(saved["id"])
+        assert web.post(f"/api/documents/{saved['id']}/trash").status_code == 200
+    with monkeypatch.context() as patch:
+        patch.setattr(trash, "purge", lambda *args, **kwargs: None)
+        assert web.delete("/api/documents/trash").json() == {"status": "pending"}
+    assert used(owner) == 21 * len(DATA)
+    assert web.post(f"/api/documents/{identities[-1]}/untrash").status_code == 409
+    assert trash.expire(batch=20) == 20
+    assert trash.expire(batch=20) == 1
+    assert used(owner) == 0
+    assert web.get("/api/documents", params={"kind": "trash"}).json()["items"] == []

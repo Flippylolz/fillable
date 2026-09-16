@@ -77,3 +77,8 @@ Fresh development and production-style verification observes the actual schedule
 and its connection timeouts. Its temporary retention-policy persistence probe pauses
 the scheduler until `all` is restored before browser history fixtures run; pruning
 proofs use the explicitly isolated integration database and synthetic storage.
+
+E09.37: Each retention sweep also expires at most its configured batch of trashed
+documents past their 30-day deadline (or explicitly emptied earlier). Each purge
+rechecks eligibility under the owner lock; originals/history remain charged until
+physical cleanup. Restored resources selected by an earlier sweep are preserved.

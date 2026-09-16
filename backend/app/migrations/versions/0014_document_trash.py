@@ -16,6 +16,11 @@ def upgrade():
     op.create_check_constraint(
         "document_state", "documents", "state IN ('active', 'trashed', 'deleted')"
     )
+    op.create_check_constraint(
+        "document_trash_deadline",
+        "documents",
+        "state != 'trashed' OR (trashed_at IS NOT NULL AND purge_after IS NOT NULL)",
+    )
     op.create_index("document_trash_expiry", "documents", ["purge_after", "id"])
 
 
@@ -28,6 +33,7 @@ def downgrade():
         .scalar_one()
     ):
         raise RuntimeError("Recoverable documents exist; retain the current schema")
+    op.drop_constraint("document_trash_deadline", "documents", type_="check")
     op.drop_index("document_trash_expiry", table_name="documents")
     op.drop_constraint("document_state", "documents", type_="check")
     op.create_check_constraint(

@@ -17,7 +17,6 @@ export function TrashActions({ item, csrfToken, disabled, onBusy, onChanged }: {
     return () => { lifetime.current.abort(); onBusy(false); };
   }, [onBusy]);
   async function act(restore: boolean) {
-    if (busy || disabled) return;
     if (!restore && !window.confirm(t(item ? "trash.confirmDelete" : "trash.confirmEmpty", { title: item?.title }))) return;
     const controller = lifetime.current;
     setBusy(true); onBusy(true); setError(""); setPending(false);

@@ -3027,3 +3027,11 @@ Support confirmed immediate permanent deletion and Empty trash across all pages.
 Purge expired items through bounded maintenance and existing crash-safe cleanup;
 never free quota before unlink. Test ownership, CSRF, expiry boundaries, races,
 failed cleanup, independent copies, migrations, localization and browser flows.
+
+2026-09-16: E09.37 Docker verification passed 547 backend tests with 4530/4530
+lines and 1456/1456 branches, and 428 frontend tests with 100% lines and branches.
+Ruff/mypy, ESLint, catalogs and TypeScript/Vite pass. The old draft migration in
+the isolated test database was rolled back through Alembic before verifying the
+finalized schema; no application data was reset. Added lifecycle tests cover
+restoration, owner isolation, expiry, irreversible empty intent, cleanup failures,
+races and migration guards. Browser acceptance follows in required CI.

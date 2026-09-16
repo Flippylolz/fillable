@@ -59,6 +59,10 @@ resources = Table(
         use_alter=True,
         name="document_current_version",
     ),
+    CheckConstraint(
+        "state != 'trashed' OR (trashed_at IS NOT NULL AND purge_after IS NOT NULL)",
+        name="document_trash_deadline",
+    ),
     Index("document_trash_expiry", "purge_after", "id"),
     CheckConstraint("kind IN ('template', 'document')", name="document_kind"),
     CheckConstraint("state IN ('active', 'trashed', 'deleted')", name="document_state"),
