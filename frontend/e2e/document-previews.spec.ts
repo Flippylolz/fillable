@@ -53,12 +53,20 @@ test("saved previews populate on first render, persist, and follow saved fill-mo
   await page.getByRole("button", { name: "Зберегти документ", exact: true }).click();
   await expect(page.getByText("Усі зміни документа збережено.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Назад до бібліотеки", exact: true }).click();
-  await card.scrollIntoViewIfNeeded();
-  await expect(card.locator(".library-preview-content")).toContainText("Єва Ґалаган — превʼю");
+  // Saving can refresh the retained library while navigation reveals it.
+  // Retry the whole visibility/read condition if that refresh replaces a card.
+  await expect(async () => {
+    await card.scrollIntoViewIfNeeded();
+    await expect(card.locator(".library-preview-content")).toContainText("Єва Ґалаган — превʼю");
+  }).toPass({ timeout: 15000 });
   await page.reload();
   card = page.getByRole("article", { name: title, exact: true });
-  await card.scrollIntoViewIfNeeded();
-  await expect(card.locator(".library-preview-content")).toContainText("Єва Ґалаган — превʼю");
+  // Saving can refresh the retained library while navigation reveals it.
+  // Retry the whole visibility/read condition if that refresh replaces a card.
+  await expect(async () => {
+    await card.scrollIntoViewIfNeeded();
+    await expect(card.locator(".library-preview-content")).toContainText("Єва Ґалаган — превʼю");
+  }).toPass({ timeout: 15000 });
   await expect(card.locator(".library-preview")).toHaveAttribute("inert", "");
   await page.screenshot({ path: info.outputPath("saved-gallery-preview.png"), fullPage: true });
 });
