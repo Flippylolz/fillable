@@ -2990,6 +2990,31 @@ Git remote verified branch creation, updates, idempotence and stale-run skipping
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
+## E09.37 — Thirty-day recoverable trash
+
+Status: in_review. Move templates/documents to an owner-scoped library Trash
+section for 30 days, retaining originals, current revision, history, metadata and
+quota charges. Restore before the deadline without a new revision or charge.
+Support confirmed immediate permanent deletion and Empty trash across all pages.
+Purge expired items through bounded maintenance and existing crash-safe cleanup;
+never free quota before unlink. Test ownership, CSRF, expiry boundaries, races,
+failed cleanup, independent copies, migrations, localization and browser flows.
+
+2026-09-16: E09.37 Docker verification passed 547 backend tests with 4530/4530
+lines and 1456/1456 branches, and 428 frontend tests with 100% lines and branches.
+Ruff/mypy, ESLint, catalogs and TypeScript/Vite pass. The old draft migration in
+the isolated test database was rolled back through Alembic before verifying the
+finalized schema; no application data was reset. Added lifecycle tests cover
+restoration, owner isolation, expiry, irreversible empty intent, cleanup failures,
+races and migration guards. CI then passed 548 backend tests at the same complete
+coverage after adding the 21-item empty-trash regression; full desktop/mobile
+browser acceptance also passed. The upgrade driver now expects schema 0014.
+Production has an explicit 0013-to-0014 forward-only policy and a narrowly scoped,
+release-locked installer, verified by 16 Docker runtime contract tests.
+The local full upgrade rehearsal was blocked by exhausted Docker network pools;
+The required isolated CI upgrade/persistence proof subsequently passed
+(run 35118320444), including the real restart and post-unlink crash checks.
+
 ## E09.34 — Contextual library headings
 
 Status: in_review. The selected Templates or My documents section must have its

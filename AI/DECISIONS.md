@@ -143,7 +143,7 @@ The MVP consists of:
 
 The user explicitly retained **version-history UI** in MVP. Place it in the workspace rather than creating another top-level page. The initial design includes revision listing, read-only preview, download, and restoration as a new revision; advanced diffs and branching are deferred.
 
-[Product](PRODUCT.md) is the canonical page specification. Standalone administrator screens and a trash browser are deferred. Necessary backend authorization, quota configuration, persistence, history, and cleanup remain in scope. Keep settings and review controls within the four pages.
+[Product](PRODUCT.md) is the canonical page specification. Standalone administrator screens are deferred. D027 supersedes the initial trash deferral with a recoverable library Trash section. Necessary backend authorization, quota configuration, persistence, history, and cleanup remain in scope. Keep settings and review controls within the four pages.
 
 ## D012 — Templates and individual documents
 
@@ -359,3 +359,12 @@ rejection path. Choice/dropdown fields and Word-native date picker controls
 remain deferred; the schema widened the v1 records with a defaulted optional
 property instead of a version bump, so stored snapshots and reviews stay
 loadable unchanged.
+
+## D027 — Recoverable trash
+
+Accepted: explicit user request, 2026-09-16. Supersedes the earlier trash deferral
+in D011. The library includes Trash for both templates and documents. Removal
+retains all versions for 30 days; restore preserves identity and revisions.
+Permanent deletion and Empty trash are explicit confirmed actions. Empty trash
+records immediate irreversible intent across all pages, with bounded physical
+cleanup completed by maintenance. Retained bytes remain charged until removed.

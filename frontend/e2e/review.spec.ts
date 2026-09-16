@@ -105,8 +105,8 @@ test("owned worker suggestions support draft review, grouping, undo and locale c
   // The uploaded review resource is a template; the section link preselects it.
   await openNavigation(page);
   await page.getByRole("link", { name: "Шаблони", exact: true }).click();
-  await libraryCard.getByRole("button", { name: "Видалити", exact: true }).click();
-  await page.getByRole("button", { name: "Видалити назавжди", exact: true }).click();
+  await libraryCard.getByRole("button", { name: "До кошика", exact: true }).click();
+  await page.getByRole("button", { name: "Перемістити до кошика", exact: true }).click();
   await expect(libraryCard).toHaveCount(0);
   page.once("dialog", dialog => dialog.accept());
   await openNavigation(page);

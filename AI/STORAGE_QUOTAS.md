@@ -47,7 +47,7 @@ Changing an inherited default affects users without overrides. Audit administrat
 
 Charge logical file bytes rather than filesystem block allocation. Charge each stored file once even if several records reference it; a separate physical copy is a separate charge. V1 does not deduplicate across users. Temporary space and operating data still need server-wide capacity management; a user quota is not a guarantee that the physical disk has room. Backups are excluded from MVP under D018. Retained document versions remain required and charged; they are not independent backups.
 
-Define explicit operator retention settings for versions and generated outputs before enabling automatic pruning, and display the policy in version history. Never silently discard history just to make a failing write fit. An autosave or restore may consume version space, so show impending quota exhaustion before the user believes a save succeeded. A trash browser is deferred; any future trash feature must continue charging retained bytes until physical removal.
+Define explicit operator retention settings for versions and generated outputs before enabling automatic pruning, and display the policy in version history. Never silently discard history just to make a failing write fit. An autosave or restore may consume version space, so show impending quota exhaustion before the user believes a save succeeded. Trash retains complete documents and versions for 30 days under D027 and continues charging bytes until physical removal.
 
 ## Filesystem layout and access
 

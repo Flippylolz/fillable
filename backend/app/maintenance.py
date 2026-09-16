@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.pool import NullPool
 
 from app.documents.retention import prune
+from app.documents.trash import expire
 from app.infrastructure import database
 from app.maintenance_schema import TASKS, state
 from app.storage.configuration import configured
@@ -78,6 +79,7 @@ def perform(name, store, cursor, batch):
         result = reconcile_accounts(store, after=cursor, batch=batch)
         return summarize(result, ("accounts",)), result["next_cursor"]
     if name == "retention":
+        expire(batch=batch)
         result = prune(after=cursor, batch=batch)
         return summarize(result, ("versions",)), result["next_cursor"]
     if name == "inventory":
