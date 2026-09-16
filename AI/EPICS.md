@@ -3083,3 +3083,27 @@ Use native read-only inputs during that access check, retaining the mounted inpu
 focus and selection while preventing edits without a valid lease. Cover text,
 number and date fields, and verify delayed post-autosave lease acquisition in
 real desktop/mobile browsers with continued typing at the retained caret.
+
+## E09.40 — Automatic forward migrations during deployment
+
+Status: in_review. Replace the installed runtime's schema-version allowlist with
+validation of the complete Alembic history from the verified release image. Accept
+empty databases and known ancestors of a single linear head; reject unknown,
+branched, malformed and backward histories before stopping the application.
+Quiesce Fillable writers, run the image's migration service, verify the resulting
+schema, then start and verify the release. Preserve existing data, ingress ownership,
+exact-main CI gates and the last successful receipt on failure. Bootstrap the
+updated runtime once; future migrations require no operator script or version list.
+
+E09.36 merged in PR #153 as `20cd3c8692ab6ba45c97dbe9e4ad720ba57e514d`.
+Final integrated CI passed 552 backend tests (4556/4556 lines, 1474/1474 branches)
+and 434 frontend tests (1987/1987 lines, 2267/2267 branches), plus both browser
+viewports and upgrade/recovery checks. Formatting and Trash await the runtime update.
+
+2026-09-16: Docker runtime contracts passed 18 tests, including actual Alembic
+history extraction, future-version acceptance, unknown/downgrade/branch rejection,
+quiesce/migrate/start ordering, failed migration or wrong resulting schema, unchanged
+success receipts, and locked/idempotent bootstrap with partial-write recovery. All
+10 release gate contracts and changed-script Ruff checks passed. The required real
+PostgreSQL upgrade proof now explicitly validates history and migrates before starting
+writers. Application source is unchanged; full CI remeasures both coverage gates.

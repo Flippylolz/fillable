@@ -443,3 +443,15 @@ the real suites, and require passing tests but failing coverage. They remove the
 probe afterward and cannot overwrite normal reports. No source exclusions or
 ignore pragmas are introduced. Existing strict `ci-required` protection and the
 same-commit deployment requirement continue to enforce this contract.
+
+
+## E09.40 — Automatic database migrations
+
+Normal exact-main releases validate the target image's Alembic history, pause only
+Fillable's application services, apply forward migrations and verify the resulting
+schema before startup. No schema-version list or per-migration operator script is
+required after the one-time runtime bootstrap. Required runtime contracts cover
+future revisions, incompatible histories, execution order, failure suppression and
+preservation of the last successful receipt. The existing real PostgreSQL upgrade
+and document-persistence proof remains required. See [Server runtime](SERVER_RUNTIME.md)
+for isolation and forward-repair behavior; no release gate or coverage threshold changes.

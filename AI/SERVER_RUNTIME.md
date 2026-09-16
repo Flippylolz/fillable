@@ -82,16 +82,30 @@ they still contain this upgrade's bytes. Never execute the old HTTP receiver app
 
 ## Schema-aware failure handling
 
-E09.37 adds a reviewed forward transition from `0013_maintenance_state` to
-`0014_document_trash`. Install `scripts/install_trash_policy.py` from merged,
-CI-verified source under the existing release lock before dispatching the trash
-release. It updates only the fingerprint-verified runtime helper and its manifest,
-preserving credentials, keys, application state, Compose files and shared ingress.
-The policy continues to accept schema 0013 images only while the database remains
-0013; schema 0014 images accept an empty database, 0013, or 0014. Unknown/multiple
-heads and a 0014-to-0013 downgrade are rejected before starting the application. Reviewed migrations remain startup
-dependencies and readiness verifies the resulting schema. No downgrade, data drop,
-volume deletion, host-wide shutdown/pruning or backup operation exists in this path.
+E09.40 derives the allowed forward path from the complete Alembic revision history
+inside the digest-verified, exact-main-CI release image. The metadata probe runs
+without network access or host mounts. The installed helper validates one complete
+linear history, accepting an empty database, the head, or any known ancestor.
+Unknown database revisions, multiple heads, branches, dependencies, missing parents,
+cycles and downgrades fail before the running application is stopped. Future linear
+migrations require only the normal reviewed PR and passing CI, with no host version
+allowlist or per-migration installation.
+
+After validation, the receiver stops only Fillable's relay, gateway and database
+writers (API, worker, dispatcher and maintenance), runs the verified image's
+`migrate` service with `alembic upgrade head`, and checks the database reached the
+expected head before starting the application. Existing dependency checks remain;
+a repeated upgrade at head is a no-op. The release lock serializes the operation.
+A migration failure leaves Fillable offline for forward repair, retains all volumes
+and the last successful receipt, and records the failed phase in `attempt.json`.
+It never attempts a downgrade or automatically runs older code against a new schema.
+
+Existing installations need one bootstrap of this generic runtime via
+`scripts/install_migration_runtime.py` from merged, CI-verified source. This replaces
+the E09.37 per-version installer. It holds the existing release lock and updates
+only the fingerprint-verified runtime helper and manifest, preserving credentials,
+keys, configuration, application state, Compose files and shared ingress. This is
+an upgrade of the deployment mechanism itself, not a recurring migration step.
 
 On ingress/verification failure only the Fillable relay is stopped; the externally
 owned TLS listener is never removed or changed. Private application/database data remains

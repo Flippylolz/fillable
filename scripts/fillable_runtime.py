@@ -29,10 +29,14 @@ FILES = (
     "scripts/fillable_edge.py",
     "scripts/fillable_edge_lock.py",
 )
-SCHEMA_PREDECESSORS = {
-    "0013_maintenance_state": {None, "0013_maintenance_state"},
-    "0014_document_trash": {None, "0013_maintenance_state", "0014_document_trash"},
-}
+# Read metadata inside the verified image, without network or host mounts.
+SCHEMA_GRAPH_QUERY = (
+    "import json; from alembic.config import Config; "
+    "from alembic.script import ScriptDirectory; "
+    "s=ScriptDirectory.from_config(Config('alembic.ini')); "
+    "print(json.dumps([{'revision': r.revision, 'parent': r.down_revision, "
+    "'dependencies': r.dependencies} for r in s.walk_revisions()]))"
+)
 BACKEND_SERVICES = {
     "api",
     "worker",
@@ -54,11 +58,43 @@ STATE_FORMAT = (
 )
 
 
-def validate_schema_transition(head, current):
-    if head not in SCHEMA_PREDECESSORS or current not in SCHEMA_PREDECESSORS[head]:
-        raise ValueError(
-            "Database schema is incompatible; preserve data for forward repair"
-        )
+def validate_schema_transition(graph, current):
+    """Accept only a complete linear forward history from the verified release."""
+    error = "Database schema is incompatible; preserve data for forward repair"
+    if not isinstance(graph, list) or not graph:
+        raise ValueError(error)
+    parents = {}
+    for row in graph:
+        if not isinstance(row, dict) or set(row) != {
+            "revision",
+            "parent",
+            "dependencies",
+        }:
+            raise ValueError(error)
+        revision, parent = row["revision"], row["parent"]
+        if (
+            not isinstance(revision, str)
+            or not re.fullmatch(r"[A-Za-z0-9_]{1,128}", revision)
+            or revision in parents
+            or (parent is not None and not isinstance(parent, str))
+            or row["dependencies"] is not None
+        ):
+            raise ValueError(error)
+        parents[revision] = parent
+    heads = set(parents) - set(parents.values())
+    if len(heads) != 1:
+        raise ValueError(error)
+    head = next(iter(heads))
+    visited = set()
+    revision = head
+    while revision is not None:
+        if revision in visited or revision not in parents:
+            raise ValueError(error)
+        visited.add(revision)
+        revision = parents[revision]
+    if visited != set(parents) or (current is not None and current not in visited):
+        raise ValueError(error)
+    return head
 
 
 def execute(arguments, *, environment=None, input=None):
@@ -479,35 +515,42 @@ class Runtime:
         configuration = json.loads(self.command("config", "--format", "json"))
         validate_compose(configuration, self.root, images)
         self.progress("verify_schema")
-        head = execute(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--network",
-                "none",
-                "--read-only",
-                "--tmpfs",
-                "/tmp",
-                "--memory",
-                "256m",
-                "--cpus",
-                "0.5",
-                images["backend"]["id"],
-                "python",
-                "-c",
-                "from alembic.config import Config; "
-                "from alembic.script import ScriptDirectory; "
-                "print(','.join(ScriptDirectory.from_config("
-                "Config('alembic.ini')).get_heads()))",
-            ]
+        graph = json.loads(
+            execute(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--network",
+                    "none",
+                    "--read-only",
+                    "--tmpfs",
+                    "/tmp",
+                    "--memory",
+                    "256m",
+                    "--cpus",
+                    "0.5",
+                    images["backend"]["id"],
+                    "python",
+                    "-c",
+                    SCHEMA_GRAPH_QUERY,
+                ]
+            )
         )
-        if head not in SCHEMA_PREDECESSORS:
-            raise ValueError("Release schema needs a reviewed forward plan")
+        # Reject malformed histories before touching the existing application.
+        head = validate_schema_transition(graph, None)
         self.command(
             "up", "-d", "--no-build", "--wait", "--wait-timeout", "120", "db", "redis"
         )
-        validate_schema_transition(head, self.schema())
+        validate_schema_transition(graph, self.schema())
+        self.progress("quiesce_application")
+        self.command(
+            "stop", "ingress", "gateway", "api", "worker", "dispatcher", "maintenance"
+        )
+        self.progress("migrate_database")
+        self.command("run", "--rm", "--no-deps", "migrate")
+        if self.schema() != head:
+            raise ValueError("Migration did not reach the release schema")
         self.progress("start_private_application")
         self.command(
             "up",

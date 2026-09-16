@@ -11,7 +11,10 @@ The baseline is merged PR #64, commit
 `191282ce485d6f562be0cd8d0a8b183b7e2ebb1d`, with schema `0012_audit_chronology`.
 The driver builds that application's production-style images, then builds the staged
 current application and upgrades the same PostgreSQL and document storage to
-`0014_document_trash`. This tests that specific previous-image migration path;
+`0014_document_trash`. E09.40 builds the new images while the old services still run, validates the
+actual image's migration history against the database, stops the isolated writers,
+and explicitly runs the migration service before application startup. It checks
+the resulting head against the policy output. This tests that specific previous-image migration path;
 it does not claim arbitrary old releases or destructive downgrades are supported.
 
 Each run creates a unique temporary directory and Compose project and refuses an
