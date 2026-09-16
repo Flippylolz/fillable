@@ -87,6 +87,33 @@ def test_unchanged_checkbox_export_is_byte_identical():
     assert DocxExport(package).render(package.model, package.digest) == data
 
 
+def test_toggling_checkbox_without_explicit_state_adds_it():
+    body = CHECKBOX.format(checked="0", glyph="<w:t>☐</w:t>").replace(
+        '<w14:checked w14:val="0"/>', ""
+    )
+    package = DocxPackage(archive(f"<w:p>{body}</w:p>"))
+    model = copy.deepcopy(package.model)
+    checkboxes(model)[0]["attrs"]["checked"] = True
+    reopened = DocxPackage(DocxExport(package).render(model, package.digest))
+    assert checkboxes(reopened.model)[0]["attrs"]["checked"] is True
+    assert "☒" in reopened.parts["word/document.xml"].decode()
+
+
+@pytest.mark.parametrize("glyph", ["nothex", "1234567", "110000"])
+def test_invalid_checkbox_glyphs_are_rejected_without_mutating_source(glyph):
+    from app.documents.package import InvalidDocument
+
+    body = CHECKBOX.format(checked="0", glyph="<w:t>☐</w:t>").replace(
+        'w14:val="2612"', f'w14:val="{glyph}"'
+    )
+    package = DocxPackage(archive(f"<w:p>{body}</w:p>"))
+    model = copy.deepcopy(package.model)
+    checkboxes(model)[0]["attrs"]["checked"] = True
+    with pytest.raises(InvalidDocument, match="invalid_anchor"):
+        DocxExport(package).render(model, package.digest)
+    assert checkboxes(package.model)[0]["attrs"]["checked"] is False
+
+
 def test_toggled_checkbox_export_updates_state_and_glyph():
     data = archive(f"<w:p>{CHECKBOX.format(checked='0', glyph='<w:t>☐</w:t>')}</w:p>")
     package = DocxPackage(data)
@@ -159,9 +186,7 @@ def shape_run(color):
 
 
 def shape_document(fill="938953"):
-    return archive(
-        f"<w:p>{shape_run(fill)}<w:r><w:t>ч</w:t></w:r></w:p>"
-    )
+    return archive(f"<w:p>{shape_run(fill)}<w:r><w:t>ч</w:t></w:r></w:p>")
 
 
 def locked_runs(model):
@@ -228,9 +253,7 @@ def test_shape_fill_export_rejects_malformed_overrides():
     stripped = shape_run("938953").replace(
         '<a:solidFill><a:srgbClr val="938953"/></a:solidFill>', ""
     )
-    empty = DocxPackage(
-        archive(f"<w:p>{stripped}<w:r><w:t>ч</w:t></w:r></w:p>")
-    )
+    empty = DocxPackage(archive(f"<w:p>{stripped}<w:r><w:t>ч</w:t></w:r></w:p>"))
     model = copy.deepcopy(empty.model)
     locked_runs(model)[0]["attrs"]["shapes"] = {"0": "#ff0000"}
     with pytest.raises(InvalidDocument, match="invalid_anchor"):
@@ -340,9 +363,7 @@ def test_working_model_accepts_checkbox_only_inside_paragraphs():
             ],
         },
         lambda: model([{"type": "checkbox", "attrs": {"id": "", "checked": False}}]),
-        lambda: model(
-            [{"type": "checkbox", "attrs": {"id": "x:7", "checked": "no"}}]
-        ),
+        lambda: model([{"type": "checkbox", "attrs": {"id": "x:7", "checked": "no"}}]),
         lambda: model([{"type": "checkbox", "attrs": {"id": "x:7"}}]),
     ]:
         with pytest.raises(ValueError):
@@ -365,9 +386,12 @@ def test_checkbox_interior_is_protected_for_field_spans():
                         "content": [
                             {"type": "text", "text": "a"},
                             {
-                            "type": "checkbox",
-                            "attrs": {"id": "word/document.xml:2", "checked": False},
-                        },
+                                "type": "checkbox",
+                                "attrs": {
+                                    "id": "word/document.xml:2",
+                                    "checked": False,
+                                },
+                            },
                             {"type": "text", "text": "b"},
                         ],
                     }

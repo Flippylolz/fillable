@@ -203,6 +203,18 @@ def test_conflicting_concurrent_allocations_and_active_lease(setup):
         assert stream.read() == b"123456"
 
 
+def test_committed_replay_reports_busy_while_file_lock_is_held(setup):
+    store, owner, _, _ = setup
+    result = save(store, owner, key="locked-replay")
+    op = operation(owner)
+    with store.fs.lock(op["id"]):
+        with pytest.raises(StorageError, match="operation_in_progress"):
+            save(store, owner, key="locked-replay")
+    replay = save(store, owner, key="locked-replay")
+    assert replay.id == result.id
+    assert counters(owner) == (8, 0)
+
+
 def test_quota_reduction_and_callback_rollback_preserve_original(setup):
     store, owner, _, root = setup
     original = save(store, owner)
