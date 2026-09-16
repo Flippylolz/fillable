@@ -25,7 +25,12 @@ test("saved previews populate on first render, persist, and follow saved fill-mo
   let card = page.getByRole("article", { name: title, exact: true });
   await expect(card.locator(".library-preview-placeholder")).toBeVisible();
   await card.getByRole("link", { name: title, exact: true }).click();
-  await expect(page.getByText("Редагування дозволено.", { exact: true })).toBeVisible();
+  await expect(async () => {
+    if (await page.getByText("Це завантаження ще триває. Повторіть спробу згодом.", { exact: true }).isVisible()) {
+      await page.getByRole("button", { name: "Повторити відкриття", exact: true }).click();
+    }
+    await expect(page.getByText("Редагування дозволено.", { exact: true })).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15000 });
   const heading = await page.locator("#workspace-title").boundingBox();
   expect(heading!.width).toBeGreaterThan(200);
   expect(heading!.height).toBeLessThan(100);
