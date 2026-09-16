@@ -359,3 +359,12 @@ rejection path. Choice/dropdown fields and Word-native date picker controls
 remain deferred; the schema widened the v1 records with a defaulted optional
 property instead of a version bump, so stored snapshots and reviews stay
 loadable unchanged.
+
+## D027 — Recoverable trash
+
+Accepted: explicit user request, 2026-09-16. Supersedes the earlier trash deferral
+in D011. The library includes Trash for both templates and documents. Removal
+retains all versions for 30 days; restore preserves identity and revisions.
+Permanent deletion and Empty trash are explicit confirmed actions. Empty trash
+records immediate irreversible intent across all pages, with bounded physical
+cleanup completed by maintenance. Retained bytes remain charged until removed.

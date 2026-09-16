@@ -1,9 +1,10 @@
+import { TrashActions } from "./TrashActions";
 import { DocumentCover } from "./DocumentCover";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { api, apiErrorMessage } from "../api";
 import { formatBytes, formatDate } from "../i18n";
-import { useLibrary, type Kind } from "./useLibrary";
+import { useLibrary, type Kind, type LibraryView } from "./useLibrary";
 import "./library.css";
 import { DownloadSaved } from "./DownloadSaved";
 import { ProcessingStatus } from "./ProcessingStatus";
@@ -18,12 +19,12 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
   onDirty: (value: boolean) => void; onSaved: () => void;
   onOpen?: (identity: string) => void;
   refreshRevision?: number;
-  tab?: Kind; onTabChange?: (tab: Kind) => void;
+  tab?: LibraryView; onTabChange?: (tab: LibraryView) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const [internalTab, setInternalTab] = useState<Kind>("template");
+  const [internalTab, setInternalTab] = useState<LibraryView>("template");
   const tab = tabProp ?? internalTab;
-  function setTab(next: Kind) { setInternalTab(next); onTabChange?.(next); }
+  function setTab(next: LibraryView) { setInternalTab(next); onTabChange?.(next); }
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOrder>("newest");
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -109,8 +110,8 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
   return <section className="library" aria-labelledby="library-title">
     <header className="library-topbar">
       <div className="library-titles">
-        <h2 id="library-title">{t("library.title")}</h2>
-        <p>{t("library.description")}</p>
+        <h2 id="library-title">{t(tab === "trash" ? "trash.title" : "library.title")}</h2>
+        <p>{t(tab === "trash" ? "trash.description" : "library.description")}</p>
       </div>
       <div className="library-tools">
         <input type="search" className="library-search" aria-label={t("library.search")}
@@ -118,12 +119,12 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
           onChange={event => setQuery(event.target.value)} />
         <button type="button" className="library-refresh" disabled={blocked}
           onClick={() => setRevision(value => value + 1)}>{t("library.refresh")}</button>
-        <button type="button" className="primary library-upload-toggle" disabled={blocked}
+        {tab === "trash" ? <TrashActions csrfToken={csrfToken} disabled={blocked || !data.items.length} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} /> : <button type="button" className="primary library-upload-toggle" disabled={blocked}
           aria-expanded={uploadOpen} aria-controls="library-upload"
-          onClick={() => setUploadOpen(open => !open)}>{t("library.uploadAction")}</button>
+          onClick={() => setUploadOpen(open => !open)}>{t("library.uploadAction")}</button>}
       </div>
     </header>
-    <form id="library-upload" className="library-upload" hidden={!uploadOpen} aria-labelledby="upload-title" onSubmit={event => void upload(event)}>
+    <form id="library-upload" className="library-upload" hidden={!uploadOpen || tab === "trash"} aria-labelledby="upload-title" onSubmit={event => void upload(event)}>
       <h3 id="upload-title">{t("library.uploadTitle")}</h3>
       <p>{t("library.uploadHint")}</p>
       <label>{t("library.file")}<input ref={input} type="file" accept=".docx" disabled={blocked} onChange={event => choose(event.target.files?.[0] ?? null)} /></label>
@@ -146,12 +147,18 @@ export function Library({ csrfToken, disabled, onBusy, onDirty, onSaved, onOpen,
         </select>
       </label>
     </div>
-    <section id="library-list" aria-label={t("library.title")} aria-busy={data.loading || data.more}>
+    <section id="library-list" aria-label={t(tab === "trash" ? "trash.title" : "library.title")} aria-busy={data.loading || data.more}>
       {data.loading && <p role="status">{t("library.loading")}</p>}
       {data.error && <p role="alert">{apiErrorMessage(data.error)}</p>}
       {!data.loading && !data.error && ((needle ? items.length === 0 : data.items.length === 0)) &&
-        <p className="library-empty">{t(needle ? "library.searchEmpty" : tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
-      <div className="library-items">{items.map(item => <article key={item.id} aria-label={item.title} className="library-item">
+        <p className="library-empty">{t(needle ? "library.searchEmpty" : tab === "trash" ? "trash.emptyState" : tab === "template" ? "library.emptyTemplates" : "library.emptyDocuments")}</p>}
+      <div className="library-items">{items.map(item => tab === "trash" ? <article key={item.id} aria-label={item.title} className="library-item trash-item">
+        <h3>{item.title}</h3><p>{t(`library.${item.kind}`)}</p>
+        {item.purge_after && <p>{t("trash.deadline", { date: formatDate(new Date(item.purge_after), { dateStyle: "medium", timeStyle: "short" }) })}</p>}
+        <p>{bytes(item.size_bytes)}</p>
+        {item.deletion_pending && <p role="status">{t("library.deletionPending")}</p>}
+        <TrashActions item={item} csrfToken={csrfToken} disabled={blocked} onBusy={onBusy} onChanged={() => { setRevision(value => value + 1); onSaved(); }} />
+      </article> : <article key={item.id} aria-label={item.title} className="library-item">
         <DocumentCover key={item.current_version_id} item={item} />
         <h3>{item.deletion_pending ? item.title : <a className="library-card-open" href={`/editor/${item.id}`} aria-disabled={blocked} onClick={event => openCard(event, item.id)}>{item.title}</a>}</h3><p className="library-filename">{item.original_filename}</p>
         {item.deletion_pending ? <p role="status">{t("library.deletionPending")}</p> : <><p>{t("library.saved")}</p><ProcessingStatus key={item.current_version_id} item={item} csrfToken={csrfToken} disabled={blocked} /></>}

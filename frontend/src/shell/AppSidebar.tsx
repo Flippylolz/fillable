@@ -6,7 +6,7 @@ import { useStorageUsage } from "./useStorageUsage";
 import "./shell.css";
 
 export type Page = "documents" | "editor" | "profile";
-type Kind = "template" | "document";
+type Kind = "template" | "document" | "trash";
 
 /** The left rail of the gallery shell: brand, sections, storage and session.
     On narrow screens it becomes an off-canvas drawer opened by the menu bar. */
@@ -43,6 +43,8 @@ export function AppSidebar({ page, tab, opened, name, usageRevision, locked,
           onClick={event => { onClose(); onLibrary("document"); navigate(event, "/documents"); }}>{t("navigation.documents")}</a>
         <a href="/documents" {...lockedAttributes} aria-current={page === "documents" && tab === "template" ? "page" : undefined}
           onClick={event => { onClose(); onLibrary("template"); navigate(event, "/documents"); }}>{t("navigation.templates")}</a>
+        <a href="/documents" {...lockedAttributes} aria-current={page === "documents" && tab === "trash" ? "page" : undefined}
+          onClick={event => { onClose(); onLibrary("trash"); navigate(event, "/documents"); }}>{t("trash.title")}</a>
         {opened && <a href={`/editor/${opened}`} {...lockedAttributes} aria-current={page === "editor" ? "page" : undefined}
           onClick={event => { onClose(); navigate(event, `/editor/${opened}`); }}>{t("workspace.title")}</a>}
         <a href="/profile" {...lockedAttributes} aria-current={page === "profile" ? "page" : undefined}

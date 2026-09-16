@@ -19,7 +19,7 @@ These instructions guide automated implementation in this repository. Direct use
 
 - Complete the requested task, including relevant verification and documentation. Resolve routine implementation details without repeated confirmation.
 - Keep changes bounded to the task and its necessary dependencies. Do not silently replace accepted decisions or expand the product scope.
-- Respect D011: the MVP has login, library, profile, and workspace pages. Keep settings/review and version-history UI inside them. History is required; administrator screens and a trash browser are deferred.
+- Respect D011: the MVP has login, library, profile, and workspace pages. Keep settings/review and version-history UI inside them. History is required; administrator screens are deferred; the library includes recoverable Trash under D027.
 - Deployment is E08 and happens last, through GitHub Actions to the supplied target `<DEPLOY_USER>@<DEPLOY_HOST>`. Complete earlier work without attempting deployment; providing the hostname does not move deployment earlier.
 - If an open decision blocks only part of the task, finish independent work and report the exact remaining dependency.
 - D008 requires free components end to end. Evaluate a complete free editor or a project-owned implementation under [Editor feasibility](EDITOR_FEASIBILITY.md); do not introduce paid dependencies or time-limited trials as the production solution.

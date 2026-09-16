@@ -3017,3 +3017,13 @@ reports, accessible SVGs, raw counts and no-branch handling. A disposable local
 Git remote verified branch creation, updates, idempotence and stale-run skipping.
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
+
+## E09.37 — Thirty-day recoverable trash
+
+Status: in_progress. Move templates/documents to an owner-scoped library Trash
+section for 30 days, retaining originals, current revision, history, metadata and
+quota charges. Restore before the deadline without a new revision or charge.
+Support confirmed immediate permanent deletion and Empty trash across all pages.
+Purge expired items through bounded maintenance and existing crash-safe cleanup;
+never free quota before unlink. Test ownership, CSRF, expiry boundaries, races,
+failed cleanup, independent copies, migrations, localization and browser flows.

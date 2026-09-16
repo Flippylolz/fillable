@@ -167,3 +167,19 @@ metadata and writes the new records. Committed retries do not reopen or parse th
 after deletion. A mismatch fails without a partial target or retained reservation.
 No save API or new schema is introduced here; the paired version-review column and
 actual save writes follow in E06.2c.
+
+## Recoverable trash (E09.37 / D027)
+
+The library moves items with `POST /api/documents/{id}/trash`; repeated requests
+do not extend the 30-day deadline. `POST /api/documents/{id}/untrash` restores
+before that server-enforced deadline, retaining every version and quota charge.
+Trashed items are excluded from active reads, edits, downloads and copies.
+`GET /api/documents?kind=trash` lists owned trash with its exact purge deadline.
+The existing explicit `DELETE /api/documents/{id}` remains permanent deletion.
+`DELETE /api/documents/trash` records immediate expiration for all owned trashed
+items and starts bounded cleanup; scheduled maintenance completes remaining items.
+Expired items cannot be restored even if filesystem cleanup is pending.
+
+Migration 0014 adds nullable timestamps and the trashed state; existing active and
+permanently deleted resources keep their semantics. Downgrade refuses while any
+recoverable resources exist. Quota release still follows physical removal only.

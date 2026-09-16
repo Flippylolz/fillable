@@ -1,6 +1,6 @@
 """Durable deletion intent; filesystem cleanup keeps accounting until unlink."""
 
-from sqlalchemy import delete, exists, or_, select, update
+from sqlalchemy import delete, exists, func, or_, select, update
 
 from app.accounts.profile import active_user
 from app.documents.lease_schema import leases
@@ -47,10 +47,15 @@ def remove(state, identity):
     if state.user is None:
         raise AppError(401, "authentication_required")
     owner = state.user.id
+    return purge(owner, identity, state=state)
+
+
+def purge(owner, identity, *, state=None, expired_only=False):
     store = configured()
     with database().begin() as connection:
         lock_account(connection, owner)
-        active_user(connection, state)
+        if state is not None:
+            active_user(connection, state)
         resource = (
             connection.execute(
                 select(resources)
@@ -65,6 +70,12 @@ def remove(state, identity):
         )
         if resource is None:
             raise AppError(404, "not_found")
+        if expired_only and (
+            resource["state"] != "trashed"
+            or resource["purge_after"]
+            > connection.execute(select(func.clock_timestamp())).scalar_one()
+        ):
+            return DeletionResult(status="complete")
         selected = select(files.c.id).where(
             files.c.owner_id == owner,
             retained(identity, resource["original_file_id"]),
@@ -87,7 +98,7 @@ def remove(state, identity):
         ).first()
         if shared_original or shared_version:
             raise AppError(409, "operation_conflict")
-        if resource["state"] == "active":
+        if resource["state"] != "deleted":
             connection.execute(delete(leases).where(leases.c.document_id == identity))
             connection.execute(
                 update(jobs)
@@ -116,7 +127,7 @@ def remove(state, identity):
                 connection,
                 "document_deletion_requested",
                 owner,
-                actor=state.user.id,
+                actor=owner if state is not None else None,
                 document_id=identity,
             )
     # Never acquire an FS lock while holding the domain/account SQL transaction.

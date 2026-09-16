@@ -8,6 +8,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKeyConstraint,
+    Index,
     Integer,
     String,
     Table,
@@ -37,6 +38,8 @@ resources = Table(
     Column(
         "updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()
     ),
+    Column("trashed_at", DateTime(timezone=True)),
+    Column("purge_after", DateTime(timezone=True)),
     UniqueConstraint("id", "owner_id", name="document_owner"),
     ForeignKeyConstraint(
         ["original_file_id", "owner_id"],
@@ -56,8 +59,9 @@ resources = Table(
         use_alter=True,
         name="document_current_version",
     ),
+    Index("document_trash_expiry", "purge_after", "id"),
     CheckConstraint("kind IN ('template', 'document')", name="document_kind"),
-    CheckConstraint("state IN ('active', 'deleted')", name="document_state"),
+    CheckConstraint("state IN ('active', 'trashed', 'deleted')", name="document_state"),
     CheckConstraint("length(btrim(title)) > 0", name="document_title"),
 )
 versions = Table(
@@ -175,6 +179,8 @@ class ResourceInfo(BaseModel):
     ] = "not_started"
     deletion_pending: bool = False
     preview_ready: bool = False
+    trashed_at: datetime | None = None
+    purge_after: datetime | None = None
 
 
 class DeletionResult(BaseModel):

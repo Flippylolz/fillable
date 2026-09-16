@@ -40,7 +40,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Document actions: **Open**, **Download**, and **Delete**.
 - Use template creates a separate document and opens it in the same workspace used for direct uploads.
 - Download retrieves the latest successfully saved DOCX, clearly distinguished from unsaved work. Show a link when a valid saved file is available; processing must not expose partial files.
-- Show the user's storage meter. Deletion uses a confirmation dialog and the backend cleanup path; a separate trash page is deferred.
+- Show the user's storage meter. Deletion uses a confirmation dialog and the backend cleanup path; Trash is a library section with 30-day restore and confirmed permanent deletion.
 
 ### 3. Simple profile
 
@@ -101,7 +101,7 @@ The user defined these four pages as the MVP boundary and explicitly retained ve
 - Backups, backup/restore drills, replication, and a persistent staging environment.
 
 - Administrator screens, analytics dashboards, public signup, email recovery, shared template catalogues, and organization/team management.
-- A trash browser, advanced history diffs, branching, and advanced retention controls in the UI.
+- Advanced history diffs, branching, and advanced retention controls in the UI.
 - Real-time collaboration, PDF export, billing, e-signatures, cloud connectors, mobile apps, and bulk generation.
 - Legacy `.doc`, macro-enabled files, encrypted documents, unsupported protected content, and OCR of image-only documents.
 - Perfect compatibility with every Word feature is not promised; E00 establishes the tested support matrix.
