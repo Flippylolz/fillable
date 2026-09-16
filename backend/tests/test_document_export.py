@@ -243,3 +243,48 @@ def test_nested_unsupported_control_is_preserved_as_one_locked_region():
         saved.roots["word/document.xml"].find(".//" + W + "br").get(W + "type")
         == "page"
     )
+
+
+def test_locked_blocks_and_section_boundaries_survive_unrelated_edits():
+    package = DocxPackage(
+        archive(
+            doc(
+                "<w:p><w:pPr><w:sectPr/></w:pPr><w:r><w:t>source</w:t></w:r></w:p>"
+                "<w:altChunk/>"
+            )
+        )
+    )
+    model = deepcopy(package.model)
+    blocks = model["content"][0]["content"]
+    created = deepcopy(blocks[0])
+    created["attrs"]["id"] = "new:" + blocks[0]["attrs"]["id"] + ":" + "e" * 32
+    created["content"][0]["text"] = "\n\t"
+    blocks.insert(1, created)
+    saved = DocxPackage(DocxExport(package).render(model, package.digest))
+    paragraphs = list(saved.roots["word/document.xml"].iter(W + "p"))
+    assert paragraphs[0].find(W + "pPr/" + W + "sectPr") is not None
+    assert paragraphs[1].find(W + "pPr/" + W + "sectPr") is None
+    assert saved.roots["word/document.xml"].find(".//" + W + "altChunk") is not None
+    assert paragraphs[1].find(".//" + W + "br") is not None
+    assert paragraphs[1].find(".//" + W + "tab") is not None
+    altered = deepcopy(model)
+    altered["content"][0]["content"][-1]["attrs"]["label"] = "changed"
+    with pytest.raises(InvalidDocument, match="invalid_anchor|unsupported_change"):
+        DocxExport(package).render(altered, package.digest)
+
+
+def test_container_and_locked_block_guards_reject_unanchored_input():
+    from lxml import etree
+
+    package = DocxPackage(archive(doc("<w:p/>")))
+    exporter = DocxExport(package)
+    paragraph = package.model["content"][0]["content"][0]
+    with pytest.raises(InvalidDocument, match="invalid_structure"):
+        exporter.blocks(etree.Element(W + "body"), [paragraph], [], "word/document.xml")
+    with pytest.raises(InvalidDocument, match="unsupported_change"):
+        exporter.preserve_locked({"type": "lockedBlock", "attrs": {"id": "x"}}, {})
+    locked = DocxPackage(archive(doc("<w:altChunk/>")))
+    removed = deepcopy(locked.model)
+    removed["content"][0]["content"] = []
+    with pytest.raises(InvalidDocument, match="invalid_structure"):
+        DocxExport(locked).render(removed, locked.digest)
