@@ -28,7 +28,7 @@ export function FieldSidebar({ fields, active, update, focus, remove, readOnly =
             <span className="field-type">{t(`review.${field.type}`)}</span>
             {active === field.id && <span className="field-active">{t("editor.activeField")}</span>}
           </div>
-          <label>{field.label}<FieldInput field={field} readOnly={readOnly} update={update} compact /></label>
+          <label>{field.label}<FieldInput field={field} readOnly={readOnly} update={update} /></label>
           <div className="field-actions">
             <button type="button" onClick={() => focus(field.id)}>{t("editor.focus", { label: field.label })}</button>
             <button type="button" disabled={readOnly} onClick={() => remove(field.id)}>{t("editor.remove", { label: field.label })}</button>

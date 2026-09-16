@@ -1,3 +1,4 @@
+import { textFormats } from "./formatting";
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
@@ -18,6 +19,7 @@ export function DocumentEditor({
   initialDocument,
   sourcePresentation,
   mode = "document",
+  onModeChange,
   onDocumentChange,
   onSnapshot,
   onReader,
@@ -37,6 +39,7 @@ export function DocumentEditor({
   initialDocument: object;
   sourcePresentation?: SourcePresentation;
   mode?: "document" | "fill";
+  onModeChange?: (mode: "document" | "fill") => void;
   onDocumentChange?: (document: object) => void;
   onSnapshot?: (snapshot: EditorSnapshot) => void;
   onReader?: (read: (() => EditorSnapshot) | null) => void;
@@ -165,15 +168,20 @@ export function DocumentEditor({
       {mode === "fill" && <div className="fill-layout">
         <style>{layout.rules}</style>
         {reviewStale && <div role="alert" className="fill-review-stale"><p>{t("review.stale")}</p>{onReopen && <button type="button" onClick={onReopen}>{t("review.reopen")}</button>}</div>}
-        <FillForm fields={occurrences} active={active} readOnly={readOnly}
+        <FillForm format={(format, key) => view.current!.format(format, key)} fields={occurrences} active={active} readOnly={readOnly}
           update={(key, value) => { view.current!.updateField(key, value); }}
-          focus={id => { view.current!.focusField(id); }} remove={id => { view.current!.removeField(id); }}
+          focus={id => { onModeChange?.("document"); view.current!.focusField(id); }} remove={id => { view.current!.removeField(id); }}
           undo={() => view.current!.undo()} redo={() => view.current!.redo()} canUndo={canUndo} canRedo={canRedo} />
         <div className="fill-preview" data-layout={layout.scope} aria-hidden="true">
           <div className="fill-preview-viewport" inert><div className="fill-preview-content document-canvas" ref={previewHost} /></div>
         </div>
       </div>}
       <div className="document-tools">
+        <div role="group" aria-label={t("editor.formatSelection")}>
+          {textFormats.map(format => <button key={format} type="button" disabled={readOnly}
+            onMouseDown={event => event.preventDefault()}
+            onClick={() => view.current!.format(format)}>{t(`editor.${format}`)}</button>)}
+        </div>
         <label>
           {t("editor.fieldLabel")}
           <input

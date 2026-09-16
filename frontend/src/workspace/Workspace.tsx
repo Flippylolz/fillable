@@ -211,7 +211,7 @@ export function Workspace({ identity, dirty, onDirty, csrfToken, onBack, onOpenR
         {discovery.status === "stale" && <button type="button" onClick={reopen}>{t("review.reopen")}</button>}
       </div>
       <DocumentEditor key={`editor:${editorEpoch}`} initialDocument={saved.document} sourcePresentation={saved.presentation} discoverySnapshot={discovery.snapshot} sourceVersion={saved.resource.current_version_id} onReopen={reopen}
-          mode={viewMode}
+          mode={viewMode} onModeChange={setViewMode}
           onSnapshot={markDocument} onReader={registerReader} onFieldsReader={registerFieldsReader} onPrintReader={registerPrintReader} reviewSaved={saving.reviewSaved} onFieldValidityChange={setValid} onCompositionChange={setComposing}
         canEdit={access.canEdit} readOnly={access.status !== "active" || restoring.busy} zoom={zoom} highlight={highlight} /></div></>}
   </section>;

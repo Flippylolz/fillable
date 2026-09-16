@@ -2990,9 +2990,35 @@ Git remote verified branch creation, updates, idempotence and stale-run skipping
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
+## E09.36 — Usable filling layout and text formatting
+
+Status: in_review. Bound the field column, give the live preview the remaining
+width, and size field inputs to their content. Expose localized bold, italic and
+underline controls for selected document text and linked field values. Preserve
+source identities, unrelated OOXML formatting, one draft, undo/redo and saved
+DOCX formatting through export/reopen. Verify responsive layout and invalid marks.
+
+2026-09-16: E09.36 local Docker checks passed 547 backend tests with 4451/4451
+lines and 1448/1448 branches; 426 frontend tests with 100% lines and branches.
+Ruff, mypy, ESLint, catalogs and TypeScript/Vite passed. DOCX structural export,
+reopen and semantic correspondence tests verify explicit formatting, unchanged
+source identities and retained unrelated run properties. Browser CI also checks
+visible bold preview, desktop column proportions and saved gallery rendering.
+Microsoft Word execution is not claimed.
+
+Local Playwright also passed the saved fill-formatting preview regression on
+desktop and mobile; screenshots verified compact inputs and the larger preview.
+After integrating merged E09.38, all 429 frontend tests passed with 100% lines
+and branches. The delayed-autosave focus/caret regression passed again against
+this layout on desktop/mobile.
+Mobile visual review additionally found the workspace title squeezed between
+buttons; the toolbar now wraps with a full-width title on narrow screens.
+
 ## E09.37 — Thirty-day recoverable trash
 
-Status: in_review. Move templates/documents to an owner-scoped library Trash
+Status: done. PR [#155](https://github.com/Flippylolz/fillable/pull/155) merged as
+`2cf2c64301dc4a9d0601d65a40e4113d0c15293f` with all required checks passing.
+Move templates/documents to an owner-scoped library Trash
 section for 30 days, retaining originals, current revision, history, metadata and
 quota charges. Restore before the deadline without a new revision or charge.
 Support confirmed immediate permanent deletion and Empty trash across all pages.
@@ -3011,15 +3037,18 @@ coverage after adding the 21-item empty-trash regression; full desktop/mobile
 browser acceptance also passed. The upgrade driver now expects schema 0014.
 Production has an explicit 0013-to-0014 forward-only policy and a narrowly scoped,
 release-locked installer, verified by 16 Docker runtime contract tests.
-The local full upgrade rehearsal was blocked by exhausted Docker network pools;
+The local full upgrade rehearsal was blocked by exhausted Docker network pools.
 The required isolated CI upgrade/persistence proof subsequently passed
 (run 35118320444), including the real restart and post-unlink crash checks.
 
 ## E09.34 — Contextual library headings
 
-Status: in_review. The selected Templates or My documents section must have its
+Status: done. PR [#151](https://github.com/Flippylolz/fillable/pull/151) merged as
+`cd28d340cb8238c608a2b7ba4209cfc3dd3d1638` with all required checks passing.
+The selected Templates or My documents section must have its
 own localized heading and concise description, including after sidebar navigation
 and uploads. Preserve document titles and the shared gallery behavior.
+Production release 35122537636 succeeded for this merged source.
 
 ## E09.35 — Center the profile in the content pane
 
@@ -3038,6 +3067,9 @@ publication; the strict release verifier still expected eight and blocked releas
 in the required release evidence, retaining exact job identities, success, source
 and run-attempt validation. Docker release contract tests verify that missing or
 failed badge publication still blocks a release. No deployment gate is bypassed.
+Release 35120638991 succeeded for `a0e285eeb5fd5109d2b0968cc43861336dc0fa8e`;
+production receipt confirms that source and preservation of existing services.
+This deployed the E09.38 focus fix and E09.35 profile alignment.
 
 ## E09.38 — Preserve field focus during autosave
 

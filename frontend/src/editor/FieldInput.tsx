@@ -5,9 +5,8 @@ import { FIELD_VALUE_LIMIT } from "./fieldValues";
 import { formatDateValue, parseDateValue } from "./fieldKinds";
 
 /** The typed field entry control shared by the sidebar cards and the fill form. */
-export function FieldInput({ field, readOnly, update, compact }: {
+export function FieldInput({ field, readOnly, update }: {
   field: FieldSummary; readOnly: boolean; update: (key: string, value: string) => void;
-  compact?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const numbers = new Intl.NumberFormat(i18n.resolvedLanguage);
@@ -28,7 +27,7 @@ export function FieldInput({ field, readOnly, update, compact }: {
         aria-invalid={field.issue ? true : undefined} aria-describedby={described}
         onChange={event => update(field.key, event.target.value)} />
       // Compact cards start at the content's line count instead of a tall fixed box.
-      : <textarea readOnly={readOnly} rows={compact ? Math.min(4, Math.max(1, field.value.split("\n").length)) : 3} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
+      : <textarea readOnly={readOnly} rows={Math.min(4, Math.max(1, field.value.split("\n").length))} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
         aria-invalid={field.issue ? true : undefined} aria-describedby={described}
         onChange={event => update(field.key, event.target.value)} />;
   return <>

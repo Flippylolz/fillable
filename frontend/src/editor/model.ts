@@ -245,6 +245,23 @@ export const editorSchema = new Schema({
         },
       ],
     },
+    format: {
+      parseDOM: [{ tag: "span[data-text-format]", getAttrs: element => Object.fromEntries(
+        ["bold", "italic", "underline"].map(key => {
+          const value = element.getAttribute(`data-format-${key}`);
+          return [key, value === null ? null : value === "true"];
+        })) }],
+      attrs: { bold: { default: null }, italic: { default: null }, underline: { default: null } },
+      toDOM: mark => ["span", {
+        "data-text-format": "true",
+        "data-format-underline": mark.attrs.underline,
+        "data-format-bold": mark.attrs.bold,
+        "data-format-italic": mark.attrs.italic,
+        style: [mark.attrs.bold === null ? "" : `font-weight:${mark.attrs.bold ? "bold" : "normal"}!important`,
+          mark.attrs.italic === null ? "" : `font-style:${mark.attrs.italic ? "italic" : "normal"}!important`,
+          mark.attrs.underline === null ? "" : `text-decoration:${mark.attrs.underline ? "underline" : "none"}!important`].join(";"),
+      }, 0],
+    },
   },
 });
 

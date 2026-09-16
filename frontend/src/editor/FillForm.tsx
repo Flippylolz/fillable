@@ -1,10 +1,12 @@
+import { textFormats, type TextFormat } from "./formatting";
 import { useTranslation } from "react-i18next";
 import type { FieldSummary } from "./adapter";
 import { FieldInput } from "./FieldInput";
 import "./fill.css";
 
 /** The filling-focused form: the working fields in document order. */
-export function FillForm({ fields, active, update, focus, remove, readOnly, undo, redo, canUndo, canRedo }: {
+export function FillForm({ fields, active, update, focus, remove, readOnly, undo, redo, canUndo, canRedo, format }: {
+  format: (format: TextFormat, key: string) => void;
   fields: FieldSummary[]; active: string;
   update: (key: string, value: string) => void;
   focus: (id: string) => void; remove: (id: string) => void;
@@ -25,6 +27,10 @@ export function FillForm({ fields, active, update, focus, remove, readOnly, undo
         <div className="fill-entry-header">
           <h4>{field.label}</h4>
           <span className="field-type">{t(`review.${field.type}`)}</span>
+        </div>
+        <div className="fill-format-tools" role="group" aria-label={t("editor.formatField", { label: field.label })}>
+          {textFormats.map(style => <button key={style} type="button" disabled={readOnly || !field.value}
+            onClick={() => format(style, field.key)}>{t(`editor.${style}`)}</button>)}
         </div>
         <FieldInput field={field} readOnly={readOnly} update={update} />
         {fields.some(other => other.key === field.key && other.value !== field.value)
