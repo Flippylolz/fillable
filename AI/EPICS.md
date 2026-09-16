@@ -3018,6 +3018,7 @@ Git remote verified branch creation, updates, idempotence and stale-run skipping
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
+
 ## E09.36 — Usable filling layout and text formatting
 
 Status: in_progress. Bound the field column, give the live preview the remaining
@@ -3033,3 +3034,13 @@ reopen and semantic correspondence tests verify explicit formatting, unchanged
 source identities and retained unrelated run properties. Browser CI also checks
 visible bold preview, desktop column proportions and saved gallery rendering.
 Microsoft Word execution is not claimed.
+
+## E09.35 — Center the profile in the content pane
+
+Status: in_progress. Center the bounded profile grid horizontally in the space
+beside the sidebar while retaining full available width on narrow screens. Browser
+verification checks center alignment and bounds on desktop/mobile.
+
+
+Local Playwright also passed the saved fill-formatting preview regression on
+desktop and mobile; screenshots verified compact inputs and the larger preview.
