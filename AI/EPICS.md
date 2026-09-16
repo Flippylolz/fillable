@@ -3020,6 +3020,17 @@ and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
 ## E09.35 — Center the profile in the content pane
 
-Status: in_progress. Center the bounded profile grid horizontally in the space
+Status: done. PR [#152](https://github.com/Flippylolz/fillable/pull/152) merged as
+`f9e60e02194d1145bfeb3e7b2114aa9a916af04e` with all required checks green. Center the bounded profile grid horizontally in the space
 beside the sidebar while retaining full available width on narrow screens. Browser
 verification checks center alignment and bounds on desktop/mobile.
+
+
+## E09.39 — Admit verified coverage-badge publication in release evidence
+
+Status: in_review. Main CI now has nine jobs after E09.33 added coverage-badge
+publication; the strict release verifier still expected eight and blocked release
+35115154996 despite successful exact-main CI 35113539550. Include badge publication
+in the required release evidence, retaining exact job identities, success, source
+and run-attempt validation. Docker release contract tests verify that missing or
+failed badge publication still blocks a release. No deployment gate is bypassed.

@@ -107,6 +107,15 @@ class ReleaseGateTests(unittest.TestCase):
                 SOURCE, {**workflow, "state": "disabled_manually"}, run, jobs
             )
 
+    def test_main_badge_publication_is_part_of_release_evidence(self):
+        workflow, run, jobs = evidence()
+        self.assertIn("publish-coverage-badges", gate.REQUIRED_JOBS)
+        gate.validate_ci(SOURCE, workflow, run, jobs)
+        jobs["jobs"] = [row for row in jobs["jobs"] if row["name"] != "publish-coverage-badges"]
+        jobs["total_count"] = len(jobs["jobs"])
+        with self.assertRaises(ValueError):
+            gate.validate_ci(SOURCE, workflow, run, jobs)
+
     def test_latest_run_and_main_are_rechecked_after_job_lookup(self):
         workflow, run, jobs = evidence()
         branch = {"object": {"sha": SOURCE}}
