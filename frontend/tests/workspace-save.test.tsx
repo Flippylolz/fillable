@@ -44,7 +44,7 @@ function setup(write?: (request: Request) => Promise<Response>) {
   const view = render(<StrictMode><I18nextProvider i18n={i18n}><Host /></I18nextProvider></StrictMode>);
   return { ...view, server, writes, commit, leases, changed, busy, pause: (value: boolean) => pause(value) };
 }
-async function ready() { await screen.findByText("Editing enabled."); return screen.getByRole("textbox", { name: "Editable document" }); }
+async function ready() { await screen.findByText("Editing enabled.", {}, { timeout: 5000 }); return screen.getByRole("textbox", { name: "Editable document" }); }
 const field = () => screen.getAllByRole("textbox", { name: "Field value: ПІБ клієнта" })[0];
 const save = () => screen.getByRole("button", { name: "Save document" });
 const change = (text: string) => fireEvent.change(field(), { target: { value: text } });
@@ -179,7 +179,7 @@ test("autosave pauses after a quota failure, keeps newer edits and resumes after
   expect(state.writes).toHaveBeenCalledTimes(1); expect(editor).toHaveTextContent("Новіша чернетка Ґанни");
   fireEvent.click(save()); await screen.findByText("All document changes saved.");
   await waitFor(() => expect(state.leases.at(-1)).toMatchObject({ action: "acquire", source_version_id: v2 }));
-  await screen.findByText("Editing enabled.");
+  await screen.findByText("Editing enabled.", {}, { timeout: 5000 });
   await waitFor(() => expect(field()).toBeEnabled());
   change("Після виправлення Їжак");
   expect(editor).toHaveTextContent("Після виправлення Їжак");

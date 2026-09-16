@@ -11,7 +11,6 @@ export function DownloadVersion({ identity, version, filename }: { identity: str
     return () => controller.abort();
   }, []);
   async function download() {
-    if (busy) return;
     const { signal } = lifetime.current;
     setBusy(true); setError("");
     try {

@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
 import { useEditingLease } from "../src/workspace/useEditingLease";
 import type { Resource } from "../src/library/useLibrary";
 import { leaseResponse } from "./lease-response";
@@ -98,4 +98,37 @@ test("recovery pause releases the lease and fresh credentials resume with the sa
   expect(fetcher.mock.calls[2][0].headers.get("X-CSRF-Token")).toBe("fresh");
   expect(await fetcher.mock.calls[2][0].clone().json()).toMatchObject({ action: "acquire", client_id: first.client_id });
   expect(screen.getByRole("status")).toHaveTextContent("active:");
+});
+
+test("missing conflict reasons default safely and inactive leases expose no credentials",async()=>{
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValue(Response.json({error:{code:"operation_conflict"}},{status:409})));
+  const hook=renderHook(()=>useEditingLease(resource,"csrf"));
+  expect(hook.result.current.credentials()).toBeUndefined();await advance();
+  expect(hook.result.current.error).toBe("lease_lost");
+  fireEvent.focus(window);expect(hook.result.current.status).toBe("paused");
+});
+
+test("expiry pauses editing even when a renewal never settles",async()=>{
+  let clock=0;vi.spyOn(performance,"now").mockImplementation(()=>clock);
+  const fetcher=vi.fn().mockImplementationOnce(leaseResponse).mockImplementation(()=>new Promise(()=>{}));vi.stubGlobal("fetch",fetcher);
+  const hook=renderHook(()=>useEditingLease(resource,"csrf"));await advance();
+  expect(hook.result.current.credentials()).toMatchObject({source_version_id:resource.current_version_id});
+  fireEvent.focus(window);expect(hook.result.current.status).toBe("active");
+  clock=60001;await advance(60001);expect(hook.result.current.status).toBe("paused");expect(hook.result.current.credentials()).toBeUndefined();
+  hook.unmount();
+});
+
+test("a pending previous release cannot acquire after its replacement unmounts",async()=>{
+  let finish!:(value:Response)=>void;
+  const fetcher=vi.fn().mockImplementationOnce(leaseResponse).mockImplementationOnce(()=>new Promise<Response>(yes=>{finish=yes;}));vi.stubGlobal("fetch",fetcher);
+  const view=render(<Host/>);await advance();
+  view.rerender(<Host csrf="replacement"/>);await advance();view.unmount();
+  await act(async()=>finish(Response.json({status:"released"})));await advance();
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+test("network rejection after disposal cannot update editing access",async()=>{
+  let reject!:(error:Error)=>void;vi.stubGlobal("fetch",vi.fn(()=>new Promise<Response>((_,no)=>{reject=no;})));
+  const view=render(<Host/>);await advance();view.unmount();
+  await act(async()=>reject(new Error("cancelled")));expect(screen.queryByRole("status")).toBeNull();
 });

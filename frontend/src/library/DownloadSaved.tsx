@@ -13,7 +13,6 @@ export function DownloadSaved({ item, disabled }: { item: Resource; disabled: bo
     return () => lifetime.current.abort();
   }, []);
   async function download() {
-    if (busy || disabled) return;
     const controller = lifetime.current;
     setBusy(true); setError("");
     try {

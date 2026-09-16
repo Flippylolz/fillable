@@ -189,7 +189,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     callbacks.onUpdate({ fields: summaries, fieldValuesValid: summaries.every(field => field.issue === null),
       active, review: structuredClone(reviewState(editor.state.doc)), unsupported, composing: compositionSource !== null,
       glyphCheckbox: allowed() && glyphCheckboxReady(editor.state),
-      canUndo: (history?.done.eventCount ?? 0) > 0, canRedo: (history?.undone.eventCount ?? 0) > 0,
+      canUndo: (history!.done.eventCount) > 0, canRedo: (history!.undone.eventCount) > 0,
       suggestLabel: suggestFieldLabel(editor.state) });
   }
   function dispatch(transaction: Transaction | null, focus = false): boolean {

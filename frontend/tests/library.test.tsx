@@ -321,3 +321,33 @@ test("an external tab request selects the matching gallery and reports changes",
   await screen.findByText(/Шаблонів ще немає/);
   expect(onTabChange).not.toHaveBeenCalled();
 });
+
+test("cards keep native navigation without an open callback and template upload selection is retained",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async(request:Request)=>new URL(request.url).pathname==="/api/documents"?Response.json({items:[item],next_cursor:null}):defaults(request)));
+  show();const link=await screen.findByRole("link",{name:item.title});
+  const event=new MouseEvent("click",{bubbles:true,cancelable:true});fireEvent(link,event);expect(event.defaultPrevented).toBe(false);
+  openUpload();fireEvent.change(screen.getByLabelText("Зберегти як"),{target:{value:"template"}});expect(screen.getByLabelText("Зберегти як")).toHaveValue("template");
+});
+
+test("upload cancellation ignores a late rejection",async()=>{
+  let reject!:(error:Error)=>void;
+  vi.stubGlobal("fetch",vi.fn((request:Request)=>request.method==="POST"?new Promise<Response>((_,no)=>{reject=no;}):Promise.resolve(defaults(request))));
+  const view=show();await screen.findByText(/Шаблонів ще немає/);openUpload();choose(file());submit();
+  await waitFor(()=>expect(onBusy).toHaveBeenCalledWith(true));view.unmount();
+  await act(async()=>reject(new Error("cancelled")));expect(onSaved).not.toHaveBeenCalled();
+});
+
+test("creating a document from a gallery template refreshes the library and opens its copy",async()=>{
+  const created={...item,id:"copy",kind:"document",title:"Copy"};const onOpen=vi.fn();
+  vi.stubGlobal("fetch",vi.fn(async(request:Request)=>request.url.endsWith("/copies")?Response.json(created):new URL(request.url).pathname==="/api/documents"?Response.json({items:[item],next_cursor:null}):defaults(request)));
+  await setLanguage("en");render(<Library csrfToken="csrf" disabled={false} onBusy={onBusy} onDirty={onDirty} onSaved={onSaved} onOpen={onOpen} onTabChange={onTabChange}/>);
+  fireEvent.click(await screen.findByRole("button",{name:"Use template"}));fireEvent.click(screen.getByRole("button",{name:"Create and open document"}));
+  await waitFor(()=>expect(onOpen).toHaveBeenCalledWith("copy"));expect(onSaved).toHaveBeenCalledOnce();expect(onTabChange).toHaveBeenCalledWith("document");
+});
+
+test("completing pending gallery deletion refreshes saved resource usage",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async(request:Request)=>request.method==="DELETE"?Response.json({status:"complete"}):new URL(request.url).pathname==="/api/documents"?Response.json({items:[{...item,deletion_pending:true}],next_cursor:null}):defaults(request)));
+  HTMLDialogElement.prototype.close = function() { this.open = false; };
+  try { show();fireEvent.click(await screen.findByRole("button",{name:"Повторити очищення"}));await waitFor(()=>expect(onSaved).toHaveBeenCalledOnce()); }
+  finally { delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).close; }
+});

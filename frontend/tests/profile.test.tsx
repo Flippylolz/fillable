@@ -231,3 +231,30 @@ test("language applies only after success, preserves drafts, and resets failed c
   fireEvent.change(selector, { target: { value: "uk" } });
   expect(i18n.language).toBe("en");
 });
+
+test("a stale quota response cannot replace a refreshed usage result", async () => {
+  let resolve!:(response:Response)=>void;
+  vi.stubGlobal("fetch",vi.fn().mockImplementationOnce(()=>new Promise<Response>(yes=>{resolve=yes;})).mockResolvedValueOnce(Response.json(usage)));
+  show();fireEvent.click(screen.getByRole("button",{name:"Оновити використання"}));
+  await screen.findByText("8 байтів");
+  await act(async()=>resolve(Response.json({...usage,used_bytes:999})));
+  expect(screen.getByText("8 байтів")).toBeVisible();expect(screen.queryByText("999 байтів")).not.toBeInTheDocument();
+});
+
+test.each(["name","password","language"] as const)("a successful HTTP %s response without a user is rejected", async kind=>{
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValueOnce(Response.json(usage)).mockResolvedValueOnce(Response.json({user:null,csrf_token:"missing-user"})));
+  show();await screen.findByText("8 байтів");
+  if(kind==="password")passwords();
+  const form=kind==="name"?nameForm():kind==="password"?passwordForm():screen.getByRole("combobox").closest("form")!;
+  fireEvent.submit(form);
+  expect(await screen.findByRole("alert")).toBeVisible();expect(onSession).not.toHaveBeenCalled();
+});
+
+test("profile requests ignore a late network failure after unmount",async()=>{
+  let reject!:(error:Error)=>void;
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValueOnce(Response.json(usage)).mockImplementationOnce(()=>new Promise<Response>((_,no)=>{reject=no;})));
+  const view=show();await screen.findByText("8 байтів");fireEvent.submit(nameForm());
+  await waitFor(()=>expect(onBusy).toHaveBeenCalledWith(true));view.unmount();
+  await act(async()=>reject(new Error("cancelled")));
+  expect(onSession).not.toHaveBeenCalled();expect(onBusy).toHaveBeenLastCalledWith(false);
+});

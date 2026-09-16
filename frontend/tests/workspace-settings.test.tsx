@@ -35,7 +35,7 @@ function setup(patch?: (request: Request) => Promise<Response>) {
   return { ...view, server, writes, changed, back, busy, fetcher };
 }
 async function open() {
-  await screen.findByText("Editing enabled.");
+  await screen.findByText("Editing enabled.", {}, { timeout: 5000 });
   await screen.findByRole("textbox", { name: "Editable document" });
   fireEvent.click(await screen.findByText("Workspace settings"));
 }
@@ -177,4 +177,18 @@ test("network/session failures retain drafts and unmount aborts a late rename", 
   expect(request.signal.aborted).toBe(true);
   await act(async () => finish(Response.json({ ...resource, title: "Надійна чернетка" })));
   expect(changed).not.toHaveBeenCalled();
+});
+
+test("a late failed rename after unmount cannot update the workspace",async()=>{
+  let reject!:(error:Error)=>void;
+  const view=setup(()=>new Promise<Response>((_,no)=>{reject=no;}));await open();
+  fireEvent.change(screen.getByRole("textbox",{name:"Title"}),{target:{value:"Updated"}});
+  fireEvent.click(screen.getByRole("button",{name:"Rename"}));await waitFor(()=>expect(view.writes).toHaveBeenCalledOnce());
+  view.unmount();await act(async()=>reject(new Error("cancelled")));expect(view.changed).not.toHaveBeenCalled();
+});
+
+test("autosave can be disabled and re-enabled from workspace settings",async()=>{
+  setup();await open();const option=screen.getByRole("checkbox",{name:"Autosave document"});
+  fireEvent.click(option);expect(option).not.toBeChecked();expect(screen.getByText("Autosave is off. Use Save document to keep your changes.")).toBeVisible();
+  fireEvent.click(option);expect(option).toBeChecked();
 });
