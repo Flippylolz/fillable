@@ -75,3 +75,7 @@
 .library-preview-content.document-canvas { --document-zoom: 1; flex: none; align-self: flex-start; padding: 0; overflow: visible; background: white; }
 .library-preview-content .ProseMirror { min-height: 1123px; }
 .library-preview-placeholder { opacity: 0.65; }
+
+.trash-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.trash-item { padding: 1rem; }
+.trash-item h3 { overflow-wrap: anywhere; }

@@ -3014,6 +3014,33 @@ this layout on desktop/mobile.
 Mobile visual review additionally found the workspace title squeezed between
 buttons; the toolbar now wraps with a full-width title on narrow screens.
 
+## E09.37 — Thirty-day recoverable trash
+
+Status: done. PR [#155](https://github.com/Flippylolz/fillable/pull/155) merged as
+`2cf2c64301dc4a9d0601d65a40e4113d0c15293f` with all required checks passing.
+Move templates/documents to an owner-scoped library Trash
+section for 30 days, retaining originals, current revision, history, metadata and
+quota charges. Restore before the deadline without a new revision or charge.
+Support confirmed immediate permanent deletion and Empty trash across all pages.
+Purge expired items through bounded maintenance and existing crash-safe cleanup;
+never free quota before unlink. Test ownership, CSRF, expiry boundaries, races,
+failed cleanup, independent copies, migrations, localization and browser flows.
+
+2026-09-16: E09.37 Docker verification passed 547 backend tests with 4530/4530
+lines and 1456/1456 branches, and 428 frontend tests with 100% lines and branches.
+Ruff/mypy, ESLint, catalogs and TypeScript/Vite pass. The old draft migration in
+the isolated test database was rolled back through Alembic before verifying the
+finalized schema; no application data was reset. Added lifecycle tests cover
+restoration, owner isolation, expiry, irreversible empty intent, cleanup failures,
+races and migration guards. CI then passed 548 backend tests at the same complete
+coverage after adding the 21-item empty-trash regression; full desktop/mobile
+browser acceptance also passed. The upgrade driver now expects schema 0014.
+Production has an explicit 0013-to-0014 forward-only policy and a narrowly scoped,
+release-locked installer, verified by 16 Docker runtime contract tests.
+The local full upgrade rehearsal was blocked by exhausted Docker network pools.
+The required isolated CI upgrade/persistence proof subsequently passed
+(run 35118320444), including the real restart and post-unlink crash checks.
+
 ## E09.34 — Contextual library headings
 
 Status: done. PR [#151](https://github.com/Flippylolz/fillable/pull/151) merged as
@@ -3021,6 +3048,7 @@ Status: done. PR [#151](https://github.com/Flippylolz/fillable/pull/151) merged 
 The selected Templates or My documents section must have its
 own localized heading and concise description, including after sidebar navigation
 and uploads. Preserve document titles and the shared gallery behavior.
+Production release 35122537636 succeeded for this merged source.
 
 ## E09.35 — Center the profile in the content pane
 

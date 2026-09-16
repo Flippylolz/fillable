@@ -5,7 +5,7 @@ import { Profile } from "./accounts/Profile";
 import { Library } from "./library/Library";
 import { Workspace } from "./workspace/Workspace";
 import { AppSidebar, type Page } from "./shell/AppSidebar";
-import type { Kind } from "./library/useLibrary";
+import type { LibraryView } from "./library/useLibrary";
 
 function route(path: string): { page: Page; identity: string | null } {
   const match = /^\/editor\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(path);
@@ -24,7 +24,7 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
   const [fileDirty, setFileDirty] = useState(false);
   const [editorDirty, setEditorDirty] = useState(false);
   const [usageRevision, setUsageRevision] = useState(0);
-  const [libraryTab, setLibraryTab] = useState<Kind>("template");
+  const [libraryTab, setLibraryTab] = useState<LibraryView>("template");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const lastPath = useRef(window.location.pathname);
   const updateBusy = useCallback((value: boolean) => { setBusy(value); setAuthBusy(value); }, [setAuthBusy]);
@@ -66,7 +66,7 @@ export function SessionPages({ session, accept, authBusy, setAuthBusy, setLeaveG
     event.preventDefault(); go(path);
   }
   // Sidebar sections aim at the same library page with a preselected tab.
-  function goLibrary(tab: Kind) { setLibraryTab(tab); go("/documents"); }
+  function goLibrary(tab: LibraryView) { setLibraryTab(tab); go("/documents"); }
   if (!session.user) return null;
   const locked = busy || authBusy || authPaused;
   return <div className="app-shell">

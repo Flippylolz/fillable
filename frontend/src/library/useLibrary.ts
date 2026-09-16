@@ -3,9 +3,10 @@ import type { components } from "../../generated/api";
 import { api } from "../api";
 
 export type Kind = "template" | "document";
+export type LibraryView = Kind | "trash";
 export type Resource = components["schemas"]["ResourceInfo"];
 
-export function useLibrary(kind: Kind, revision: number) {
+export function useLibrary(kind: LibraryView, revision: number) {
   const [items, setItems] = useState<Resource[]>([]);
   const [next, setNext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

@@ -65,8 +65,9 @@ branches (95.60%). Real unimported-source probes were rejected by the independen
 no administrator merge bypass or lowered threshold was used.
 
 Runtime recovery remains schema-aware under [Server runtime](SERVER_RUNTIME.md).
-Keep schema `0013_maintenance_state`, local documents and namespaced database/Redis
-volumes. Prefer reviewed forward repair; older images need explicit schema and stored-
+That historical release used schema `0013_maintenance_state`. E09.37 supplies
+the reviewed forward migration to `0014_document_trash`; preserve local documents
+and namespaced database/Redis volumes throughout that upgrade. Prefer reviewed forward repair; older images need explicit schema and stored-
 document compatibility review. An ingress verification failure stops only Fillable's
 relay and preserves the owner's TLS route and private data. No shared-service rollback,
 Docker restart/prune, volume deletion, backup or staging environment is part of recovery.

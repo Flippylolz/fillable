@@ -76,11 +76,25 @@ def download(owner, identity):
     return ResourceInfo.model_validate(dict(row)), data
 
 
-def query(owner, include_deleting=False):
+def query(owner, include_deleting=False, trash=False):
     visible = and_(resources.c.state == "active", files.c.state == "ready")
-    if include_deleting:
+    if trash:
         visible = or_(
-            visible, and_(resources.c.state == "deleted", pending_expression())
+            resources.c.state == "trashed",
+            and_(
+                resources.c.state == "deleted",
+                resources.c.trashed_at.is_not(None),
+                pending_expression(),
+            ),
+        )
+    elif include_deleting:
+        visible = or_(
+            visible,
+            and_(
+                resources.c.state == "deleted",
+                resources.c.trashed_at.is_(None),
+                pending_expression(),
+            ),
         )
     return (
         select(
@@ -97,7 +111,13 @@ def query(owner, include_deleting=False):
             .correlate(resources, versions)
             .exists()
             .label("preview_ready"),
-            (resources.c.state == "deleted").label("deletion_pending"),
+            or_(
+                resources.c.state == "deleted",
+                and_(
+                    resources.c.state == "trashed",
+                    resources.c.purge_after <= func.now(),
+                ),
+            ).label("deletion_pending"),
             func.coalesce(
                 select(jobs.c.status)
                 .where(
@@ -134,7 +154,9 @@ def detail(owner, identity):
 
 
 def listing(owner, kind, limit, cursor):
-    statement = query(owner, include_deleting=True).where(resources.c.kind == kind)
+    statement = query(owner, include_deleting=True, trash=kind == "trash")
+    if kind != "trash":
+        statement = statement.where(resources.c.kind == kind)
     with database().connect() as connection:
         if cursor is not None:
             previous = (

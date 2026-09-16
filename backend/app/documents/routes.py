@@ -22,6 +22,7 @@ from app.documents import (
     saves,
     service,
     titles,
+    trash,
 )
 from app.documents.history_schema import VersionContent, VersionList
 from app.documents.lease_schema import LeaseInfo, LeaseRequest
@@ -213,13 +214,37 @@ async def upload(
 @router.get("", response_model=ResourceList)
 def listing(
     response: Response,
-    kind: Literal["template", "document"],
+    kind: Literal["template", "document", "trash"],
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     cursor: UUID | None = None,
     user: UserInfo = Depends(current_user),
 ) -> ResourceList:
     response.headers["Cache-Control"] = "no-store"
     return service.listing(user.id, kind, limit, cursor)
+
+
+@router.delete("/trash", response_model=DeletionResult)
+def empty_trash(
+    response: Response, state: SessionState = Depends(mutation_session)
+) -> DeletionResult:
+    response.headers["Cache-Control"] = "no-store"
+    return trash.empty(state)
+
+
+@router.post("/{identity}/trash", response_model=DeletionResult)
+def move_to_trash(
+    identity: UUID, response: Response, state: SessionState = Depends(mutation_session)
+) -> DeletionResult:
+    response.headers["Cache-Control"] = "no-store"
+    return trash.move(state, identity)
+
+
+@router.post("/{identity}/untrash", response_model=DeletionResult)
+def restore_from_trash(
+    identity: UUID, response: Response, state: SessionState = Depends(mutation_session)
+) -> DeletionResult:
+    response.headers["Cache-Control"] = "no-store"
+    return trash.restore(state, identity)
 
 
 @router.get("/{identity}", response_model=ResourceInfo)

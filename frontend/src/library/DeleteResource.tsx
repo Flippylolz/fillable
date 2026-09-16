@@ -22,9 +22,12 @@ export function DeleteResource({ item, csrfToken, disabled, onBusy, onChanged }:
     const controller = lifetime.current;
     setBusy(true); onBusy(true); setError("");
     try {
-      const result = await api.DELETE("/api/documents/{identity}", {
+      const options = {
         params: { path: { identity: item.id } }, headers: { "X-CSRF-Token": csrfToken }, signal: controller.signal,
-      });
+      };
+      const result = item.deletion_pending
+        ? await api.DELETE("/api/documents/{identity}", options)
+        : await api.POST("/api/documents/{identity}/trash", options);
       if (controller.signal.aborted) return;
       if (result.data) onChanged();
       else setError(result.error.error.code);
