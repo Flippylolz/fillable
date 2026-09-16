@@ -82,10 +82,14 @@ they still contain this upgrade's bytes. Never execute the old HTTP receiver app
 
 ## Schema-aware failure handling
 
-The installed policy accepts only the reviewed `0013_maintenance_state` image schema.
-A new empty database or that same existing schema may proceed. An older, unknown or
-multiple database head, or an image requiring another schema, stops for a reviewed
-forward plan before starting the application. Reviewed migrations remain startup
+E09.37 adds a reviewed forward transition from `0013_maintenance_state` to
+`0014_document_trash`. Install `scripts/install_trash_policy.py` from merged,
+CI-verified source under the existing release lock before dispatching the trash
+release. It updates only the fingerprint-verified runtime helper and its manifest,
+preserving credentials, keys, application state, Compose files and shared ingress.
+The policy continues to accept schema 0013 images only while the database remains
+0013; schema 0014 images accept an empty database, 0013, or 0014. Unknown/multiple
+heads and a 0014-to-0013 downgrade are rejected before starting the application. Reviewed migrations remain startup
 dependencies and readiness verifies the resulting schema. No downgrade, data drop,
 volume deletion, host-wide shutdown/pruning or backup operation exists in this path.
 

@@ -29,7 +29,10 @@ FILES = (
     "scripts/fillable_edge.py",
     "scripts/fillable_edge_lock.py",
 )
-SCHEMA = "0013_maintenance_state"
+SCHEMA_PREDECESSORS = {
+    "0013_maintenance_state": {None, "0013_maintenance_state"},
+    "0014_document_trash": {None, "0013_maintenance_state", "0014_document_trash"},
+}
 BACKEND_SERVICES = {
     "api",
     "worker",
@@ -492,12 +495,12 @@ class Runtime:
                 "Config('alembic.ini')).get_heads()))",
             ]
         )
-        if head != SCHEMA:
+        if head not in SCHEMA_PREDECESSORS:
             raise ValueError("Release schema needs a reviewed forward plan")
         self.command(
             "up", "-d", "--no-build", "--wait", "--wait-timeout", "120", "db", "redis"
         )
-        if self.schema() not in {None, SCHEMA}:
+        if self.schema() not in SCHEMA_PREDECESSORS[head]:
             raise ValueError(
                 "Database schema is incompatible; preserve data for forward repair"
             )
@@ -514,13 +517,13 @@ class Runtime:
             "dispatcher",
             "maintenance",
         )
-        if self.schema() != SCHEMA:
+        if self.schema() != head:
             raise ValueError("Migration did not reach the reviewed schema")
         self.start_relay(before, routes)
         result = {
             "source_sha": source,
             "sha256": digest,
-            "schema": SCHEMA,
+            "schema": head,
             "status": "succeeded",
             "existing_services_preserved": True,
             "images": images,

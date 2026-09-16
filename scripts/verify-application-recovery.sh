@@ -95,7 +95,7 @@ old down
 export VITE_APP_COMMIT_SHA="$verification_head"
 current up --build --wait --wait-timeout 120
 install_probe current
-test "$(current exec -T db psql -U fillable -d fillable -At -c 'SELECT version_num FROM alembic_version')" = 0013_maintenance_state
+test "$(current exec -T db psql -U fillable -d fillable -At -c 'SELECT version_num FROM alembic_version')" = 0014_document_trash
 probe current read < "$verification_reports/manifest.json"
 current exec -T maintenance python /checks/verify_maintenance.py
 badge upgraded "$verification_version"
