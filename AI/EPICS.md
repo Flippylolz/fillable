@@ -3042,13 +3042,29 @@ buttons; the toolbar now wraps with a full-width title on narrow screens.
 
 ## E09.35 — Center the profile in the content pane
 
-Status: in_progress. Center the bounded profile grid horizontally in the space
+Status: done. PR [#152](https://github.com/Flippylolz/fillable/pull/152) merged as
+`f9e60e02194d1145bfeb3e7b2114aa9a916af04e` with all required checks green. Center the bounded profile grid horizontally in the space
 beside the sidebar while retaining full available width on narrow screens. Browser
 verification checks center alignment and bounds on desktop/mobile.
 
+
+
+## E09.39 — Admit verified coverage-badge publication in release evidence
+
+Status: in_review. Main CI now has nine jobs after E09.33 added coverage-badge
+publication; the strict release verifier still expected eight and blocked release
+35115154996 despite successful exact-main CI 35113539550. Include badge publication
+in the required release evidence, retaining exact job identities, success, source
+and run-attempt validation. Docker release contract tests verify that missing or
+failed badge publication still blocks a release. No deployment gate is bypassed.
+
 ## E09.38 — Preserve field focus during autosave
 
-Status: in_progress. Urgent user report: fill-mode autosave drops field focus.
+Status: done. PR [#154](https://github.com/Flippylolz/fillable/pull/154) merged as
+`a4fc7cbaf557dcf98314c4ae79fefa374b11e8b2` with all required CI checks passing.
+Local Docker frontend: 426 tests, 100% lines and branches; the deliberate
+post-save focus/caret browser regression passed desktop/mobile locally and in CI.
+Urgent user report: fill-mode autosave drops field focus.
 Saved revisions briefly reacquire editing access, and disabled native inputs blur.
 Use native read-only inputs during that access check, retaining the mounted input,
 focus and selection while preventing edits without a valid lease. Cover text,
