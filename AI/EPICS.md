@@ -3018,8 +3018,16 @@ Git remote verified branch creation, updates, idempotence and stale-run skipping
 Rendering from the prior verified CI artifacts reproduced backend 4425/4425 lines
 and 1430/1430 branches, frontend 1935/1935 lines and 2187/2187 branches.
 
+
 ## E09.34 — Contextual library headings
 
 Status: in_progress. The selected Templates or My documents section must have its
 own localized heading and concise description, including after sidebar navigation
 and uploads. Preserve document titles and the shared gallery behavior.
+
+## E09.35 — Center the profile in the content pane
+
+Status: in_progress. Center the bounded profile grid horizontally in the space
+beside the sidebar while retaining full available width on narrow screens. Browser
+verification checks center alignment and bounds on desktop/mobile.
+
