@@ -14,18 +14,20 @@ export function FieldInput({ field, readOnly, update }: {
   const described = field.issue ? errorId : undefined;
   // Number values keep the user's exact text (comma decimals included);
   // the picker writes the canonical ДД.ММ.РРРР document format.
+  // Lease checks after saves must not disable the focused input: disabled controls
+  // lose browser focus. Native readOnly blocks edits while retaining the caret.
   const control = field.type === "date"
-    ? <input type="date" disabled={readOnly} value={parseDateValue(field.value) ?? ""}
+    ? <input type="date" readOnly={readOnly} value={parseDateValue(field.value) ?? ""}
       aria-label={t("editor.fieldValue", { label: field.label })}
       aria-invalid={field.issue ? true : undefined} aria-describedby={described}
       onChange={event => update(field.key, formatDateValue(event.target.value) ?? "")} />
     : field.type === "number"
-      ? <input type="text" inputMode="decimal" disabled={readOnly} value={field.value}
+      ? <input type="text" inputMode="decimal" readOnly={readOnly} value={field.value}
         aria-label={t("editor.fieldValue", { label: field.label })}
         aria-invalid={field.issue ? true : undefined} aria-describedby={described}
         onChange={event => update(field.key, event.target.value)} />
       // Compact cards start at the content's line count instead of a tall fixed box.
-      : <textarea disabled={readOnly} rows={Math.min(4, Math.max(1, field.value.split("\n").length))} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
+      : <textarea readOnly={readOnly} rows={Math.min(4, Math.max(1, field.value.split("\n").length))} aria-label={t("editor.fieldValue", { label: field.label })} value={field.value}
         aria-invalid={field.issue ? true : undefined} aria-describedby={described}
         onChange={event => update(field.key, event.target.value)} />;
   return <>

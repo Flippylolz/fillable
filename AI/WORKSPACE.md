@@ -548,9 +548,14 @@ E09.28: restoration/reopen epochs use distinct settings and editor keys. A resto
 workspace contains exactly one settings panel and one editor; display preferences
 remain owned by the parent workspace and saved document state is remounted once.
 
+
 E09.36: Fill mode bounds the field column to 22rem and gives the remaining width
 to the sticky live preview. Inputs fill their cards and grow from their line count.
 Bold, italic and underline buttons format all linked occurrences of a field; Go to
 field returns to the WYSIWYG document canvas for partial-text selection formatting.
 Explicit overrides retain source-run identities and all unrelated OOXML properties.
 Formatting uses the same draft, undo/redo, save and DOCX export path.
+
+E09.38: Temporary read-only access checks (including after autosave) retain the
+focused field and its caret. Native text, number and date inputs use readOnly
+instead of disabled; mutation actions remain disabled while access is unavailable.
