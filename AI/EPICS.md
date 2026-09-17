@@ -3107,3 +3107,17 @@ success receipts, and locked/idempotent bootstrap with partial-write recovery. A
 10 release gate contracts and changed-script Ruff checks passed. The required real
 PostgreSQL upgrade proof now explicitly validates history and migrates before starting
 writers. Application source is unchanged; full CI remeasures both coverage gates.
+
+## E09.41 — Source page breaks and anchored form alignment
+
+Status: in_progress. Honor saved paragraph page breaks in document and filling
+views, place automatic boundaries before overflowing blocks, and keep floating
+number tables aligned with their following label. Verify synthetic source layout,
+shared pagination, mode switching and zoom without changing saved DOCX content.
+Deliver through protected PR checks and verify the automatic release.
+
+2026-09-17: E09.41 local Docker checks passed 554 backend tests with 4550/4550
+lines and 1470/1470 branches, and 436 frontend tests with 100% lines/branches.
+Frontend lint/build and backend Ruff/mypy passed. Synthetic anchored-table browser
+checks passed on desktop/mobile; the screenshot confirms the label alongside the
+boxes and the next row below. No private document content is committed as a fixture.

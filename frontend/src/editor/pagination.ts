@@ -6,13 +6,13 @@ export const PAGE_BREAK_CLASS = "document-page-break";
 const BODY_PART = "word/document.xml";
 
 /** Top-level block start offset in unzoomed page pixels, from the content-box top. */
-export type BlockFlow = { top: number };
+export type BlockFlow = { top: number; bottom: number; forced: boolean };
 /** Editor position of a block that begins a new page, and that page's number. */
 export type PageBreakSpec = { pos: number; page: number };
 
 /**
- * Blocks whose flow position lands past the current page's content start begin
- * the next page. Approximate by design: breaks fall on block boundaries, never
+ * Honor explicit source breaks and move blocks that overflow the content height
+ * onto the next page. Approximate by design: breaks fall on block boundaries, never
  * inside one, and Word's exact pagination is not reproduced.
  */
 export function pageStarts(blocks: BlockFlow[], contentHeight: number): number[] {
@@ -20,7 +20,7 @@ export function pageStarts(blocks: BlockFlow[], contentHeight: number): number[]
   let pageTop = 0;
   for (let index = 1; index < blocks.length; index += 1) {
     const top = blocks[index].top;
-    if (top - pageTop > contentHeight) {
+    if (blocks[index].forced || blocks[index].bottom - pageTop > contentHeight) {
       starts.push(index);
       pageTop = top;
     }
@@ -28,44 +28,53 @@ export function pageStarts(blocks: BlockFlow[], contentHeight: number): number[]
   return starts;
 }
 
-function scale(view: EditorView): number {
-  const zoom = parseFloat((getComputedStyle(view.dom) as CSSStyleDeclaration & { zoom: string }).zoom);
+function scale(dom: HTMLElement): number {
+  const zoom = parseFloat((getComputedStyle(dom) as CSSStyleDeclaration & { zoom: string }).zoom);
   return Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
 }
 
-function geometry(view: EditorView): {
+function geometry(dom: HTMLElement): {
   section: HTMLElement;
   contentHeight: number;
   contentTop: number;
   scale: number;
 } | null {
-  const section = view.dom.querySelector(`:scope > section[data-part="${BODY_PART}"]`);
+  const section = dom.querySelector(`:scope > section[data-part="${BODY_PART}"]`);
   if (!(section instanceof HTMLElement)) return null;
   const style = getComputedStyle(section);
   const pageHeight = parseFloat(style.minHeight);
   const contentTop = parseFloat(style.paddingTop);
   const contentHeight = pageHeight - contentTop - parseFloat(style.paddingBottom);
   if (!Number.isFinite(contentHeight) || contentHeight <= 0) return null;
-  return { section, contentHeight, contentTop, scale: scale(view) };
+  return { section, contentHeight, contentTop, scale: scale(dom) };
 }
 
-export function measurePageBreaks(view: EditorView): PageBreakSpec[] {
-  const layout = geometry(view);
+/** Shared measurement for the live editor and the visible fill clone. */
+export function measurePageStarts(dom: HTMLElement): number[] {
+  const layout = geometry(dom);
   if (!layout) return [];
   const { section, contentHeight, contentTop, scale: zoom } = layout;
   const sectionTop = section.getBoundingClientRect().top;
-  const isMarker = (element: Element) => element.classList.contains(PAGE_BREAK_CLASS);
   const flows: BlockFlow[] = [];
   let spacers = 0;
   for (const element of Array.from(section.children)) {
     const rect = element.getBoundingClientRect();
-    if (isMarker(element)) {
-      const margins = getComputedStyle(element);
-      spacers += (rect.height + parseFloat(margins.marginTop) + parseFloat(margins.marginBottom)) / zoom;
+    const style = getComputedStyle(element);
+    if (element.classList.contains(PAGE_BREAK_CLASS)) {
+      spacers += rect.height / zoom + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
       continue;
     }
-    flows.push({ top: (rect.top - sectionTop) / zoom - contentTop - spacers });
+    flows.push({
+      top: (rect.top - sectionTop) / zoom - contentTop - spacers,
+      bottom: (rect.bottom - sectionTop) / zoom - contentTop - spacers,
+      forced: style.breakBefore === "page",
+    });
   }
+  return pageStarts(flows, contentHeight);
+}
+
+export function measurePageBreaks(view: EditorView): PageBreakSpec[] {
+  const starts = measurePageStarts(view.dom);
   let found = -1;
   let bodyStart = 0;
   let offset = 0;
@@ -78,7 +87,6 @@ export function measurePageBreaks(view: EditorView): PageBreakSpec[] {
   });
   if (found < 0) return [];
   const body = view.state.doc.child(found);
-  const starts = pageStarts(flows, contentHeight);
   const specs: PageBreakSpec[] = [];
   let next = 0;
   body.content.forEach((_node, offset, index) => {
@@ -88,6 +96,28 @@ export function measurePageBreaks(view: EditorView): PageBreakSpec[] {
     }
   });
   return specs;
+}
+
+export function pageMarker(label: string): HTMLElement {
+  const marker = document.createElement("div");
+  marker.className = PAGE_BREAK_CLASS;
+  marker.setAttribute("aria-hidden", "true");
+  marker.setAttribute("contenteditable", "false");
+  const chip = document.createElement("span");
+  chip.className = "document-page-break-label";
+  chip.textContent = label;
+  marker.append(chip);
+  return marker;
+}
+
+/** Rebuild visual-only boundaries after laying out the unscaled fill preview. */
+export function paginatePreview(dom: HTMLElement, label: (page: number) => string): void {
+  dom.querySelectorAll(`.${PAGE_BREAK_CLASS}`).forEach(marker => marker.remove());
+  const starts = measurePageStarts(dom);
+  const section = dom.querySelector(`:scope > section[data-part="${BODY_PART}"]`);
+  if (!section) return;
+  const blocks = Array.from(section.children);
+  starts.forEach((index, page) => blocks[index].before(pageMarker(label(page + 2))));
 }
 
 export function breakDecorations(
@@ -103,15 +133,7 @@ export function breakDecorations(
         Decoration.widget(
           spec.pos,
           () => {
-            const marker = document.createElement("div");
-            marker.className = PAGE_BREAK_CLASS;
-            marker.setAttribute("aria-hidden", "true");
-            marker.setAttribute("contenteditable", "false");
-            const chip = document.createElement("span");
-            chip.className = "document-page-break-label";
-            chip.textContent = label(spec.page);
-            marker.append(chip);
-            return marker;
+            return pageMarker(label(spec.page));
           },
           { side: -1 },
         ),

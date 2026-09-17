@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from lxml import etree
 from test_document_package import archive, doc
 
 from app.documents.export import DocxExport
@@ -147,8 +148,8 @@ def test_floating_tables_use_page_offsets_and_start_end_borders():
         if el.tag == W + "tbl"
     ]
     assert tables[0]["display"] == "inline-table"
-    assert tables[0]["margin-left"] == "80pt"
-    assert tables[1]["margin-left"] == "20pt"
+    assert tables[0]["left"] == "80pt"
+    assert tables[1]["left"] == "140pt"
     cells = [
         result["nodes"][key]
         for key, el in package.elements.items()
@@ -384,3 +385,36 @@ def test_recolor_targets_are_absent_for_implicit_and_missing_fills():
     assert [target is not None for target in targets] == [False, True]
     targets[1]("ff0000")
     assert b'val="ff0000"' in etree.tostring(tree)
+
+
+def test_floating_number_tables_do_not_push_the_anchor_label_down():
+    package = DocxPackage(archive(doc(
+        '<w:tbl><w:tblPr><w:tblpPr w:tblpX="3000"/>'
+        '<w:tblW w:w="1000"/></w:tblPr><w:tr><w:tc><w:p/></w:tc></w:tr></w:tbl>'
+        '<w:p><w:r><w:t>8. Registration number</w:t></w:r></w:p>'
+        '<w:p><w:r><w:t>9. Following row</w:t></w:r></w:p>'
+    )))
+    result = Layout(package).render()["nodes"]
+    tables = [
+        result[key] for key, el in package.elements.items() if el.tag == W + "tbl"
+    ]
+    paragraphs = [
+        result[key] for key, el in package.elements.items() if el.tag == W + "p"
+    ]
+    assert tables[0]["left"] == "150pt"
+    assert tables[0]["margin-right"] == "-50pt"
+    assert paragraphs[-2]["clear"] == "none"
+    assert paragraphs[-1]["clear"] == "both"
+
+
+def test_disabled_page_break_overrides_inherited_break():
+    from app.documents.presentation import properties
+    for val in ("0", "false", "off"):
+        result = {"break-before": "page"}
+        properties(
+            etree.fromstring(
+                f'<w:pPr xmlns:w="{W[1:-1]}">'
+                f'<w:pageBreakBefore w:val="{val}"/></w:pPr>'
+            ), result,
+        )
+        assert result["break-before"] == "auto"

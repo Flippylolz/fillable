@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../generated/api";
 import { mountEditor, type EditorAdapter, type EditorPresentation, type EditorSnapshot, type FieldSummary } from "./adapter";
-import { PAGE_BREAK_CLASS } from "./pagination";
+import { PAGE_BREAK_CLASS, paginatePreview } from "./pagination";
 import { ReviewPanel } from "./ReviewPanel";
 import { FieldSidebar } from "./FieldSidebar";
 import { FillForm } from "./FillForm";
@@ -150,6 +150,7 @@ export function DocumentEditor({
       const page = clone.querySelector<HTMLElement>('section[data-part="word/document.xml"]');
       const width = page?.offsetWidth || 794;
       preview.style.width = `${width}px`;
+      paginatePreview(clone, page => t("editor.pageBreak", { page }));
       preview.style.zoom = String(Math.min(1, (viewport.clientWidth || width) / Math.max(width, preview.scrollWidth)));
     };
     fit();
@@ -157,7 +158,7 @@ export function DocumentEditor({
     observer?.observe(viewport);
     window.addEventListener("resize", fit);
     return () => { observer?.disconnect(); window.removeEventListener("resize", fit); };
-  }, [previewTick, mode]);
+  }, [previewTick, mode, t]);
   // Returning from the hidden canvas recomputes the visual page breaks.
   useEffect(() => {
     if (mode !== "fill") view.current!.setPageBreakLabel(page => t("editor.pageBreak", { page }));

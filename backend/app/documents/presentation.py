@@ -83,14 +83,16 @@ def properties(root, style):
                 if node.get(W + "val") in {"0", "false"}
                 else on
             )
-    if root.find(W + "pageBreakBefore") is not None:
-        style["break-before"] = "page"
+    page_break = root.find(W + "pageBreakBefore")
+    if page_break is not None:
+        style["break-before"] = (
+            "auto" if page_break.get(W + "val") in {"0", "false", "off"} else "page"
+        )
 
 
 class Layout:
     def __init__(self, package):
         self.package = package
-        self.float_end = 0.0
         root = package.roots.get("word/styles.xml")
         self.styles = (
             {}
@@ -142,7 +144,13 @@ class Layout:
             self.cascade(value(element, "pPr/pStyle") or self.default_paragraph, result)
             properties(element.find(W + "pPr"), result)
             if any(e.text for e in element.iter(W + "t")):
-                result["clear"] = "both"
+                previous = element.getprevious()
+                result["clear"] = (
+                    "none"
+                    if previous is not None
+                    and previous.find(W + "tblPr/" + W + "tblpPr") is not None
+                    else "both"
+                )
         if tag == "r":
             parent = element.getparent()
             while parent is not None and parent.tag != W + "p":
@@ -178,33 +186,21 @@ class Layout:
                     x -= left
                 if floating.get(W + "tblpXSpec") == "center":
                     x = (page - left - right - width) / 2
-                previous = element.getprevious()
-                while (
-                    previous is not None
-                    and previous.tag == W + "p"
-                    and not any(e.text for e in previous.iter(W + "t"))
-                ):
-                    previous = previous.getprevious()
-                if (
-                    previous is None
-                    or previous.find(W + "tblPr/" + W + "tblpPr") is None
-                ):
-                    self.float_end = 0.0
+                # Anchored tables share the following paragraph's flow origin.
+                # Their horizontal offset must not reserve blank text space or
+                # force the anchor paragraph below the number boxes.
                 result.update(
                     {
                         "display": "inline-table",
                         "float": "left",
+                        "position": "relative",
+                        "left": f"{x:g}pt",
                         "vertical-align": "top",
-                        "margin-left": f"{max(0, x - self.float_end):g}pt",
+                        "margin-left": "0pt",
+                        "margin-right": f"{-width:g}pt",
                     }
                 )
                 length(result, "margin-top", floating.get(W + "tblpY"))
-                # Word permits anchored tables to extend into the page margin.
-                # CSS floats otherwise wrap at the content edge (including rounding).
-                result["margin-right"] = (
-                    f"{min(0, page - left - right - x - width - 2):g}pt"
-                )
-                self.float_end = x + width
         if tag == "tr":
             length(result, "height", value(element, "trPr/trHeight"))
         if tag == "tc":
