@@ -75,7 +75,8 @@ class AccountInput(BaseModel):
     @field_validator("display_name")
     @classmethod
     def display_name_present(cls, value: str) -> str:
-        if not value.strip():
+        value.encode("utf-8")
+        if not value.strip() or any(ord(char) < 32 for char in value):
             raise ValueError("empty_display_name")
         return value.strip()
 
@@ -85,6 +86,14 @@ class LoginInput(BaseModel):
         min_length=1, max_length=254, validation_alias=AliasChoices("login", "email")
     )
     password: str = Field(min_length=1, max_length=1024)
+
+    @field_validator("login")
+    @classmethod
+    def login_text(cls, value: str) -> str:
+        value.encode("utf-8")
+        if "\x00" in value:
+            raise ValueError("invalid_login")
+        return value
 
 
 class SessionInfo(BaseModel):

@@ -86,6 +86,10 @@ export function Authentication({
       setLoginIssue(nextLoginIssue);
       setPasswordIssue(nextPasswordIssue);
       if (nextLoginIssue || nextPasswordIssue) return;
+      if ((login.includes("\0") || /[\ud800-\udfff]/u.test(login))) {
+        setError("invalid_request");
+        return;
+      }
     }
     setBusy(true);
     setError("");

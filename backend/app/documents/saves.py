@@ -11,6 +11,7 @@ from app.documents.revision_commit import commit, holder, saved_info
 from app.documents.service import saved_row
 from app.documents.validation import validate_upload
 from app.errors import AppError
+from app.fields.values import validate_values
 from app.fields.working import validate_working
 from app.infrastructure import database
 from app.storage.configuration import configured
@@ -42,6 +43,7 @@ def save(state, identity, payload, key):
             payload.source_version_id,
             UUID(origin) if origin else None,
         )
+        validate_values(document, review)
         if review is not None and review["sourceVersion"] is None:
             # Bind local native/manual review once, without rewriting editor history.
             review["sourceVersion"] = origin or str(payload.source_version_id)

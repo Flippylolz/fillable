@@ -131,6 +131,7 @@ class UploadMetadata(BaseModel):
     @field_validator("title")
     @classmethod
     def title_present(cls, value):
+        value.encode("utf-8")
         value = value.strip()
         if not value or any(ord(char) < 32 for char in value):
             raise ValueError("blank_title")

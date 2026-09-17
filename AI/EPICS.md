@@ -3124,3 +3124,23 @@ boxes and the next row below. No private document content is committed as a fixt
 
 Desktop/mobile workspace checks passed for explicit source boundaries, identical
 document/fill marker locations, returning to document mode, zoom and localization.
+
+## E09.42 — Backend validation parity and adversarial input testing
+
+Status: in_progress. Exercise authenticated API requests without frontend validation,
+including seeded malformed inputs, boundary lengths, typed field values, metadata,
+auth/profile requests and stale/foreign identities. Reject invalid values with 4xx
+responses and preserve saved revisions, bytes and quota accounting. Close confirmed
+frontend/backend validation gaps, retain bilingual frontend feedback, and verify
+both complete coverage gates and required protected PR checks.
+
+2026-09-17: Local Docker backend passed 594 tests with 4595/4595 lines and
+1488/1488 branches. Ruff/mypy and frontend lint, catalogs and build passed.
+[Validation audit](VALIDATION_AUDIT.md) records confirmed bypasses, seed 942,
+positive controls and preservation checks. Strict up-to-date `ci-required` protection
+and repository auto-merge availability were verified through the GitHub API.
+Frontend final verification passed 439 tests with 2001/2001 lines and 2282/2282
+branches; raw source-provenance coverage gate passed. No thresholds or exclusions changed.
+
+Publishing authorization confirmed explicitly by the user after automatic approval
+review requested it. Local checks are complete; protected PR delivery is in progress.

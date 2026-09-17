@@ -64,3 +64,12 @@ stale/unknown locations, identity/reference/review/provenance failures and resou
 bounds. Validation never mutates the model or input records. No new UI or DOCX
 transformation is introduced by this schema task; subsequent detectors and review
 integration supply their own API, browser and accuracy evidence.
+
+## Save-time validation (E09.42)
+
+The backend independently validates actual control text before generating a new saved
+revision. It applies the frontend's 65,536-code-point limit across runs, valid XML
+characters, number grammar and real calendar-date rules. Review metadata is checked
+against live anchors before selecting each field's type; absent legacy review means
+text. Unfilled values remain valid. Original uploads and retained history are not
+rewritten or rejected based on detector type proposals. See [Validation audit](VALIDATION_AUDIT.md).

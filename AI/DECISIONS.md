@@ -353,9 +353,10 @@ review metadata through saves, copies, and restores. The sidebar renders a
 decimal input for numbers (preserving the user's exact text) and a datepicker
 for dates (reading day-first or ISO values, writing canonical `ДД.ММ.РРРР`);
 empty values remain valid, and nonempty values that do not parse raise the
-existing recoverable field-value issues and block saving client-side. The
-server continues to treat values as bounded text and adds no new save
-rejection path. Choice/dropdown fields and Word-native date picker controls
+existing recoverable field-value issues and block saving client-side. Under the
+explicit 2026-09-17 validation-parity request (E09.42), the backend independently
+rejects invalid typed values and excessive field lengths before committing new saves.
+Values remain stored text; uploads and retained history preserve their source content. Choice/dropdown fields and Word-native date picker controls
 remain deferred; the schema widened the v1 records with a defaulted optional
 property instead of a version bump, so stored snapshots and reviews stay
 loadable unchanged.
