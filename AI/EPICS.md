@@ -3110,7 +3110,7 @@ writers. Application source is unchanged; full CI remeasures both coverage gates
 
 ## E09.41 — Source page breaks and anchored form alignment
 
-Status: in_progress. Honor saved paragraph page breaks in document and filling
+Status: in_review. Honor saved paragraph page breaks in document and filling
 views, place automatic boundaries before overflowing blocks, and keep floating
 number tables aligned with their following label. Verify synthetic source layout,
 shared pagination, mode switching and zoom without changing saved DOCX content.
@@ -3121,3 +3121,6 @@ lines and 1470/1470 branches, and 436 frontend tests with 100% lines/branches.
 Frontend lint/build and backend Ruff/mypy passed. Synthetic anchored-table browser
 checks passed on desktop/mobile; the screenshot confirms the label alongside the
 boxes and the next row below. No private document content is committed as a fixture.
+
+Desktop/mobile workspace checks passed for explicit source boundaries, identical
+document/fill marker locations, returning to document mode, zoom and localization.
