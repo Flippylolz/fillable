@@ -190,3 +190,11 @@ no HTML from the browser is stored. New revisions have no receipt until rendered
 Visible ready cards draw a read-only miniature through the existing editor adapter,
 with source-node views, layout rules, inert interaction and revision-fenced requests.
 This metadata-only path leaves the storage quota and deployed schema unchanged.
+
+Source paragraph page breaks are honored by the shared visual pagination used in
+both document and filling views. Automatic boundaries use block extents; splitting
+inside long paragraphs/tables remains approximate. Fill previews measure their
+visible, unscaled clone rather than the hidden editor. Anchored tables retain
+horizontal offsets without reserving blank horizontal space, allowing the following
+anchor label alongside; the next ordinary paragraph clears the table row. These
+presentation rules and page markers never become saved document content.

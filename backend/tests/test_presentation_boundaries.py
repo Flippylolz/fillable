@@ -94,7 +94,7 @@ def test_float_centering_skips_empty_paragraphs_and_handles_invalid_grids():
         if el.tag == W + "tbl"
     ]
     assert tables[0]["width"] == "50pt"
-    assert tables[0]["margin-left"] == "255pt"
+    assert tables[0]["left"] == "255pt"
     assert "width" not in tables[1]
     assert tables[1]["margin-left"] == "0pt"
     cells = [

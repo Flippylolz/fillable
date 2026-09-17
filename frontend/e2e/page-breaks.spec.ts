@@ -30,9 +30,18 @@ test("the workspace shows where one page ends and the next begins", async ({ pag
   // Open the workspace directly by its URL; independent of library card controls.
   const list = await (await page.request.get("/api/documents?kind=template")).json();
   const saved = list.items.find((item: { title: string }) => item.title === title);
+  let forcedId = "";
+  await page.route(`**/api/documents/${saved.id}/content`, async route => {
+    const response = await route.fetch();
+    const content = await response.json();
+    const body = content.document.content.find((node: { attrs: { part: string } }) => node.attrs.part === "word/document.xml");
+    forcedId = body.content[2].attrs.id;
+    content.presentation.nodes[forcedId] = { ...content.presentation.nodes[forcedId], "break-before": "page" };
+    await route.fulfill({ response, json: content });
+  });
   await page.goto(`/editor/${saved.id}`);
   await expect(page.getByRole("textbox", { name: "Редагований документ", exact: true })).toBeVisible();
-  const label = page.locator(".document-page-break-label");
+  const label = page.locator(".document-workbench > .document-canvas .document-page-break-label");
   await expect(label.first()).toBeVisible();
   const labels = await label.allTextContents();
   expect(labels.length).toBeGreaterThanOrEqual(1);
@@ -46,6 +55,15 @@ test("the workspace shows where one page ends and the next begins", async ({ pag
       editable: marker?.getAttribute("contenteditable"),
     };
   })).toEqual({ part: "word/document.xml", hidden: "true", editable: "false" });
+  expect(await page.locator(".document-page-break").first().evaluate(marker => marker.nextElementSibling?.getAttribute("data-source"))).toBe(forcedId);
+  const boundaries = await page.locator(".document-workbench > .document-canvas .document-page-break").evaluateAll(markers => markers.map(marker => marker.nextElementSibling?.getAttribute("data-source")));
+  await page.getByRole("button", { name: "Заповнення", exact: true }).click();
+  const fillMarkers = page.locator(".fill-preview .document-page-break");
+  await expect(fillMarkers.first()).toBeVisible();
+  expect(await fillMarkers.evaluateAll(markers => markers.map(marker => marker.nextElementSibling?.getAttribute("data-source")))).toEqual(boundaries);
+  await page.screenshot({ path: testInfo.outputPath("page-breaks-fill.png"), fullPage: true });
+  await page.getByRole("button", { name: "Документ", exact: true }).click();
+  await expect(label.first()).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("page-breaks-uk.png"), fullPage: true });
   // A zoom change re-measures the flow; markers stay between the same blocks.
   await page.getByText("Налаштування робочого простору", { exact: true }).click();

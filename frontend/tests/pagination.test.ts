@@ -2,7 +2,7 @@ import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { mountEditor } from "../src/editor/adapter";
 import { editorSchema } from "../src/editor/model";
-import { PAGE_BREAK_CLASS, breakDecorations, pageStarts, measurePageBreaks } from "../src/editor/pagination";
+import { PAGE_BREAK_CLASS, breakDecorations, pageStarts, measurePageBreaks, paginatePreview } from "../src/editor/pagination";
 import corpus from "../prototype/document.json";
 
 type PageStyle = Partial<Record<"minHeight" | "paddingTop" | "paddingBottom", string>>;
@@ -31,7 +31,7 @@ function stubLayout(zoom: string, page: PageStyle) {
     const parent = this.parentElement;
     if (parent?.matches('section[data-part="word/document.xml"]')) {
       const index = Array.from(parent.children).filter(child => !child.classList.contains(PAGE_BREAK_CLASS)).indexOf(this);
-      return index >= 0 && blocks[index] ? new DOMRect(0, blocks[index].top, 100, blocks[index].height) : realRect.call(this);
+      return index >= 0 && blocks[index] ? new DOMRect(0, blocks[index].top, 100, 0) : realRect.call(this);
     }
     return realRect.call(this);
   });
@@ -50,7 +50,7 @@ const settle = () => new Promise(resolve => requestAnimationFrame(() => requestA
 const markers = (host: HTMLElement) => host.querySelectorAll<HTMLElement>(`.${PAGE_BREAK_CLASS}`);
 
 test("pageStarts breaks after blocks that pass each page's content height", () => {
-  const flow = (top: number) => ({ top });
+  const flow = (top: number) => ({ top, bottom: top, forced: false });
   expect(pageStarts([], 100)).toEqual([]);
   expect(pageStarts([flow(0), flow(40), flow(90)], 100)).toEqual([]);
   expect(pageStarts([flow(0), flow(40), flow(120), flow(160)], 100)).toEqual([2]);
@@ -259,4 +259,29 @@ test("measurement ignores a stale body DOM when the model has no body section",(
   const view=new EditorView(host,{state:EditorState.create({doc})});
   try{view.dom.querySelector("section")!.setAttribute("data-part","word/document.xml");expect(measurePageBreaks(view)).toEqual([]);}
   finally{view.destroy();host.remove();layout.restore();}
+});
+
+
+test("pagination honors source boundaries and moves an overflowing block before the page edge", () => {
+  const flow = (top: number, bottom: number, forced = false) => ({ top, bottom, forced });
+  expect(pageStarts([flow(0, 60), flow(60, 110), flow(110, 140)], 100)).toEqual([1]);
+  expect(pageStarts([flow(0, 40), flow(40, 60, true), flow(60, 100)], 100)).toEqual([1]);
+  expect(pageStarts([flow(0, 200), flow(200, 220)], 100)).toEqual([1]);
+  expect(pageStarts([flow(0, 50), flow(50, 100)], 100)).toEqual([]);
+});
+
+test("fill clones render and replace localized source page boundaries without a model", () => {
+  const dom = document.createElement("div");
+  dom.innerHTML = '<section data-part="word/document.xml" style="min-height:1000px;padding:50px"><p>First</p><p style="break-before:page">Second</p></section>';
+  document.body.append(dom);
+  paginatePreview(dom, page => `Page ${page}`);
+  expect(markers(dom)).toHaveLength(1);
+  expect(markers(dom)[0].nextElementSibling?.textContent).toBe("Second");
+  paginatePreview(dom, page => `Сторінка ${page}`);
+  expect(markers(dom)).toHaveLength(1);
+  expect(markers(dom)[0]).toHaveTextContent("Сторінка 2");
+  dom.replaceChildren();
+  paginatePreview(dom, String);
+  expect(markers(dom)).toHaveLength(0);
+  dom.remove();
 });
