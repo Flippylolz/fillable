@@ -247,3 +247,16 @@ test("recovery can switch to another authenticated account after consent",async(
   fireEvent.click(await screen.findByRole("button",{name:/different@example.test/}));
   await waitFor(()=>expect(window.location.pathname).toBe("/documents"));expect(screen.getByText("different@example.test")).toBeVisible();
 });
+
+test("malformed login text is rejected before a request", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json(anonymous));
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  await credentials();
+  for (const value of ["a\0b", "\ud800"]) {
+    fireEvent.change(screen.getByLabelText("Логін"), { target: { value } });
+    fireEvent.click(screen.getByRole("button", { name: "Увійти" }));
+    expect(await screen.findByRole("alert")).toBeVisible();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  }
+});

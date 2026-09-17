@@ -70,3 +70,18 @@ test("the DOCX proof cannot export invalid field values and retains them until c
   fireEvent.change(value, { target: { value: "Ґанна\nЇжак" } });
   expect(screen.getByRole("button", { name: "Export DOCX" })).toBeEnabled();
 });
+
+test("typed field boundary vectors match backend save validation", () => {
+  const good = {
+    number: ["0", "-0,25", "-1 234.50", "1\u00a0234\u202f567,89", "\ufeff12\ufeff", ""],
+    date: ["2024-02-29", "29.2.2000", "1/1/0001", "31-12-9999", "1.2/2024", " \t\n\ufeff"],
+  } as const;
+  const bad = {
+    number: ["NaN", "Infinity", "1e3", "12 34", "+1", "１２", "1,2.3", "\u008512"],
+    date: ["2024-2-29", "31.02.2024", "29.02.1900", "0000-01-01", "2024-13-01", "2024-01-00", "not-a-date"],
+  } as const;
+  for (const kind of ["number", "date"] as const) {
+    for (const value of good[kind]) expect(fieldValueIssue(value, kind)).toBeNull();
+    for (const value of bad[kind]) expect(fieldValueIssue(value, kind)).toBe(`invalid_${kind}`);
+  }
+});

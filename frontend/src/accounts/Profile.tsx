@@ -60,6 +60,10 @@ export function Profile({ user, csrfToken, onSession, onBusy, disabled, usageRev
       setError("password_length");
       return;
     }
+    if (kind === "name" && (!name.trim() || [...name].length > 120 || [...name].some(char => char.codePointAt(0)! < 32) || /[\ud800-\udfff]/u.test(name))) {
+      setError("invalid_request");
+      return;
+    }
     const controller = lifetime.current;
     setBusy(true); onBusy(true);
     try {

@@ -85,7 +85,8 @@ available width on narrow screens.
 - Show a small fixed [Git version badge](VERSION_BADGE.md) across all four pages: `version: <first seven deployed-commit characters>` or `version: development`. Preserve the supplied translucent colors, safe-area-aware bottom-right placement and bottom offset on desktop/mobile, with monospace value and click-through behavior. It has no icon, link, tooltip, or interaction; its text remains catalog-based under D022.
 - Fields carry a reviewable type: text, number, or date (E11). Detection proposes the
   type deterministically and users can change it per field; number and date values use
-  typed sidebar controls with local checks, while documents keep plain-text content
+  typed sidebar controls with frontend checks and independent backend save validation,
+  while documents keep plain-text content
   controls. Checkbox handling follows the native checkbox support work; choice/dropdown
   fields remain deferred.
 - Inferred fields are correctable. Repeated occurrences share a logical field only when their relationship is explicit or user-confirmed.

@@ -258,3 +258,17 @@ test("profile requests ignore a late network failure after unmount",async()=>{
   await act(async()=>reject(new Error("cancelled")));
   expect(onSession).not.toHaveBeenCalled();expect(onBusy).toHaveBeenLastCalledWith(false);
 });
+
+test("invalid display names stay local and preserve the draft", async () => {
+  const fetcher = vi.fn().mockResolvedValue(Response.json(usage));
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  await screen.findByText("8 байтів");
+  for (const value of [" ", "x".repeat(121), "a\0b", "\ud800"]) {
+    fireEvent.change(screen.getByLabelText("Ім’я для відображення"), { target: { value } });
+    fireEvent.submit(nameForm());
+    expect(await screen.findByRole("alert")).toBeVisible();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(onSession).not.toHaveBeenCalled();
+  }
+});
