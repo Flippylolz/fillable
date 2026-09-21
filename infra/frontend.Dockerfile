@@ -12,7 +12,7 @@ ARG VITE_APP_COMMIT_SHA
 ENV VITE_APP_COMMIT_SHA=$VITE_APP_COMMIT_SHA
 RUN npm run build
 
-FROM nginx:1.31.5-alpine@sha256:72ba65eb42c10344912a84ff42408db7d34f2feb642204570ab8fc5ffd29f1d3 AS gateway-base
+FROM nginx:1.31.6-alpine@sha256:adad2ae9204d0fd7a34f40299bc838c3782be1293b10005eac4315ff5a1abf4e AS gateway-base
 USER nginx
 ENTRYPOINT ["nginx"]
 CMD ["-g", "daemon off;", "-c", "/etc/nginx/fillable.conf"]
