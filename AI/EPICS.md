@@ -3144,3 +3144,28 @@ branches; raw source-provenance coverage gate passed. No thresholds or exclusion
 
 Publishing authorization confirmed explicitly by the user after automatic approval
 review requested it. Local checks are complete; protected PR delivery is in progress.
+
+## E09.43 — Fill-field keyboard navigation and canvas autosave focus
+
+Status: in_review. Tab and Shift+Tab move directly between consecutive fill-form
+inputs without stopping on intervening field actions; boundary navigation and
+modified shortcuts remain native. Keep the directly edited document focused and
+retain its caret across the post-save editing-lease check, without allowing writes
+while read-only or stealing focus from another control. Verify mixed field types,
+continued typing after autosave, and desktop/mobile browser regressions.
+
+2026-09-28: Local Docker verification passed 448 frontend tests and the independent
+source-provenance gate (2006/2006 lines, 2296/2296 branches), plus 594 backend tests
+and its gate (4595/4595 lines, 1488/1488 branches). Frontend lint, translation checks
+and production build, and backend Ruff/mypy passed. All 14 desktop/mobile autosave
+browser checks passed, including mixed-input Tab traversal, native boundary exits,
+delayed lease reacquisition, continued typing at the retained caret and moving focus
+away during saving. The complete task diff is against refreshed origin/main; no
+coverage exclusions or thresholds changed. Protected PR delivery is in progress.
+
+The first PR run passed all 72 browser tests and all application/coverage checks,
+but independent DOCX rendering could not install its stale LibreOffice pin. Updated
+only the QA image's writer package from Debian revision deb13u6 to deb13u7 to match
+its dependencies. Local rendering of that run's synthetic artifacts passed identical
+no-edit pages, preserved page two, three-page edits, five-page multiline output, and
+exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
