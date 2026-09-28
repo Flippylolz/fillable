@@ -91,6 +91,10 @@ test("a committed response from before recovery stays uncertain and retries its 
   release();
   await expect(page.getByText(/Результат збереження ще не підтверджено/)).toBeVisible();
   expect(await editor(page).evaluate((node, original) => node === original, retained)).toBe(true);
+  // The committed version can still be held by the export worker's read lock.
+  // Wait for that independent reader before checking the idempotent retry.
+  await expect.poll(async () => (await (await page.request.get(`${endpoint}/processing`)).json()).status,
+    { timeout: 20000 }).toBe("succeeded");
   await page.getByRole("button", { name: "Повторити збереження", exact: true }).click();
   await expect(page.getByText("Усі зміни документа збережено.", { exact: true })).toBeVisible();
   expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
