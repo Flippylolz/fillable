@@ -68,6 +68,8 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
   let compositionTimer: ReturnType<typeof setTimeout> | undefined;
   source.descendants(node => { if (node.type.name.startsWith("locked")) unsupported = true; });
   const editor = new EditorView(host, {
+    // A temporary read-only lease check must not make the focused canvas unfocusable.
+    attributes: { tabindex: "0" },
     nodeViews: {
       lockedInline: sourceNodeView(callbacks.presentation, () => shapeCheckboxLabel),
       lockedBlock: sourceNodeView(callbacks.presentation, () => shapeCheckboxLabel),
@@ -204,7 +206,7 @@ export function mountEditor(host: HTMLElement, initialDocument: object, callback
     exportSnapshot,
     refreshAccess() { editor.setProps({}); },
     setDocumentLabel(label: string) {
-      editor.setProps({ attributes: () => ({ "aria-label": label, role: "textbox", "aria-multiline": "true", "aria-readonly": String(!allowed()) }) });
+      editor.setProps({ attributes: () => ({ tabindex: "0", "aria-label": label, role: "textbox", "aria-multiline": "true", "aria-readonly": String(!allowed()) }) });
     },
     setPageBreakLabel(formatter: (page: number) => string) {
       pageBreakLabel = formatter;
