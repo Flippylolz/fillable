@@ -305,55 +305,39 @@ workflows), `npm` (`frontend/`), `docker` (`infra/` Dockerfiles) and
 into one pull request per ecosystem; major updates open standalone pull
 requests. Each ecosystem keeps at most five open pull requests.
 
-`.github/workflows/dependabot-automerge.yml` enables squash auto-merge on
-Dependabot's own pull requests and keeps their branches mergeable. Its
-contract:
+`.github/workflows/dependabot-automerge.yml` reconciles Dependabot pull requests
+on their opened/reopened/synchronize events, main pushes, completed CI runs, a
+manual dispatch, and the existing twice-hourly fallback schedule. A single
+concurrency group serializes reconciliation. E09.44 fixes held CI recovery:
 
-- Triggers on `pull_request_target` (`opened`, `reopened`, `synchronize`) so the
-  trusted base-branch workflow definition always runs; no pull-request code is
-  checked out and the steps call only the GitHub CLI. Reconciliation of all
-  open Dependabot pull requests additionally runs after every push to `main`
-  (so each merge immediately refreshes the remaining pull requests) and on a
-  twice-hourly offset schedule (`13,43 * * * *`, clear of the contended :00/:30
-  slots) as the fallback cadence. GitHub's scheduler produced no scheduled runs
-  for this repository across the first three slots, so the push trigger
-  performs the reconciliation in practice.
-- Guards on the repository identity and `dependabot[bot]` as pull-request
-  author, so it covers Dependabot version and security updates and nothing else;
-  push and scheduled runs act only on open pull requests authored by Dependabot,
-  and push runs only on the protected `main` branch.
-- Requests only `contents: write` and `pull-requests: write`; deployment
-  credentials are not involved and the workflow dispatches no release itself.
-  The merge lands on `main` like any other merge, where the E09.6 automation
-  deploys that exact commit after its required CI succeeds, so a Dependabot
-  update ships once its full gate is green, exactly like a task merge.
-- Arms auto-merge with `--match-head-commit` for the exact head commit, matching
-  the task-PR workflow. GitHub performs the squash merge only after the strict,
-  up-to-date `ci-required` gate passes; a failed or stale required check refuses
-  the merge and disables auto-merge until the next Dependabot push re-arms it.
-- E09.11: when the pull request is `BEHIND` its base, the workflow updates the
-  branch through the update-branch API bound to the expected head SHA instead of
-  arming; the resulting synchronize event re-runs the workflow at the new head,
-  which arms there. Strict up-to-date protection can otherwise never be
-  satisfied after any merge to `main`, because Dependabot only rebases on
-  conflict.
-- E09.11: the reconciliation after every `main` push (and the fallback
-  schedule) updates every open behind Dependabot branch and arms squash
-  auto-merge on pull requests that are neither armed nor carrying
-  failed/cancelled required checks, so remaining pull requests follow each
-  merge with one required-CI cycle instead of staling indefinitely. Pull
-  requests with failing checks are left open for a fixing push, which re-arms
-  them through the synchronize event. The Dependabot author filter is applied
-  client-side over all open pull requests (the bot's login differs between the
-  REST and GraphQL surfaces, and the first push run matched nothing through
-  `--author` under `GITHUB_TOKEN`), and behind-ness is computed from the
-  compare API because `mergeStateStatus` caches stale values for minutes after
-  a merge. Branch updates made with `GITHUB_TOKEN` also create the pull
-  request's `pull_request` workflow runs as `action_required`, so the
-  reconciliation approves exactly the held runs for the head it just updated;
-  a run GitHub refuses to self-approve is reported and needs a maintainer.
-- `scripts/test_dependabot_automerge_contract.py` pins this contract in the
-  required `contracts` job alongside the E09.6 deploy-dispatch contract.
+- The privileged workflow executes only its base-branch inline Python and GitHub
+  API/CLI calls. It never checks out a PR, consumes its artifacts, or executes its
+  code. Eligible PRs must be open, non-draft, authored by `dependabot[bot]`, on a
+  same-repository `dependabot/` branch targeting this repository's `main`.
+- `contents: write` and `pull-requests: write` support branch updates and squash
+  auto-merge; `actions: write` is required for held-run approval. No deployment
+  credential or additional token is used.
+- Behind branches are updated using their expected head SHA. Reconciliation then
+  waits for and reads the **new** head before finding its CI runs. Compare/API
+  errors fail visibly instead of being treated as an up-to-date branch.
+- Held runs are recovered even for already-current branches. Only the latest
+  matching `pull_request` run of `.github/workflows/ci.yml`, from the same
+  repository and linked to that PR's current head, can be approved. The PR is
+  re-read immediately before approval. Late-created runs are recovered by the
+  completed-CI event or the scheduled/manual fallback.
+- CI failures are left for a fixing push. Missing/running CI can have auto-merge
+  armed, but only GitHub's strict, up-to-date `ci-required` gate permits merging.
+  Arming is bound to the exact head SHA; no administrator bypass is used.
+- A failed approval, update, or merge-arming operation makes reconciliation fail
+  visibly while still allowing other eligible PRs to be processed. The old code
+  checked the pre-update SHA, only attempted recovery while behind, lacked Actions
+  permission, and swallowed errors; that left PRs armed but indefinitely held.
+- `scripts/test_dependabot_automerge_contract.py` executes the actual inline code
+  against API fixtures for asynchronous updates, late runs, failures, pagination,
+  changed heads and untrusted PRs/runs. Required CI enforces these tests.
+
+After merging, the normal exact-main CI and deployment pipeline applies. This
+workflow does not dispatch releases or relax any required check.
 
 Backend Python dependencies are covered through the `pip` ecosystem
 (`/backend`): the hash-pinned pip-compile output lives at
