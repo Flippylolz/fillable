@@ -3162,3 +3162,10 @@ browser checks passed, including mixed-input Tab traversal, native boundary exit
 delayed lease reacquisition, continued typing at the retained caret and moving focus
 away during saving. The complete task diff is against refreshed origin/main; no
 coverage exclusions or thresholds changed. Protected PR delivery is in progress.
+
+The first PR run passed all 72 browser tests and all application/coverage checks,
+but independent DOCX rendering could not install its stale LibreOffice pin. Updated
+only the QA image's writer package from Debian revision deb13u6 to deb13u7 to match
+its dependencies. Local rendering of that run's synthetic artifacts passed identical
+no-edit pages, preserved page two, three-page edits, five-page multiline output, and
+exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
