@@ -559,3 +559,10 @@ Formatting uses the same draft, undo/redo, save and DOCX export path.
 E09.38: Temporary read-only access checks (including after autosave) retain the
 focused field and its caret. Native text, number and date inputs use readOnly
 instead of disabled; mutation actions remain disabled while access is unavailable.
+
+E09.43: Tab and Shift+Tab move between consecutive Fill-mode inputs in document
+order, skipping intervening formatting and field-action buttons. At either end,
+normal browser navigation resumes; modified shortcuts and composition are untouched.
+The document canvas stays focusable during temporary read-only lease checks so
+autosave retains the caret. Access checks still reject edits, and re-enabling
+editing does not take focus back from another control.

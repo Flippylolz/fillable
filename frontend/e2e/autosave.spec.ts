@@ -151,3 +151,55 @@ test("fill autosave retains focus and caret while the saved revision reacquires 
   await saved(page);
   await expect(input).toBeFocused();
 });
+
+test("Tab and Shift+Tab jump between fill inputs without stopping on field actions", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: "Заповнення", exact: true }).click();
+  const inputs = page.locator(".fill-form").locator("input, textarea");
+  await expect(inputs).toHaveCount(5);
+  await inputs.first().focus();
+  for (let index = 1; index < 5; index += 1) {
+    await page.keyboard.press("Tab"); await expect(inputs.nth(index)).toBeFocused();
+  }
+  await page.keyboard.press("Tab"); await expect(inputs.last()).not.toBeFocused();
+  await inputs.last().focus();
+  for (let index = 3; index >= 0; index -= 1) {
+    await page.keyboard.press("Shift+Tab"); await expect(inputs.nth(index)).toBeFocused();
+  }
+  await page.keyboard.press("Shift+Tab"); await expect(inputs.first()).not.toBeFocused();
+});
+
+for (const moveAway of [false, true]) {
+  test(`direct editing retains its caret across autosave without stealing focus: moveAway=${moveAway}`, async ({ page }) => {
+    await open(page);
+    const editor = page.getByRole("textbox", { name: "Редагований документ", exact: true });
+    await page.getByRole("button", { name: "Перейти до поля: ПІБ клієнта", exact: true }).first().click();
+    let resume!: () => void;
+    const held = new Promise<void>(resolve => { resume = resolve; });
+    await page.route("**/editing-lease", async route => {
+      if (route.request().postDataJSON().action === "acquire") await held;
+      await route.continue();
+    });
+    await page.keyboard.insertText("Ґанна");
+    await page.keyboard.press("ArrowLeft");
+    await saved(page);
+    await expect(editor).toHaveAttribute("contenteditable", "false");
+    await expect(editor).toBeFocused();
+    const selection = await page.evaluate(() => {
+      const value = window.getSelection()!;
+      return { anchor: value.anchorOffset, focus: value.focusOffset, text: value.anchorNode?.textContent };
+    });
+    if (moveAway) await values(page).first().focus();
+    resume();
+    await expect(editor).toHaveAttribute("contenteditable", "true");
+    if (moveAway) { await expect(values(page).first()).toBeFocused(); return; }
+    await expect(editor).toBeFocused();
+    expect(await page.evaluate(() => {
+      const value = window.getSelection()!;
+      return { anchor: value.anchorOffset, focus: value.focusOffset, text: value.anchorNode?.textContent };
+    })).toEqual(selection);
+    await page.keyboard.insertText("Ї");
+    await expect(values(page).first()).toHaveValue("ҐаннЇа");
+    await saved(page); await expect(editor).toBeFocused();
+  });
+}
