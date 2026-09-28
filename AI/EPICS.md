@@ -3169,3 +3169,19 @@ only the QA image's writer package from Debian revision deb13u6 to deb13u7 to ma
 its dependencies. Local rendering of that run's synthetic artifacts passed identical
 no-edit pages, preserved page two, three-page edits, five-page multiline output, and
 exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
+
+## E09.44 — Dependabot CI approval and automatic merge recovery
+
+Status: in_review. Reconcile the current head after branch updates, recover held
+CI runs even when a branch is already current, and make API failures visible.
+Limit approval to this repository's current Dependabot PR heads and CI workflow;
+retain exact-head squash auto-merge, strict required checks and no PR-code execution
+in the privileged workflow. Verify behavior with API fixtures and the pending PRs.
+
+2026-09-28: Confirmed all five open dependency PRs were armed but their current CI
+runs were action_required after GITHUB_TOKEN branch updates. Maintainer approval
+resumed the exact current npm PR run. Local Docker verification of the replacement
+workflow passed 18 behavioral/contract tests and Ruff, with 70/70 lines and 36/36
+branches covered in the executed workflow code. Application source is unchanged;
+full required CI remeasures the separate backend/frontend gates. Live validation of
+the installed workflow and completion of pending dependency merges remain pending.

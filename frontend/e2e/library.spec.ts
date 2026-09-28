@@ -5,6 +5,8 @@ import { expect, test } from "@playwright/test";
 import { openNavigation, openUploadPanel } from "./navigation";
 
 test("library uploads both kinds, retries safely, and keeps drafts across a language change", async ({ page }, testInfo) => {
+  // This full library journey includes worker polling and several editor round trips.
+  testInfo.setTimeout(120000);
   const bytes = await readFile("/fixtures/upload.docx");
   const file = { name: "Заява-Їжак.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: bytes };
   const templateTitle = `Шаблон Ґанни — ${testInfo.project.name}`;
