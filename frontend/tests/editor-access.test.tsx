@@ -35,6 +35,7 @@ test("read-only adapter rejects every authored mutation but retains focus, draft
   fireEvent(dom, new CompositionEvent("compositionstart", { bubbles: true }));
   expect(editor.exportSnapshot()).toEqual(draft);
   editor.refreshAccess(); expect(dom).toHaveAttribute("contenteditable", "false");
+  expect(dom).toHaveAttribute("tabindex", "0");
   allowed = true; editor.refreshAccess(); expect(editor.undo()).toBe(true);
   expect(editor.exportSnapshot().document).not.toEqual(draft.document);
   expect(editor.redo()).toBe(true); expect(editor.exportSnapshot().document).toEqual(draft.document);
@@ -97,4 +98,20 @@ test("undo and redo buttons follow history availability in both locales", async 
   await waitFor(() => expect(undoEn).toBeDisabled());
   expect(redoEn).toBeEnabled();
   view.unmount();
+});
+
+test("canvas access refresh preserves focusability without stealing focus from another input", () => {
+  const host = document.createElement("div"); document.body.append(host);
+  const other = document.createElement("input"); document.body.append(other);
+  let allowed = true;
+  const editor = mountEditor(host, corpus, { canEdit: () => allowed, onChange: vi.fn(), onUpdate: vi.fn() });
+  editor.setDocumentLabel("Editable document");
+  const canvas = host.firstElementChild as HTMLElement;
+  canvas.focus(); allowed = false; editor.refreshAccess();
+  expect(canvas).toHaveAttribute("tabindex", "0");
+  expect(canvas).toHaveAttribute("contenteditable", "false");
+  expect(canvas).toHaveFocus();
+  other.focus(); allowed = true; editor.refreshAccess();
+  expect(other).toHaveFocus(); expect(canvas).toHaveAttribute("contenteditable", "true");
+  editor.destroy(); host.remove(); other.remove();
 });
