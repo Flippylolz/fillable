@@ -14,7 +14,14 @@ export function FillForm({ fields, active, update, focus, remove, readOnly, undo
 }) {
   const { t, i18n } = useTranslation();
   const numbers = new Intl.NumberFormat(i18n.resolvedLanguage);
-  return <div className="fill-form" aria-label={t("workspace.fillTitle")}>
+  return <div className="fill-form" aria-label={t("workspace.fillTitle")} onKeyDown={event => {
+    if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey || event.nativeEvent.isComposing
+      || !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) return;
+    const inputs = Array.from(event.currentTarget.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea"));
+    const next = inputs[inputs.indexOf(event.target) + (event.shiftKey ? -1 : 1)];
+    // Leave the first/last boundary native so this shortcut never traps focus.
+    if (next) { event.preventDefault(); next.focus(); }
+  }}>
     <h3>{t("workspace.fillTitle")}</h3>
     <div className="fill-tools">
       <button type="button" disabled={readOnly || !canUndo} onClick={undo}>{t("editor.undo")}</button>
