@@ -1,46 +1,25 @@
-# Enables squash auto-merge on Dependabot pull requests and keeps their
-# branches mergeable.
-#
-# The merge itself is still performed by GitHub only after every required
-# check passes: `main` protection requires the strict, up-to-date
-# `ci-required` aggregator, and this workflow does not bypass or weaken it.
-# If required checks fail, GitHub refuses the queued merge and disables
-# auto-merge for that pull request; the next Dependabot push re-arms it.
-#
-# Strict up-to-date protection also means a pull request whose branch lacks
-# the current `main` tip can never merge, and Dependabot only rebases on
-# conflict. This workflow therefore updates behind Dependabot branches
-# (bound to the expected head SHA, so only an unchanged revision is moved)
-# and reconciles open Dependabot pull requests after every push to `main`:
-# each merge refreshes the remaining pull requests immediately, and their
-# armed auto-merge requests complete as each fresh required CI run passes.
-# A twice-hourly offset schedule runs the same reconciliation as a fallback.
-# Pull requests whose checks failed are left for a fixing push, which re-arms
-# them through the synchronize event.
-#
-# `pull_request_target` runs this trusted workflow from the base branch and
-# no pull-request code is ever checked out; the steps only call the GitHub
-# CLI. The actor guard restricts pull-request runs to Dependabot's own pull
-# requests (version and security updates); push and scheduled runs act only
-# on open pull requests authored by Dependabot. Auto-merge requires the
-# exact head commit so an unexpected revision cannot ride an armed request.
+# Trusted base-branch orchestration only: never check out or execute PR code.
+# GitHub alone merges after strict, current-head ci-required checks succeed.
 name: Dependabot auto-merge
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
   push:
     branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
   schedule:
-    # Fallback cadence for staleness that no merge caused. The offset misses
-    # the :00/:30 slots where GitHub's scheduler is most contended.
     - cron: "13,43 * * * *"
 
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 concurrency:
-  group: dependabot-automerge-${{ github.event.pull_request.number || 'reconcile' }}
+  group: dependabot-automerge-reconcile
   cancel-in-progress: false
 
 jobs:
@@ -49,85 +28,143 @@ jobs:
       github.repository == 'Flippylolz/fillable' &&
       (
         github.event_name == 'schedule' ||
-        (
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/main'
-        ) ||
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'workflow_run' ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
         github.event.pull_request.user.login == 'dependabot[bot]'
       )
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Enable squash auto-merge
-        if: github.event_name == 'pull_request_target'
+      - name: Reconcile current Dependabot heads and held CI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: python
         run: |
-          set -euo pipefail
-          state="$(gh pr view "$PR_URL" --json mergeStateStatus --jq .mergeStateStatus)"
-          if [ "$state" = "BEHIND" ]; then
-            # Strict up-to-date protection cannot be satisfied until the
-            # branch contains the current `main` tip. Updating it fires a
-            # synchronize event, which re-runs this workflow at the new head
-            # and arms auto-merge there.
-            gh api --method PUT \
-              "repos/$REPO/pulls/$PR_NUMBER/update-branch" \
-              -f expected_head_sha="$HEAD_SHA" >/dev/null
-            exit 0
-          fi
-          gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
+          import json
+          import os
+          import subprocess
+          import time
 
-      - name: Reconcile open Dependabot pull requests
-        if: github.event_name != 'pull_request_target'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          # Dependabot's author login differs between the REST and GraphQL
-          # surfaces and `--author` cannot be trusted under GITHUB_TOKEN, so
-          # list all open pull requests and filter here. `mergeStateStatus`
-          # also caches stale values for minutes after a merge, so behind-ness
-          # is computed from the compare API instead.
-          gh pr list --repo "$REPO" --state open \
-            --limit 50 \
-            --json number,headRefOid,author,autoMergeRequest,statusCheckRollup \
-            --jq '.[] | select(.author.login == "app/dependabot" or .author.login == "dependabot[bot]") | [.number, .headRefOid, (.autoMergeRequest != null), ([.statusCheckRollup[]?.conclusion // empty] | join(","))] | @tsv' |
-          while IFS=$'\t' read -r number head_sha armed conclusions; do
-            behind="$(gh api --cache 0 \
-              "repos/$REPO/compare/main...${head_sha}" \
-              --jq '.behind_by // 0' 2>/dev/null || echo 0)"
-            if [ "$behind" -gt 0 ]; then
-              echo "PR #$number is $behind commit(s) behind main; updating its branch"
-              gh api --method PUT \
-                "repos/$REPO/pulls/$number/update-branch" \
-                -f expected_head_sha="$head_sha" >/dev/null \
-                || echo "PR #$number branch update was refused"
-              # Branch updates made with GITHUB_TOKEN create the PR's
-              # pull_request CI runs as action_required instead of running
-              # them. Approve our own held runs so the required CI actually
-              # executes; if GitHub rejects the self-approval the run stays
-              # held and needs a maintainer.
-              sleep 5
-              held="$(gh api --cache 0 \
-                "repos/$REPO/actions/runs?event=pull_request&status=action_required&per_page=50" \
-                --jq ".workflow_runs[] | select(.head_sha == \"$head_sha\") | .id" 2>/dev/null || true)"
-              for run_id in $held; do
-                if gh api -X POST "repos/$REPO/actions/runs/$run_id/approve" >/dev/null 2>&1; then
-                  echo "PR #$number: approved held run $run_id"
-                else
-                  echo "PR #$number: run $run_id needs manual maintainer approval"
-                fi
-              done
-            elif [ "$armed" = "false" ] &&
-              ! [[ "$conclusions" =~ FAILURE|CANCELLED|TIMED_OUT|ACTION_REQUIRED|STARTUP_FAILURE ]]; then
-              echo "PR #$number is not armed; arming squash auto-merge at $head_sha"
-              gh pr merge --repo "$REPO" --auto --squash \
-                --match-head-commit "$head_sha" "$number" \
-                || echo "PR #$number could not be armed"
-            fi
-          done
+          REPO = os.environ["REPO"]
+          FAILED = {"failure", "cancelled", "timed_out", "startup_failure", "stale"}
+
+
+          def api(path, method="GET", fields=None, pages=False):
+              command = ["gh", "api", "--method", method, f"repos/{REPO}/{path}"]
+              if pages:
+                  command += ["--paginate", "--slurp"]
+              for key, value in (fields or {}).items():
+                  command += ["-f", f"{key}={value}"]
+              output = subprocess.check_output(command, text=True)
+              return json.loads(output) if output.strip() else None
+
+
+          def trusted(pr):
+              return (
+                  pr["state"] == "open"
+                  and not pr["draft"]
+                  and pr["user"]["login"] == "dependabot[bot]"
+                  and pr["head"]["repo"] is not None
+                  and pr["head"]["repo"]["full_name"] == REPO
+                  and pr["head"]["ref"].startswith("dependabot/")
+                  and pr["base"]["repo"]["full_name"] == REPO
+                  and pr["base"]["ref"] == "main"
+              )
+
+
+          def current(number, head):
+              pr = api(f"pulls/{number}")
+              if not trusted(pr) or pr["head"]["sha"] != head:
+                  raise RuntimeError(f"PR #{number} changed during reconciliation")
+              return pr
+
+
+          def reconcile(number):
+              pr = api(f"pulls/{number}")
+              if not trusted(pr):
+                  return
+              head = pr["head"]["sha"]
+              if api(f"compare/main...{head}")["behind_by"] > 0:
+                  api(f"pulls/{number}/update-branch", "PUT", {"expected_head_sha": head})
+                  # Updating is asynchronous. Never look for runs at the OLD head.
+                  for attempt in range(10):
+                      pr = api(f"pulls/{number}")
+                      if not trusted(pr):
+                          raise RuntimeError(f"PR #{number} is no longer eligible")
+                      if pr["head"]["sha"] != head:
+                          head = pr["head"]["sha"]
+                          break
+                      time.sleep(2)
+                  else:
+                      raise RuntimeError(f"PR #{number} branch update is still pending")
+                  print(f"PR #{number}: updated to {head}")
+              # Also recover already-current branches and late-created held runs.
+              pages = api(
+                  f"actions/workflows/ci.yml/runs?event=pull_request&head_sha={head}&per_page=100",
+                  pages=True,
+              )
+              runs = [
+                  run
+                  for page in pages
+                  for run in page["workflow_runs"]
+                  if (
+                      run["event"] == "pull_request"
+                      and run["path"] == ".github/workflows/ci.yml"
+                      and run["head_sha"] == head
+                      and run["head_repository"]["full_name"] == REPO
+                      and any(
+                          p["number"] == number and p["head"]["sha"] == head
+                          for p in run["pull_requests"]
+                      )
+                  )
+              ]
+              if runs:
+                  run = max(runs, key=lambda value: value["id"])
+                  if run["conclusion"] == "action_required":
+                      current(number, head)
+                      api(f"actions/runs/{run['id']}/approve", "POST")
+                      print(f"PR #{number}: approved CI run {run['id']} at {head}")
+                  elif run["conclusion"] in FAILED:
+                      print(f"PR #{number}: CI {run['conclusion']}; a fixing push is required")
+                      return
+              pr = current(number, head)
+              if pr["auto_merge"] is None:
+                  subprocess.run(
+                      [
+                          "gh",
+                          "pr",
+                          "merge",
+                          "--repo",
+                          REPO,
+                          "--auto",
+                          "--squash",
+                          "--match-head-commit",
+                          head,
+                          str(number),
+                      ],
+                      check=True,
+                  )
+              print(f"PR #{number}: auto-merge armed at {head}; required checks still apply")
+
+
+          def main():
+              if REPO != "Flippylolz/fillable":
+                  raise RuntimeError("Unexpected repository")
+              failed = []
+              for page in api("pulls?state=open&base=main&per_page=100", pages=True):
+                  for pr in page:
+                      if not trusted(pr):
+                          continue
+                      try:
+                          reconcile(pr["number"])
+                      except Exception as error:
+                          print(f"::error::PR #{pr['number']}: {error}")
+                          failed.append(pr["number"])
+              if failed:
+                  raise RuntimeError(f"Reconciliation failed for PRs {failed}")
+
+
+          if __name__ == "__main__":
+              main()
