@@ -1,0 +1,25 @@
+{
+  "revision": "bdce4424f85b37bc6708629a3d775e2622341679",
+  "coverage": {
+    "backend": {
+      "lines": [
+        4595,
+        4595
+      ],
+      "branches": [
+        1488,
+        1488
+      ]
+    },
+    "frontend": {
+      "lines": [
+        2006,
+        2006
+      ],
+      "branches": [
+        2296,
+        2296
+      ]
+    }
+  }
+}
