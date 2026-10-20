@@ -15,11 +15,12 @@ its own final CI and merge receipt is recorded in that PR after GitHub merges it
 | [#174](https://github.com/Flippylolz/fillable/pull/174) | upload-artifact v7.0.2 | [7a7e323](https://github.com/Flippylolz/fillable/commit/7a7e3233ea748aaa4799dc690e11fc4f44488e9f) | [39444961486](https://github.com/Flippylolz/fillable/actions/runs/39444961486) |
 | [#179](https://github.com/Flippylolz/fillable/pull/179) | Locked npm updates and matching test containers | [39459af](https://github.com/Flippylolz/fillable/commit/39459afa5bfacb7d4ea9ba28f0facefcba6e7207) | [39440218433](https://github.com/Flippylolz/fillable/actions/runs/39440218433) |
 | [#180](https://github.com/Flippylolz/fillable/pull/180) | E09.45 independent rendering prerequisite | [97af8ee](https://github.com/Flippylolz/fillable/commit/97af8ee5275cced4638b0705772786b39a13eb5c) | [39437778907](https://github.com/Flippylolz/fillable/actions/runs/39437778907) |
+| [#182](https://github.com/Flippylolz/fillable/pull/182) | E09.48 settings echoes and pending copy replay | [e2f5129](https://github.com/Flippylolz/fillable/commit/e2f512906729f863746a00955be5547f055aa498) | [39460987038](https://github.com/Flippylolz/fillable/actions/runs/39460987038) |
 
 PR [#182](https://github.com/Flippylolz/fillable/pull/182), E09.48, explicitly
-checks controlled settings-toggle echoes and pending copy replay. Its current-head
-full CI is pending;
-final Docker delivery follows that prerequisite.
+checks controlled settings-toggle echoes and pending copy replay. Its complete
+required CI passed, including development/independent rendering and all browser
+scenarios. The final Docker update incorporates every prerequisite above.
 
 GitHub protection was verified through its API: strict up-to-date `ci-required`
 bound to Actions app 15368, zero mandatory human approvals, and squash auto-merge

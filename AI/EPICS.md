@@ -3172,7 +3172,9 @@ exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
 
 ## E09.48 — Controlled settings and pending copy retry verification
 
-Status: in_review. Explicitly verify that native `toggle` events echoing the
+Status: done. PR [#182](https://github.com/Flippylolz/fillable/pull/182) merged as
+`e2f512906729f863746a00955be5547f055aa498` with every required check passing.
+Explicitly verify that native `toggle` events echoing the
 workspace-owned open state do not send duplicate open/close requests, while user
 toggles still notify the workspace and survive reconciliation/remounts. Acceptance:
 exercise both controlled states without relying on jsdom's queued native events;
@@ -3192,7 +3194,9 @@ upload-artifact failure. Strengthen the existing behavioral regression explicitl
 Local pinned Docker verification passed the eight-test settings file three times,
 then all 448 frontend tests, ESLint and the production build. The source-provenance
 gate reports 2010/2010 lines and 2308/2308 branches. No application code, exclusions
-or thresholds changed; full protected CI and merge evidence remain pending.
+or thresholds changed. Final CI 39460987038 passed both independent 100% line/branch
+gates, full browser, development/persistence, independent DOCX rendering,
+upgrade/recovery and contracts.
 
 The refreshed browser run passed 71/72 cases but its library scenario received
 409 `operation_in_progress` on the first replay after an intentionally lost copy
@@ -3247,7 +3251,9 @@ branches. No new local application coverage is claimed for this QA-only fix.
 
 ## E09.44 — Dependabot CI approval and automatic merge recovery
 
-Status: in_review. Reconcile the current head after branch updates, recover held
+Status: done. PR [#169](https://github.com/Flippylolz/fillable/pull/169) merged as
+`278ca2d91c45f213eddb34690f78e07a37ad1445` with successful `ci-required`.
+Reconcile the current head after branch updates, recover held
 CI runs even when a branch is already current, and make API failures visible.
 Limit approval to this repository's current Dependabot PR heads and CI workflow;
 retain exact-head squash auto-merge, strict required checks and no PR-code execution
@@ -3258,8 +3264,12 @@ runs were action_required after GITHUB_TOKEN branch updates. Maintainer approval
 resumed the exact current npm PR run. Local Docker verification of the replacement
 workflow passed 18 behavioral/contract tests and Ruff, with 70/70 lines and 36/36
 branches covered in the executed workflow code. Application source is unchanged;
-full required CI remeasures the separate backend/frontend gates. Live validation of
-the installed workflow and completion of pending dependency merges remain pending.
+full required CI remeasures the separate backend/frontend gates. The 2026-10-20
+dependency review verified trusted main-branch updates, exact current-head held-run
+approval and strict merge blocking of superseded/failed heads. Late held runs were
+also resumed with maintainer approval. [Dependency review](DEPENDENCY_REVIEW.md)
+records the current protected merges and their CI evidence; the remaining Docker
+update records its own final receipt in PR #178.
 
 
 ## E09.49 — PostgreSQL refresh and recoverable acceptance reads
