@@ -140,18 +140,28 @@ test("workspace-held open state keeps the settings panel expanded across remount
   const mounted = render(view(false));
   const details = () => mounted.container.querySelector(".workspace-settings") as HTMLDetailsElement;
   expect(details().open).toBe(false);
+  // Native echoes of controlled state must not request the same state again.
+  act(() => { details().dispatchEvent(new Event("toggle")); });
+  expect(onOpenChange).not.toHaveBeenCalled();
   fireEvent.click(screen.getByText("Workspace settings"));
   // jsdom flips the attribute without dispatching toggle; real browsers dispatch it from the click.
   act(() => { details().open = true; details().dispatchEvent(new Event("toggle")); });
   expect(onOpenChange).toHaveBeenCalledWith(true);
   mounted.rerender(view(true));
+  act(() => { details().dispatchEvent(new Event("toggle")); });
+  expect(onOpenChange).toHaveBeenCalledTimes(1);
   expect(details().open).toBe(true);
   expect(screen.getByRole("textbox", { name: "Title" })).toBeVisible();
   // The editor epoch remounts the panel after restore/reopen; the workspace keeps it expanded.
   mounted.rerender(view(true, 2));
   expect(details().open).toBe(true);
   expect(screen.getByRole("textbox", { name: "Title" })).toBeVisible();
-  mounted.rerender(view(false));
+  act(() => { details().open = false; details().dispatchEvent(new Event("toggle")); });
+  expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  expect(onOpenChange).toHaveBeenCalledTimes(2);
+  mounted.rerender(view(false, 2));
+  act(() => { details().dispatchEvent(new Event("toggle")); });
+  expect(onOpenChange).toHaveBeenCalledTimes(2);
   expect(details().open).toBe(false);
   mounted.unmount();
 });
