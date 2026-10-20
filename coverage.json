@@ -1,5 +1,5 @@
 {
-  "revision": "97af8ee5275cced4638b0705772786b39a13eb5c",
+  "revision": "39459afa5bfacb7d4ea9ba28f0facefcba6e7207",
   "coverage": {
     "backend": {
       "lines": [
@@ -13,12 +13,12 @@
     },
     "frontend": {
       "lines": [
-        2006,
-        2006
+        2010,
+        2010
       ],
       "branches": [
-        2296,
-        2296
+        2308,
+        2308
       ]
     }
   }
