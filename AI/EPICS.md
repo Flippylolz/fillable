@@ -3222,3 +3222,52 @@ workflow passed 18 behavioral/contract tests and Ruff, with 70/70 lines and 36/3
 branches covered in the executed workflow code. Application source is unchanged;
 full required CI remeasures the separate backend/frontend gates. Live validation of
 the installed workflow and completion of pending dependency merges remain pending.
+
+
+## E09.49 — PostgreSQL refresh and recoverable acceptance reads
+
+Status: in_review. Deliver Dependabot PR #172's matching PostgreSQL 18.6 image
+digest in runtime and tests. Make the bilingual acceptance journey exercise a
+bounded retry through the existing UI for the documented `operation_in_progress`
+read conflict, with all other errors and persistent conflicts still failing.
+Restore its synthetic account's Ukrainian preference before/after the test so an
+interrupted English phase cannot contaminate later scenarios. Preserve storage
+locks, active maintenance, all assertions, required checks and coverage thresholds.
+
+2026-10-20: Current #172 CI passed backend/frontend coverage, browser and upgrade
+checks but development acceptance failed. The first trace records a 409 content
+read with `operation_in_progress`; the UI exposes Retry opening. Aborting the
+bilingual journey then left its shared fixture account in English and caused 29
+secondary language failures. The storage service intentionally reports transient
+shared/exclusive file-lock contention this way. Repair the test's existing recovery
+path and isolation rather than suppressing maintenance or changing application code.
+
+Local isolated Docker verification passed the complete bilingual journey on
+desktop/mobile with an injected transient content conflict and maintenance active.
+A separate temporary negative control injected four conflicts: the test failed
+at the intended successful-content assertion after three retries, and a fresh
+login verified Ukrainian was restored despite that failure. Only task-owned
+services/storage were used and volumes were retained. Application source and
+coverage thresholds are unchanged; full required CI must pass on the new head.
+
+## E09.47 — Honor the current private host handoff
+
+Status: in_review. The user retired the previously supplied host and supplied a
+replacement on 2026-10-20, then requested merged delivery. Acceptance: versioned
+agent guidance and the deployment runbook require the current ignored private host
+record before host-specific operations, exclude the retired target from new work,
+and distinguish a host handoff from verified connectivity or production migration.
+Keep connection identities private and preserve the existing deployment gates.
+Deliver as a dedicated documentation PR.
+
+2026-10-20: The current and retired identifiers are recorded in ignored
+`AI/DEPLOYMENT.local.md`. Neither identifier appeared in tracked files, so there
+was no hardcoded application or workflow target to replace. The replacement short
+name did not resolve from this workstation, and the handoff did not establish
+whether it replaces the development/Docker host, deployment server, or both.
+GitHub production transport secret names were inspected; their values were not
+available and no production setting or service was changed. The versioned runbook
+now records that limitation and requires verified connection details before any
+target-specific update. Local documentation links, private-record exclusion and
+`git diff --check` pass. No application code changed; application coverage was not
+remeasured locally. Required PR CI and merge evidence remain pending.
