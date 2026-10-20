@@ -3185,3 +3185,26 @@ workflow passed 18 behavioral/contract tests and Ruff, with 70/70 lines and 36/3
 branches covered in the executed workflow code. Application source is unchanged;
 full required CI remeasures the separate backend/frontend gates. Live validation of
 the installed workflow and completion of pending dependency merges remain pending.
+
+
+## E09.47 — Honor the current private host handoff
+
+Status: in_review. The user retired the previously supplied host and supplied a
+replacement on 2026-10-20, then requested merged delivery. Acceptance: versioned
+agent guidance and the deployment runbook require the current ignored private host
+record before host-specific operations, exclude the retired target from new work,
+and distinguish a host handoff from verified connectivity or production migration.
+Keep connection identities private and preserve the existing deployment gates.
+Deliver as a dedicated documentation PR.
+
+2026-10-20: The current and retired identifiers are recorded in ignored
+`AI/DEPLOYMENT.local.md`. Neither identifier appeared in tracked files, so there
+was no hardcoded application or workflow target to replace. The replacement short
+name did not resolve from this workstation, and the handoff did not establish
+whether it replaces the development/Docker host, deployment server, or both.
+GitHub production transport secret names were inspected; their values were not
+available and no production setting or service was changed. The versioned runbook
+now records that limitation and requires verified connection details before any
+target-specific update. Local documentation links, private-record exclusion and
+`git diff --check` pass. No application code changed; application coverage was not
+remeasured locally. Required PR CI and merge evidence remain pending.
