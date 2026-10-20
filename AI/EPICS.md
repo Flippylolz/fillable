@@ -3245,6 +3245,32 @@ full required CI remeasures the separate backend/frontend gates. Live validation
 the installed workflow and completion of pending dependency merges remain pending.
 
 
+## E09.49 — PostgreSQL refresh and recoverable acceptance reads
+
+Status: in_review. Deliver Dependabot PR #172's matching PostgreSQL 18.6 image
+digest in runtime and tests. Make the bilingual acceptance journey exercise a
+bounded retry through the existing UI for the documented `operation_in_progress`
+read conflict, with all other errors and persistent conflicts still failing.
+Restore its synthetic account's Ukrainian preference before/after the test so an
+interrupted English phase cannot contaminate later scenarios. Preserve storage
+locks, active maintenance, all assertions, required checks and coverage thresholds.
+
+2026-10-20: Current #172 CI passed backend/frontend coverage, browser and upgrade
+checks but development acceptance failed. The first trace records a 409 content
+read with `operation_in_progress`; the UI exposes Retry opening. Aborting the
+bilingual journey then left its shared fixture account in English and caused 29
+secondary language failures. The storage service intentionally reports transient
+shared/exclusive file-lock contention this way. Repair the test's existing recovery
+path and isolation rather than suppressing maintenance or changing application code.
+
+Local isolated Docker verification passed the complete bilingual journey on
+desktop/mobile with an injected transient content conflict and maintenance active.
+A separate temporary negative control injected four conflicts: the test failed
+at the intended successful-content assertion after three retries, and a fresh
+login verified Ukrainian was restored despite that failure. Only task-owned
+services/storage were used and volumes were retained. Application source and
+coverage thresholds are unchanged; full required CI must pass on the new head.
+
 ## E09.47 — Honor the current private host handoff
 
 Status: in_review. The user retired the previously supplied host and supplied a
