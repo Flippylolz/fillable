@@ -3182,8 +3182,30 @@ records the six pending ecosystem updates and shared rendering prerequisite #180
 2026-10-20: Local Docker checks passed 448 frontend tests, ESLint, catalogs and
 production build. Source-provenance coverage passed 2010/2010 lines and 2308/2308
 branches. The matching image launches Chromium as its non-root user and accepts
-synthetic Ukrainian input. Full protected CI and the shared prerequisite remain
-pending; backend coverage is not remeasured locally for this frontend change.
+synthetic Ukrainian input. Full protected CI remains pending; shared prerequisite
+#180 is merged. Backend coverage is not remeasured locally for this frontend change.
+
+## E09.45 — Restore pinned independent DOCX rendering checks
+
+Status: done. PR [#180](https://github.com/Flippylolz/fillable/pull/180) merged as
+`97af8ee5275cced4638b0705772786b39a13eb5c` with all required checks passing.
+Refresh the unavailable LibreOffice security revision in
+the independent DOCX QA image, retaining exact dependency pins and all rendering
+assertions. Verify the image builds and the protected development/rendering job
+passes before merging the pending Dependabot updates. Application behavior and
+the independent 100% coverage gates remain unchanged.
+
+2026-10-20: Review of Dependabot PRs #170, #171, #172, #174, #178 and #179
+confirmed strict up-to-date `ci-required` protection. PRs #171 and #174 fail
+independent rendering because Debian no longer publishes LibreOffice deb13u7;
+the pinned QA base reports deb13u8 as its current security candidate. Docker/npm
+updates also need matching Playwright package/image versions, and npm's Vitest
+update needs a writable filesystem-module cache. Those compatibility fixes stay
+with their dependency PRs. The pinned QA image builds locally and its unprivileged
+LibreOffice/PDF tools execute successfully. Required CI passed independent DOCX
+rendering, browser and upgrade/recovery checks, with backend coverage 4595/4595
+lines and 1488/1488 branches and frontend coverage 2006/2006 lines and 2296/2296
+branches. No new local application coverage is claimed for this QA-only fix.
 
 ## E09.44 — Dependabot CI approval and automatic merge recovery
 

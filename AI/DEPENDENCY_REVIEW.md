@@ -24,7 +24,10 @@ configuration. See [upstream cache configuration](https://main.vitest.dev/config
 PR #180 (E09.45) refreshes the unavailable LibreOffice deb13u7 QA pin to deb13u8.
 This is a shared development-CI failure, independent of the dependency changes.
 The pinned image builds locally and its tools run as the configured unprivileged
-user. Required CI must verify the existing synthetic rendering assertions.
+user. PR #180 merged as `97af8ee5275cced4638b0705772786b39a13eb5c` after every
+required check, including the existing synthetic rendering assertions, passed.
+Its retained coverage artifacts report backend 4595/4595 lines and 1488/1488
+branches and frontend 2006/2006 lines and 2296/2296 branches.
 
 ## Review evidence
 
