@@ -3170,9 +3170,46 @@ its dependencies. Local rendering of that run's synthetic artifacts passed ident
 no-edit pages, preserved page two, three-page edits, five-page multiline output, and
 exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
 
+## E09.48 — Controlled settings and pending copy retry verification
+
+Status: in_review. Explicitly verify that native `toggle` events echoing the
+workspace-owned open state do not send duplicate open/close requests, while user
+toggles still notify the workspace and survive reconciliation/remounts. Acceptance:
+exercise both controlled states without relying on jsdom's queued native events;
+retain all source inclusion and 100% line/branch thresholds. Application code and
+behavior stay unchanged. Also verify committed template-copy replay across a
+documented busy response: preserve the same idempotency key and form value through
+bounded UI retries, require 201, and retain the existing single-charge/copy-isolation
+assertions. Deliver the shared CI test repair separately.
+
+2026-10-20: Refreshed Dependabot PR #174 passed all frontend tests but missed the
+unchanged-state branch in `WorkspaceSettings.tsx:59`, reporting 2307/2308 branches.
+The existing remount test relied on incidental delivery of native toggle echoes.
+Its raw failed report is retained locally. npm PR #179 and local Docker checks
+passed 2308/2308; this is a nondeterministic coverage gap in the test, not an
+upload-artifact failure. Strengthen the existing behavioral regression explicitly.
+
+Local pinned Docker verification passed the eight-test settings file three times,
+then all 448 frontend tests, ESLint and the production build. The source-provenance
+gate reports 2010/2010 lines and 2308/2308 branches. No application code, exclusions
+or thresholds changed; full protected CI and merge evidence remain pending.
+
+The refreshed browser run passed 71/72 cases but its library scenario received
+409 `operation_in_progress` on the first replay after an intentionally lost copy
+response. The application retained its retry form as designed. Force that transient
+state in the existing scenario and exercise its real UI retry with one stable key;
+unexpected errors and persistent conflicts must still fail.
+
+Local isolated Docker verification passed the full library scenario on desktop
+and mobile with the forced pending replay, stable keys and single-charge checks.
+A temporary persistent-conflict variant failed at the intended 201 assertion after
+the bounded retries. Test services were stopped and their volumes retained.
+
 ## E09.46 — npm update compatibility with isolated checks
 
-Status: in_review. Review and repair Dependabot PR #179 with matching locked
+Status: done. PR [#179](https://github.com/Flippylolz/fillable/pull/179) merged as
+`39459afa5bfacb7d4ea9ba28f0facefcba6e7207` with every required check passing.
+Review and repair Dependabot PR #179 with matching locked
 Playwright package/browser versions and a writable Vitest filesystem cache for the
 non-root frontend image. Preserve all application tests, source coverage and exact
 dependency pins. Verify frontend lint, catalogs, build, full coverage, browser
@@ -3182,8 +3219,9 @@ records the six pending ecosystem updates and shared rendering prerequisite #180
 2026-10-20: Local Docker checks passed 448 frontend tests, ESLint, catalogs and
 production build. Source-provenance coverage passed 2010/2010 lines and 2308/2308
 branches. The matching image launches Chromium as its non-root user and accepts
-synthetic Ukrainian input. Full protected CI remains pending; shared prerequisite
-#180 is merged. Backend coverage is not remeasured locally for this frontend change.
+synthetic Ukrainian input. Final required CI passed backend 4595/4595 lines and
+1488/1488 branches, and frontend 2010/2010 lines and 2308/2308 branches, plus all
+browser, rendering, upgrade and contract checks. Shared prerequisite #180 is merged.
 
 ## E09.45 — Restore pinned independent DOCX rendering checks
 
@@ -3226,7 +3264,9 @@ the installed workflow and completion of pending dependency merges remain pendin
 
 ## E09.49 — PostgreSQL refresh and recoverable acceptance reads
 
-Status: in_review. Deliver Dependabot PR #172's matching PostgreSQL 18.6 image
+Status: done. PR [#172](https://github.com/Flippylolz/fillable/pull/172) merged as
+`d4ba592d175dc213e5b6d43d0056ae985bb63239` after every required check passed.
+Deliver Dependabot PR #172's matching PostgreSQL 18.6 image
 digest in runtime and tests. Make the bilingual acceptance journey exercise a
 bounded retry through the existing UI for the documented `operation_in_progress`
 read conflict, with all other errors and persistent conflicts still failing.
@@ -3248,7 +3288,9 @@ A separate temporary negative control injected four conflicts: the test failed
 at the intended successful-content assertion after three retries, and a fresh
 login verified Ukrainian was restored despite that failure. Only task-owned
 services/storage were used and volumes were retained. Application source and
-coverage thresholds are unchanged; full required CI must pass on the new head.
+coverage thresholds are unchanged. Required CI 39455874090 passed both independent
+100% line/branch gates, browser, development/independent DOCX rendering, real
+upgrade/recovery and contracts on the final fixing head.
 
 ## E09.47 — Honor the current private host handoff
 

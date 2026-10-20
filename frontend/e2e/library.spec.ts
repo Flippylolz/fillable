@@ -221,6 +221,7 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
 
   const copyTitle = `Незалежний документ — ${testInfo.project.name}`;
   let lostCopy = true;
+  let busyCopy = true;
   const copyKeys: string[] = [];
   await page.route("**/api/documents/*/copies", async route => {
     copyKeys.push(route.request().headers()["idempotency-key"]);
@@ -228,6 +229,11 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
       lostCopy = false;
       const committed = await route.fetch(); expect(committed.status()).toBe(201);
       await route.abort(); return;
+    }
+    if (busyCopy) {
+      busyCopy = false;
+      await route.fulfill({ status: 409, json: { error: { code: "operation_in_progress", parameters: {} } } });
+      return;
     }
     await route.continue();
   });
@@ -238,10 +244,28 @@ test("library uploads both kinds, retries safely, and keeps drafts across a lang
   await expect(templateCard.getByRole("alert")).toBeVisible();
   await expect(templateCard.getByRole("textbox")).toHaveValue(copyTitle);
   await page.screenshot({ path: testInfo.outputPath("template-copy-retry-uk.png"), fullPage: true });
+  const nextCopy = () => page.waitForResponse(response => new URL(response.url()).pathname.endsWith("/copies") && response.request().method() === "POST");
+  let copying = nextCopy();
   await templateCard.getByRole("button", { name: "Створити та відкрити документ", exact: true }).click();
+  let copied = await copying;
+  let copyRetries = 0;
+  while (copied.status() === 409 && copyRetries < 3) {
+    expect(await copied.json()).toEqual({ error: { code: "operation_in_progress", parameters: {} } });
+    await expect(templateCard.getByRole("alert")).toHaveText("Це завантаження ще триває. Повторіть спробу згодом.");
+    await expect(templateCard.getByRole("textbox")).toHaveValue(copyTitle);
+    copying = nextCopy();
+    await templateCard.getByRole("button", { name: "Створити та відкрити документ", exact: true }).click();
+    copied = await copying;
+    copyRetries++;
+  }
+  expect(copyRetries).toBeGreaterThan(0);
+  expect(copied.status()).toBe(201);
   await expect(page.getByRole("heading", { name: copyTitle, exact: true })).toBeVisible();
   const copyId = page.url().split("/").pop();
   expect(copyKeys[0]).toBe(copyKeys[1]);
+  expect(copyKeys[0]).toBeTruthy();
+  expect(copyKeys.every(key => key === copyKeys[0])).toBe(true);
+  expect(copyKeys).toHaveLength(copyRetries + 2);
   const copyFields = await (await page.request.get(`/api/documents/${copyId}/fields`)).json();
   expect(copyFields.status).toBe("succeeded");
   expect(copyFields.snapshot.candidates).toHaveLength(28);
