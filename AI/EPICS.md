@@ -3170,6 +3170,21 @@ its dependencies. Local rendering of that run's synthetic artifacts passed ident
 no-edit pages, preserved page two, three-page edits, five-page multiline output, and
 exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
 
+## E09.46 — npm update compatibility with isolated checks
+
+Status: in_review. Review and repair Dependabot PR #179 with matching locked
+Playwright package/browser versions and a writable Vitest filesystem cache for the
+non-root frontend image. Preserve all application tests, source coverage and exact
+dependency pins. Verify frontend lint, catalogs, build, full coverage, browser
+launch, and all protected PR checks. [Dependency review](DEPENDENCY_REVIEW.md)
+records the six pending ecosystem updates and shared rendering prerequisite #180.
+
+2026-10-20: Local Docker checks passed 448 frontend tests, ESLint, catalogs and
+production build. Source-provenance coverage passed 2010/2010 lines and 2308/2308
+branches. The matching image launches Chromium as its non-root user and accepts
+synthetic Ukrainian input. Full protected CI and the shared prerequisite remain
+pending; backend coverage is not remeasured locally for this frontend change.
+
 ## E09.44 — Dependabot CI approval and automatic merge recovery
 
 Status: in_review. Reconcile the current head after branch updates, recover held
