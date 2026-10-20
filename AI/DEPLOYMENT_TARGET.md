@@ -9,6 +9,30 @@ Public documentation uses `<DEPLOY_HOST>` and `<DEPLOY_USER>` placeholders. Read
 ignored local deployment configuration for actual identity; never publish credentials,
 private paths or keys. Deployment remains last through verified GitHub Actions artifacts.
 
+## Current private host handoff — 2026-10-20
+
+The user retired the previously supplied host and supplied a replacement. Read the
+current and retired identifiers in ignored `AI/DEPLOYMENT.local.md` before any
+host-specific SSH, Docker or deployment operation. Use the current handoff rather
+than recovering a target from historical deployment evidence. Keep the identifiers
+and all connection details out of tracked files and PRs; a fresh checkout or
+worktree must obtain the private configuration before host-specific work.
+
+This handoff records the requested target change. It does not prove connectivity,
+service migration or a new public origin. At the handoff, the replacement short
+name did not resolve from the operator workstation, and its role as development/
+Docker host, deployment server, or both remained unconfirmed. Resolve that role and
+verify the reachable address, authorized identity and trusted SSH host keys before
+updating role-specific settings. Do not infer a public HTTPS origin or certificate
+identity from a short host name.
+
+For a deployment target replacement, verify the restricted receiver and exact
+HTTPS origin before updating the production environment's `FILLABLE_DEPLOY_HOST`,
+`FILLABLE_DEPLOY_USER`, `FILLABLE_DEPLOY_KEY` or `FILLABLE_KNOWN_HOSTS` secrets.
+Those settings and running services were not changed by this documentation handoff.
+The earlier deployed acceptance remains historical evidence for its original target;
+repeat the existing preflight and acceptance checks for a replacement deployment.
+
 ## Current routing contract
 
 ```text
