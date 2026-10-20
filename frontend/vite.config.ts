@@ -10,6 +10,8 @@ export default defineConfig({
     include: ['tests/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    // npm installs node_modules as root; test caches belong in writable /tmp.
+    fsModuleCachePath: '/tmp/fillable-vitest-cache',
     // Keep instrumented jsdom suites within the small CI runner's CPU budget.
     maxWorkers: 2,
     coverage: {
