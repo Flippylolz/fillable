@@ -12,6 +12,11 @@ These instructions guide automated implementation in this repository. Direct use
 5. Read [Local development](LOCAL_DEVELOPMENT.md) before changing infrastructure or running project checks.
 6. Read [CI and deployment](CI_CD.md) before changing tests, coverage, workflows, or deployment behavior.
 7. Read [Deployment target](DEPLOYMENT_TARGET.md) before working on server access, ports, nginx, or WEF integration.
+   Before host-specific SSH, Docker or deployment work, consult the current ignored
+   `AI/DEPLOYMENT.local.md` host handoff. A supplied replacement supersedes a retired
+   target in historical notes; verify its role and reachable address before changing
+   connection settings. Missing private configuration does not authorize reuse of
+   the retired target.
 8. Follow [PR workflow](PR_WORKFLOW.md) for every task delivery.
 9. Read [Localization](I18N.md) before changing UI copy, API errors, profile preferences, or editor controls.
 
