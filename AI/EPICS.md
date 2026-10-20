@@ -3170,14 +3170,17 @@ its dependencies. Local rendering of that run's synthetic artifacts passed ident
 no-edit pages, preserved page two, three-page edits, five-page multiline output, and
 exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
 
-## E09.48 — Deterministic controlled settings toggle coverage
+## E09.48 — Controlled settings and pending copy retry verification
 
 Status: in_review. Explicitly verify that native `toggle` events echoing the
 workspace-owned open state do not send duplicate open/close requests, while user
 toggles still notify the workspace and survive reconciliation/remounts. Acceptance:
 exercise both controlled states without relying on jsdom's queued native events;
 retain all source inclusion and 100% line/branch thresholds. Application code and
-behavior stay unchanged. Deliver the shared CI test repair separately.
+behavior stay unchanged. Also verify committed template-copy replay across a
+documented busy response: preserve the same idempotency key and form value through
+bounded UI retries, require 201, and retain the existing single-charge/copy-isolation
+assertions. Deliver the shared CI test repair separately.
 
 2026-10-20: Refreshed Dependabot PR #174 passed all frontend tests but missed the
 unchanged-state branch in `WorkspaceSettings.tsx:59`, reporting 2307/2308 branches.
@@ -3190,6 +3193,17 @@ Local pinned Docker verification passed the eight-test settings file three times
 then all 448 frontend tests, ESLint and the production build. The source-provenance
 gate reports 2010/2010 lines and 2308/2308 branches. No application code, exclusions
 or thresholds changed; full protected CI and merge evidence remain pending.
+
+The refreshed browser run passed 71/72 cases but its library scenario received
+409 `operation_in_progress` on the first replay after an intentionally lost copy
+response. The application retained its retry form as designed. Force that transient
+state in the existing scenario and exercise its real UI retry with one stable key;
+unexpected errors and persistent conflicts must still fail.
+
+Local isolated Docker verification passed the full library scenario on desktop
+and mobile with the forced pending replay, stable keys and single-charge checks.
+A temporary persistent-conflict variant failed at the intended 201 assertion after
+the bounded retries. Test services were stopped and their volumes retained.
 
 ## E09.46 — npm update compatibility with isolated checks
 
