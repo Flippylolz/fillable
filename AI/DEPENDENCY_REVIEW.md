@@ -1,57 +1,76 @@
 # Dependency review — 2026-10-20
 
-Reviewed pending Dependabot PRs #170 (Python), #171 (ingress nginx), #172
-(PostgreSQL digest), #174 (upload-artifact), #178 (Docker) and #179 (npm).
-GitHub requires an up-to-date `ci-required` from Actions app 15368, with no
-mandatory human approvals; repository squash auto-merge is enabled. No gate or
-coverage threshold is relaxed.
+Reviewed the Python, ingress nginx, PostgreSQL, GitHub Actions, Docker and npm
+Dependabot updates. The five completed dependency merges below passed every
+required job. This document accompanies the final Docker update in PR #178;
+its own final CI and merge receipt is recorded in that PR after GitHub merges it.
 
-## npm compatibility fixes in PR #179
+## Merge evidence
 
-The Playwright 1.64.1 npm update must ship with its matching pinned browser image.
-The previous image contains different browser revisions, so browser, development
-and upgrade CI fail before exercising application behavior. Use the exact image
-and digest already proposed by Docker PR #178.
+| PR | Update | Merge commit | Successful exact-head CI |
+| --- | --- | --- | --- |
+| [#170](https://github.com/Flippylolz/fillable/pull/170) | Python direct pins and hash-locked requirements | [3fd16a9](https://github.com/Flippylolz/fillable/commit/3fd16a969635fef3b07614a4d529e9301ff81ddb) | [39447063684](https://github.com/Flippylolz/fillable/actions/runs/39447063684) |
+| [#171](https://github.com/Flippylolz/fillable/pull/171) | Fillable ingress nginx 1.31.6 | [05f233e](https://github.com/Flippylolz/fillable/commit/05f233e3add181edd28ea8b9ad8b454769b5cdd1) | [39449282369](https://github.com/Flippylolz/fillable/actions/runs/39449282369) |
+| [#172](https://github.com/Flippylolz/fillable/pull/172) | PostgreSQL 18.6 digest in runtime and tests; acceptance recovery | [d4ba592](https://github.com/Flippylolz/fillable/commit/d4ba592d175dc213e5b6d43d0056ae985bb63239) | [39455874090](https://github.com/Flippylolz/fillable/actions/runs/39455874090) |
+| [#174](https://github.com/Flippylolz/fillable/pull/174) | upload-artifact v7.0.2 | [7a7e323](https://github.com/Flippylolz/fillable/commit/7a7e3233ea748aaa4799dc690e11fc4f44488e9f) | [39444961486](https://github.com/Flippylolz/fillable/actions/runs/39444961486) |
+| [#179](https://github.com/Flippylolz/fillable/pull/179) | Locked npm updates and matching test containers | [39459af](https://github.com/Flippylolz/fillable/commit/39459afa5bfacb7d4ea9ba28f0facefcba6e7207) | [39440218433](https://github.com/Flippylolz/fillable/actions/runs/39440218433) |
+| [#180](https://github.com/Flippylolz/fillable/pull/180) | E09.45 independent rendering prerequisite | [97af8ee](https://github.com/Flippylolz/fillable/commit/97af8ee5275cced4638b0705772786b39a13eb5c) | [39437778907](https://github.com/Flippylolz/fillable/actions/runs/39437778907) |
 
-Vitest 5.0.5 enables filesystem module caching by default. The frontend image runs
-tests as `node`, while npm installs `node_modules` as root; writing its default
-`.vitest-cache` there fails with EACCES. Set `test.fsModuleCachePath` to a dedicated
-writable `/tmp` directory, retaining the existing Vite cache and full test/coverage
-configuration. See [upstream cache configuration](https://main.vitest.dev/config/fsmodulecache).
+PR [#182](https://github.com/Flippylolz/fillable/pull/182), E09.48, explicitly
+checks controlled settings-toggle echoes. Its current-head full CI is pending;
+final Docker delivery follows that prerequisite.
 
-## Shared independent rendering prerequisite
+GitHub protection was verified through its API: strict up-to-date `ci-required`
+bound to Actions app 15368, zero mandatory human approvals, and squash auto-merge
+available. GitHub refused superseded heads when main advanced. Every completed
+merge used the protected gate, including both independent 100% executable-line
+and branch checks. Coverage thresholds, source inclusion and required jobs remain
+unchanged. Each PR body contains its final merge receipt.
 
-PR #180 (E09.45) refreshes the unavailable LibreOffice deb13u7 QA pin to deb13u8.
-This is a shared development-CI failure, independent of the dependency changes.
-The pinned image builds locally and its tools run as the configured unprivileged
-user. PR #180 merged as `97af8ee5275cced4638b0705772786b39a13eb5c` after every
-required check, including the existing synthetic rendering assertions, passed.
-Its retained coverage artifacts report backend 4595/4595 lines and 1488/1488
-branches and frontend 2006/2006 lines and 2296/2296 branches.
+## Compatibility and test repairs
 
-## Review evidence
+- The Playwright 1.64.1 npm package and pinned browser image now ship together in
+  #179. Browser, development and upgrade jobs launch their matching binaries.
+- The upgraded Vitest filesystem module cache defaults into root-owned
+  `node_modules`. `test.fsModuleCachePath` now points to writable
+  `/tmp/fillable-vitest-cache` for the non-root runner; the existing Vite cache and
+  coverage configuration remain intact. See the [cache configuration](https://main.vitest.dev/config/fsmodulecache).
+- #180 refreshes the unavailable LibreOffice deb13u7 QA pin to deb13u8. The exact
+  package pins and independent synthetic DOCX rendering assertions are retained.
+- #182 explicitly dispatches native settings-toggle echoes and checks duplicate
+  callbacks, real open/close requests and controlled reconciliation/remounts.
+  This replaces incidental jsdom event delivery that once left 2307/2308 branch
+  outcomes covered while all frontend tests passed.
+- #172 forces one documented `operation_in_progress` content-read response, uses
+  the real Retry opening UI with at most three retries, and requires successful
+  content loading before the unchanged document/history assertions. A persistent
+  conflict still fails. Its bilingual fixture restores Ukrainian before/after the
+  test, including on failure, preventing language cascades. Maintenance and storage
+  locking remain active; application behavior is unchanged.
 
-- #170 retains hash-locked installation and updates its direct pins and compiled
-  requirements together. Required tests cover the FastAPI/SQLAlchemy behavior,
-  real PostgreSQL, migration/upgrade persistence, lint and generated API drift.
-- #171 changes only Fillable's ingress image pin; no shared nginx configuration
-  changes. #172 changes only the same PostgreSQL image digest in both runtime and
-  tests, retaining major version 18 and the persistent volume contract.
-- #174 updates every upload-artifact use to the exact upstream v7.0.2 tag commit
-  `cf430e030ddbb5b0abf93d22962f4752f3646cd9`; permissions and required jobs remain
-  unchanged. Upstream release notes describe retry handling and an artifact
-  library update.
-- #178 retains exact Python/Node/nginx/browser image pins. Its Playwright image
-  must match #179 before merging; its QA base still needs E09.45's package fix.
-- #179 retains exact direct dependency versions and lockfile integrity, including
-  matching React/React DOM and Vitest/coverage versions. Editor notices are still
-  generated and checked in the production build.
+## Final Docker integration
 
-Local Docker verification for #179 passed all 448 frontend tests, ESLint,
-Ukrainian/English catalogs and the production build. The source-provenance coverage
-gate passed 2010/2010 lines and 2308/2308 branch outcomes. The matching browser
-image launches Chromium as `pwuser` and edits a synthetic Ukrainian input. Full
-application browser/upgrade checks and backend coverage remain delegated to CI.
+PR #178 retains exact image digests while updating Python to 3.14.8 in backend
+and QA images, Node to 26.12.0 for frontend tooling, and the private gateway to
+nginx 1.31.7. Its matching Playwright image is already integrated through #179.
+The PostgreSQL major version, persistent volume contract, application storage
+policy and owner-managed ingress configuration are preserved.
 
-All six PRs are queued for exact-head squash auto-merge behind the actual strict
-required gate. Final CI coverage and merge evidence remain pending.
+Local runtime validation passed 448 frontend tests, lint, catalogs, production
+build and the source-provenance gate: 2010/2010 lines and 2308/2308 branches.
+Python 3.14.8 Ruff/mypy checks passed; the production gateway builds and its nginx
+configuration validates as the configured non-root user. The new QA image builds
+and its LibreOffice/PDF tools execute as its non-root user. The matching Playwright
+image launches Chromium and edits synthetic Ukrainian input.
+
+The settings regression passed three local runs plus the full frontend suite.
+The bilingual recovery journey passed on desktop/mobile in an isolated synthetic
+stack with maintenance active. A temporary negative control injected four busy
+responses, observed the intended failure after three retries, and verified through
+a fresh login that Ukrainian cleanup still completed. Only task-owned services
+were stopped; their test volumes were retained.
+
+Retained #179 CI reports measure backend 4595/4595 lines and 1488/1488 branches,
+frontend 2010/2010 lines and 2308/2308 branches. #180 used the earlier frontend
+instrumentation counts (2006/2006 and 2296/2296). Final integrated Docker coverage
+and required-check evidence are recorded in #178's receipt after its own full CI.
