@@ -3170,6 +3170,24 @@ its dependencies. Local rendering of that run's synthetic artifacts passed ident
 no-edit pages, preserved page two, three-page edits, five-page multiline output, and
 exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
 
+## E09.45 — Restore pinned independent DOCX rendering checks
+
+Status: in_progress. Refresh the unavailable LibreOffice security revision in
+the independent DOCX QA image, retaining exact dependency pins and all rendering
+assertions. Verify the image builds and the protected development/rendering job
+passes before merging the pending Dependabot updates. Application behavior and
+the independent 100% coverage gates remain unchanged.
+
+2026-10-20: Review of Dependabot PRs #170, #171, #172, #174, #178 and #179
+confirmed strict up-to-date `ci-required` protection. PRs #171 and #174 fail
+independent rendering because Debian no longer publishes LibreOffice deb13u7;
+the pinned QA base reports deb13u8 as its current security candidate. Docker/npm
+updates also need matching Playwright package/image versions, and npm's Vitest
+update needs a writable filesystem-module cache. Those compatibility fixes stay
+with their dependency PRs. The pinned QA image builds locally and its unprivileged
+LibreOffice/PDF tools execute successfully. Full rendering and application coverage
+will be verified by required PR CI; no new local application coverage is claimed.
+
 ## E09.44 — Dependabot CI approval and automatic merge recovery
 
 Status: in_review. Reconcile the current head after branch updates, recover held
