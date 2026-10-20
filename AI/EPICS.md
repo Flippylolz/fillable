@@ -3170,6 +3170,27 @@ its dependencies. Local rendering of that run's synthetic artifacts passed ident
 no-edit pages, preserved page two, three-page edits, five-page multiline output, and
 exact Ukrainian/astral text checks. Required CI will rerun on the updated head.
 
+## E09.48 — Deterministic controlled settings toggle coverage
+
+Status: in_review. Explicitly verify that native `toggle` events echoing the
+workspace-owned open state do not send duplicate open/close requests, while user
+toggles still notify the workspace and survive reconciliation/remounts. Acceptance:
+exercise both controlled states without relying on jsdom's queued native events;
+retain all source inclusion and 100% line/branch thresholds. Application code and
+behavior stay unchanged. Deliver the shared CI test repair separately.
+
+2026-10-20: Refreshed Dependabot PR #174 passed all frontend tests but missed the
+unchanged-state branch in `WorkspaceSettings.tsx:59`, reporting 2307/2308 branches.
+The existing remount test relied on incidental delivery of native toggle echoes.
+Its raw failed report is retained locally. npm PR #179 and local Docker checks
+passed 2308/2308; this is a nondeterministic coverage gap in the test, not an
+upload-artifact failure. Strengthen the existing behavioral regression explicitly.
+
+Local pinned Docker verification passed the eight-test settings file three times,
+then all 448 frontend tests, ESLint and the production build. The source-provenance
+gate reports 2010/2010 lines and 2308/2308 branches. No application code, exclusions
+or thresholds changed; full protected CI and merge evidence remain pending.
+
 ## E09.46 — npm update compatibility with isolated checks
 
 Status: in_review. Review and repair Dependabot PR #179 with matching locked
