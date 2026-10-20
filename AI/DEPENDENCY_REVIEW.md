@@ -17,7 +17,8 @@ its own final CI and merge receipt is recorded in that PR after GitHub merges it
 | [#180](https://github.com/Flippylolz/fillable/pull/180) | E09.45 independent rendering prerequisite | [97af8ee](https://github.com/Flippylolz/fillable/commit/97af8ee5275cced4638b0705772786b39a13eb5c) | [39437778907](https://github.com/Flippylolz/fillable/actions/runs/39437778907) |
 
 PR [#182](https://github.com/Flippylolz/fillable/pull/182), E09.48, explicitly
-checks controlled settings-toggle echoes. Its current-head full CI is pending;
+checks controlled settings-toggle echoes and pending copy replay. Its current-head
+full CI is pending;
 final Docker delivery follows that prerequisite.
 
 GitHub protection was verified through its API: strict up-to-date `ci-required`
@@ -40,7 +41,10 @@ unchanged. Each PR body contains its final merge receipt.
 - #182 explicitly dispatches native settings-toggle echoes and checks duplicate
   callbacks, real open/close requests and controlled reconciliation/remounts.
   This replaces incidental jsdom event delivery that once left 2307/2308 branch
-  outcomes covered while all frontend tests passed.
+  outcomes covered while all frontend tests passed. It also forces a pending
+  template-copy replay after losing the committed response, preserving the form
+  and one nonempty idempotency key through bounded real UI retries. The existing
+  single-charge, field-snapshot and copy-independence assertions remain enforced.
 - #172 forces one documented `operation_in_progress` content-read response, uses
   the real Retry opening UI with at most three retries, and requires successful
   content loading before the unchanged document/history assertions. A persistent
@@ -69,6 +73,10 @@ stack with maintenance active. A temporary negative control injected four busy
 responses, observed the intended failure after three retries, and verified through
 a fresh login that Ukrainian cleanup still completed. Only task-owned services
 were stopped; their test volumes were retained.
+
+The full library journey also passed on desktop/mobile with the forced pending
+copy replay and its single-key/single-charge checks. A temporary persistent-copy
+variant failed at the intended 201 assertion after the bounded retries.
 
 Retained #179 CI reports measure backend 4595/4595 lines and 1488/1488 branches,
 frontend 2010/2010 lines and 2308/2308 branches. #180 used the earlier frontend
