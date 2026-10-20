@@ -1,11 +1,36 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { manualSaving } from "./autosave-setting";
 import { openNavigation, openUploadPanel } from "./navigation";
 
 const login = process.env.FILLABLE_INITIAL_LOGIN ?? "library@example.test";
 const password = process.env.FILLABLE_INITIAL_PASSWORD ?? "Synthetic-browser-Їжак-2026";
+
+async function restoreLanguage(request: APIRequestContext) {
+  const current = await request.get("/api/auth/session");
+  expect(current.status()).toBe(200);
+  const origin = new URL(current.url()).origin;
+  let session = await current.json();
+  if (!session.user) {
+    const signedIn = await request.post("/api/auth/login", {
+      headers: { Origin: origin, "X-CSRF-Token": session.csrf_token },
+      data: { login, password },
+    });
+    expect(signedIn.status()).toBe(200);
+    session = await signedIn.json();
+  }
+  expect(session.user.login).toBe(login);
+  const updated = await request.patch("/api/profile/language", {
+    headers: { Origin: origin, "X-CSRF-Token": session.csrf_token },
+    data: { ui_language: "uk" },
+  });
+  expect(updated.status()).toBe(200);
+  expect((await updated.json()).user.ui_language).toBe("uk");
+}
+
+test.beforeEach(async ({ request }) => { await restoreLanguage(request); });
+test.afterEach(async ({ request }) => { await restoreLanguage(request); });
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
@@ -127,7 +152,26 @@ test("four-page bilingual journey saves a reviewed template, edits its independe
   await page.getByRole("link", { name: "My documents", exact: true }).click();
   await openNavigation(page);
   await page.getByRole("link", { name: "Templates", exact: true }).click();
+  const contentPath = `/api/documents/${templateId}/content`;
+  const nextContent = () => page.waitForResponse(response => new URL(response.url()).pathname === contentPath && response.request().method() === "GET");
+  // Exercise the real Retry opening UI even when maintenance does not win the lock.
+  await page.route(new URL(contentPath, page.url()).href, route => route.fulfill({
+    status: 409, json: { error: { code: "operation_in_progress", parameters: {} } },
+  }), { times: 1 });
+  let opening = nextContent();
   await card.getByRole("link", { name: title, exact: true }).click();
+  let content = await opening;
+  let retries = 0;
+  while (content.status() === 409 && retries < 3) {
+    expect(await content.json()).toEqual({ error: { code: "operation_in_progress", parameters: {} } });
+    await expect(page.getByText("This upload is still in progress. Retry shortly.", { exact: true })).toBeVisible();
+    opening = nextContent();
+    await page.getByRole("button", { name: "Retry opening", exact: true }).click();
+    content = await opening;
+    retries++;
+  }
+  expect(retries).toBeGreaterThan(0);
+  expect(content.status()).toBe(200);
   await expect(page.getByText("Editing enabled.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Version history", exact: true }).click();
   await page.getByRole("button", { name: /^Version 1/ }).click();
