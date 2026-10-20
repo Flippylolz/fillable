@@ -3193,7 +3193,9 @@ or thresholds changed; full protected CI and merge evidence remain pending.
 
 ## E09.46 — npm update compatibility with isolated checks
 
-Status: in_review. Review and repair Dependabot PR #179 with matching locked
+Status: done. PR [#179](https://github.com/Flippylolz/fillable/pull/179) merged as
+`39459afa5bfacb7d4ea9ba28f0facefcba6e7207` with every required check passing.
+Review and repair Dependabot PR #179 with matching locked
 Playwright package/browser versions and a writable Vitest filesystem cache for the
 non-root frontend image. Preserve all application tests, source coverage and exact
 dependency pins. Verify frontend lint, catalogs, build, full coverage, browser
@@ -3203,8 +3205,9 @@ records the six pending ecosystem updates and shared rendering prerequisite #180
 2026-10-20: Local Docker checks passed 448 frontend tests, ESLint, catalogs and
 production build. Source-provenance coverage passed 2010/2010 lines and 2308/2308
 branches. The matching image launches Chromium as its non-root user and accepts
-synthetic Ukrainian input. Full protected CI remains pending; shared prerequisite
-#180 is merged. Backend coverage is not remeasured locally for this frontend change.
+synthetic Ukrainian input. Final required CI passed backend 4595/4595 lines and
+1488/1488 branches, and frontend 2010/2010 lines and 2308/2308 branches, plus all
+browser, rendering, upgrade and contract checks. Shared prerequisite #180 is merged.
 
 ## E09.45 — Restore pinned independent DOCX rendering checks
 
@@ -3247,7 +3250,9 @@ the installed workflow and completion of pending dependency merges remain pendin
 
 ## E09.49 — PostgreSQL refresh and recoverable acceptance reads
 
-Status: in_review. Deliver Dependabot PR #172's matching PostgreSQL 18.6 image
+Status: done. PR [#172](https://github.com/Flippylolz/fillable/pull/172) merged as
+`d4ba592d175dc213e5b6d43d0056ae985bb63239` after every required check passed.
+Deliver Dependabot PR #172's matching PostgreSQL 18.6 image
 digest in runtime and tests. Make the bilingual acceptance journey exercise a
 bounded retry through the existing UI for the documented `operation_in_progress`
 read conflict, with all other errors and persistent conflicts still failing.
@@ -3269,7 +3274,9 @@ A separate temporary negative control injected four conflicts: the test failed
 at the intended successful-content assertion after three retries, and a fresh
 login verified Ukrainian was restored despite that failure. Only task-owned
 services/storage were used and volumes were retained. Application source and
-coverage thresholds are unchanged; full required CI must pass on the new head.
+coverage thresholds are unchanged. Required CI 39455874090 passed both independent
+100% line/branch gates, browser, development/independent DOCX rendering, real
+upgrade/recovery and contracts on the final fixing head.
 
 ## E09.47 — Honor the current private host handoff
 
