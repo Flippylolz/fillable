@@ -1,4 +1,4 @@
-FROM node:26.12.0-bookworm-slim@sha256:298992629d69bbd5b2b03ad57094d8e4fcb3a8eeb7c4e25d29de656519568913 AS frontend
+FROM node:26.12.1-bookworm-slim@sha256:28147155d47dc31abe0a46e0d12b59b2fb3d0a2dcc5dc65fce76a074180b16fe AS frontend
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci && chown node:node /app
@@ -12,7 +12,7 @@ ARG VITE_APP_COMMIT_SHA
 ENV VITE_APP_COMMIT_SHA=$VITE_APP_COMMIT_SHA
 RUN npm run build
 
-FROM nginx:1.31.7-alpine@sha256:892bb2152464f0c5d8972593a5f5afaf8054552580b699d95f8ff4af08c2d33d AS gateway-base
+FROM nginx:1.31.8-alpine@sha256:1ef7ca94d7879df82421428ce13bd1eaa412404953859cf7a5b6512c25e67a60 AS gateway-base
 USER nginx
 ENTRYPOINT ["nginx"]
 CMD ["-g", "daemon off;", "-c", "/etc/nginx/fillable.conf"]
